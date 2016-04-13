@@ -132,15 +132,15 @@ backgroundCorrNoob <- function(dmp) {
   ibR.n <- backgroundCorrNoobCh1(ibR, dmp$oobR)
   ibG.n <- backgroundCorrNoobCh1(ibG, dmp$oobG)
 
-  IR.n <- ibR.n[1:length(dmp$IR)]
-  dim(IR.n) <- dim(dmp$IR)
+  IR.n <- matrix(ibR.n[1:length(dmp$IR)],
+                 nrow=nrow(dmp$IR), dimnames=dimnames(dmp$IR))
 
-  IG.n <- ibG.n[1:length(dmp$IG)]
-  dim(IG.n) <- dim(dmp$IG)
+  IG.n <- matrix(ibG.n[1:length(dmp$IG)],
+                 nrow=nrow(dmp$IG), dimnames=dimnames(dmp$IG))
 
   II <- as.matrix(data.frame(
-    U=ibR.n[(length(dmp$IR)+1):],
-    M=ibG.n[(length(dmp$IG)+1):]))
+    U=ibR.n[(length(dmp$IR)+1):length(ibR)],
+    M=ibG.n[(length(dmp$IG)+1):length(ibG)]))
 
   return(list(IR=IR.n, IG=IG.n,
               oobR=dmp$oobR, oobG=dmp$oobG, II=II))
