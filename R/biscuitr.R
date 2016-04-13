@@ -73,46 +73,90 @@ batchReadIDATs <- function(dir.name) {
 #'
 #' Lookup address and transform address to probe
 #'
-#' Translate data in chip address to probe address
+#' Translate data in chip address to probe address.
+#' Type I probes can be separated into Red and Grn channels. The
+#' methylated allele and unmethylated allele are at different
+#' addresses. For type II probes methylation allele and unmethylated allele are
+#' at the same address. Grn channel is for methylated allele and Red channel is
+#' for unmethylated allele. The out-of-band signals are type I probes measured
+#' using the "wrong" channel.
 #'
 #' @param dm data frame in chip address, 2 columns: cy3/Grn and cy5/Red
 #' @import FDb.InfiniumMethylation.hg19
-#' @return a list with I, II, oob
-#' I and II are matrices with columns M and U. oob is an array of integer
+#' @return a list with IR, IG, oobR, oobG, II
+#' IR, IG and II are matrices with columns M and U.
+#' oobR and oobG are arrays of integer.
 chipAddressToProbe <- function(dm) {
   library("FDb.InfiniumMethylation.hg19")
   data(hm450.ordering)
 
-  Iord <- hm450.ordering[hm450.ordering$DESIGN=="I",]
-  Iu2ch <- dm[match(Iord$U, rownames(dm)),] # typeI 2-channel
-  Iu <- ifelse(Iord$col=='R', Iu2ch[,2], Iu2ch[,1])
-  oob.u <- ifelse(Iord$col=='R', Iu2ch[,1], Iu2ch[,2])
-  Im2ch <- dm[match(Iord$M, rownames(dm)),] # typeII 2-channel
-  Im <- ifelse(Iord$col=='R', Im2ch[,2], Im2ch[,1])
-  oob.m <- ifelse(Iord$col=='R', Im2ch[,1], Im2ch[,2])
-  signal.I <- as.matrix(data.frame(M=Im, U=Iu, row.names=Iord$Probe_ID))
+  ## type I red channel / oob green channel
+  IordR <- subset(hm450.ordering, DESIGN=='I' & col=='R')
+  ## 2-channel for red probes' m allele
+  IuR2ch <- dm[match(IordR$U, rownames(dm)),]
+  IuR <- IuR2ch[,2]
+  ## 2-channel for red probes' u allele
+  ImR2ch <- dm[match(IordR$M, rownames(dm)),]
+  ImR <- ImR2ch[,2]
+  oob.G <- c(IuR2ch[,1], ImR2ch[,1])
+  signal.I.R <- as.matrix(data.frame(M=ImR, U=IuR, row.names=Iord$Probe_ID))
+
+  ## type I green channel / oob red channel
+  IordG <- subset(hm450.ordering, DESIGN=='I' & col=='G')
+  ## 2-channel for green probes' m allele
+  IuG2ch <- dm[match(IordG$U, rownames(dm)),]
+  IuG <- IuG2ch[,1]
+  ## 2-channel for green probes' u allele
+  ImG2ch <- dm[match(IordG$M, rownames(dm)),]
+  ImG <- ImG2ch[,1]
+  oob.R <- c(IuG2ch[,2], ImG2ch[,2])
+  signal.I.G <- as.matrix(data.frame(M=ImG, U=IuG, row.names=Iord$Probe_ID))
 
   IIord <- hm450.ordering[hm450.ordering$DESIGN=="II",]
   signal.II <- dm[match(IIord$U, rownames(dm)),]
   colnames(signal.II) <- c('M', 'U')
   rownames(signal.II) <- IIord$Probe_ID
 
-  signal.oob <- c(oob.u, oob.m)
-
-  return(list(I=signal.I, II=signal.II, oob=signal.oob))
+  return(list(IR=signal.I.R, IG=signal.I.G,
+              oobR=oob.R, oobG=oob.G, II=signal.II))
 }
 
-#' Noob background correction in each channel
+#' Noob background correction
 #'
 #' background correction using Norm-Exp deconvolution
 #' @param dmp a list with I, II, oob
 #' @import MASS
-backgroundCorrectionNoob <- function(dmp) {
-  ib <- c(dmp$I, dmp$II)                # in-band signal
+backgroundCorrNoob <- function(dmp) {
+  ibR <- c(dmp$IR, dmp$II[,'U'])              # in-band red signal
+  ibG <- c(dmp$IG, dmp$II[,'M'])              # in-band green signal
+  ibR.n <- backgroundCorrNoobCh1(ibR, dmp$oobR)
+  ibG.n <- backgroundCorrNoobCh1(ibG, dmp$oobG)
+
+  IR.n <- ibR.n[1:length(dmp$IR)]
+  dim(IR.n) <- dim(dmp$IR)
+
+  IG.n <- ibG.n[1:length(dmp$IG)]
+  dim(IG.n) <- dim(dmp$IG)
+
+  II <- as.matrix(data.frame(
+    U=ibR.n[(length(dmp$IR)+1):],
+    M=ibG.n[(length(dmp$IG)+1):]))
+
+  return(list(IR=IR.n, IG=IG.n,
+              oobR=dmp$oobR, oobG=dmp$oobG, II=II))
+}
+
+#' Noob background correction for 1 channel
+#'
+#' Noob background correction for 1 channel
+#' @param ib array of in-band signal
+#' @param oob array of out-of-band-signal
+#' @return normalized in-band signal
+backgroundCorrNoobCh1 <- function(ib, oob) {
   library(MASS)
-  ests <- huber(dmp$oob)
-  mu <- ests$mu
-  sigma <- ests$s
+  e <- huber(oob)
+  mu <- e$mu
+  sigma <- e$s
   alpha <- pmax(huber(ib)$mu-mu, 10)
   normexp.signal(mu, sigma, alpha, ib)
 }
