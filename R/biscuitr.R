@@ -42,8 +42,12 @@ readIDAT1 <- function(idat.name) {
 #'
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
-readIDATs <- function(sample.names) {
-  dm <- lapply(sample.names, readIDAT1)
+readIDATs <- function(sample.names, base.dir=NULL) {
+  if (!is.null(base.dir))
+    sample.paths <- paste0(base.dir,'/',sample.names)
+  else
+    sample.paths <- sample.names
+  dm <- lapply(sample.paths, readIDAT1)
   names(dm) <- sample.names
   dm
 }
@@ -75,9 +79,9 @@ readIDATs.fromdir <- function(dir.name) {
 #'
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
-readIDATs.from.samplesheet <- function(sample.sheet) {
+readIDATs.from.samplesheet <- function(sample.sheet, base.dir=NULL) {
   sample.names <- read.csv(sample.sheet, stringsAsFactors=F)
-  readIDATs(sample.names$barcode)
+  readIDATs(sample.names$barcode, base.dir=base.dir)
 }
 
 batchReadIDATs <- function(dir.name) {
@@ -120,9 +124,9 @@ batchReadIDATs <- function(dir.name) {
 #' oobR and oobG are arrays of integer.
 #' ctrl is a data frame with columns G, R, col, type
 chipAddressToProbe <- function(dm) {
-  library("FDb.InfiniumMethylation.hg19")
-  data(hm450.ordering)
+  suppressPackageStartupMessages(library("FDb.InfiniumMethylation.hg19"))
 
+  data(hm450.ordering)
   ## type I red channel / oob green channel
   IordR <- subset(hm450.ordering, DESIGN=='I' & col=='R')
   ## 2-channel for red probes' m allele
@@ -151,6 +155,7 @@ chipAddressToProbe <- function(dm) {
   rownames(signal.II) <- IIord$Probe_ID
 
   ## control probes
+  data(hm450.controls)
   ctrl <- as.data.frame(dm[match(hm450.controls$Address, rownames(dm)),])
   rownames(ctrl) <- make.names(hm450.controls$Name,unique=T)
   ctrl <- cbind(ctrl,hm450.controls[, c("Color_Channel","Type")])
@@ -197,6 +202,12 @@ backgroundCorrNoob <- function(dmp, offset=15) {
   ibR <- c(dmp$IR, dmp$II[,'U'])              # in-band red signal
   ibG <- c(dmp$IG, dmp$II[,'M'])              # in-band green signal
 
+  ## set signal to 1 if 0
+  ibR[ibR==0] <- 1
+  ibG[ibG==0] <- 1
+  dmp$oobR[dmp$oobR==0] <- 1
+  dmp$oobG[dmp$oobG==0] <- 1
+  
   ## do background correction in each channel
   ibR.nl <- backgroundCorrNoobCh1(ibR, dmp$oobR, dmp$ctrl$R, offset=offset)
   ibG.nl <- backgroundCorrNoobCh1(ibG, dmp$oobG, dmp$ctrl$G, offset=offset)
@@ -228,7 +239,7 @@ backgroundCorrNoob <- function(dmp, offset=15) {
 #' @param oob array of out-of-band-signal
 #' @return normalized in-band signal
 backgroundCorrNoobCh1 <- function(ib, oob, ctrl, offset) {
-  library(MASS)
+  suppressPackageStartupMessages(library(MASS))
   e <- huber(oob)
   mu <- e$mu
   ## sigma <- log(e$s)
@@ -266,27 +277,41 @@ normexp.signal <- function (mu, sigma, alpha, x)  {
   signal
 }
 
-#' Correct dye bias
+get.normctls <- function(dmp) {
+  normctl.G <- dmp$ctrl[grep('norm_(c|g)',tolower(rownames(dmp$ctrl))),]
+  normctl.R <- dmp$ctrl[grep('norm_(a|t)',tolower(rownames(dmp$ctrl))),]
+  c(G=mean(normctl.G$G), R=mean(normctl.R$R))
+}
+
+#' Correct dye bias with most balanced sample
 #'
 #' Correct dye bias using normalization controls
 #' @param dmps list of probe-addressed signals
 #' @return normalized probe-addressed signals
-dyeBiasCorr <- function(dmps) {
-
-  normctls <- sapply(dmps, function(dmp) {
-    normctl.G <- dmp$ctrl[grep('norm_(c|g)',tolower(rownames(dmp$ctrl))),]
-    normctl.R <- dmp$ctrl[grep('norm_(a|t)',tolower(rownames(dmp$ctrl))),]
-    c(G=mean(normctl.G$G), R=mean(normctl.R$R))
-  })
+dyeBiasCorr.most.balanced <- function(dmps) {
+  normctls <- sapply(dmps, get.normctls)
   most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
   ref <- mean(normctls[,most.balanced])
+  dyeBiasCorr(dmps, ref, normctls=normctls)
+}
+
+#' Correct dye bias
+#'
+#' Correct dye bias
+#'
+#' @param dmps list of probe-addressed signals
+#' @param ref reference signal level
+#' @return normalized probe-addressed signals
+dyeBiasCorr <- function(dmps, ref, normctls=NULL) {
+  if (is.null(normctls))
+    normctls <- sapply(dmps, get.normctls)
   factor <- ref / normctls
   dmps.n <- lapply(names(dmps), function(sample.name) {
     n <- list()
     dmp <- dmps[[sample.name]]
     fR <- factor['R', sample.name]
     fG <- factor['G', sample.name]
-    n$IR <- matrix(c(fR*dmp$IR[,'U'], fR*dmp$IR[,'M']),
+    n$IR <- matrix(c(fR*dmp$IR[,'M'], fR*dmp$IR[,'U']),
                    nrow=nrow(dmp$IR), dimnames=dimnames(dmp$IR))
     n$IG <- matrix(c(fG*dmp$IG[,'M'], fG*dmp$IG[,'U']),
                    nrow=nrow(dmp$IG), dimnames=dimnames(dmp$IG))
@@ -305,10 +330,14 @@ dyeBiasCorr <- function(dmps) {
 #' @param dmp a list which corresponds to the probe signal
 #' @return a list which corresponds to the beta value
 probeSignalToBeta <- function(dmp, pval) {
-  betas <- (dmp$IR[,'M'] + 1) / (dmp$IR[,'M'] + dmp$IR[,'U'] + 2)
-  betas <- c(betas, (dmp$IG[,'M'] + 1) / (dmp$IG[,'M'] + dmp$IG[,'U'] + 2))
-  betas <- c(betas, (dmp$II[,'M'] + 1) / (dmp$II[,'M'] + dmp$II[,'U'] + 2))
+  betas <- pmax(dmp$IR[,'M'], 1) / pmax(dmp$IR[,'M'] + dmp$IR[,'U'], 2)
+  betas <- c(betas, pmax(dmp$IG[,'M'], 1) / pmax(dmp$IG[,'M'] + dmp$IG[,'U'], 2))
+  betas <- c(betas, pmax(dmp$II[,'M'], 1) / pmax(dmp$II[,'M'] + dmp$II[,'U'], 2))
   ## betas[c(pval$IR, pval$IG, pval$II)>0.05] <- NA
-  betas[pval>0.05] <- NA
+  betas[pval[names(betas)]>0.05] <- NA
   betas[order(names(betas))]
+}
+
+mprint <- function(...) {
+  cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
 }
