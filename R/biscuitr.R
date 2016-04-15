@@ -63,10 +63,10 @@ readIDATs <- function(sample.names, base.dir=NULL) {
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
 readIDATs.fromdir <- function(dir.name) {
-  fns <- list.files()
+  fns <- list.files(dir.name)
   sample.names <- unique(sub("_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
 
-  readIDATs(sample.names)
+  readIDATs(paste0(dir.name,'/',sample.names))
 }
 
 #' Import IDATs
@@ -330,9 +330,11 @@ dyeBiasCorr <- function(dmps, ref, normctls=NULL) {
 #' @param dmp a list which corresponds to the probe signal
 #' @return a list which corresponds to the beta value
 probeSignalToBeta <- function(dmp, pval) {
-  betas <- pmax(dmp$IR[,'M'], 1) / pmax(dmp$IR[,'M'] + dmp$IR[,'U'], 2)
-  betas <- c(betas, pmax(dmp$IG[,'M'], 1) / pmax(dmp$IG[,'M'] + dmp$IG[,'U'], 2))
-  betas <- c(betas, pmax(dmp$II[,'M'], 1) / pmax(dmp$II[,'M'] + dmp$II[,'U'], 2))
+  betas <- pmax(dmp$IR[,'M'],1) / pmax(dmp$IR[,'M']+dmp$IR[,'U'],2)
+  betas <- c(betas,
+             pmax(dmp$IG[,'M'],1) / pmax(dmp$IG[,'M']+dmp$IG[,'U'],2))
+  betas <- c(betas,
+             pmax(dmp$II[,'M'],1) / pmax(dmp$II[,'M']+dmp$II[,'U'],2))
   ## betas[c(pval$IR, pval$IG, pval$II)>0.05] <- NA
   betas[pval[names(betas)]>0.05] <- NA
   betas[order(names(betas))]
