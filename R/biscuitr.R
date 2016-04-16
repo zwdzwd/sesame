@@ -2,29 +2,41 @@
 #' 
 #' biscuitR allows analysing DNA methylation data in R.
 #' 
-#' This package complements the biscuit software.
+#' This package complements array functionalities in complement to the biscuit software.
 #' @aliases biscuitr
-#' @author Wanding Zhou
-#' @references To appear
-#' @seealso To appear
-#' @examples To appear
+#' @author Wanding Zhou, Hui Shen
+## @references To appear
+## @seealso To appear
+## @examples To appear
 "_PACKAGE"
 #> [1] "_PACKAGE"
 
+#' SignalSet
+#' 
+#' Construct a SignalSet object
+#' @param IG intensity table for type I probes in green channel
+#' @param IR intensity table for type I probes in red channel
+#' @param II intensity table for type II probes
+#' @param oobG out-of-band probes in green channel
+#' @param oobR out-of-band probes in red channel
+#' @param ctl all the control probe intensities
+#' 
+#' @return a SignalSet with IG, IR, II, oobG, oobR and ctl
+#'   \item{IR, IG and II}{matrices with columns M and U}
+#'   \item{oobR and oobG}{arrays of integer}
+#'   \item{ctl}{a data frame with columns G, R, col, type}
+SignalSet <- function(IG=NULL, IR=NULL, II=NULL, oobG=NULL, oobR=NULL, ctl=NULL) {
+  structure(list(IG=IG, IR=IR, II=II, oobG=oobG, oobR=oobR, ctl=ctl), class="SignalSet")
+}
 
-#samples <- read.csv("samples1k.csv", stringsAsFactors=FALSE)
-#samples <- read.csv("samples.csv", stringsAsFactors=FALSE)
-## options("mc.cores"=20)
-## options("mc.preschedule"=FALSE)
-
-#' Import 1 IDAT file
+#' Import one IDAT file
 #'
-#' Import 1 IDAT file
+#' Import one IDAT file
 #' 
 #' @param fn IDAT file name
 #' @import illuminaio
 #' @return a data frame with 2 columns, corresponding to cy3 and cy5 color channel signal
-readIDAT1 <- function(idat.name) {
+ReadIDAT1 <- function(idat.name) {
   library(illuminaio)
   ida.grn <- readIDAT(paste0(idat.name,"_Grn.idat"));
   ida.red <- readIDAT(paste0(idat.name,"_Red.idat"));
@@ -33,16 +45,20 @@ readIDAT1 <- function(idat.name) {
   d
 }
 
-#' Import IDATs
+#' Import IDATs from a list of samples
 #'
-#' Import IDATs from a sample list
-#'
-#' @param samples sample list
-#' @return a list of signal intensities
-#'
+#' Import IDATs from a list of samples
+#' 
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
-readIDATs <- function(sample.names, base.dir=NULL) {
+#' 
+#' @param samples sample list
+#' @param base.dir base directory
+#' @return a list of data frames. Each data frame corresponds to a sample.
+#' Data are signal intensities indexed by chip address.
+#' 
+#' @export
+ReadIDATs <- function(sample.names, base.dir=NULL) {
   if (!is.null(base.dir))
     sample.paths <- paste0(base.dir,'/',sample.names)
   else
@@ -52,57 +68,41 @@ readIDATs <- function(sample.names, base.dir=NULL) {
   dm
 }
 
-#' Import IDATs
+#' Import IDATs from a directory
 #' 
 #' Import IDATs from a directory
 #' 
-#' @param dir directory name.
-#' @author Wanding Zhou
-#' @return a list of signal intensities
-#'
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
-readIDATs.fromdir <- function(dir.name) {
+#' 
+#' @param dir directory name.
+#' @return a list of data frames. Each data frame corresponds to a sample.
+#' Data are signal intensities indexed by chip address.
+#' 
+#' @export
+ReadIDATsFromDir <- function(dir.name) {
   fns <- list.files(dir.name)
   sample.names <- unique(sub("_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
 
-  readIDATs(paste0(dir.name,'/',sample.names))
+  ReadIDATs(paste0(dir.name,'/',sample.names))
 }
 
-#' Import IDATs
+#' Import IDATs from a sample sheet
 #' 
 #' Import IDATs from a sample sheet
 #' 
-#' @param dir directory name.
-#' @author Wanding Zhou
-#' @return a list of signal intensities
-#'
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
-readIDATs.from.samplesheet <- function(sample.sheet, base.dir=NULL) {
+#' 
+#' @param sample.sheet.path path to sample sheet
+#' @param base.dir directory on which the \code{sample.sheet.path} is based
+#' @return a list of data frames. Each data frame corresponds to a sample. 
+#' Data are signal intensities indexed by chip address.
+#' 
+#' @export
+ReadIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL) {
   sample.names <- read.csv(sample.sheet, stringsAsFactors=F)
-  readIDATs(sample.names$barcode, base.dir=base.dir)
-}
-
-batchReadIDATs <- function(dir.name) {
-
-  fns <- list.files()
-  for (j in 0:10) {
-    i <- 1
-    dms <- do.call('cbind', lapply(samples$barcode[(j*1000+1):min((j+1)*1000,length(samples$barcode))], function(x) {
-      i <<- i+1;
-      if (i%%100==0) {
-        cat(i,"\n");
-        gc();
-      }
-      ida.grn <- readIDAT(paste0(x,"_Grn.idat"))
-      ida.red <- readIDAT(paste0(x,"_Red.idat"))
-      dm1 <- cbind(cy3=ida.grn$Quants[,"Mean"], cy5=ida.red$Quants[,"Mean"])
-      colnames(dm1) <- c(paste0(x,'.cy3'), paste0(x, '.cy5'))
-      dm1
-    }))
-    save(dms, file=paste0("datam.",j,".rda"))
-  }
+  ReadIDATs(sample.names$barcode, base.dir=base.dir)
 }
 
 #' Lookup address in one sample
@@ -115,15 +115,13 @@ batchReadIDATs <- function(dir.name) {
 #' addresses. For type II probes methylation allele and unmethylated allele are
 #' at the same address. Grn channel is for methylated allele and Red channel is
 #' for unmethylated allele. The out-of-band signals are type I probes measured
-#' using the "wrong" channel.
+#' using the other channel.
 #'
 #' @param dm data frame in chip address, 2 columns: cy3/Grn and cy5/Red
+#' @return a SignalSet, indexed by probe ID address
 #' @import FDb.InfiniumMethylation.hg19
-#' @return a list with: IR, IG, oobR, oobG, II, ctrl
-#' IR, IG and II are matrices with columns M and U.
-#' oobR and oobG are arrays of integer.
-#' ctrl is a data frame with columns G, R, col, type
-chipAddressToProbe <- function(dm) {
+#' @export
+ChipAddressToProbe <- function(dm) {
   suppressPackageStartupMessages(library("FDb.InfiniumMethylation.hg19"))
 
   data(hm450.ordering)
@@ -156,27 +154,27 @@ chipAddressToProbe <- function(dm) {
 
   ## control probes
   data(hm450.controls)
-  ctrl <- as.data.frame(dm[match(hm450.controls$Address, rownames(dm)),])
-  rownames(ctrl) <- make.names(hm450.controls$Name,unique=T)
-  ctrl <- cbind(ctrl,hm450.controls[, c("Color_Channel","Type")])
-  colnames(ctrl) <- c('G','R','col','type')
+  ctl <- as.data.frame(dm[match(hm450.controls$Address, rownames(dm)),])
+  rownames(ctl) <- make.names(hm450.controls$Name,unique=T)
+  ctl <- cbind(ctl,hm450.controls[, c("Color_Channel","Type")])
+  colnames(ctl) <- c('G','R','col','type')
 
-  return(list(IR=signal.I.R, IG=signal.I.G,
-              oobR=oob.R, oobG=oob.G, II=signal.II, ctrl=ctrl))
+  SignalSet(IR=signal.I.R, IG=signal.I.G, oobR=oob.R, oobG=oob.G, II=signal.II, ctl=ctl)
 }
 
 #' Compute detection p-value
 #'
 #' Compute detection p-value for in-band signals
-#' @param dmp a list with I, II, oob, ctrl
+#' @param dmp a SignalSet
 #' @import stats
-detectionPval <- function(dmp) {
-  negctrls <- dmp$ctrl[grep('negative', tolower(rownames(dmp$ctrl))),]
-  negctrls <- subset(negctrls, col!=-99)
+#' @return array of p-values for each probe
+DetectPvalue <- function(dmp) {
+  negctls <- dmp$ctl[grep('negative', tolower(rownames(dmp$ctl))),]
+  negctls <- subset(negctls, col!=-99)
 
   library(stats)
-  funcG <- ecdf(negctrls$G)
-  funcR <- ecdf(negctrls$R)
+  funcG <- ecdf(negctls$G)
+  funcR <- ecdf(negctls$R)
 
   ## p-value is the minimium detection p-value of the 2 alleles
   IR <- 1-rowMax(cbind(funcR(dmp$IR[,'M']), funcR(dmp$IR[,'U'])))
@@ -186,17 +184,19 @@ detectionPval <- function(dmp) {
   names(IR) <- rownames(dmp$IR)
   names(IG) <- rownames(dmp$IG)
   names(II) <- rownames(dmp$II)
-  ## return(list(IR=IR, IG=IG, II=II))
+  
   pval <- c(IR,IG,II)
   pval[order(names(pval))]
 }
 
 #' Noob background correction
 #'
-#' background correction using Norm-Exp deconvolution
-#' @param dmp a list with I, II, oob, ctrl
+#' Norm-Exp deconvolution using Out-Of-Band (oob) probes
+#' @param dmp a \code{SignalSet}
 #' @import MASS
-backgroundCorrNoob <- function(dmp, offset=15) {
+#' @export
+#' @return the normalized \code{SignalSet}
+BackgroundCorrectionNoob <- function(dmp, offset=15) {
 
   ## sort signal based on channel
   ibR <- c(dmp$IR, dmp$II[,'U'])              # in-band red signal
@@ -209,8 +209,8 @@ backgroundCorrNoob <- function(dmp, offset=15) {
   dmp$oobG[dmp$oobG==0] <- 1
   
   ## do background correction in each channel
-  ibR.nl <- backgroundCorrNoobCh1(ibR, dmp$oobR, dmp$ctrl$R, offset=offset)
-  ibG.nl <- backgroundCorrNoobCh1(ibG, dmp$oobG, dmp$ctrl$G, offset=offset)
+  ibR.nl <- BackgroundCorrectionNoobCh1(ibR, dmp$oobR, dmp$ctl$R, offset=offset)
+  ibG.nl <- BackgroundCorrectionNoobCh1(ibG, dmp$oobG, dmp$ctl$G, offset=offset)
 
   ## build back the list
   IR.n <- matrix(ibR.nl$i[1:length(dmp$IR)],
@@ -224,43 +224,35 @@ backgroundCorrNoob <- function(dmp, offset=15) {
     U=ibR.nl$i[(length(dmp$IR)+1):length(ibR)],
     row.names=rownames(dmp$II)))
 
-  ctrl <- dmp$ctrl
-  ctrl$G <- ibG.nl$c
-  ctrl$R <- ibR.nl$c
+  ctl <- dmp$ctl
+  ctl$G <- ibG.nl$c
+  ctl$R <- ibR.nl$c
 
-  return(list(IR=IR.n, IG=IG.n,
-              oobR=dmp$oobR, oobG=dmp$oobG, II=II, ctrl=ctrl))
+  SignalSet(IR=IR.n, IG=IG.n, oobR=dmp$oobR, oobG=dmp$oobG, II=II, ctl=ctl)
 }
 
-#' Noob background correction for 1 channel
+#' Noob background correction for one channel
 #'
-#' Noob background correction for 1 channel
+#' Noob background correction for one channel
 #' @param ib array of in-band signal
 #' @param oob array of out-of-band-signal
+#' @param ctl control probe signals
+#' @param offset padding for normalized signal
 #' @return normalized in-band signal
-backgroundCorrNoobCh1 <- function(ib, oob, ctrl, offset) {
+BackgroundCorrectionNoobCh1 <- function(ib, oob, ctl, offset=15) {
   suppressPackageStartupMessages(library(MASS))
   e <- huber(oob)
   mu <- e$mu
-  ## sigma <- log(e$s)
-  ## alpha <- log(pmax(huber(ib)$mu-mu, 10))
   sigma <- e$s
   alpha <- pmax(huber(ib)$mu-mu, 10)
-  ## cat(mu, sigma, alpha)
-  return(list(i=offset+normexp.signal(mu, sigma, alpha, ib),
-              c=offset+normexp.signal(mu, sigma, alpha, ctrl)))
+  return(list(i=offset+NormExpSignal(mu, sigma, alpha, ib),
+              c=offset+NormExpSignal(mu, sigma, alpha, ctl)))
 }
 
-## the following from Limma
+## the following is adapted from Limma
 ## normal-exponential deconvolution (conditional expectation of xs|xf; WEHI code)
-normexp.signal <- function (mu, sigma, alpha, x)  {
-  ## par = unlist(par)
-  ## mu <- par[1]
-  ## sigma <- exp(par[2])
-  ## sigma <- exp(lsigma)
+NormExpSignal <- function (mu, sigma, alpha, x)  {
   sigma2 <- sigma * sigma
-  ## alpha <- exp(lalpha)
-  ## alpha <- exp(par[3])
   if (alpha <= 0)
     stop("alpha must be positive")
   if (sigma <= 0)
@@ -277,32 +269,33 @@ normexp.signal <- function (mu, sigma, alpha, x)  {
   signal
 }
 
-get.normctls <- function(dmp) {
-  normctl.G <- dmp$ctrl[grep('norm_(c|g)',tolower(rownames(dmp$ctrl))),]
-  normctl.R <- dmp$ctrl[grep('norm_(a|t)',tolower(rownames(dmp$ctrl))),]
+GetNormCtls <- function(dmp) {
+  normctl.G <- dmp$ctl[grep('norm_(c|g)',tolower(rownames(dmp$ctl))),]
+  normctl.R <- dmp$ctl[grep('norm_(a|t)',tolower(rownames(dmp$ctl))),]
   c(G=mean(normctl.G$G), R=mean(normctl.R$R))
 }
 
-#' Correct dye bias with most balanced sample
+#' Correct dye bias using most balanced sample
 #'
-#' Correct dye bias using normalization controls
-#' @param dmps list of probe-addressed signals
-#' @return normalized probe-addressed signals
-dyeBiasCorr.most.balanced <- function(dmps) {
-  normctls <- sapply(dmps, get.normctls)
+#' Correct dye bias using most balanced sample
+#' 
+#' @param dmps a list of normalized \code{SignalSet}s
+#' @return a list of normalized \code{SignalSet}s
+DyeBiasCorrectionMostBalanced <- function(dmps) {
+  normctls <- sapply(dmps, GetNormCtls)
   most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
   ref <- mean(normctls[,most.balanced])
-  dyeBiasCorr(dmps, ref, normctls=normctls)
+  DyeBiasCorrection(dmps, ref, normctls=normctls)
 }
 
 #' Correct dye bias
 #'
 #' Correct dye bias
 #'
-#' @param dmps list of probe-addressed signals
+#' @param dmps a list of \code{SignalSet}s
 #' @param ref reference signal level
-#' @return normalized probe-addressed signals
-dyeBiasCorr <- function(dmps, ref, normctls=NULL) {
+#' @return a list of normalized \code{SignalSet}s
+DyeBiasCorrection <- function(dmps, ref, normctls=NULL) {
   if (is.null(normctls))
     normctls <- sapply(dmps, get.normctls)
   factor <- ref / normctls
@@ -327,9 +320,9 @@ dyeBiasCorr <- function(dmps, ref, normctls=NULL) {
 #'
 #' Convert signal to beta
 #'
-#' @param dmp a list which corresponds to the probe signal
-#' @return a list which corresponds to the beta value
-probeSignalToBeta <- function(dmp, pval) {
+#' @param dmp a \code{SignalSet}
+#' @return beta values
+ProbeSignalToBeta <- function(dmp, pval) {
   betas <- pmax(dmp$IR[,'M'],1) / pmax(dmp$IR[,'M']+dmp$IR[,'U'],2)
   betas <- c(betas,
              pmax(dmp$IG[,'M'],1) / pmax(dmp$IG[,'M']+dmp$IG[,'U'],2))
