@@ -63,8 +63,8 @@ ReadIDATs <- function(sample.names, base.dir=NULL) {
     sample.paths <- paste0(base.dir,'/',sample.names)
   else
     sample.paths <- sample.names
-  dm <- lapply(sample.paths, readIDAT1)
-  names(dm) <- sample.names
+  dm <- lapply(sample.paths, ReadIDAT1)
+  names(dm) <- basename(sample.names)
   dm
 }
 
