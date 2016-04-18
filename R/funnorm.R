@@ -5,6 +5,7 @@
 #'
 #' @param dmp an object of class SignalSet
 #' @return a vector with control summaries
+#' @export
 BuildControlMatrix450k <- function(dmp) {
   
   ctls <- split(dmp$ctl, dmp$ctl$type)
@@ -89,6 +90,7 @@ BuildControlMatrix450k <- function(dmp) {
 #' @param dmp a SignalSet
 #' @param n number of grid points in quantiles.
 #' @return a list of quantiles in each category
+#' @export
 BuildQuantiles450k <- function(dmp, n=500) {
 
   data(hm450.hg19.probe2chr)
@@ -105,9 +107,9 @@ BuildQuantiles450k <- function(dmp, n=500) {
   quantile.auto.II <- quantile(auto.II, probs)
 
   all <- rbind(dmp$IR, dmp$IG, dmp$II)
-  X.all <- all[hm450.hg19.probe2chr[rownames(all),] == 'chrX',]
+  X.all <- all[hm450.hg19.probe2chr[rownames(all)] == 'chrX',]
   quantile.X.all <- quantile(X.all, probs)
-  Y.all <- all[hm450.hg19.probe2chr[rownames(all),] == 'chrY',]
+  Y.all <- all[hm450.hg19.probe2chr[rownames(all)] == 'chrY',]
   quantile.Y.all <- quantile(Y.all, probs)
 
   list(auto.IR=quantile.auto.IR, auto.IG=quantile.auto.IG, auto.II=quantile.auto.II, X.all=quantile.X.all, Y.all=quantile.Y.all)
