@@ -26,6 +26,7 @@
 #'   \item{IR, IG and II}{matrices with columns M and U}
 #'   \item{oobR and oobG}{arrays of integer}
 #'   \item{ctl}{a data frame with columns G, R, col, type}
+#' @export
 SignalSet <- function(IG=NULL, IR=NULL, II=NULL, oobG=NULL, oobR=NULL, ctl=NULL) {
   structure(list(IG=IG, IR=IR, II=II, oobG=oobG, oobR=oobR, ctl=ctl), class="SignalSet")
 }
@@ -37,6 +38,7 @@ SignalSet <- function(IG=NULL, IR=NULL, II=NULL, oobG=NULL, oobR=NULL, ctl=NULL)
 #' @param fn IDAT file name
 #' @import illuminaio
 #' @return a data frame with 2 columns, corresponding to cy3 and cy5 color channel signal
+#' @export
 ReadIDAT1 <- function(idat.name) {
   library(illuminaio)
   ida.grn <- readIDAT(paste0(idat.name,"_Grn.idat"));
@@ -57,7 +59,6 @@ ReadIDAT1 <- function(idat.name) {
 #' @param base.dir base directory
 #' @return a list of data frames. Each data frame corresponds to a sample.
 #' Data are signal intensities indexed by chip address.
-#' 
 #' @export
 ReadIDATs <- function(sample.names, base.dir=NULL) {
   if (!is.null(base.dir))
@@ -79,7 +80,6 @@ ReadIDATs <- function(sample.names, base.dir=NULL) {
 #' @param dir directory name.
 #' @return a list of data frames. Each data frame corresponds to a sample.
 #' Data are signal intensities indexed by chip address.
-#' 
 #' @export
 ReadIDATsFromDir <- function(dir.name) {
   fns <- list.files(dir.name)
@@ -99,7 +99,6 @@ ReadIDATsFromDir <- function(dir.name) {
 #' @param base.dir directory on which the \code{sample.sheet.path} is based
 #' @return a list of data frames. Each data frame corresponds to a sample. 
 #' Data are signal intensities indexed by chip address.
-#' 
 #' @export
 ReadIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL) {
   sample.names <- read.csv(sample.sheet, stringsAsFactors=F)
@@ -168,6 +167,7 @@ ChipAddressToProbe <- function(dm) {
 #' @param dmp a SignalSet
 #' @import stats
 #' @return array of p-values for each probe
+#' @export
 DetectPvalue <- function(dmp) {
   negctls <- dmp$ctl[grep('negative', tolower(rownames(dmp$ctl))),]
   negctls <- subset(negctls, col!=-99)
@@ -194,8 +194,8 @@ DetectPvalue <- function(dmp) {
 #' Norm-Exp deconvolution using Out-Of-Band (oob) probes
 #' @param dmp a \code{SignalSet}
 #' @import MASS
-#' @export
 #' @return the normalized \code{SignalSet}
+#' @export
 BackgroundCorrectionNoob <- function(dmp, offset=15) {
 
   ## sort signal based on channel
@@ -209,8 +209,8 @@ BackgroundCorrectionNoob <- function(dmp, offset=15) {
   dmp$oobG[dmp$oobG==0] <- 1
   
   ## do background correction in each channel
-  ibR.nl <- BackgroundCorrectionNoobCh1(ibR, dmp$oobR, dmp$ctl$R, offset=offset)
-  ibG.nl <- BackgroundCorrectionNoobCh1(ibG, dmp$oobG, dmp$ctl$G, offset=offset)
+  ibR.nl <- .BackgroundCorrectionNoobCh1(ibR, dmp$oobR, dmp$ctl$R, offset=offset)
+  ibG.nl <- .BackgroundCorrectionNoobCh1(ibG, dmp$oobG, dmp$ctl$G, offset=offset)
 
   ## build back the list
   IR.n <- matrix(ibR.nl$i[1:length(dmp$IR)],
@@ -231,27 +231,26 @@ BackgroundCorrectionNoob <- function(dmp, offset=15) {
   SignalSet(IR=IR.n, IG=IG.n, oobR=dmp$oobR, oobG=dmp$oobG, II=II, ctl=ctl)
 }
 
-#' Noob background correction for one channel
-#'
-#' Noob background correction for one channel
-#' @param ib array of in-band signal
-#' @param oob array of out-of-band-signal
-#' @param ctl control probe signals
-#' @param offset padding for normalized signal
-#' @return normalized in-band signal
-BackgroundCorrectionNoobCh1 <- function(ib, oob, ctl, offset=15) {
+## Noob background correction for one channel
+.BackgroundCorrectionNoobCh1 <- function(ib, oob, ctl, offset=15) {
+  ## @param ib array of in-band signal
+  ## @param oob array of out-of-band-signal
+  ## @param ctl control probe signals
+  ## @param offset padding for normalized signal
+  ## @return normalized in-band signal
+
   suppressPackageStartupMessages(library(MASS))
   e <- huber(oob)
   mu <- e$mu
   sigma <- e$s
   alpha <- pmax(huber(ib)$mu-mu, 10)
-  return(list(i=offset+NormExpSignal(mu, sigma, alpha, ib),
-              c=offset+NormExpSignal(mu, sigma, alpha, ctl)))
+  return(list(i=offset+.NormExpSignal(mu, sigma, alpha, ib),
+              c=offset+.NormExpSignal(mu, sigma, alpha, ctl)))
 }
 
 ## the following is adapted from Limma
 ## normal-exponential deconvolution (conditional expectation of xs|xf; WEHI code)
-NormExpSignal <- function (mu, sigma, alpha, x)  {
+.NormExpSignal <- function (mu, sigma, alpha, x)  {
   sigma2 <- sigma * sigma
   if (alpha <= 0)
     stop("alpha must be positive")
@@ -269,7 +268,7 @@ NormExpSignal <- function (mu, sigma, alpha, x)  {
   signal
 }
 
-GetNormCtls <- function(dmp) {
+.GetNormCtls <- function(dmp) {
   normctl.G <- dmp$ctl[grep('norm_(c|g)',tolower(rownames(dmp$ctl))),]
   normctl.R <- dmp$ctl[grep('norm_(a|t)',tolower(rownames(dmp$ctl))),]
   c(G=mean(normctl.G$G), R=mean(normctl.R$R))
@@ -281,8 +280,9 @@ GetNormCtls <- function(dmp) {
 #' 
 #' @param dmps a list of normalized \code{SignalSet}s
 #' @return a list of normalized \code{SignalSet}s
+#' @export
 DyeBiasCorrectionMostBalanced <- function(dmps) {
-  normctls <- sapply(dmps, GetNormCtls)
+  normctls <- sapply(dmps, .GetNormCtls)
   most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
   ref <- mean(normctls[,most.balanced])
   DyeBiasCorrection(dmps, ref, normctls=normctls)
@@ -295,6 +295,7 @@ DyeBiasCorrectionMostBalanced <- function(dmps) {
 #' @param dmps a list of \code{SignalSet}s
 #' @param ref reference signal level
 #' @return a list of normalized \code{SignalSet}s
+#' @export
 DyeBiasCorrection <- function(dmps, ref, normctls=NULL) {
   if (is.null(normctls))
     normctls <- sapply(dmps, get.normctls)
@@ -322,6 +323,7 @@ DyeBiasCorrection <- function(dmps, ref, normctls=NULL) {
 #'
 #' @param dmp a \code{SignalSet}
 #' @return beta values
+#' @export
 ProbeSignalToBeta <- function(dmp, pval) {
   betas <- pmax(dmp$IR[,'M'],1) / pmax(dmp$IR[,'M']+dmp$IR[,'U'],2)
   betas <- c(betas,
@@ -333,6 +335,7 @@ ProbeSignalToBeta <- function(dmp, pval) {
   betas[order(names(betas))]
 }
 
+#' @export
 mprint <- function(...) {
   cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
 }
