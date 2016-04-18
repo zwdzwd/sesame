@@ -5,6 +5,7 @@
 #' This package complements array functionalities in complement to the biscuit software.
 #' @aliases biscuitr
 #' @author Wanding Zhou, Hui Shen
+#' 
 ## @references To appear
 ## @seealso To appear
 ## @examples To appear
@@ -122,7 +123,6 @@ ReadIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL) {
 #' @import FDb.InfiniumMethylation.hg19
 #' @export
 ChipAddressToProbe <- function(dm) {
-  suppressPackageStartupMessages(library("FDb.InfiniumMethylation.hg19"))
 
   data(hm450.ordering)
   ## type I red channel / oob green channel
