@@ -1,9 +1,12 @@
-Package: biscuitr
+Package: biscuitR
 Type: Package
 Title: Analyze DNA methylation data
+URL: https://github.com/zwdzwd/biscuitr
 Version: 0.1
 Date: 2016-04-12
 Author: Wanding Zhou, Hui Shen
+Depends:
+    R (>= 3.0.2)
 Maintainer: Wanding Zhou <zhouwanding@gmail.com>
 Description: This R package for array-based DNA methylation data.
 License: MIT License
