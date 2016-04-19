@@ -177,9 +177,9 @@ DetectPvalue <- function(dmp) {
   funcR <- ecdf(negctls$R)
 
   ## p-value is the minimium detection p-value of the 2 alleles
-  IR <- 1-rowMax(cbind(funcR(dmp$IR[,'M']), funcR(dmp$IR[,'U'])))
-  IG <- 1-rowMax(cbind(funcG(dmp$IG[,'M']), funcG(dmp$IG[,'U'])))
-  II <- 1-rowMax(cbind(funcG(dmp$II[,'M']), funcR(dmp$II[,'U'])))
+  IR <- 1-apply(cbind(funcR(dmp$IR[,'M']), funcR(dmp$IR[,'U'])),1,max)
+  IG <- 1-apply(cbind(funcG(dmp$IG[,'M']), funcG(dmp$IG[,'U'])),1,max)
+  II <- 1-apply(cbind(funcG(dmp$II[,'M']), funcR(dmp$II[,'U'])),1,max)
 
   names(IR) <- rownames(dmp$IR)
   names(IG) <- rownames(dmp$IG)
