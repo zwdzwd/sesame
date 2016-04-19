@@ -27,7 +27,6 @@ QuantileSet <- function(
     X.all.M=X.all.M, X.all.U=X.all.U), class="QuantileSet")
 }
 
-
 #' build control matrix for funnorm
 #' 
 #' build control matrix for funnorm
@@ -115,7 +114,7 @@ BuildControlMatrix450k <- function(dmp) {
 #' build quantiles for funnorm
 #' 
 #' build quantiles for funnorm
-#'
+#' 
 #' quantiles are stratified by IR autosomal, IG autosomal, II autosomal, X all design and Y all design and by methylated and unmethylated channel.
 #' @param dmp a SignalSet
 #' @param n number of grid points in quantiles.
@@ -202,10 +201,10 @@ InterpolateSignalUseQntiles <- function(dmp, qntiles) {
 #' regress out control effect from quantile distribution
 #'
 #' @param cms control matrices from all samples
-#' @param qntiles quantile distributions from all samples
+#' @param qntiles a list of \code{QuantileSet}s from all samples
 #' @param k number of principal components from control matrices for regression
 #' @import preprocessCore
-#' @return a list of new quantile distriubtions from all samples
+#' @return a list of new \code{QuantileSet}s from all samples
 #' @export
 FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
 
@@ -272,10 +271,10 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
   }
 
   ## Wrap up and return
-  qntiles.n <- sapply(
+  do.call(QuantileSet, sapply(
     names(qntiles), function(sample) {
       do.call(QuantileSet, lapply(qmat.n, function(m) m[,sample]))},
-    USE.NAMES=TRUE, simplify=FALSE)
+    USE.NAMES=TRUE, simplify=FALSE))
 }
 
 #' Quantile normalize
