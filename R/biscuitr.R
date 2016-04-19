@@ -22,7 +22,7 @@
 #' dmps <- DyeBiasCorrectionMostBalanced(dmps)
 #' betas <- mapply(ProbeSignalToBeta, dmps, pvals)
 #' 
-#' @keyword DNAMethylation Microarray QualityControl
+#' @keywords DNAMethylation Microarray QualityControl
 #' 
 "_PACKAGE"
 
