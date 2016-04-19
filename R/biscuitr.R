@@ -16,11 +16,19 @@
 #' @examples
 #' library(biscuitr)
 #' dms <- ReadIDATsFromDir(sample.dir)
+#'
+#' ## translate chip address to probe address
 #' dmps <- lapply(dmps, ChipAddressToProbe)
+#'
+#' ## detect p-value
 #' pvals <- lapply(dmps, DetectPValue)
+#'
+#' ## normalization
 #' dmps <- lapply(dmps, BackgroundCorrectionNoob)
 #' dmps <- DyeBiasCorrectionMostBalanced(dmps)
+#' dmps <- 
 #' betas <- mapply(ProbeSignalToBeta, dmps, pvals)
+#'
 #' 
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
@@ -43,6 +51,34 @@
 #' @export
 SignalSet <- function(IG=NULL, IR=NULL, II=NULL, oobG=NULL, oobR=NULL, ctl=NULL) {
   structure(list(IG=IG, IR=IR, II=II, oobG=oobG, oobR=oobR, ctl=ctl), class="SignalSet")
+}
+
+#' Select a chromosome
+#'
+#' Select a subset of signal set from a given chromosome
+#'
+#' @param dmp an object of class \code{SignalSet}
+#' @param chrm target chromosome
+#' @return an object of class \code{SignalSet}
+#' @export
+SelectChromosome <- function(dmp, chrm) {
+  data(hm450.hg19.probe2chr)
+  SignalSet(IG = dmp$IG[hm450.hg19.probe2chr[rownames(dmp$IG)] == chrm,],
+            IR = dmp$IR[hm450.hg19.probe2chr[rownames(dmp$IR)] == chrm,],
+            II = dmp$II[hm450.hg19.probe2chr[rownames(dmp$II)] == chrm,])
+}
+
+#' Merge two signal sets
+#'
+#' Merge two signal sets
+#'
+#' @param dmp1 an object of class \code{SignalSet}
+#' @param dmp2 an object of class \code{SignalSet}
+#' @return an object of class \code{SignalSet} after merging
+MergeSignals <- function(dmp1, dmp2) {
+  SignalSet(IG = rbind(dmp1$IG, dmp2$IG),
+            IR = rbind(dmp1$IR, dmp2$IR),
+            II = rbind(dmp1$II, dmp2$II))
 }
 
 #' Import one IDAT file
@@ -285,7 +321,7 @@ BackgroundCorrectionNoob <- function(dmp, offset=15) {
 .GetNormCtls <- function(dmp) {
   normctl.G <- dmp$ctl[grep('norm_(c|g)',tolower(rownames(dmp$ctl))),]
   normctl.R <- dmp$ctl[grep('norm_(a|t)',tolower(rownames(dmp$ctl))),]
-  c(G=mean(normctl.G$G), R=mean(normctl.R$R))
+  c(G=mean(normctl.G$G, na.rm=TRUE), R=mean(normctl.R$R, na.rm=TRUE))
 }
 
 #' Correct dye bias using most balanced sample
@@ -296,9 +332,9 @@ BackgroundCorrectionNoob <- function(dmp, offset=15) {
 #' @return a list of normalized \code{SignalSet}s
 #' @export
 DyeBiasCorrectionMostBalanced <- function(dmps) {
-  normctls <- sapply(dmps, .GetNormCtls)
+  normctls <- vapply(dmps, .GetNormCtls, numeric(2))
   most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
-  ref <- mean(normctls[,most.balanced])
+  ref <- mean(normctls[,most.balanced], na.rm=TRUE)
   DyeBiasCorrection(dmps, ref, normctls=normctls)
 }
 
@@ -312,7 +348,7 @@ DyeBiasCorrectionMostBalanced <- function(dmps) {
 #' @export
 DyeBiasCorrection <- function(dmps, ref, normctls=NULL) {
   if (is.null(normctls))
-    normctls <- sapply(dmps, get.normctls)
+    normctls <- vapply(dmps, .GetNormCtls, numeric(2))
   factor <- ref / normctls
   dmps.n <- lapply(names(dmps), function(sample.name) {
     n <- list()
