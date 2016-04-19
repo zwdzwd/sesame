@@ -8,7 +8,15 @@
 #' 
 ## @references To appear
 ## @seealso To appear
-## @examples To appear
+#' @examples
+#' library(biscuitr)
+#' dms <- ReadIDATsFromDir(sample.dir)
+#' dmps <- lapply(dmps, ChipAddressToProbe)
+#' pvals <- lapply(dmps, DetectPValue)
+#' dmps <- lapply(dmps, BackgroundCorrectionNoob)
+#' dmps <- DyeBiasCorrectionMostBalanced(dmps)
+#' betas <- mapply(ProbeSignalToBeta, dmps, pvals)
+#' 
 "_PACKAGE"
 #> [1] "_PACKAGE"
 
@@ -168,7 +176,7 @@ ChipAddressToProbe <- function(dm) {
 #' @import stats
 #' @return array of p-values for each probe
 #' @export
-DetectPvalue <- function(dmp) {
+DetectPValue <- function(dmp) {
   negctls <- dmp$ctl[grep('negative', tolower(rownames(dmp$ctl))),]
   negctls <- subset(negctls, col!=-99)
 
