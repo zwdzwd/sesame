@@ -1,7 +1,10 @@
+#' @title
 #' Analyze DNA methylation data
 #' 
+#' @description
 #' biscuitR allows analysing DNA methylation data in R.
 #' 
+#' @details
 #' This package complements array functionalities in complement to the biscuit software.
 #' @aliases biscuitr
 #' @author
@@ -10,7 +13,6 @@
 #' 
 ## @references To appear
 ## @seealso To appear
-#' \dontrun{roxygenize{'pkg'}}
 #' @examples
 #' library(biscuitr)
 #' dms <- ReadIDATsFromDir(sample.dir)
@@ -19,6 +21,9 @@
 #' dmps <- lapply(dmps, BackgroundCorrectionNoob)
 #' dmps <- DyeBiasCorrectionMostBalanced(dmps)
 #' betas <- mapply(ProbeSignalToBeta, dmps, pvals)
+#' 
+#' @keyword DNAMethylation Microarray QualityControl
+#' 
 "_PACKAGE"
 
 #' SignalSet
