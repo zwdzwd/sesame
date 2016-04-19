@@ -139,6 +139,7 @@ BuildQuantiles450k <- function(dmp, n=500) {
 #' @param k number of principal components from control matrices for regression
 #' @import preprocessCore
 #' @return new quantile distriubtions from all samples
+#' @export
 FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
 
   mm <- do.call(rbind, cms)
@@ -232,6 +233,7 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
 #' Infer gender from signals
 #' @param dmps a list of \code{SignalSet}s
 #' @return named vector of 0 (for female) and 1 (for male)
+#' @export
 InferGenders <- function(dmps) {
   XYmedian <- t(sapply(dmps, function(dmp) {
     all.signals <- c(apply(dmp$IR,1,max), apply(dmp$IG,1,max), apply(dmp$II,1,max))
