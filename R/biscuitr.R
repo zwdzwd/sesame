@@ -4,10 +4,13 @@
 #' 
 #' This package complements array functionalities in complement to the biscuit software.
 #' @aliases biscuitr
-#' @author Wanding Zhou, Hui Shen
+#' @author
+#' Wanding Zhou \email{Wanding.Zhou@vai.org},
+#' Hui Shen \email{Hui.Shen@vai.org}
 #' 
 ## @references To appear
 ## @seealso To appear
+#' \dontrun{roxygenize{'pkg'}}
 #' @examples
 #' library(biscuitr)
 #' dms <- ReadIDATsFromDir(sample.dir)
@@ -16,9 +19,7 @@
 #' dmps <- lapply(dmps, BackgroundCorrectionNoob)
 #' dmps <- DyeBiasCorrectionMostBalanced(dmps)
 #' betas <- mapply(ProbeSignalToBeta, dmps, pvals)
-#' 
 "_PACKAGE"
-#> [1] "_PACKAGE"
 
 #' SignalSet
 #' 
