@@ -7,3 +7,6 @@
 
 ## the control probes
 'hm450.controls'
+
+## mask for snp and repeats
+'hm450.mask'

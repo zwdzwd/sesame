@@ -44,10 +44,12 @@ BuildControlMatrix450k <- function(dmp) {
   cm <- c(cm, bisulfite2=mean(ctls[['BISULFITE CONVERSION II']]$R, na.rm=TRUE))
 
   ## bisulfite conversion type I
-  cm <- c(cm, bisulfite1=mean(
-                ctls[['BISULFITE CONVERSION I']][sprintf('BS.Conversion.I.C%s', 1:3),'G'] +
-                  ctls[['BISULFITE CONVERSION I']][sprintf('BS.Conversion.I.C%s', 4:6),'R'],
-                na.rm=TRUE))
+  cm <- c(
+    cm,
+    bisulfite1=mean(
+      ctls[['BISULFITE CONVERSION I']][sprintf('BS.Conversion.I.C%s', 1:3),'G'] +
+        ctls[['BISULFITE CONVERSION I']][sprintf('BS.Conversion.I.C%s', 4:6),'R'],
+      na.rm=TRUE))
 
   ## staining
   cm <- c(cm, stain.red=ctls[['STAINING']]['DNP..High.', 'R'],
@@ -360,7 +362,7 @@ InferGenders <- function(dmps) {
   }, numeric(4)))
   colnames(g) <- c('x.median','y.median','x.beta.median','x.intermed.frac')
   g <- as.data.frame(g)
-  g$gender <- ifelse(
+  g$genders <- ifelse(
     g$y.median < 200, 0,
     ifelse(g$y.median < 500 & g$x.intermed.frac > 0.4, 0, 1))
   g
@@ -372,13 +374,14 @@ InferGenders <- function(dmps) {
 #'
 #' @param dmps an object of class \code{SignalSet}
 #' @return an object of class \code{SignalSet} after normalization
-BackgroundCorrectionFunnorm <- function(dmps) {
+#' @export
+Funnorm <- function(dmps) {
 
   ## normalize autosomes and chromosome X
   cms <- lapply(dmps, BuildControlMatrix450k)
   qntiles <- lapply(dmps, BuildQuantiles450k)
   genders <- InferGenders(dmps)
-  qntiles.n <- FunnormRegress(cms, qntiles, genders)
+  qntiles.n <- FunnormRegress(cms, qntiles, genders$genders)
   dmps.autoX.n <- Map(QuantilesInterpolateSignal, dmps, qntiles.n)
 
   ## normalize chromosome Y
