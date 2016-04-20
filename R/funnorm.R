@@ -293,34 +293,50 @@ QntilesInterpltSignal <- function(dmp, qntiles) {
 #' @import preprocessCore
 #' @export
 QuantileNormalize <- function(dmps, genders=NULL) {
-
-  M <- lapply(dmps, function(dmp) {
-    c(dmp$IR[,'M'], dmp$IG[,'M'], dmp$II[,'M'])
-  })
-
-  U <- lapply(dmps, function(dmp) {
-    c(dmp$IR[,'U'], dmp$IG[,'U'], dmp$II[,'U'])
-  })
+  nr <- vapply(c('IG','IR','II'), function(x) nrow(dmps[[1]][[x]]), numeric(1))
+  M <- vapply(dmps,
+              function(dmp) {c(dmp$IG[,'M'], dmp$IR[,'M'], dmp$II[,'M'])},
+              numeric(sum(nr)))
+  U <- vapply(dmps,
+              function(dmp) {c(dmp$IG[,'U'], dmp$IR[,'U'], dmp$II[,'U'])},
+              numeric(sum(nr)))
 
   if ((!is.null(genders)) &&
       any(genders == 0) && any(genders == 1)) {
+    M.fmle <- M[,genders[colnames(M)]==0]
+    M.male <- M[,genders[colnames(M)]==1]
     M.n <- cbind(
-      preprocessCore::normalize.quantiles(M[genders[colnames(M)]==0]),
-      preprocessCore::normalize.quantiles(M[genders[colnames(M)]==0]))
+      preprocessCore::normalize.quantiles(M.fmle),
+      preprocessCore::normalize.quantiles(M.male))
+    rownames(M.n) <- rownames(M.fmle)
+    colnames(M.n) <- c(colnames(M.fmle), colnames(M.male))
+
+    U.fmle <- U[,genders[colnames(U)]==0]
+    U.male <- U[,genders[colnames(U)]==1]
     U.n <- cbind(
-      preprocessCore::normalize.quantiles(U[genders[colnames(U)]==0]),
-      preprocessCore::normalize.quantiles(U[genders[colnames(U)]==0]))
+      preprocessCore::normalize.quantiles(U[,genders[colnames(U)]==0]),
+      preprocessCore::normalize.quantiles(U[,genders[colnames(U)]==1]))
+    rownames(U.n) <- rownames(U.fmle)
+    colnames(U.n) <- c(colnames(U.fmle), colnames(U.male))
+
   } else {
     M.n <- preprocessCore::normalize.quantiles(M)
+    dimnames(M.n) <- dimnames(M)
     U.n <- preprocessCore::normalize.quantiles(U)
+    dimnames(U.n) <- dimnames(U)
   }
-  
-  all.n <- cbind(M=M.n, U=U.n, rownames=rownames(M))
-  nr <- vapply(c('IR','IG','II'), function(x) nrow(dmp[[x]]), numeric(1))
-  SignalSet(
-    IR = all.n[1:nr[1],], 
-    IG = all.n[(nr[1]+1):(nr[1]+nr[2]),], 
-    II = all.n[(nr[1]+nr[2]+1):(nr[1]+nr[2]+nr[3]),])
+
+  ## build back SignalSet
+  sapply(colnames(M.n), function(col) {
+    SignalSet(
+      IG = cbind(M=M.n[1:nr[1],col], U=U.n[1:nr[1],col]),
+      IR = cbind(
+        M=M.n[(nr[1]+1):(nr[1]+nr[2]),col],
+        U=U.n[(nr[1]+1):(nr[1]+nr[2]),col]),
+      II = cbind(
+        M=M.n[(nr[1]+nr[2]+1):(nr[1]+nr[2]+nr[3]),col],
+        U=U.n[(nr[1]+nr[2]+1):(nr[1]+nr[2]+nr[3]),col]))},
+         simplify=FALSE, USE.NAMES=TRUE)
 }
 
 #' Infer gender from signals
@@ -330,6 +346,7 @@ QuantileNormalize <- function(dmps, genders=NULL) {
 #' @return named vector of 0 (for female) and 1 (for male)
 #' @export
 InferGenders <- function(dmps) {
+  data(hm450.hg19.probe2chr)
   XYmedian <- t(vapply(dmps, function(dmp) {
     all.signals <- c(apply(dmp$IR,1,max), apply(dmp$IG,1,max), apply(dmp$II,1,max))
     c(median(all.signals[hm450.hg19.probe2chr[names(all.signals)] == 'chrX']),
