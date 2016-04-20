@@ -372,8 +372,11 @@ InferGenders <- function(dmps) {
 #'
 #' Funnorm normalization
 #'
+#' This implementation wrap multiple funnorm steps into one function and assume the entire data set fits the memory
 #' @param dmps an object of class \code{SignalSet}
 #' @return an object of class \code{SignalSet} after normalization
+#' @examples
+#' 
 #' @export
 Funnorm <- function(dmps) {
 
