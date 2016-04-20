@@ -29,7 +29,7 @@
 #' ## normalization
 #' dmps <- lapply(dmps, BackgroundCorrectionNoob)
 #' dmps <- DyeBiasCorrectionMostBalanced(dmps)
-#' dmps <- BackgroundCorrectionFunnorm(dmps)
+#' dmps <- Funnorm(dmps)
 #'
 #' ## convert signal to beta values
 #' betas <- Map(SignalToBeta, dmps, pvals)
