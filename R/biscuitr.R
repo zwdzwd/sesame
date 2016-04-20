@@ -6,6 +6,7 @@
 #' 
 #' @details
 #' This package complements array functionalities in complement to the biscuit software.
+#' This implementation allow processing >10,000 samples in parallel on clusters.
 #' @aliases biscuitr
 #' @author
 #' Wanding Zhou \email{Wanding.Zhou@vai.org},
@@ -28,9 +29,10 @@
 #' ## normalization
 #' dmps <- lapply(dmps, BackgroundCorrectionNoob)
 #' dmps <- DyeBiasCorrectionMostBalanced(dmps)
+#' dmps <- BackgroundCorrectionFunnorm(dmps)
 #'
 #' ## convert signal to beta values
-#' betas <- mapply(ProbeSignalToBeta, dmps, pvals)
+#' betas <- Map(SignalToBeta, dmps, pvals)
 #'
 #' ## mask repeat and snp
 #' betas <- MaskRepeatSnpHM450(betas)
@@ -376,10 +378,12 @@ DyeBiasCorrection <- function(dmps, ref, normctls=NULL) {
 #'
 #' Convert signal to beta
 #'
+#' Convert signal to beta and mask low p-value probes
+#'
 #' @param dmp a \code{SignalSet}
 #' @return beta values
 #' @export
-ProbeSignalToBeta <- function(dmp, pval) {
+SignalToBeta <- function(dmp, pval) {
   betas <- pmax(dmp$IR[,'M'],1) / pmax(dmp$IR[,'M']+dmp$IR[,'U'],2)
   betas <- c(betas,
              pmax(dmp$IG[,'M'],1) / pmax(dmp$IG[,'M']+dmp$IG[,'U'],2))
@@ -391,7 +395,7 @@ ProbeSignalToBeta <- function(dmp, pval) {
 }
 
 #' @export
-mprint <- function(...) {
+MPrint <- function(...) {
   cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
 }
 

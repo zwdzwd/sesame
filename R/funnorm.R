@@ -242,7 +242,7 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
 #' @return a object of class \code{SignalSet}
 #' @import preprocessCore
 #' @export
-QntilesInterpltSignal <- function(dmp, qntiles) {
+QuantilesInterpolateSignal <- function(dmp, qntiles) {
 
   data(hm450.hg19.probe2chr)
   auto.IG <- dmp$IG[!(hm450.hg19.probe2chr[rownames(dmp$IG)] %in% c('chrX','chrY')),]
@@ -261,7 +261,7 @@ QntilesInterpltSignal <- function(dmp, qntiles) {
 
   ## actual interpolation for each category
   separate.n <- sapply(names(qntiles), function(category)
-    .QntilesInterpltSignal1(get(category), qntiles[[category]]), USE.NAMES=TRUE, simplify=FALSE)
+    .QuantilesInterpolateSignal1(get(category), qntiles[[category]]), USE.NAMES=TRUE, simplify=FALSE)
 
   ## build back a SignalSet
   s <- do.call(SignalSet, sapply(c('IR','IG','II'), function(nm) {
@@ -272,7 +272,7 @@ QntilesInterpltSignal <- function(dmp, qntiles) {
   }, USE.NAMES=TRUE, simplify=FALSE))
 }
 
-.QntilesInterpltSignal1 <- function(signal, qntiles) {
+.QuantilesInterpolateSignal1 <- function(signal, qntiles) {
   n <- length(qntiles)
   qntiles.densified <- do.call(c, lapply(1:(n-1), function(i) {
     seq(qntiles[i], qntiles[i+1], (qntiles[i+1]-qntiles[i])/n)[-(n+1)]
@@ -347,13 +347,45 @@ QuantileNormalize <- function(dmps, genders=NULL) {
 #' @export
 InferGenders <- function(dmps) {
   data(hm450.hg19.probe2chr)
-  XYmedian <- t(vapply(dmps, function(dmp) {
+  g <- t(vapply(dmps, function(dmp) {
     all.signals <- c(apply(dmp$IR,1,max), apply(dmp$IG,1,max), apply(dmp$II,1,max))
+    all <- rbind(dmp$IG, dmp$IR, dmp$II)
+    all.X <- all[(hm450.hg19.probe2chr[rownames(all)] == 'chrX'),]
+    all.X.betas <- all.X[,'M']/(all.X[,'M']+all.X[,'U'])
     c(median(all.signals[hm450.hg19.probe2chr[names(all.signals)] == 'chrX']),
-      median(all.signals[hm450.hg19.probe2chr[names(all.signals)] == 'chrY']))
-  }, numeric(2)))
-  colnames(XYmedian) <- c('x','y')
-  genders <- ifelse(XYmedian[,'y'] < 500, 0,
-                    ifelse(XYmedian[,'y'] < 500 & XYmedian[,'x'] > 5000, 0, 1))
-  genders
+      median(all.signals[hm450.hg19.probe2chr[names(all.signals)] == 'chrY']),
+      median(all.X.betas, na.rm=TRUE),
+      sum(all.X.betas>0.3 & all.X.betas<0.7, na.rm=TRUE) /
+        sum(!is.na(all.X.betas)))
+  }, numeric(4)))
+  colnames(g) <- c('x.median','y.median','x.beta.median','x.intermed.frac')
+  g <- as.data.frame(g)
+  g$gender <- ifelse(
+    g$y.median < 200, 0,
+    ifelse(g$y.median < 500 & g$x.intermed.frac > 0.4, 0, 1))
+  g
 }
+
+#' Funnorm normalization
+#'
+#' Funnorm normalization
+#'
+#' @param dmps an object of class \code{SignalSet}
+#' @return an object of class \code{SignalSet} after normalization
+BackgroundCorrectionFunnorm <- function(dmps) {
+
+  ## normalize autosomes and chromosome X
+  cms <- lapply(dmps, BuildControlMatrix450k)
+  qntiles <- lapply(dmps, BuildQuantiles450k)
+  genders <- InferGenders(dmps)
+  qntiles.n <- FunnormRegress(cms, qntiles, genders)
+  dmps.autoX.n <- Map(QuantilesInterpolateSignal, dmps, qntiles.n)
+
+  ## normalize chromosome Y
+  dmps.Y <- lapply(dmps, function(dmp) SelectChromosome(dmp,'chrY'))
+  dmps.Y.n <- QuantileNormalize(dmps.Y, genders)
+
+  dmps.n <- Map(MergeSignal, dmps.autoX.n, dmps.Y.n)
+  dmps.n
+}
+
