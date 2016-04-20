@@ -108,7 +108,6 @@ BuildControlMatrix450k <- function(dmp) {
   cm <- c(cm, structure(quantile(dmp$oobG, c(0.01,0.5,0.99)), names=paste0('oob', c(1,50,99))))
 
   cm
-
 }
 
 #' build quantiles for funnorm
@@ -152,50 +151,6 @@ BuildQuantiles450k <- function(dmp, n=500) {
               X.all.M, X.all.U)
 }
 
-#' Interpolate signal
-#'
-#' Interpolate signal using quantile distribution
-#'
-#' @param dmp an object of class \code{SignalSet}
-#' @param qs an object of class \code{QuantileSet}
-InterpolateSignalUseQntiles <- function(dmp, qntiles) {
-
-  data(hm450.hg19.probe2chr)
-  auto.IG <- dmp$IG[!(hm450.hg19.probe2chr[rownames(dmp$IG)] %in% c('chrX','chrY')),]
-  auto.IR <- dmp$IR[!(hm450.hg19.probe2chr[rownames(dmp$IR)] %in% c('chrX','chrY')),]
-  auto.II <- dmp$II[!(hm450.hg19.probe2chr[rownames(dmp$II)] %in% c('chrX','chrY')),]
-
-  all <- rbind(dmp$IG, dmp$IR, dmp$II)
-  category <- do.call(c, lapply(c('IG','IR','II'), function(nm) rep(nm, length(dmp[[nm]]))))
-  X.all <- all[hm450.hg19.probe2chr[rownames(all)] == 'chrX',]
-
-  lapply(c('auto.IG','auto.IR','auto.II','X.all'), function(nm) {
-    lapply(c('M','U'), function(a) {
-      assign(paste0(nm,'.',a), get(nm)[,a])
-    })
-  })
-
-  ## actual interpolation for each category
-  separate.n <- sapply(names(qntiles), function(category)
-    .InterpolateSignalUseQntiles1(get(category), qntiles[[category]]), USE.NAMES=TRUE, simplify=FALSE)
-
-  ## build back a SignalSet
-  s <- do.call(SignalSet, sapply(c('IR','IG','II'), function(nm) {
-    d <- cbind(get(paste0('auto.', nm,'.M')), get(paste0('auto.', nm, '.U')))
-    x <- cbind(separate.n[['X.all.M']], separate.n[['X.all.U']])
-    d <- rbind(d, x[category[names(x)] == nm])
-    d
-  }, USE.NAMES=TRUE, simplify=FALSE))
-}
-
-.InterpolateSignalUseQntiles1 <- function(signal, qntiles) {
-  n <- length(qntiles)
-  qntiles.densified <- do.call(c, lapply(1:(n-1), function(i) {
-    seq(qntiles[i], qntiles[i+1], (qntiles[i+1]-qntiles[i])/n)[-(n+1)]
-  }))
-  preprocessCore.normalize.quantiles.use.target(signal, qntiles.densified)
-}
-
 #' funnorm regress
 #'
 #' regress out control effect from quantile distribution
@@ -237,15 +192,16 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
     qmat.n <- global.mean.quantiles + t(fits$residuals)
   }
 
-  auto.names <- sprintf('auto.I%s.%s', rep(c('R','G','I'),2), rep(c('M','U'),each=3))
-  qmat.n <- lapply(
+  auto.names <- sprintf('auto.I%s.%s',
+                        rep(c('G','R','I'),2), rep(c('M','U'),each=3))
+  qmats.n <- lapply(
     auto.names,
     function(target.nm) {
       FunnormRegress1(
         vapply(qntiles, function(x) x[[target.nm]],
                numeric(length(qntiles[[1]][[1]]))), mm, k=k)
     })
-  names(qmat.n) <- auto.names
+  names(qmats.n) <- auto.names
 
   ## Quantile normalize X chromosome
   fmle <- genders[names(qntiles)]==0
@@ -253,28 +209,76 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
   mprint("Normalizing X-chromosome.")
   if ((!is.null(genders)) &&
       sum(genders == 0)>10 && sum(genders == 1)>10) {
-    qmat.n[['X.all.M']] <- cbind(
+    qmats.n[['X.all.M']] <- cbind(
       FunnormRegress1(sapply(
         qntiles[fmle], function(x) x$X.all.M), mm[fmle,], k=k),
       FunnormRegress1(sapply(
         qntiles[male], function(x) x$X.all.M), mm[male,], k=k))
-    qmat.n[['X.all.U']] <- cbind(
+    qmats.n[['X.all.U']] <- cbind(
       FunnormRegress1(sapply(
         qntiles[fmle], function(x) x$X.all.U), mm[fmle,], k=k),
       FunnormRegress1(sapply(
         qntiles[male], function(x) x$X.all.U), mm[male,], k=k))
   } else {
-    qmat.n[['X.all.M']] <- FunnormRegress1(sapply(
+    qmats.n[['X.all.M']] <- FunnormRegress1(sapply(
       qntiles, function(x) x$X.all.M), mm, k=k)
-    qmat.n[['X.all.U']] <- FunnormRegress1(sapply(
+    qmats.n[['X.all.U']] <- FunnormRegress1(sapply(
       qntiles, function(x) x$X.all.U), mm, k=k)
   }
 
   ## Wrap up and return
-  do.call(QuantileSet, sapply(
+  sapply(
     names(qntiles), function(sample) {
-      do.call(QuantileSet, lapply(qmat.n, function(m) m[,sample]))},
-    USE.NAMES=TRUE, simplify=FALSE))
+      do.call(QuantileSet, lapply(qmats.n, function(m) m[,sample]))},
+    USE.NAMES=TRUE, simplify=FALSE)
+}
+
+#' Interpolate signal
+#'
+#' Interpolate signal using quantile distribution
+#'
+#' @param dmp an object of class \code{SignalSet}
+#' @param qs an object of class \code{QuantileSet}
+#' @return a object of class \code{SignalSet}
+#' @import preprocessCore
+#' @export
+QntilesInterpltSignal <- function(dmp, qntiles) {
+
+  data(hm450.hg19.probe2chr)
+  auto.IG <- dmp$IG[!(hm450.hg19.probe2chr[rownames(dmp$IG)] %in% c('chrX','chrY')),]
+  auto.IR <- dmp$IR[!(hm450.hg19.probe2chr[rownames(dmp$IR)] %in% c('chrX','chrY')),]
+  auto.II <- dmp$II[!(hm450.hg19.probe2chr[rownames(dmp$II)] %in% c('chrX','chrY')),]
+
+  all <- rbind(dmp$IG, dmp$IR, dmp$II)
+  category <- do.call(c, lapply(c('IG','IR','II'), function(nm) rep(nm, length(dmp[[nm]]))))
+  X.all <- all[hm450.hg19.probe2chr[rownames(all)] == 'chrX',]
+
+  lapply(c('auto.IG','auto.IR','auto.II','X.all'), function(nm) {
+    lapply(c('M','U'), function(a) {
+      assign(paste0(nm,'.',a), get(nm)[,a])
+    })
+  })
+
+  ## actual interpolation for each category
+  separate.n <- sapply(names(qntiles), function(category)
+    .QntilesInterpltSignal1(get(category), qntiles[[category]]), USE.NAMES=TRUE, simplify=FALSE)
+
+  ## build back a SignalSet
+  s <- do.call(SignalSet, sapply(c('IR','IG','II'), function(nm) {
+    d <- cbind(get(paste0('auto.', nm,'.M')), get(paste0('auto.', nm, '.U')))
+    x <- cbind(separate.n[['X.all.M']], separate.n[['X.all.U']])
+    d <- rbind(d, x[category[names(x)] == nm])
+    d
+  }, USE.NAMES=TRUE, simplify=FALSE))
+}
+
+.QntilesInterpltSignal1 <- function(signal, qntiles) {
+  n <- length(qntiles)
+  qntiles.densified <- do.call(c, lapply(1:(n-1), function(i) {
+    seq(qntiles[i], qntiles[i+1], (qntiles[i+1]-qntiles[i])/n)[-(n+1)]
+  }))
+  library(preprocessCore)
+  preprocessCore.normalize.quantiles.use.target(signal, qntiles.densified)
 }
 
 #' Quantile normalize
