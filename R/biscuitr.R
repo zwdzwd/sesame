@@ -34,7 +34,7 @@
 #' ## convert signal to beta values
 #' betas <- Map(SignalToBeta, dmps, pvals)
 #'
-#' ## mask repeat and snp
+#' ## mask repeats and SNPs
 #' betas <- MaskRepeatSnpHM450(betas)
 #' 
 #' @keywords DNAMethylation Microarray QualityControl
