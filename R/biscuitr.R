@@ -15,6 +15,8 @@
 ## @seealso To appear
 #' @examples
 #' library(biscuitr)
+#' 
+#' ## read IDATs
 #' dms <- ReadIDATsFromDir(sample.dir)
 #'
 #' ## translate chip address to probe address
@@ -26,9 +28,12 @@
 #' ## normalization
 #' dmps <- lapply(dmps, BackgroundCorrectionNoob)
 #' dmps <- DyeBiasCorrectionMostBalanced(dmps)
-#' dmps <- 
+#'
+#' ## convert signal to beta values
 #' betas <- mapply(ProbeSignalToBeta, dmps, pvals)
 #'
+#' ## mask repeat and snp
+#' betas <- MaskRepeatSnpHM450(betas)
 #' 
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
@@ -388,4 +393,17 @@ ProbeSignalToBeta <- function(dmp, pval) {
 #' @export
 mprint <- function(...) {
   cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
+}
+
+#' Mask SNP and repeat HM450
+#'
+#' Mask SNP and repeat for HM450
+#' @param betas a matrix of betas
+#' @return masked matrix of beta values
+#' @export
+MaskRepeatSnpHM450 <- function(betas) {
+  data(hm450.mask)
+  betas[names(hm450.mask),] <- NA
+  MPrint('Masked ',length(hm450.mask), ' probes.')
+  betas
 }
