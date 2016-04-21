@@ -63,11 +63,13 @@ SignalSet <- function(platform,
                       II=NULL,
                       oobG=NULL, oobR=NULL,
                       ctl=NULL) {
-  structure(list(IG=IG, IR=IR,
-                 II=II,
-                 oobG=oobG, oobR=oobR,
-                 ctl=ctl,
-                 platform=platform), class="SignalSet")
+  sset <- list(IG=IG, IR=IR,
+               II=II,
+               oobG=oobG, oobR=oobR,
+               ctl=ctl,
+               platform=platform)
+  class(sset) <- "SignalSet"
+  sset
 }
 
 #' Select a chromosome
