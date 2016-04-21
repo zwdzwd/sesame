@@ -35,7 +35,7 @@
 #' betas <- Map(SignalToBeta, dmps, pvals)
 #'
 #' ## mask repeats and SNPs
-#' betas <- MaskRepeatSnpHM450(betas)
+#' betas <- MaskRepeatSNPs(betas, 'hm450')
 #' 
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
@@ -44,6 +44,7 @@
 #' SignalSet
 #' 
 #' Construct a SignalSet object
+#' @param platform character() for platform of the array
 #' @param IG intensity table for type I probes in green channel
 #' @param IR intensity table for type I probes in red channel
 #' @param II intensity table for type II probes
@@ -56,8 +57,16 @@
 #'   \item{oobR and oobG}{arrays of integer}
 #'   \item{ctl}{a data frame with columns G, R, col, type}
 #' @export
-SignalSet <- function(IG=NULL, IR=NULL, II=NULL, oobG=NULL, oobR=NULL, ctl=NULL) {
-  structure(list(IG=IG, IR=IR, II=II, oobG=oobG, oobR=oobR, ctl=ctl), class="SignalSet")
+SignalSet <- function(platform,
+                      IG=NULL, IR=NULL,
+                      II=NULL,
+                      oobG=NULL, oobR=NULL,
+                      ctl=NULL) {
+  structure(list(IG=IG, IR=IR,
+                 II=II,
+                 oobG=oobG, oobR=oobR,
+                 ctl=ctl,
+                 platform=platform), class="SignalSet")
 }
 
 #' Select a chromosome
@@ -69,10 +78,11 @@ SignalSet <- function(IG=NULL, IR=NULL, II=NULL, oobG=NULL, oobR=NULL, ctl=NULL)
 #' @return an object of class \code{SignalSet}
 #' @export
 SelectChromosome <- function(dmp, chrm) {
-  data(hm450.hg19.probe2chr)
-  SignalSet(IG = dmp$IG[hm450.hg19.probe2chr[rownames(dmp$IG)] == chrm,],
-            IR = dmp$IR[hm450.hg19.probe2chr[rownames(dmp$IR)] == chrm,],
-            II = dmp$II[hm450.hg19.probe2chr[rownames(dmp$II)] == chrm,])
+  probe2chr <- GetBuiltInData('hg19.probe2chr', dmp$platform)
+  SignalSet(dmp$platform,
+            IG = dmp$IG[probe2chr[rownames(dmp$IG)] == chrm,],
+            IR = dmp$IR[probe2chr[rownames(dmp$IR)] == chrm,],
+            II = dmp$II[probe2chr[rownames(dmp$II)] == chrm,])
 }
 
 #' Merge two signal sets
@@ -83,7 +93,8 @@ SelectChromosome <- function(dmp, chrm) {
 #' @param dmp2 an object of class \code{SignalSet}
 #' @return an object of class \code{SignalSet} after merging
 MergeSignals <- function(dmp1, dmp2) {
-  SignalSet(IG = rbind(dmp1$IG, dmp2$IG),
+  SignalSet(dmp1$platform,
+            IG = rbind(dmp1$IG, dmp2$IG),
             IR = rbind(dmp1$IR, dmp2$IR),
             II = rbind(dmp1$II, dmp2$II))
 }
@@ -102,6 +113,12 @@ ReadIDAT1 <- function(idat.name) {
   ida.red <- readIDAT(paste0(idat.name,"_Red.idat"));
   d <- cbind(cy3=ida.grn$Quants[,"Mean"], cy5=ida.red$Quants[,"Mean"])
   colnames(d) <- c('G', 'R')
+  chip.type <- switch(
+    ida.red$ChipType,
+    'BeadChip 8x5'='EPIC',
+    'BeadChip 12x8'='hm450',
+    'BeadChip 12x1'='hm27')
+  attr(d, 'platform') <- chip.type
   d
 }
 
@@ -180,9 +197,11 @@ ReadIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL) {
 #' @export
 ChipAddressToProbe <- function(dm) {
 
-  data(hm450.ordering)
+  platform <- attr(dm, 'platform')
+  dm.ordering <- GetBuiltInData('ordering', platform)
+
   ## type I red channel / oob green channel
-  IordR <- subset(hm450.ordering, DESIGN=='I' & col=='R')
+  IordR <- subset(dm.ordering, DESIGN=='I' & col=='R')
   ## 2-channel for red probes' m allele
   IuR2ch <- dm[match(IordR$U, rownames(dm)),]
   IuR <- IuR2ch[,2]
@@ -193,7 +212,7 @@ ChipAddressToProbe <- function(dm) {
   signal.I.R <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
 
   ## type I green channel / oob red channel
-  IordG <- subset(hm450.ordering, DESIGN=='I' & col=='G')
+  IordG <- subset(dm.ordering, DESIGN=='I' & col=='G')
   ## 2-channel for green probes' M allele
   IuG2ch <- dm[match(IordG$U, rownames(dm)),]
   IuG <- IuG2ch[,1]
@@ -203,19 +222,23 @@ ChipAddressToProbe <- function(dm) {
   oob.R <- c(IuG2ch[,2], ImG2ch[,2])
   signal.I.G <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
-  IIord <- hm450.ordering[hm450.ordering$DESIGN=="II",]
+  IIord <- dm.ordering[dm.ordering$DESIGN=="II",]
   signal.II <- dm[match(IIord$U, rownames(dm)),]
   colnames(signal.II) <- c('M', 'U')
   rownames(signal.II) <- IIord$Probe_ID
 
   ## control probes
-  data(hm450.controls)
-  ctl <- as.data.frame(dm[match(hm450.controls$Address, rownames(dm)),])
-  rownames(ctl) <- make.names(hm450.controls$Name,unique=T)
-  ctl <- cbind(ctl,hm450.controls[, c("Color_Channel","Type")])
+  dm.controls <- GetBuiltInData('controls', platform)
+
+  ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
+  rownames(ctl) <- make.names(dm.controls$Name,unique=T)
+  ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
   colnames(ctl) <- c('G','R','col','type')
 
-  SignalSet(IR=signal.I.R, IG=signal.I.G, oobR=oob.R, oobG=oob.G, II=signal.II, ctl=ctl)
+  SignalSet(platform,
+            IG = signal.I.G, IR=signal.I.R,
+            oobG = oob.G, oobR=oob.R,
+            II = signal.II, ctl=ctl)
 }
 
 #' Compute detection p-value
@@ -285,7 +308,10 @@ BackgroundCorrectionNoob <- function(dmp, offset=15) {
   ctl$G <- ibG.nl$c
   ctl$R <- ibR.nl$c
 
-  SignalSet(IR=IR.n, IG=IG.n, oobR=dmp$oobR, oobG=dmp$oobG, II=II, ctl=ctl)
+  SignalSet(dmp$platform,
+            IG=IG.n, IR=IR.n,
+            oobG=dmp$oobG, oobR=dmp$oobR,
+            II=II, ctl=ctl)
 }
 
 ## Noob background correction for one channel
@@ -399,15 +425,15 @@ MPrint <- function(...) {
   cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
 }
 
-#' Mask SNP and repeat HM450
+#' Mask SNPs and repeats
 #'
-#' Mask SNP and repeat for HM450
+#' Mask SNPs and repeats
 #' @param betas a matrix of betas
 #' @return masked matrix of beta values
 #' @export
-MaskRepeatSnpHM450 <- function(betas) {
-  data(hm450.mask)
-  betas[names(hm450.mask),] <- NA
-  MPrint('Masked ',length(hm450.mask), ' probes.')
+MaskRepeatSNPs <- function(betas, platform) {
+  dm.mask <- GetBuiltInData('mask', platform)
+  betas[names(dm.mask),] <- NA
+  MPrint('Masked ',length(dm.mask), ' probes.')
   betas
 }
