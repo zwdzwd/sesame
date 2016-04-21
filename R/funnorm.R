@@ -266,12 +266,12 @@ QuantilesInterpolateSignal <- function(dmp, qntiles) {
     .QuantilesInterpolateSignal1(get(category), qntiles[[category]]), USE.NAMES=TRUE, simplify=FALSE)
 
   ## build back a SignalSet
-  s <- do.call(SignalSet, sapply(c('IR','IG','II'), function(nm) {
+  s <- do.call(SignalSet, c(dmp$platform, sapply(c('IR','IG','II'), function(nm) {
     d <- cbind(get(paste0('auto.', nm,'.M')), get(paste0('auto.', nm, '.U')))
     x <- cbind(separate.n[['X.all.M']], separate.n[['X.all.U']])
     d <- rbind(d, x[category[names(x)] == nm])
     d
-  }, USE.NAMES=TRUE, simplify=FALSE))
+  }, USE.NAMES=TRUE, simplify=FALSE)))
 }
 
 .QuantilesInterpolateSignal1 <- function(signal, qntiles) {
@@ -329,8 +329,9 @@ QuantileNormalize <- function(dmps, genders=NULL) {
   }
 
   ## build back SignalSet
+  platform <- dmps[[1]]$platform
   sapply(colnames(M.n), function(col) {
-    SignalSet(
+    SignalSet(platform,
       IG = cbind(M=M.n[1:nr[1],col], U=U.n[1:nr[1],col]),
       IR = cbind(
         M=M.n[(nr[1]+1):(nr[1]+nr[2]),col],
