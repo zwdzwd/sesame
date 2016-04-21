@@ -15,8 +15,8 @@
 'hm450.mask'
 
 GetBuiltInData <- function(nm, platform) {
-  data.name <- paste0(platform,'.',nm)
-  data(data.name)
-  get(data.name)
+  datanm <- paste0(platform,'.',nm)
+  data(list=datanm)
+  get(datanm)
 }
 

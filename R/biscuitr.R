@@ -7,6 +7,7 @@
 #' @details
 #' This package complements array functionalities in complement to the biscuit software.
 #' This implementation allow processing >10,000 samples in parallel on clusters.
+#' It supports both HM450 and EPIC platform.
 #' @aliases biscuitr
 #' @author
 #' Wanding Zhou \email{Wanding.Zhou@vai.org},
