@@ -123,29 +123,26 @@ BuildControlMatrix450k <- function(dmp) {
 #' @export
 BuildQuantiles450k <- function(dmp, n=500) {
 
-  data(hm450.hg19.probe2chr)
-  
+  probe2chr <- GetBuiltInData('hg19.probe2chr', dmp$platform)
+
   probs <- seq(from=0, to=1, length.out=n)
 
-  auto.IG <- dmp$IG[!(hm450.hg19.probe2chr[rownames(dmp$IG)] %in% c('chrX','chrY')),]
+  auto.IG <- dmp$IG[!(probe2chr[rownames(dmp$IG)] %in% c('chrX','chrY')),]
   auto.IG.M <- quantile(auto.IG[,'M'], probs)
   auto.IG.U <- quantile(auto.IG[,'U'], probs)
 
-  auto.IR <- dmp$IR[!(hm450.hg19.probe2chr[rownames(dmp$IR)] %in% c('chrX','chrY')),]
+  auto.IR <- dmp$IR[!(probe2chr[rownames(dmp$IR)] %in% c('chrX','chrY')),]
   auto.IR.M <- quantile(auto.IR[,'M'], probs)
   auto.IR.U <- quantile(auto.IR[,'U'], probs)
 
-  auto.II <- dmp$II[!(hm450.hg19.probe2chr[rownames(dmp$II)] %in% c('chrX','chrY')),]
+  auto.II <- dmp$II[!(probe2chr[rownames(dmp$II)] %in% c('chrX','chrY')),]
   auto.II.M <- quantile(auto.II[,'M'], probs)
   auto.II.U <- quantile(auto.II[,'U'], probs)
 
   all <- rbind(dmp$IG, dmp$IR, dmp$II)
-  X.all <- all[hm450.hg19.probe2chr[rownames(all)] == 'chrX',]
+  X.all <- all[probe2chr[rownames(all)] == 'chrX',]
   X.all.M <- quantile(X.all[,'M'], probs)
   X.all.U <- quantile(X.all[,'U'], probs)
-  ## Y.all <- all[hm450.hg19.probe2chr[rownames(all)] == 'chrY',]
-  ## quantile.Y.all.M <- quantile(Y.all[,'M'], probs)
-  ## quantile.Y.all.U <- quantile(Y.all[,'U'], probs)
 
   QuantileSet(auto.IG.M, auto.IG.U,
               auto.IR.M, auto.IR.U,
@@ -246,14 +243,14 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
 #' @export
 QuantilesInterpolateSignal <- function(dmp, qntiles) {
 
-  data(hm450.hg19.probe2chr)
-  auto.IG <- dmp$IG[!(hm450.hg19.probe2chr[rownames(dmp$IG)] %in% c('chrX','chrY')),]
-  auto.IR <- dmp$IR[!(hm450.hg19.probe2chr[rownames(dmp$IR)] %in% c('chrX','chrY')),]
-  auto.II <- dmp$II[!(hm450.hg19.probe2chr[rownames(dmp$II)] %in% c('chrX','chrY')),]
+  probe2chr <- GetBuiltInData('hg19.probe2chr', dmp$platform)
+  auto.IG <- dmp$IG[!(probe2chr[rownames(dmp$IG)] %in% c('chrX','chrY')),]
+  auto.IR <- dmp$IR[!(probe2chr[rownames(dmp$IR)] %in% c('chrX','chrY')),]
+  auto.II <- dmp$II[!(probe2chr[rownames(dmp$II)] %in% c('chrX','chrY')),]
 
   all <- rbind(dmp$IG, dmp$IR, dmp$II)
   category <- do.call(c, lapply(c('IG','IR','II'), function(nm) rep(nm, length(dmp[[nm]]))))
-  X.all <- all[hm450.hg19.probe2chr[rownames(all)] == 'chrX',]
+  X.all <- all[probe2chr[rownames(all)] == 'chrX',]
 
   lapply(c('auto.IG','auto.IR','auto.II','X.all'), function(nm) {
     lapply(c('M','U'), function(a) {
@@ -349,23 +346,29 @@ QuantileNormalize <- function(dmps, genders=NULL) {
 #' @return named vector of 0 (for female) and 1 (for male)
 #' @export
 InferGenders <- function(dmps) {
-  data(hm450.hg19.probe2chr)
+  probe2chr <- GetBuiltInData('hg19.probe2chr', dmps[[1]]$platform)
   g <- t(vapply(dmps, function(dmp) {
     all.signals <- c(apply(dmp$IR,1,max), apply(dmp$IG,1,max), apply(dmp$II,1,max))
     all <- rbind(dmp$IG, dmp$IR, dmp$II)
-    all.X <- all[(hm450.hg19.probe2chr[rownames(all)] == 'chrX'),]
+    all.X <- all[(probe2chr[rownames(all)] == 'chrX'),]
     all.X.betas <- all.X[,'M']/(all.X[,'M']+all.X[,'U'])
-    c(median(all.signals[hm450.hg19.probe2chr[names(all.signals)] == 'chrX']),
-      median(all.signals[hm450.hg19.probe2chr[names(all.signals)] == 'chrY']),
+    c(median(all.signals[probe2chr[names(all.signals)] == 'chrX']),
+      median(all.signals[probe2chr[names(all.signals)] == 'chrY']),
       median(all.X.betas, na.rm=TRUE),
       sum(all.X.betas>0.3 & all.X.betas<0.7, na.rm=TRUE) /
         sum(!is.na(all.X.betas)))
   }, numeric(4)))
   colnames(g) <- c('x.median','y.median','x.beta.median','x.intermed.frac')
   g <- as.data.frame(g)
+
+  ## the simpler classification
+  ## g$genders <- ifelse(g$y.median < 500, 0, 1)
+  
+  ## more accurate but "might" overfit
   g$genders <- ifelse(
-    g$y.median < 200, 0,
-    ifelse(g$y.median < 500 & g$x.intermed.frac > 0.4, 0, 1))
+    g$y.median < 500,
+    ifelse(g$y.median > 300 & g$x.intermed.frac<0.2,1,0),
+    ifelse(g$y.median<2000 & g$x.intermed.frac>0.5, 0, 1))
   g
 }
 
