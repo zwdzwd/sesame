@@ -178,7 +178,7 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
   stopifnot(identical(names(qntiles),rownames(mm)))
   
   ## Quantile normalize - autosomes
-  mprint("Normalizing autosomes.")
+  MPrint("Normalizing autosomes.")
   FunnormRegress1 <- function(qmat, mm, k=2) {
     stopifnot(identical(colnames(qmat), rownames(mm)))
     qmat[1,] <- 0
@@ -205,9 +205,10 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
   ## Quantile normalize X chromosome
   fmle <- genders[names(qntiles)]==0
   male <- genders[names(qntiles)]==1
-  mprint("Normalizing X-chromosome.")
+  MPrint("Normalizing X-chromosome.")
   if ((!is.null(genders)) &&
       sum(genders == 0)>10 && sum(genders == 1)>10) {
+    MPrint("Normalize male and female sparately.")
     qmats.n[['X.all.M']] <- cbind(
       FunnormRegress1(sapply(
         qntiles[fmle], function(x) x$X.all.M), mm[fmle,], k=k),
@@ -219,6 +220,7 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
       FunnormRegress1(sapply(
         qntiles[male], function(x) x$X.all.U), mm[male,], k=k))
   } else {
+    MPrint("Ignore genders in X-chromosome normalization.")
     qmats.n[['X.all.M']] <- FunnormRegress1(sapply(
       qntiles, function(x) x$X.all.M), mm, k=k)
     qmats.n[['X.all.U']] <- FunnormRegress1(sapply(
@@ -252,18 +254,20 @@ QuantilesInterpolateSignal <- function(dmp, qntiles) {
   category <- do.call(c, lapply(c('IG','IR','II'), function(nm) rep(nm, length(dmp[[nm]]))))
   X.all <- all[probe2chr[rownames(all)] == 'chrX',]
 
+  env <- environment()
   lapply(c('auto.IG','auto.IR','auto.II','X.all'), function(nm) {
     lapply(c('M','U'), function(a) {
-      assign(paste0(nm,'.',a), get(nm)[,a])
+      assign(paste0(nm,'.',a), get(nm)[,a], envir=env)
     })
   })
 
   ## actual interpolation for each category
-  separate.n <- sapply(names(qntiles), function(category)
-    .QuantilesInterpolateSignal1(get(category), qntiles[[category]]), USE.NAMES=TRUE, simplify=FALSE)
+  separate.n <- sapply(names(qntiles), function(ctg)
+    .QuantilesInterpolateSignal1(get(ctg), qntiles[[ctg]]),
+                       USE.NAMES=TRUE, simplify=FALSE)
 
   ## build back a SignalSet
-  s <- do.call(SignalSet, c(dmp$platform, sapply(c('IR','IG','II'), function(nm) {
+  s <- do.call(SignalSet, c(dmp$platform, sapply(c('IG','IR','II'), function(nm) {
     d <- cbind(get(paste0('auto.', nm,'.M')), get(paste0('auto.', nm, '.U')))
     x <- cbind(separate.n[['X.all.M']], separate.n[['X.all.U']])
     d <- rbind(d, x[category[names(x)] == nm])
@@ -277,7 +281,7 @@ QuantilesInterpolateSignal <- function(dmp, qntiles) {
     seq(qntiles[i], qntiles[i+1], (qntiles[i+1]-qntiles[i])/n)[-(n+1)]
   }))
   library(preprocessCore)
-  preprocessCore.normalize.quantiles.use.target(signal, qntiles.densified)
+  preprocessCore::normalize.quantiles.use.target(matrix(signal), qntiles.densified)
 }
 
 #' Quantile normalize
