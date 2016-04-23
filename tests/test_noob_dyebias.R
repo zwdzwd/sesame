@@ -21,7 +21,7 @@ load_all("..",export_all=FALSE)
 
 dms <- ReadIDATsFromSampleSheet(
   "data/tcga.random6/samples.csv", base.dir='data/tcga.random6')
-dmps <- lapply(dms, ChipAddressToProbe)
+dmps <- lapply(dms, ChipAddressToSignal)
 pvals <- lapply(dmps, DetectPValue)
 dmps.noob <- lapply(dmps, BackgroundCorrectionNoob)
 dmps.noob.dye <- DyeBiasCorrectionMostBalanced(dmps.noob)
