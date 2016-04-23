@@ -22,7 +22,7 @@
 #' dms <- ReadIDATsFromDir(sample.dir)
 #'
 #' ## translate chip address to probe address
-#' dmps <- lapply(dmps, ChipAddressToProbe)
+#' dmps <- lapply(dmps, ChipAddressToSignal)
 #'
 #' ## detect p-value
 #' pvals <- lapply(dmps, DetectPValue)
@@ -33,7 +33,7 @@
 #' dmps <- Funnorm(dmps)
 #'
 #' ## convert signal to beta values
-#' betas <- Map(SignalToBeta, dmps, pvals)
+#' betas <- mapply(SignalToBeta, dmps, pvals)
 #'
 #' ## mask repeats and SNPs
 #' betas <- MaskRepeatSNPs(betas, 'hm450')
@@ -198,7 +198,7 @@ ReadIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL) {
 #' @return a SignalSet, indexed by probe ID address
 #' @import FDb.InfiniumMethylation.hg19
 #' @export
-ChipAddressToProbe <- function(dm) {
+ChipAddressToSignal <- function(dm) {
 
   platform <- attr(dm, 'platform')
   dm.ordering <- GetBuiltInData('ordering', platform)
@@ -413,9 +413,10 @@ DyeBiasCorrection <- function(dmps, ref, normctls=NULL) {
 #' @return beta values
 #' @export
 SignalToBeta <- function(dmp, pval) {
-  betas <- pmax(dmp$IR[,'M'],1) / pmax(dmp$IR[,'M']+dmp$IR[,'U'],2)
-  betas <- c(betas, pmax(dmp$IG[,'M'],1) / pmax(dmp$IG[,'M']+dmp$IG[,'U'],2))
-  betas <- c(betas, pmax(dmp$II[,'M'],1) / pmax(dmp$II[,'M']+dmp$II[,'U'],2))
+  betas1 <- pmax(dmp$IR[,'M'],1) / pmax(dmp$IR[,'M']+dmp$IR[,'U'],2)
+  betas2 <- pmax(dmp$IG[,'M'],1) / pmax(dmp$IG[,'M']+dmp$IG[,'U'],2)
+  betas3 <- pmax(dmp$II[,'M'],1) / pmax(dmp$II[,'M']+dmp$II[,'U'],2)
+  betas <- c(betas1, betas2, betas3)
   ## betas[c(pval$IR, pval$IG, pval$II)>0.05] <- NA
   betas[pval[names(betas)]>0.05] <- NA
   betas[order(names(betas))]
