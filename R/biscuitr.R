@@ -95,6 +95,7 @@ SelectChromosome <- function(dmp, chrm) {
 #' @param dmp1 an object of class \code{SignalSet}
 #' @param dmp2 an object of class \code{SignalSet}
 #' @return an object of class \code{SignalSet} after merging
+#' @export
 MergeSignals <- function(dmp1, dmp2) {
   SignalSet(dmp1$platform,
             IG = rbind(dmp1$IG, dmp2$IG),
@@ -161,7 +162,6 @@ ReadIDATs <- function(sample.names, base.dir=NULL) {
 ReadIDATsFromDir <- function(dir.name) {
   fns <- list.files(dir.name)
   sample.names <- unique(sub("_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
-
   ReadIDATs(paste0(dir.name,'/',sample.names))
 }
 
@@ -414,10 +414,8 @@ DyeBiasCorrection <- function(dmps, ref, normctls=NULL) {
 #' @export
 SignalToBeta <- function(dmp, pval) {
   betas <- pmax(dmp$IR[,'M'],1) / pmax(dmp$IR[,'M']+dmp$IR[,'U'],2)
-  betas <- c(betas,
-             pmax(dmp$IG[,'M'],1) / pmax(dmp$IG[,'M']+dmp$IG[,'U'],2))
-  betas <- c(betas,
-             pmax(dmp$II[,'M'],1) / pmax(dmp$II[,'M']+dmp$II[,'U'],2))
+  betas <- c(betas, pmax(dmp$IG[,'M'],1) / pmax(dmp$IG[,'M']+dmp$IG[,'U'],2))
+  betas <- c(betas, pmax(dmp$II[,'M'],1) / pmax(dmp$II[,'M']+dmp$II[,'U'],2))
   ## betas[c(pval$IR, pval$IG, pval$II)>0.05] <- NA
   betas[pval[names(betas)]>0.05] <- NA
   betas[order(names(betas))]
