@@ -22,18 +22,18 @@
 #' dms <- ReadIDATsFromDir(sample.dir)
 #'
 #' ## translate chip address to probe address
-#' dmps <- lapply(dmps, ChipAddressToSignal)
+#' ssets <- lapply(ssets, ChipAddressToSignal)
 #'
 #' ## detect p-value
-#' pvals <- lapply(dmps, DetectPValue)
+#' pvals <- lapply(ssets, DetectPValue)
 #'
 #' ## normalization
-#' dmps <- lapply(dmps, BackgroundCorrectionNoob)
-#' dmps <- DyeBiasCorrectionMostBalanced(dmps)
-#' dmps <- Funnorm(dmps)
+#' ssets <- lapply(ssets, BackgroundCorrectionNoob)
+#' ssets <- DyeBiasCorrectionMostBalanced(ssets)
+#' ssets <- Funnorm(ssets)
 #'
 #' ## convert signal to beta values
-#' betas <- mapply(SignalToBeta, dmps, pvals)
+#' betas <- mapply(SignalToBeta, ssets, pvals)
 #'
 #' ## mask repeats and SNPs
 #' betas <- MaskRepeatSNPs(betas, 'hm450')
@@ -76,31 +76,31 @@ SignalSet <- function(platform,
 #'
 #' Select a subset of signal set from a given chromosome
 #'
-#' @param dmp an object of class \code{SignalSet}
+#' @param sset an object of class \code{SignalSet}
 #' @param chrm target chromosome
 #' @return an object of class \code{SignalSet}
 #' @export
-SelectChromosome <- function(dmp, chrm) {
-  probe2chr <- GetBuiltInData('hg19.probe2chr', dmp$platform)
-  SignalSet(dmp$platform,
-            IG = dmp$IG[probe2chr[rownames(dmp$IG)] == chrm,],
-            IR = dmp$IR[probe2chr[rownames(dmp$IR)] == chrm,],
-            II = dmp$II[probe2chr[rownames(dmp$II)] == chrm,])
+SelectChromosome <- function(sset, chrm) {
+  probe2chr <- GetBuiltInData('hg19.probe2chr', sset$platform)
+  SignalSet(sset$platform,
+            IG = sset$IG[probe2chr[rownames(sset$IG)] == chrm,],
+            IR = sset$IR[probe2chr[rownames(sset$IR)] == chrm,],
+            II = sset$II[probe2chr[rownames(sset$II)] == chrm,])
 }
 
 #' Merge two signal sets
 #'
 #' Merge two signal sets
 #'
-#' @param dmp1 an object of class \code{SignalSet}
-#' @param dmp2 an object of class \code{SignalSet}
+#' @param sset1 an object of class \code{SignalSet}
+#' @param sset2 an object of class \code{SignalSet}
 #' @return an object of class \code{SignalSet} after merging
 #' @export
-MergeSignals <- function(dmp1, dmp2) {
-  SignalSet(dmp1$platform,
-            IG = rbind(dmp1$IG, dmp2$IG),
-            IR = rbind(dmp1$IR, dmp2$IR),
-            II = rbind(dmp1$II, dmp2$II))
+MergeSignals <- function(sset1, sset2) {
+  SignalSet(sset1$platform,
+            IG = rbind(sset1$IG, sset2$IG),
+            IR = rbind(sset1$IR, sset2$IR),
+            II = rbind(sset1$II, sset2$II))
 }
 
 #' Import one IDAT file
@@ -247,12 +247,12 @@ ChipAddressToSignal <- function(dm) {
 #' Compute detection p-value
 #'
 #' Compute detection p-value for in-band signals
-#' @param dmp a SignalSet
+#' @param sset a SignalSet
 #' @import stats
 #' @return array of p-values for each probe
 #' @export
-DetectPValue <- function(dmp) {
-  negctls <- dmp$ctl[grep('negative', tolower(rownames(dmp$ctl))),]
+DetectPValue <- function(sset) {
+  negctls <- sset$ctl[grep('negative', tolower(rownames(sset$ctl))),]
   negctls <- subset(negctls, col!=-99)
 
   library(stats)
@@ -260,13 +260,13 @@ DetectPValue <- function(dmp) {
   funcR <- ecdf(negctls$R)
 
   ## p-value is the minimium detection p-value of the 2 alleles
-  IR <- 1-apply(cbind(funcR(dmp$IR[,'M']), funcR(dmp$IR[,'U'])),1,max)
-  IG <- 1-apply(cbind(funcG(dmp$IG[,'M']), funcG(dmp$IG[,'U'])),1,max)
-  II <- 1-apply(cbind(funcG(dmp$II[,'M']), funcR(dmp$II[,'U'])),1,max)
+  IR <- 1-apply(cbind(funcR(sset$IR[,'M']), funcR(sset$IR[,'U'])),1,max)
+  IG <- 1-apply(cbind(funcG(sset$IG[,'M']), funcG(sset$IG[,'U'])),1,max)
+  II <- 1-apply(cbind(funcG(sset$II[,'M']), funcR(sset$II[,'U'])),1,max)
 
-  names(IR) <- rownames(dmp$IR)
-  names(IG) <- rownames(dmp$IG)
-  names(II) <- rownames(dmp$II)
+  names(IR) <- rownames(sset$IR)
+  names(IG) <- rownames(sset$IG)
+  names(II) <- rownames(sset$II)
   
   pval <- c(IR,IG,II)
   pval[order(names(pval))]
@@ -275,45 +275,45 @@ DetectPValue <- function(dmp) {
 #' Noob background correction
 #'
 #' Norm-Exp deconvolution using Out-Of-Band (oob) probes
-#' @param dmp a \code{SignalSet}
+#' @param sset a \code{SignalSet}
 #' @import MASS
 #' @return the normalized \code{SignalSet}
 #' @export
-BackgroundCorrectionNoob <- function(dmp, offset=15) {
+BackgroundCorrectionNoob <- function(sset, offset=15) {
 
   ## sort signal based on channel
-  ibR <- c(dmp$IR, dmp$II[,'U'])              # in-band red signal
-  ibG <- c(dmp$IG, dmp$II[,'M'])              # in-band green signal
+  ibR <- c(sset$IR, sset$II[,'U'])              # in-band red signal
+  ibG <- c(sset$IG, sset$II[,'M'])              # in-band green signal
 
   ## set signal to 1 if 0
   ibR[ibR==0] <- 1
   ibG[ibG==0] <- 1
-  dmp$oobR[dmp$oobR==0] <- 1
-  dmp$oobG[dmp$oobG==0] <- 1
+  sset$oobR[sset$oobR==0] <- 1
+  sset$oobG[sset$oobG==0] <- 1
   
   ## do background correction in each channel
-  ibR.nl <- .BackgroundCorrectionNoobCh1(ibR, dmp$oobR, dmp$ctl$R, offset=offset)
-  ibG.nl <- .BackgroundCorrectionNoobCh1(ibG, dmp$oobG, dmp$ctl$G, offset=offset)
+  ibR.nl <- .BackgroundCorrectionNoobCh1(ibR, sset$oobR, sset$ctl$R, offset=offset)
+  ibG.nl <- .BackgroundCorrectionNoobCh1(ibG, sset$oobG, sset$ctl$G, offset=offset)
 
   ## build back the list
-  IR.n <- matrix(ibR.nl$i[1:length(dmp$IR)],
-                 nrow=nrow(dmp$IR), dimnames=dimnames(dmp$IR))
+  IR.n <- matrix(ibR.nl$i[1:length(sset$IR)],
+                 nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
 
-  IG.n <- matrix(ibG.nl$i[1:length(dmp$IG)],
-                 nrow=nrow(dmp$IG), dimnames=dimnames(dmp$IG))
+  IG.n <- matrix(ibG.nl$i[1:length(sset$IG)],
+                 nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
 
   II <- as.matrix(data.frame(
-    M=ibG.nl$i[(length(dmp$IG)+1):length(ibG)],
-    U=ibR.nl$i[(length(dmp$IR)+1):length(ibR)],
-    row.names=rownames(dmp$II)))
+    M=ibG.nl$i[(length(sset$IG)+1):length(ibG)],
+    U=ibR.nl$i[(length(sset$IR)+1):length(ibR)],
+    row.names=rownames(sset$II)))
 
-  ctl <- dmp$ctl
+  ctl <- sset$ctl
   ctl$G <- ibG.nl$c
   ctl$R <- ibR.nl$c
 
-  SignalSet(dmp$platform,
+  SignalSet(sset$platform,
             IG=IG.n, IR=IR.n,
-            oobG=dmp$oobG, oobR=dmp$oobR,
+            oobG=sset$oobG, oobR=sset$oobR,
             II=II, ctl=ctl)
 }
 
@@ -354,9 +354,9 @@ BackgroundCorrectionNoob <- function(dmp, offset=15) {
   signal
 }
 
-.GetNormCtls <- function(dmp) {
-  normctl.G <- dmp$ctl[grep('norm_(c|g)',tolower(rownames(dmp$ctl))),]
-  normctl.R <- dmp$ctl[grep('norm_(a|t)',tolower(rownames(dmp$ctl))),]
+.GetNormCtls <- function(sset) {
+  normctl.G <- sset$ctl[grep('norm_(c|g)',tolower(rownames(sset$ctl))),]
+  normctl.R <- sset$ctl[grep('norm_(a|t)',tolower(rownames(sset$ctl))),]
   c(G=mean(normctl.G$G, na.rm=TRUE), R=mean(normctl.R$R, na.rm=TRUE))
 }
 
@@ -364,43 +364,43 @@ BackgroundCorrectionNoob <- function(dmp, offset=15) {
 #'
 #' Correct dye bias using most balanced sample
 #' 
-#' @param dmps a list of normalized \code{SignalSet}s
+#' @param ssets a list of normalized \code{SignalSet}s
 #' @return a list of normalized \code{SignalSet}s
 #' @export
-DyeBiasCorrectionMostBalanced <- function(dmps) {
-  normctls <- vapply(dmps, .GetNormCtls, numeric(2))
+DyeBiasCorrectionMostBalanced <- function(ssets) {
+  normctls <- vapply(ssets, .GetNormCtls, numeric(2))
   most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
   ref <- mean(normctls[,most.balanced], na.rm=TRUE)
-  DyeBiasCorrection(dmps, ref, normctls=normctls)
+  DyeBiasCorrection(ssets, ref, normctls=normctls)
 }
 
 #' Correct dye bias
 #'
 #' Correct dye bias
 #'
-#' @param dmps a list of \code{SignalSet}s
+#' @param ssets a list of \code{SignalSet}s
 #' @param ref reference signal level
 #' @return a list of normalized \code{SignalSet}s
 #' @export
-DyeBiasCorrection <- function(dmps, ref, normctls=NULL) {
+DyeBiasCorrection <- function(ssets, ref, normctls=NULL) {
   if (is.null(normctls))
-    normctls <- vapply(dmps, .GetNormCtls, numeric(2))
+    normctls <- vapply(ssets, .GetNormCtls, numeric(2))
   factor <- ref / normctls
-  dmps.n <- lapply(names(dmps), function(sample.name) {
+  ssets.n <- lapply(names(ssets), function(sample.name) {
     n <- list()
-    dmp <- dmps[[sample.name]]
+    sset <- ssets[[sample.name]]
     fR <- factor['R', sample.name]
     fG <- factor['G', sample.name]
-    n$IR <- matrix(c(fR*dmp$IR[,'M'], fR*dmp$IR[,'U']),
-                   nrow=nrow(dmp$IR), dimnames=dimnames(dmp$IR))
-    n$IG <- matrix(c(fG*dmp$IG[,'M'], fG*dmp$IG[,'U']),
-                   nrow=nrow(dmp$IG), dimnames=dimnames(dmp$IG))
-    n$II <- matrix(c(fG*dmp$II[,'M'], fR*dmp$II[,'U']),
-                   nrow=nrow(dmp$II), dimnames=dimnames(dmp$II))
+    n$IR <- matrix(c(fR*sset$IR[,'M'], fR*sset$IR[,'U']),
+                   nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
+    n$IG <- matrix(c(fG*sset$IG[,'M'], fG*sset$IG[,'U']),
+                   nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
+    n$II <- matrix(c(fG*sset$II[,'M'], fR*sset$II[,'U']),
+                   nrow=nrow(sset$II), dimnames=dimnames(sset$II))
     n
   })
-  names(dmps.n) <- names(dmps)
-  dmps.n
+  names(ssets.n) <- names(ssets)
+  ssets.n
 }
 
 #' Convert signal to beta
@@ -409,13 +409,13 @@ DyeBiasCorrection <- function(dmps, ref, normctls=NULL) {
 #'
 #' Convert signal to beta and mask low p-value probes
 #'
-#' @param dmp a \code{SignalSet}
+#' @param sset a \code{SignalSet}
 #' @return beta values
 #' @export
-SignalToBeta <- function(dmp, pval) {
-  betas1 <- pmax(dmp$IR[,'M'],1) / pmax(dmp$IR[,'M']+dmp$IR[,'U'],2)
-  betas2 <- pmax(dmp$IG[,'M'],1) / pmax(dmp$IG[,'M']+dmp$IG[,'U'],2)
-  betas3 <- pmax(dmp$II[,'M'],1) / pmax(dmp$II[,'M']+dmp$II[,'U'],2)
+SignalToBeta <- function(sset, pval) {
+  betas1 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
+  betas2 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
+  betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
   betas <- c(betas1, betas2, betas3)
   ## betas[c(pval$IR, pval$IG, pval$II)>0.05] <- NA
   betas[pval[names(betas)]>0.05] <- NA
