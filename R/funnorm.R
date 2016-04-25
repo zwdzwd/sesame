@@ -31,12 +31,12 @@ QuantileSet <- function(
 #' 
 #' build control matrix for funnorm
 #'
-#' @param dmp an object of class SignalSet
+#' @param sset an object of class SignalSet
 #' @return a vector with control summaries
 #' @export
-BuildControlMatrix450k <- function(dmp) {
+BuildControlMatrix450k <- function(sset) {
   
-  ctls <- split(dmp$ctl, dmp$ctl$type)
+  ctls <- split(sset$ctl, sset$ctl$type)
 
   cm <- NULL
 
@@ -106,8 +106,8 @@ BuildControlMatrix450k <- function(dmp) {
   cm <- c(cm, dyebias=(cm['normC']+cm['normG']) / (cm['normA']+cm['normT']))
 
   ## out-of-band probe quantiles
-  cm <- c(cm, oob.ratio=median(dmp$oobG) / median(dmp$oobR))
-  cm <- c(cm, structure(quantile(dmp$oobG, c(0.01,0.5,0.99)), names=paste0('oob', c(1,50,99))))
+  cm <- c(cm, oob.ratio=median(sset$oobG) / median(sset$oobR))
+  cm <- c(cm, structure(quantile(sset$oobG, c(0.01,0.5,0.99)), names=paste0('oob', c(1,50,99))))
 
   cm
 }
@@ -117,29 +117,29 @@ BuildControlMatrix450k <- function(dmp) {
 #' build quantiles for funnorm
 #' 
 #' quantiles are stratified by IR autosomal, IG autosomal, II autosomal, X all design and Y all design and by methylated and unmethylated channel.
-#' @param dmp a SignalSet
+#' @param sset a SignalSet
 #' @param n number of grid points in quantiles.
 #' @return an object of \code{QuantileSet}
 #' @export
-BuildQuantiles450k <- function(dmp, n=500) {
+BuildQuantiles450k <- function(sset, n=500) {
 
-  probe2chr <- GetBuiltInData('hg19.probe2chr', dmp$platform)
+  probe2chr <- GetBuiltInData('hg19.probe2chr', sset$platform)
 
   probs <- seq(from=0, to=1, length.out=n)
 
-  auto.IG <- dmp$IG[!(probe2chr[rownames(dmp$IG)] %in% c('chrX','chrY')),]
+  auto.IG <- sset$IG[!(probe2chr[rownames(sset$IG)] %in% c('chrX','chrY')),]
   auto.IG.M <- quantile(auto.IG[,'M'], probs)
   auto.IG.U <- quantile(auto.IG[,'U'], probs)
 
-  auto.IR <- dmp$IR[!(probe2chr[rownames(dmp$IR)] %in% c('chrX','chrY')),]
+  auto.IR <- sset$IR[!(probe2chr[rownames(sset$IR)] %in% c('chrX','chrY')),]
   auto.IR.M <- quantile(auto.IR[,'M'], probs)
   auto.IR.U <- quantile(auto.IR[,'U'], probs)
 
-  auto.II <- dmp$II[!(probe2chr[rownames(dmp$II)] %in% c('chrX','chrY')),]
+  auto.II <- sset$II[!(probe2chr[rownames(sset$II)] %in% c('chrX','chrY')),]
   auto.II.M <- quantile(auto.II[,'M'], probs)
   auto.II.U <- quantile(auto.II[,'U'], probs)
 
-  all <- rbind(dmp$IG, dmp$IR, dmp$II)
+  all <- rbind(sset$IG, sset$IR, sset$II)
   X.all <- all[probe2chr[rownames(all)] == 'chrX',]
   X.all.M <- quantile(X.all[,'M'], probs)
   X.all.U <- quantile(X.all[,'U'], probs)
@@ -238,20 +238,20 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
 #'
 #' Interpolate signal using quantile distribution
 #'
-#' @param dmp an object of class \code{SignalSet}
+#' @param sset an object of class \code{SignalSet}
 #' @param qs an object of class \code{QuantileSet}
 #' @return a object of class \code{SignalSet}
 #' @import preprocessCore
 #' @export
-QuantilesInterpolateSignal <- function(dmp, qntiles) {
+QuantilesInterpolateSignal <- function(sset, qntiles) {
 
-  probe2chr <- GetBuiltInData('hg19.probe2chr', dmp$platform)
-  auto.IG <- dmp$IG[!(probe2chr[rownames(dmp$IG)] %in% c('chrX','chrY')),]
-  auto.IR <- dmp$IR[!(probe2chr[rownames(dmp$IR)] %in% c('chrX','chrY')),]
-  auto.II <- dmp$II[!(probe2chr[rownames(dmp$II)] %in% c('chrX','chrY')),]
+  probe2chr <- GetBuiltInData('hg19.probe2chr', sset$platform)
+  auto.IG <- sset$IG[!(probe2chr[rownames(sset$IG)] %in% c('chrX','chrY')),]
+  auto.IR <- sset$IR[!(probe2chr[rownames(sset$IR)] %in% c('chrX','chrY')),]
+  auto.II <- sset$II[!(probe2chr[rownames(sset$II)] %in% c('chrX','chrY')),]
 
-  all <- rbind(dmp$IG, dmp$IR, dmp$II)
-  category <- do.call(c, lapply(c('IG','IR','II'), function(nm) rep(nm, length(dmp[[nm]]))))
+  all <- rbind(sset$IG, sset$IR, sset$II)
+  category <- do.call(c, lapply(c('IG','IR','II'), function(nm) rep(nm, length(sset[[nm]]))))
   X.all <- all[probe2chr[rownames(all)] == 'chrX',]
 
   env <- environment()
@@ -267,7 +267,7 @@ QuantilesInterpolateSignal <- function(dmp, qntiles) {
                        USE.NAMES=TRUE, simplify=FALSE)
 
   ## build back a SignalSet
-  s <- do.call(SignalSet, c(dmp$platform, sapply(c('IG','IR','II'), function(nm) {
+  s <- do.call(SignalSet, c(sset$platform, sapply(c('IG','IR','II'), function(nm) {
     d <- cbind(get(paste0('auto.', nm,'.M')), get(paste0('auto.', nm, '.U')))
     x <- cbind(separate.n[['X.all.M']], separate.n[['X.all.U']])
     d <- rbind(d, x[category[names(x)] == nm])
@@ -290,18 +290,18 @@ QuantilesInterpolateSignal <- function(dmp, qntiles) {
 #'
 #' This is a wrapper of the preprocessCore's quantile normalization
 #' 
-#' @param dmps a list of objects of class \code{SignalSet}
+#' @param ssets a list of objects of class \code{SignalSet}
 #' @param genders specify whether to normalize separately by gender
-#' @return dmps.n a list of objects of class \code{SignalSet} after normalization
+#' @return ssets.n a list of objects of class \code{SignalSet} after normalization
 #' @import preprocessCore
 #' @export
-QuantileNormalize <- function(dmps, genders=NULL) {
-  nr <- vapply(c('IG','IR','II'), function(x) nrow(dmps[[1]][[x]]), numeric(1))
-  M <- vapply(dmps,
-              function(dmp) {c(dmp$IG[,'M'], dmp$IR[,'M'], dmp$II[,'M'])},
+QuantileNormalize <- function(ssets, genders=NULL) {
+  nr <- vapply(c('IG','IR','II'), function(x) nrow(ssets[[1]][[x]]), numeric(1))
+  M <- vapply(ssets,
+              function(sset) {c(sset$IG[,'M'], sset$IR[,'M'], sset$II[,'M'])},
               numeric(sum(nr)))
-  U <- vapply(dmps,
-              function(dmp) {c(dmp$IG[,'U'], dmp$IR[,'U'], dmp$II[,'U'])},
+  U <- vapply(ssets,
+              function(sset) {c(sset$IG[,'U'], sset$IR[,'U'], sset$II[,'U'])},
               numeric(sum(nr)))
 
   if ((!is.null(genders)) &&
@@ -330,7 +330,7 @@ QuantileNormalize <- function(dmps, genders=NULL) {
   }
 
   ## build back SignalSet
-  platform <- dmps[[1]]$platform
+  platform <- ssets[[1]]$platform
   sapply(colnames(M.n), function(col) {
     SignalSet(platform,
       IG = cbind(M=M.n[1:nr[1],col], U=U.n[1:nr[1],col]),
@@ -346,14 +346,14 @@ QuantileNormalize <- function(dmps, genders=NULL) {
 #' Infer gender from signals
 #'
 #' Infer gender from signals
-#' @param dmps a list of \code{SignalSet}s
+#' @param ssets a list of \code{SignalSet}s
 #' @return named vector of 0 (for female) and 1 (for male)
 #' @export
-InferGenders <- function(dmps) {
-  probe2chr <- GetBuiltInData('hg19.probe2chr', dmps[[1]]$platform)
-  g <- t(vapply(dmps, function(dmp) {
-    all.signals <- c(apply(dmp$IR,1,max), apply(dmp$IG,1,max), apply(dmp$II,1,max))
-    all <- rbind(dmp$IG, dmp$IR, dmp$II)
+InferGenders <- function(ssets) {
+  probe2chr <- GetBuiltInData('hg19.probe2chr', ssets[[1]]$platform)
+  g <- t(vapply(ssets, function(sset) {
+    all.signals <- c(apply(sset$IR,1,max), apply(sset$IG,1,max), apply(sset$II,1,max))
+    all <- rbind(sset$IG, sset$IR, sset$II)
     all.X <- all[(probe2chr[rownames(all)] == 'chrX'),]
     all.X.betas <- all.X[,'M']/(all.X[,'M']+all.X[,'U'])
     c(median(all.signals[probe2chr[names(all.signals)] == 'chrX']),
@@ -381,25 +381,25 @@ InferGenders <- function(dmps) {
 #' Funnorm normalization
 #'
 #' This implementation wrap multiple funnorm steps into one function and assume the entire data set fits the memory
-#' @param dmps an object of class \code{SignalSet}
+#' @param ssets a list of objects of class \code{SignalSet}
 #' @return an object of class \code{SignalSet} after normalization
 #' @examples
 #' 
 #' @export
-Funnorm <- function(dmps) {
+Funnorm <- function(ssets) {
 
   ## normalize autosomes and chromosome X
-  cms <- lapply(dmps, BuildControlMatrix450k)
-  qntiles <- lapply(dmps, BuildQuantiles450k)
-  genders <- InferGenders(dmps)
+  cms <- lapply(ssets, BuildControlMatrix450k)
+  qntiles <- lapply(ssets, BuildQuantiles450k)
+  genders <- InferGenders(ssets)
   qntiles.n <- FunnormRegress(cms, qntiles, genders$genders)
-  dmps.autoX.n <- Map(QuantilesInterpolateSignal, dmps, qntiles.n)
+  ssets.autoX.n <- Map(QuantilesInterpolateSignal, ssets, qntiles.n)
 
   ## normalize chromosome Y
-  dmps.Y <- lapply(dmps, function(dmp) SelectChromosome(dmp,'chrY'))
-  dmps.Y.n <- QuantileNormalize(dmps.Y, genders)
+  ssets.Y <- lapply(ssets, function(sset) SelectChromosome(sset,'chrY'))
+  ssets.Y.n <- QuantileNormalize(ssets.Y, genders)
 
-  dmps.n <- Map(MergeSignal, dmps.autoX.n, dmps.Y.n)
-  dmps.n
+  ssets.n <- Map(MergeSignal, ssets.autoX.n, ssets.Y.n)
+  ssets.n
 }
 
