@@ -178,7 +178,7 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
   stopifnot(identical(names(qntiles),rownames(mm)))
   
   ## Quantile normalize - autosomes
-  MPrint("Normalizing autosomes.")
+  Message("Normalizing autosomes.")
   FunnormRegress1 <- function(qmat, mm, k=2) {
     stopifnot(identical(colnames(qmat), rownames(mm)))
     qmat[1,] <- 0
@@ -205,10 +205,10 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
   ## Quantile normalize X chromosome
   fmle <- genders[names(qntiles)]==0
   male <- genders[names(qntiles)]==1
-  MPrint("Normalizing X-chromosome.")
+  Message("Normalizing X-chromosome.")
   if ((!is.null(genders)) &&
       sum(genders == 0)>10 && sum(genders == 1)>10) {
-    MPrint("Normalize male and female sparately.")
+    Message("Normalize male and female sparately.")
     qmats.n[['X.all.M']] <- cbind(
       FunnormRegress1(sapply(
         qntiles[fmle], function(x) x$X.all.M), mm[fmle,], k=k),
@@ -220,7 +220,7 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
       FunnormRegress1(sapply(
         qntiles[male], function(x) x$X.all.U), mm[male,], k=k))
   } else {
-    MPrint("Ignore genders in X-chromosome normalization.")
+    Message("Ignore genders in X-chromosome normalization.")
     qmats.n[['X.all.M']] <- FunnormRegress1(sapply(
       qntiles, function(x) x$X.all.M), mm, k=k)
     qmats.n[['X.all.U']] <- FunnormRegress1(sapply(
