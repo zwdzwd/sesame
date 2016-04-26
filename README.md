@@ -1,2 +1,2 @@
-# biscuitr
-R package for DNA methylation data
+# sesame 
+SEnsible Step-wise Analysis of Methylation data
