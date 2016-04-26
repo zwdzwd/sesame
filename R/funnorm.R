@@ -347,39 +347,6 @@ QuantileNormalize <- function(ssets, genders=NULL) {
          simplify=FALSE, USE.NAMES=TRUE)
 }
 
-#' Infer gender from signals
-#'
-#' Infer gender from signals
-#' @param ssets a list of \code{SignalSet}s
-#' @return named vector of 0 (for female) and 1 (for male)
-#' @export
-InferGenders <- function(ssets) {
-  probe2chr <- GetBuiltInData('hg19.probe2chr', ssets[[1]]$platform)
-  g <- t(vapply(ssets, function(sset) {
-    all.signals <- c(apply(sset$IR,1,max), apply(sset$IG,1,max), apply(sset$II,1,max))
-    all <- rbind(sset$IG, sset$IR, sset$II)
-    all.X <- all[(probe2chr[rownames(all)] == 'chrX'),]
-    all.X.betas <- all.X[,'M']/(all.X[,'M']+all.X[,'U'])
-    c(median(all.signals[probe2chr[names(all.signals)] == 'chrX']),
-      median(all.signals[probe2chr[names(all.signals)] == 'chrY']),
-      median(all.X.betas, na.rm=TRUE),
-      sum(all.X.betas>0.3 & all.X.betas<0.7, na.rm=TRUE) /
-        sum(!is.na(all.X.betas)))
-  }, numeric(4)))
-  colnames(g) <- c('x.median','y.median','x.beta.median','x.intermed.frac')
-  g <- as.data.frame(g)
-
-  ## the simpler classification
-  ## g$genders <- ifelse(g$y.median < 500, 0, 1)
-  
-  ## more accurate but "might" overfit
-  g$genders <- ifelse(
-    g$y.median < 500,
-    ifelse(g$y.median > 300 & g$x.intermed.frac<0.2,1,0),
-    ifelse(g$y.median<2000 & g$x.intermed.frac>0.5, 0, 1))
-  g
-}
-
 #' Funnorm normalization
 #'
 #' Funnorm normalization
