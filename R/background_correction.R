@@ -40,7 +40,7 @@ BackgroundCorrectionNoob <- function(sset, offset=15) {
 
   SignalSet(sset$platform,
             IG=IG.n, IR=IR.n,
-            oobG=sset$oobG, oobR=sset$oobR,
+            oobG=sset$oobG, oobR=sset$oobR, # oobG and oobR are untouched
             II=II, ctl=ctl)
 }
 
@@ -125,6 +125,10 @@ DyeBiasCorrection <- function(ssets, ref, normctls=NULL) {
     n$II <- matrix(c(fG*sset$II[,'M'], fR*sset$II[,'U']),
                    nrow=nrow(sset$II), dimnames=dimnames(sset$II))
     n$ctl <- transform(sset$ctl, G=fG*G, R=fR*R)
+
+    ## not sure if we need to normalize oobs, it is dye-bias corrected anyway
+    n$oobG <- fG*sset$oobG
+    n$oobR <- fR*sset$oobR
     n
   })
   names(ssets.n) <- names(ssets)
