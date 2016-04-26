@@ -2,13 +2,13 @@
 #' Analyze DNA methylation data
 #' 
 #' @description
-#' biscuitR allows analysing DNA methylation data in R.
+#' SEnsible and step-wise analysis of DNA methylation data
 #' 
 #' @details
-#' This package complements array functionalities in complement to the biscuit software.
-#' This implementation allow processing >10,000 samples in parallel on clusters.
+#' This package complements array functionalities that allow
+#' processing >10,000 samples in parallel on clusters.
 #' It supports both HM450 and EPIC platform.
-#' @aliases biscuitr
+#' @aliases sesame
 #' @author
 #' Wanding Zhou \email{Wanding.Zhou@vai.org},
 #' Hui Shen \email{Hui.Shen@vai.org}
@@ -16,7 +16,7 @@
 ## @references To appear
 ## @seealso To appear
 #' @examples
-#' library(biscuitr)
+#' library(sesame)
 #' 
 #' ## read IDATs
 #' dms <- ReadIDATsFromDir(sample.dir)
