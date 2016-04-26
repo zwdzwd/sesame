@@ -41,3 +41,16 @@ any(is.na(EPIC.hg19.probe2chr))
 save(EPIC.hg19.probe2chr, file='~/tools/biscuitr/biscuitr/data/EPIC.hg19.probe2chr.rda')
 
 ## d <- data.frame(a=as.character(EPIC.hg19.probe2chr[match(names(hm450.hg19.probe2chr),names(EPIC.hg19.probe2chr))]), b=as.character(hm450.hg19.probe2chr),row.names=names(hm450.hg19.probe2chr))
+
+## for 27k
+library(methylumi)
+
+hm27.hg19 <- get27k()
+hm27.hg19.df <- as.data.frame(hm27.hg19)
+hm27.hg19.probe2chr <- setNames(hm27.hg19.df$seqnames, rownames(hm27.hg19.df))
+
+save(hm27.hg19.probe2chr, file='../data/hm27.hg19.probe2chr.rda')
+data(hm27.ordering)
+save(hm27.ordering, file='~/tools/sesame/sesame/data/hm27.ordering.rda')
+data(hm27.controls)
+save(hm27.controls, file='~/tools/sesame/sesame/data/hm27.controls.rda')
