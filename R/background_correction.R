@@ -132,11 +132,11 @@ DyeBiasCorrection <- function(sset, ref) {
   fG <- ref/normctl['G']
   SignalSet(sset$platform,
             IG = matrix(c(fG*sset$IG[,'M'], fG*sset$IG[,'U']),
-              nrow=nrow(sset$IG), dimnames=dimnames(sset$IG)),
+              nrow=nrow(sset$IG), ncol=ncol(sset$IG), dimnames=dimnames(sset$IG)),
             IR = matrix(c(fR*sset$IR[,'M'], fR*sset$IR[,'U']),
-              nrow=nrow(sset$IR), dimnames=dimnames(sset$IR)),
+              nrow=nrow(sset$IR), ncol=ncol(sset$IR), dimnames=dimnames(sset$IR)),
             II = matrix(c(fG*sset$II[,'M'], fR*sset$II[,'U']),
-              nrow=nrow(sset$II), dimnames=dimnames(sset$II)),
+              nrow=nrow(sset$II), ncol=ncol(sset$II), dimnames=dimnames(sset$II)),
             ctl = transform(sset$ctl, G=fG*G, R=fR*R),
             oobG = fG*sset$oobG,
             oobR = fR*sset$oobR)
