@@ -15,6 +15,8 @@ BackgroundCorrectionNoob <- function(sset, offset=15) {
   ## set signal to 1 if 0
   ibR[ibR==0] <- 1
   ibG[ibG==0] <- 1
+
+  ## oobG and oobR are untouched besides the 0>1 switch
   sset$oobR[sset$oobR==0] <- 1
   sset$oobG[sset$oobG==0] <- 1
   
@@ -25,34 +27,32 @@ BackgroundCorrectionNoob <- function(sset, offset=15) {
   ## build back the list
   ## type IG
   if (length(sset$IG)>0)
-    IG.n <- matrix(ibG.nl$i[1:length(sset$IG)], nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
+    sset$IG.n <- matrix(ibG.nl$i[1:length(sset$IG)],
+                        nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
   else
-    IG.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sset$IG.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
   ## type IR
   if (length(sset$IR)>0)
-    IR.n <- matrix(ibR.nl$i[1:length(sset$IR)], nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
+    sset$IR.n <- matrix(ibR.nl$i[1:length(sset$IR)],
+                        nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
   else
-    IR.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sset$IR.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
   ## type II
   if (nrow(sset$II) > 0)
-    II.n <- as.matrix(data.frame(
+    sset$II.n <- as.matrix(data.frame(
       M=ibG.nl$i[(length(sset$IG)+1):length(ibG)],
       U=ibR.nl$i[(length(sset$IR)+1):length(ibR)],
       row.names=rownames(sset$II)))
   else
-    II.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sset$II.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
   ## controls
-  ctl <- sset$ctl
-  ctl$G <- ibG.nl$c
-  ctl$R <- ibR.nl$c
+  sset$ctl$G <- ibG.nl$c
+  sset$ctl$R <- ibR.nl$c
 
-  SignalSet(sset$platform,
-            IG=IG.n, IR=IR.n,
-            oobG=sset$oobG, oobR=sset$oobR, # oobG and oobR are untouched
-            II=II.n, ctl=ctl)
+  sset
 }
 
 ## Noob background correction for one channel
@@ -130,14 +130,15 @@ DyeBiasCorrection <- function(sset, ref) {
   normctl <- .GetNormCtls(sset)
   fR <- ref/normctl['R']
   fG <- ref/normctl['G']
-  SignalSet(sset$platform,
-            IG = matrix(c(fG*sset$IG[,'M'], fG*sset$IG[,'U']),
-              nrow=nrow(sset$IG), ncol=ncol(sset$IG), dimnames=dimnames(sset$IG)),
-            IR = matrix(c(fR*sset$IR[,'M'], fR*sset$IR[,'U']),
-              nrow=nrow(sset$IR), ncol=ncol(sset$IR), dimnames=dimnames(sset$IR)),
-            II = matrix(c(fG*sset$II[,'M'], fR*sset$II[,'U']),
-              nrow=nrow(sset$II), ncol=ncol(sset$II), dimnames=dimnames(sset$II)),
-            ctl = transform(sset$ctl, G=fG*G, R=fR*R),
-            oobG = fG*sset$oobG,
-            oobR = fR*sset$oobR)
+
+  sset$IG <- matrix(c(fG*sset$IG[,'M'], fG*sset$IG[,'U']),
+                    nrow=nrow(sset$IG), ncol=ncol(sset$IG), dimnames=dimnames(sset$IG))
+  sset$IR <- matrix(c(fR*sset$IR[,'M'], fR*sset$IR[,'U']),
+                    nrow=nrow(sset$IR), ncol=ncol(sset$IR), dimnames=dimnames(sset$IR))
+  sset$II <- matrix(c(fG*sset$II[,'M'], fR*sset$II[,'U']),
+                    nrow=nrow(sset$II), ncol=ncol(sset$II), dimnames=dimnames(sset$II))
+  sset$ctl <- transform(sset$ctl, G=fG*G, R=fR*R)
+  sset$oobG <- fG*sset$oobG
+  sset$oobR <- fR*sset$oobR
+  sset
 }

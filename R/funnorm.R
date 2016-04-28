@@ -276,7 +276,7 @@ QuantilesInterpolateSignal <- function(sset, qntiles) {
     x <- cbind(separate.n[['X.all.M']], separate.n[['X.all.U']])
     d <- rbind(d, x[category[names(x)] == nm])
     d
-  }, USE.NAMES=TRUE, simplify=FALSE)))
+  }, USE.NAMES=TRUE, simplify=FALSE), pval=sset$pval))
 }
 
 .QuantilesInterpolateSignal1 <- function(signal, qntiles) {
@@ -334,17 +334,16 @@ QuantileNormalize <- function(ssets, genders=NULL) {
   }
 
   ## build back SignalSet
-  platform <- ssets[[1]]$platform
-  sapply(colnames(M.n), function(col) {
-    SignalSet(platform,
-      IG = cbind(M=M.n[1:nr[1],col], U=U.n[1:nr[1],col]),
-      IR = cbind(
-        M=M.n[(nr[1]+1):(nr[1]+nr[2]),col],
-        U=U.n[(nr[1]+1):(nr[1]+nr[2]),col]),
-      II = cbind(
-        M=M.n[(nr[1]+nr[2]+1):(nr[1]+nr[2]+nr[3]),col],
-        U=U.n[(nr[1]+nr[2]+1):(nr[1]+nr[2]+nr[3]),col]))},
-         simplify=FALSE, USE.NAMES=TRUE)
+  invisible(lapply(colnames(M.n), function(col) {
+    ssets[[col]]$IG = cbind(M=M.n[1:nr[1],col], U=U.n[1:nr[1],col])
+    ssets[[col]]$IR = cbind(
+                  M=M.n[(nr[1]+1):(nr[1]+nr[2]),col],
+                  U=U.n[(nr[1]+1):(nr[1]+nr[2]),col])
+    ssets[[col]]$II = cbind(
+                  M=M.n[(nr[1]+nr[2]+1):(nr[1]+nr[2]+nr[3]),col],
+                  U=U.n[(nr[1]+nr[2]+1):(nr[1]+nr[2]+nr[3]),col])
+  }))
+  ssets
 }
 
 #' Funnorm normalization
