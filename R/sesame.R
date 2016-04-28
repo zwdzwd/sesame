@@ -33,7 +33,7 @@
 #' ssets <- Funnorm(ssets)
 #'
 #' ## convert signal to beta values
-#' betas <- mapply(SignalToBeta, ssets, pvals)
+#' betas <- sapply(ssets, SignalToBeta)
 #'
 #' ## mask repeats and SNPs
 #' betas <- MaskRepeatSNPs(betas, 'hm450')
