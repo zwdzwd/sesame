@@ -23,17 +23,28 @@ BackgroundCorrectionNoob <- function(sset, offset=15) {
   ibG.nl <- .BackgroundCorrectionNoobCh1(ibG, sset$oobG, sset$ctl$G, offset=offset)
 
   ## build back the list
-  IR.n <- matrix(ibR.nl$i[1:length(sset$IR)],
-                 nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
+  ## type IG
+  if (length(sset$IG)>0)
+    IG.n <- matrix(ibG.nl$i[1:length(sset$IG)], nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
+  else
+    IG.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
-  IG.n <- matrix(ibG.nl$i[1:length(sset$IG)],
-                 nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
+  ## type IR
+  if (length(sset$IR)>0)
+    IR.n <- matrix(ibR.nl$i[1:length(sset$IR)], nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
+  else
+    IR.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
-  II <- as.matrix(data.frame(
-    M=ibG.nl$i[(length(sset$IG)+1):length(ibG)],
-    U=ibR.nl$i[(length(sset$IR)+1):length(ibR)],
-    row.names=rownames(sset$II)))
+  ## type II
+  if (nrow(sset$II) > 0)
+    II.n <- as.matrix(data.frame(
+      M=ibG.nl$i[(length(sset$IG)+1):length(ibG)],
+      U=ibR.nl$i[(length(sset$IR)+1):length(ibR)],
+      row.names=rownames(sset$II)))
+  else
+    II.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
+  ## controls
   ctl <- sset$ctl
   ctl$G <- ibG.nl$c
   ctl$R <- ibR.nl$c
@@ -41,7 +52,7 @@ BackgroundCorrectionNoob <- function(sset, offset=15) {
   SignalSet(sset$platform,
             IG=IG.n, IR=IR.n,
             oobG=sset$oobG, oobR=sset$oobR, # oobG and oobR are untouched
-            II=II, ctl=ctl)
+            II=II.n, ctl=ctl)
 }
 
 ## Noob background correction for one channel
