@@ -273,21 +273,34 @@ DetectPValue <- function(sset) {
 
 #' Convert signal to beta
 #'
-#' Convert signal to beta
-#'
 #' Convert signal to beta and mask low p-value probes
 #'
 #' @param sset a \code{SignalSet}
-#' @return beta values
+#' @return a vector of beta values
 #' @export
 SignalToBeta <- function(sset, pval) {
-  betas1 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
-  betas2 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
+  betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
+  betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
   betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
   betas <- c(betas1, betas2, betas3)
-  ## betas[c(pval$IR, pval$IG, pval$II)>0.05] <- NA
   betas[pval[names(betas)]>0.05] <- NA
   betas[order(names(betas))]
+}
+
+#' Convert signal to M-value
+#'
+#' Convert signal to M-value and mask low p-value probes
+#'
+#' @param sset a \code{SignalSet}
+#' @return a vector of M values
+#' @export
+SignalToM <- function(sset, pval) {
+  m1 <- log2(pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'U']))
+  m2 <- log2(pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'U']))
+  m3 <- log2(pmax(sset$II[,'M'],1) / pmax(sset$II[,'U']))
+  m <- c(m1, m2, m3)
+  m[pval[names(m)]>0.05] <- NA
+  m[order(names(m))]
 }
 
 #' @export
@@ -298,13 +311,17 @@ Message <- function(...) {
 #' Mask SNPs and repeats
 #'
 #' Mask SNPs and repeats
-#' @param betas a matrix of betas
+#' @param betas a matrix (multiple samples) or a vector of betas (one sample)
 #' @return masked matrix of beta values
 #' @export
 MaskRepeatSNPs <- function(betas, platform) {
   dm.mask <- GetBuiltInData('mask', platform)
-  betas[names(dm.mask),] <- NA
-  Message('Masked ', length(dm.mask), ' probes.')
+  n.na <- sum(is.na(betas))
+  if (class(betas) == 'matrix')
+    betas[rownames(betas) %in% dm.mask,] <- NA
+  else
+    betas[names(betas) %in% dm.mask] <- NA
+  Message('Masked probes: ', n.na, ' (before) ', sum(is.na(betas)), ' (after).')
   betas
 }
 
