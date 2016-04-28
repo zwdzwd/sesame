@@ -25,7 +25,7 @@
 #' ssets <- lapply(ssets, ChipAddressToSignal)
 #'
 #' ## detect p-value
-#' pvals <- lapply(ssets, DetectPValue)
+#' ssets <- lapply(ssets, DetectPValue)
 #'
 #' ## normalization
 #' ssets <- lapply(ssets, BackgroundCorrectionNoob)
@@ -52,7 +52,7 @@
 #' @param oobG out-of-band probes in green channel
 #' @param oobR out-of-band probes in red channel
 #' @param ctl all the control probe intensities
-#' 
+#' @param pval named numeric vector of p-values
 #' @return a SignalSet with IG, IR, II, oobG, oobR and ctl
 #'   \item{IR, IG and II}{matrices with columns M and U}
 #'   \item{oobR and oobG}{arrays of integer}
@@ -62,11 +62,11 @@ SignalSet <- function(platform,
                       IG=NULL, IR=NULL,
                       II=NULL,
                       oobG=NULL, oobR=NULL,
-                      ctl=NULL) {
+                      ctl=NULL, pval=NULL) {
   sset <- list(IG=IG, IR=IR,
                II=II,
                oobG=oobG, oobR=oobR,
-               ctl=ctl,
+               ctl=ctl, pval=pval,
                platform=platform)
   class(sset) <- "SignalSet"
   sset
@@ -246,9 +246,11 @@ ChipAddressToSignal <- function(dm) {
 #' Compute detection p-value
 #'
 #' Compute detection p-value for in-band signals
+#'
+#' Compute detection p-value. This is typically done before any normalization.
 #' @param sset a SignalSet
 #' @import stats
-#' @return array of p-values for each probe
+#' @return a SignalSet with pval
 #' @export
 DetectPValue <- function(sset) {
   negctls <- sset$ctl[grep('negative', tolower(rownames(sset$ctl))),]
@@ -266,24 +268,25 @@ DetectPValue <- function(sset) {
   names(IR) <- rownames(sset$IR)
   names(IG) <- rownames(sset$IG)
   names(II) <- rownames(sset$II)
-  
-  pval <- c(IR,IG,II)
-  pval[order(names(pval))]
+
+  sset$pval <- c(IR,IG,II)
+  sset$pval[order(names(sset$pval))]
+  sset
 }
 
 #' Convert signal to beta
-#'
+#' 
 #' Convert signal to beta and mask low p-value probes
-#'
+#' 
 #' @param sset a \code{SignalSet}
 #' @return a vector of beta values
 #' @export
-SignalToBeta <- function(sset, pval) {
+SignalToBeta <- function(sset) {
   betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
   betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
   betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
   betas <- c(betas1, betas2, betas3)
-  betas[pval[names(betas)]>0.05] <- NA
+  betas[sset$pval[names(betas)]>0.05] <- NA
   betas[order(names(betas))]
 }
 
@@ -294,12 +297,12 @@ SignalToBeta <- function(sset, pval) {
 #' @param sset a \code{SignalSet}
 #' @return a vector of M values
 #' @export
-SignalToM <- function(sset, pval) {
+SignalToMValue <- function(sset) {
   m1 <- log2(pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'U']))
   m2 <- log2(pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'U']))
   m3 <- log2(pmax(sset$II[,'M'],1) / pmax(sset$II[,'U']))
   m <- c(m1, m2, m3)
-  m[pval[names(m)]>0.05] <- NA
+  m[sset$pval[names(m)]>0.05] <- NA
   m[order(names(m))]
 }
 
@@ -309,8 +312,8 @@ SignalToM <- function(sset, pval) {
 #' @param a vector of beta values
 #' @return a vector of M values
 #' @export
-BetaToM <- function(beta) {
-  log2(beta/(1-beta))
+BetaValueToMValue <- function(b) {
+  log2(b/(1-b))
 }
 
 #' Convert M-value to beta-value
@@ -319,8 +322,8 @@ BetaToM <- function(beta) {
 #' @param a vector of M values
 #' @param a vector of beta values
 #' @export
-MToBeta <- function(m) {
-  2**m / (2**m+1)
+MValueToBetaValue <- function(m) {
+  2^m/(1+2^m)
 }
 
 #' @export
