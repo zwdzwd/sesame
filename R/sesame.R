@@ -303,6 +303,26 @@ SignalToM <- function(sset, pval) {
   m[order(names(m))]
 }
 
+#' Convert beta-value to M-value
+#'
+#' Convert beta-value to M-value (aka logit transform)
+#' @param a vector of beta values
+#' @return a vector of M values
+#' @export
+BetaToM <- function(beta) {
+  log2(beta/(1-beta))
+}
+
+#' Convert M-value to beta-value
+#'
+#' Convert M-value to beta-value (aka inverse logit transform)
+#' @param a vector of M values
+#' @param a vector of beta values
+#' @export
+MToBeta <- function(m) {
+  2**m / (2**m+1)
+}
+
 #' @export
 Message <- function(...) {
   cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
