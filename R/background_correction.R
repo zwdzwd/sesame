@@ -29,26 +29,26 @@ BackgroundCorrectionNoob <- function(sset, offset=15) {
   ## build back the list
   ## type IG
   if (length(sset$IG)>0)
-    sset$IG.n <- matrix(ibG.nl$i[1:length(sset$IG)],
+    sset$IG <- matrix(ibG.nl$i[1:length(sset$IG)],
                         nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
   else
-    sset$IG.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sset$IG <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
   ## type IR
   if (length(sset$IR)>0)
-    sset$IR.n <- matrix(ibR.nl$i[1:length(sset$IR)],
-                        nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
+    sset$IR <- matrix(ibR.nl$i[1:length(sset$IR)],
+                      nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
   else
-    sset$IR.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sset$IR <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
   ## type II
   if (nrow(sset$II) > 0)
-    sset$II.n <- as.matrix(data.frame(
+    sset$II <- as.matrix(data.frame(
       M=ibG.nl$i[(length(sset$IG)+1):length(ibG)],
       U=ibR.nl$i[(length(sset$IR)+1):length(ibR)],
       row.names=rownames(sset$II)))
   else
-    sset$II.n <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sset$II <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
   ## controls
   sset$ctl$G <- ibG.nl$c
