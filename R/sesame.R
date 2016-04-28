@@ -143,9 +143,9 @@ ReadIDATs <- function(sample.names, base.dir=NULL) {
     sample.paths <- paste0(base.dir,'/',sample.names)
   else
     sample.paths <- sample.names
-  dm <- lapply(sample.paths, ReadIDAT1)
-  names(dm) <- basename(sample.names)
-  dm
+  dms <- lapply(sample.paths, ReadIDAT1)
+  names(dms) <- basename(sample.names)
+  dms
 }
 
 #' Import IDATs from a directory
