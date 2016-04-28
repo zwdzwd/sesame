@@ -2,6 +2,8 @@
 #' Noob background correction
 #'
 #' Norm-Exp deconvolution using Out-Of-Band (oob) probes
+#'
+#' Note p-values are unchanged (based on the raw signal intensities).
 #' @param sset a \code{SignalSet}
 #' @import MASS
 #' @return the normalized \code{SignalSet}

@@ -21,11 +21,11 @@ load_all("..",export_all=FALSE)
 
 dms <- ReadIDATsFromSampleSheet(
   "data/tcga.random6/samples.csv", base.dir='data/tcga.random6')
-dmps <- lapply(dms, ChipAddressToSignal)
-pvals <- lapply(dmps, DetectPValue)
-dmps.noob <- lapply(dmps, BackgroundCorrectionNoob)
-dmps.noob.dye <- DyeBiasCorrectionMostBalanced(dmps.noob)
-betas <- mapply(SignalToBeta, dmps.noob.dye, pvals)
+ssets <- lapply(dms, ChipAddressToSignal)
+ssets <- lapply(ssets, DetectPValue)
+ssets.noob <- lapply(ssets, BackgroundCorrectionNoob)
+ssets.noob.dye <- DyeBiasCorrectionMostBalanced(ssets.noob)
+betas <- lapply(ssets.noob.dye, SignalToBeta)
 
 load('data/tcga.random6/test_noob_dyebias.Rout.rda')
 Message('Are testing the same as validation: ', all.equal(betas, betas.save))
