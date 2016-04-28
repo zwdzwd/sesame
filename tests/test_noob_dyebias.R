@@ -28,16 +28,16 @@ dmps.noob.dye <- DyeBiasCorrectionMostBalanced(dmps.noob)
 betas <- mapply(SignalToBeta, dmps.noob.dye, pvals)
 
 load('data/tcga.random6/test_noob_dyebias.Rout.rda')
-MPrint('Are testing the same as validation: ', all.equal(betas, betas.save))
+Message('Are testing the same as validation: ', all.equal(betas, betas.save))
 
-MPrint('Head old:')
+Message('Head old:')
 print(betas.save[1:5,])
 
-MPrint('Head new:')
+Message('Head new:')
 print(betas[1:5,])
 
-MPrint('Tail old:')
+Message('Tail old:')
 print(betas.save[(nrow(betas.save)-5):nrow(betas.save),])
 
-MPrint('Tail new:')
+Message('Tail new:')
 print(betas[(nrow(betas)-5):nrow(betas),])
