@@ -55,3 +55,7 @@ data(hm27.ordering)
 save(hm27.ordering, file='~/tools/sesame/sesame/data/hm27.ordering.rda')
 data(hm27.controls)
 save(hm27.controls, file='~/tools/sesame/sesame/data/hm27.controls.rda')
+
+load('tests//data/tcga.27k.random6/probesToMask.27k.rda')
+hm27.mask <- rownames(as.data.frame(toMask))
+save(hm27.mask, file='../data/hm27.mask.rda')
