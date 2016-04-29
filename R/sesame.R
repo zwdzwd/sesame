@@ -380,3 +380,17 @@ InferGenders <- function(ssets) {
     ifelse(g$y.median<2000 & g$x.intermed.frac>0.5, 0, 1))
   g
 }
+
+#' Filter signal set by beta
+#'
+#' Filter signal set by beta value
+#' @param a SignalSet
+#' @return a SignalSet
+#' @export
+FilterByBeta <- function(sset, max=1.1, min=-0.1) {
+  lapply(c('IG','IR','II'), function(nm.cat) {
+    b <- sset[[nm.cat]][,'M']/(sset[[nm.cat]][,'M']+sset[[nm.cat]][,'U'])
+    sset[[nm.cat]] <<- sset[[nm.cat]][(b>min & b<max),]
+  })
+  sset
+}
