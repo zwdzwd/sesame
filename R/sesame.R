@@ -331,13 +331,18 @@ Message <- function(...) {
   cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
 }
 
+#' @export
+MaskRepeatSNPs <- function(x, platform) {
+  UseMethod('MaskRepeatSNP', x)
+}
+
 #' Mask SNPs and repeats
 #'
 #' Mask SNPs and repeats
 #' @param betas a matrix (multiple samples) or a vector of betas (one sample)
 #' @return masked matrix of beta values
 #' @export
-MaskRepeatSNPs <- function(betas, platform) {
+MaskRepeatSNPs.matrix <- function(betas, platform) {
   dm.mask <- GetBuiltInData('mask', platform)
   n.na <- sum(is.na(betas))
   if (class(betas) == 'matrix')
@@ -346,6 +351,14 @@ MaskRepeatSNPs <- function(betas, platform) {
     betas[names(betas) %in% dm.mask] <- NA
   Message('Masked probes: ', n.na, ' (before) ', sum(is.na(betas)), ' (after).')
   betas
+}
+
+#' @export
+MaskRepeatSNPs.SignalSet <- function(sset, platform) {
+  dm.mask <- GetBuiltInData('mask', platform)
+  lapply(c('IG','IR','II'), function(nm.cat) 
+    sset[[nm.cat]][rownames(sset[[nm.cat]]) %in% dm.mask,] <<- NA)
+  sset
 }
 
 #' Infer gender from signals
@@ -393,4 +406,17 @@ FilterByBeta <- function(sset, max=1.1, min=-0.1) {
     sset[[nm.cat]] <<- sset[[nm.cat]][(b>min & b<max),]
   })
   sset
+}
+
+#' Measure input
+#'
+#' log2 mean of the M and U signals in all the probes
+#' 
+#' This measure roughly quantifies the input DNA quantities to each sample.
+#'
+#' @param a SignalSet
+#' @return input measure
+#' @export
+MeasureInput <- function(sset) {
+  log2(mean(c(sset$IG, sset$IR, sset$II)))
 }
