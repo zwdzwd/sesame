@@ -1,0 +1,21 @@
+
+
+
+zcat hg19_dbsnp.vcf.gz | awk 'NR==FNR{if(match($1,/^\"(rs[^\"]*)\"/,c)){a[c[1]]=1}}NR!=FNR{if($3 in a){print $3,"chr"$1,$2}}' IlluminaEpicManifest.csv - >rs2chr.csv
+
+
+awk -F"," '{print $2,$12,$13,$7,$16,$17,$18,$19,$20,$4,$6}' MethylationEPIC_v-1-0_B2.csv
+
+#+BEGIN_SRC R
+data(EPIC.manifest)
+write.table(as.data.frame(EPIC.manifest), file='tests/data/EPIC.official.manifest/EPIC.manifest.tsv', quote=F, sep='\t')
+#+END_SRC
+
+awk 'NR>1{print $2,$3,$4,$1}' EPIC.manifest.tsv | sortbed | bedtools intersect -a - -b <(awk 'NR>1{print $1,$2,$3,$9}' ~/projects/hs-tcga/data/2016_05_09_Hui_imprinting/Supplemental_Table_S1.txt | sortbed) -wo -sorted | cut -f1-4,8 | grep 'cg'> EPIC.manifest.anno.imprinting.tsv
+sort -k4,4 EPIC.manifest.anno.imprinting.tsv | uniq > 1
+mv 1 EPIC.manifest.anno.imprinting.tsv
+
+#+BEGIN_SRC R
+EPIC.imprinting <- read.table('tests/data/EPIC.official.manifest/EPIC.manifest.anno.imprinting.tsv', row.names='probe', col.names=c('chrm','beg','end','probe', 'imprinting'))
+save(EPIC.imprinting, file='data/EPIC.imprinting.rda')
+#+END_SRC
