@@ -22,7 +22,7 @@
 #' dms <- ReadIDATsFromDir(sample.dir)
 #'
 #' ## translate chip address to probe address
-#' ssets <- lapply(ssets, ChipAddressToSignal)
+#' ssets <- lapply(dms, ChipAddressToSignal)
 #'
 #' ## detect p-value
 #' ssets <- lapply(ssets, DetectPValue)
