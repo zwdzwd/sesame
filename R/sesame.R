@@ -22,7 +22,7 @@
 #' dms <- ReadIDATsFromDir(sample.dir)
 #'
 #' ## translate chip address to probe address
-#' ssets <- lapply(ssets, ChipAddressToSignal)
+#' ssets <- lapply(dms, ChipAddressToSignal)
 #'
 #' ## detect p-value
 #' ssets <- lapply(ssets, DetectPValue)
@@ -333,7 +333,16 @@ Message <- function(...) {
 
 #' @export
 MaskRepeatSNPs <- function(x, platform) {
-  UseMethod('MaskRepeatSNP', x)
+  UseMethod('MaskRepeatSNPs', x)
+}
+
+#' @export
+MaskRepeatSNPs.numeric <- function(betas, platform) {
+  dm.mask <- GetBuildInData('mask', platform)
+  n.na <- sum(is.na(betas))
+  betas[names(betas) %in% dm.mask] <- NA
+  Message('Masked probes: ', n.na, ' (before) ', sum(is.na(betas)), ' (after).')
+  betas
 }
 
 #' Mask SNPs and repeats
@@ -345,10 +354,7 @@ MaskRepeatSNPs <- function(x, platform) {
 MaskRepeatSNPs.matrix <- function(betas, platform) {
   dm.mask <- GetBuiltInData('mask', platform)
   n.na <- sum(is.na(betas))
-  if (class(betas) == 'matrix')
-    betas[rownames(betas) %in% dm.mask,] <- NA
-  else
-    betas[names(betas) %in% dm.mask] <- NA
+  betas[rownames(betas) %in% dm.mask,] <- NA
   Message('Masked probes: ', n.na, ' (before) ', sum(is.na(betas)), ' (after).')
   betas
 }
