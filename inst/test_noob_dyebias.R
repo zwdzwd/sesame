@@ -19,7 +19,7 @@ create.validation <- function() {
 # create.validation
 
 library(sesame)
-setwd('~/tools/sesame/sesame/tests')
+setwd('~/tools/sesame/sesame/inst')
 
 ssets <- readIDATsFromSheet("data/tcga.random6/samples.csv", base.dir='data/tcga.random6', mc=T)
 ssets <- mclapply(ssets, noob)
