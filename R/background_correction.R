@@ -1,11 +1,9 @@
 
-#' Noob background correction
-#'
-#' Norm-Exp deconvolution using Out-Of-Band (oob) probes
-#'
-#' Note p-values are unchanged (based on the raw signal intensities).
-#' @param offset 
-#' @import MASS
+## Noob background correction
+## Norm-Exp deconvolution using Out-Of-Band (oob) probes
+## Note p-values are unchanged (based on the raw signal intensities).
+## @param offset 
+## @import MASS
 .backgroundCorrectionNoob <- function(offset=15) {
 
   ## sort signal based on channel
@@ -56,6 +54,7 @@
 }
 
 ## Noob background correction for one channel
+#' @importFrom MASS huber
 .backgroundCorrectionNoobCh1 <- function(ib, oob, ctl, offset=15) {
   ## @param ib array of in-band signal
   ## @param oob array of out-of-band-signal
@@ -63,7 +62,6 @@
   ## @param offset padding for normalized signal
   ## @return normalized in-band signal
 
-  suppressPackageStartupMessages(library(MASS))
   e <- huber(oob)
   mu <- e$mu
   sigma <- e$s
@@ -83,7 +81,7 @@
   mu.sf <- x - mu - sigma2/alpha
   signal <- mu.sf + sigma2 * exp(
     dnorm(0, mean = mu.sf, sd = sigma, log = TRUE) -
-      pnorm(0, mean = mu.sf, sd = sigma, lower.tail = FALSE, log = TRUE))
+      pnorm(0, mean = mu.sf, sd = sigma, lower.tail = FALSE, log.p = TRUE))
   o <- !is.na(signal)
   if (any(signal[o] < 0)) {
     warning("Limit of numerical accuracy reached with very low intensity or very high background:\nsetting adjusted intensities to small value")
@@ -118,11 +116,11 @@
 ##   lapply(ssets, function(sset) DyeBiasCorrection(sset, ref))
 ## }
 
-#' Correct dye bias
-#'
-#' @param sset a \code{SignalSet}s
-#' @param ref reference signal level
-#' @return a normalized \code{SignalSet}s
+## Correct dye bias
+##
+## @param sset a \code{SignalSet}s
+## @param ref reference signal level
+## @return a normalized \code{SignalSet}s
 .dyeBiasCorrection <- function(ref=7000) {
   normctl <- .getNormCtls(self)
   fR <- ref/normctl['R']
@@ -134,7 +132,8 @@
                     nrow=nrow(self$IR), ncol=ncol(self$IR), dimnames=dimnames(self$IR))
   self$II <- matrix(c(fG*self$II[,'M'], fR*self$II[,'U']),
                     nrow=nrow(self$II), ncol=ncol(self$II), dimnames=dimnames(self$II))
-  self$ctl <- transform(self$ctl, G=fG*G, R=fR*R)
+  self$ctl$G <- fG*self$ctl$G
+  self$ctl$R <- fR*self$ctl$R
   self$oobG <- fG*self$oobG
   self$oobR <- fR*self$oobR
   invisible()
