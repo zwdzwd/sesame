@@ -22,8 +22,8 @@
 #' ssets <- ReadIDATsFromDir(sample.dir, mc=T)
 #'
 #' ## normalization
-#' ssets <- lapply(ssets, noob)
-#' ssets <- lapply(ssets, dyeBiasCorr)
+#' ssets <- mclapply(ssets, noob)
+#' ssets <- mclapply(ssets, dyeBiasCorr)
 #'
 #' ## convert signal to beta values
 #' betas <- sapply(ssets, function(sset) sset$toBeta())
@@ -106,7 +106,7 @@ SignalSet <- R6Class(
       betas <- c(betas1, betas2, betas3)
       betas[self$pval[names(betas)]>0.05] <- NA
       if(na.mask && !is.null(mask))
-        betas[(rownames(betas) %in% mask),] <- NA
+        betas[names(betas) %in% mask] <- NA
       betas[order(names(betas))]
     },
     
@@ -231,7 +231,7 @@ readIDATsFromDir <- function(dir.name, ...) {
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
 #' @return a list of \code{SignalSet}s
 #' @export
-readIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL, ...) {
+readIDATsFromSheet <- function(sample.sheet, base.dir=NULL, ...) {
   sample.names <- read.csv(sample.sheet, stringsAsFactors=F)
   readIDATs(sample.names$barcode, base.dir=base.dir, ...)
 }
