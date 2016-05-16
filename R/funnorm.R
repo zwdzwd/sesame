@@ -37,7 +37,7 @@ QuantileSet <- function(
 #' @param n number of grid points in quantiles.
 #' @return an object of \code{QuantileSet}
 #' @export
-BuildQuantiles450k <- function(sset, n=500) {
+buildQuantiles450k <- function(sset, n=500) {
 
   probe2chr <- getBuiltInData('hg19.probe2chr', sset$platform)
 
@@ -73,6 +73,7 @@ BuildQuantiles450k <- function(sset, n=500) {
 #' @param cms control matrices from all samples
 #' @param qntiles a list of \code{QuantileSet}s from all samples
 #' @param k number of principal components from control matrices for regression
+#' @param genders genders
 #' @import preprocessCore
 #' @return a list of new \code{QuantileSet}s from all samples
 #' @export
@@ -155,7 +156,7 @@ FunnormRegress <- function(cms, qntiles, genders=NULL, k=2) {
 #' Interpolate signal using quantile distribution
 #'
 #' @param sset an object of class \code{SignalSet}
-#' @param qs an object of class \code{QuantileSet}
+#' @param qntiles an object of class \code{QuantileSet}
 #' @return a object of class \code{SignalSet}
 #' @import preprocessCore
 #' @export
@@ -264,20 +265,18 @@ QuantileNormalize <- function(ssets, genders=NULL) {
 #' This implementation wrap multiple funnorm steps into one function and assume the entire data set fits the memory
 #' @param ssets a list of objects of class \code{SignalSet}
 #' @return an object of class \code{SignalSet} after normalization
-#' @examples
-#' 
 #' @export
 Funnorm <- function(ssets) {
 
   ## normalize autosomes and chromosome X
-  cms <- lapply(ssets, BuildControlMatrix450k)
-  qntiles <- lapply(ssets, BuildQuantiles450k)
+  cms <- lapply(ssets, buildControlMatrix450k)
+  qntiles <- lapply(ssets, buildQuantiles450k)
   genders <- inferGenders(ssets)
   qntiles.n <- FunnormRegress(cms, qntiles, genders$genders)
   ssets.autoX.n <- Map(QuantilesInterpolateSignal, ssets, qntiles.n)
 
   ## normalize chromosome Y
-  ssets.Y <- lapply(ssets, function(sset) SelectChromosome(sset,'chrY'))
+  ssets.Y <- lapply(ssets, function(sset) subsetChromosome(sset,'chrY'))
   ssets.Y.n <- QuantileNormalize(ssets.Y, genders)
 
   ssets.n <- Map(MergeSignal, ssets.autoX.n, ssets.Y.n)
