@@ -271,7 +271,7 @@ chipAddressToSignal <- function(dm) {
   sset$IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
   ## type I red channel / oob green channel
-  IordR <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col='R')),]
+  IordR <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='R')),]
   ## 2-channel for red probes' m allele
   IuR2ch <- dm[match(IordR$U, rownames(dm)),]
   IuR <- IuR2ch[,2]
