@@ -4,19 +4,22 @@
 \alias{readIDATs}
 \title{Import IDATs from a list of samples}
 \usage{
-readIDATs(sample.names, base.dir = NULL, mc = FALSE, mc.cores = 8)
+readIDATs(sample.names, base.dir = NULL, raw = FALSE, mc = FALSE,
+  mc.cores = 8)
 }
 \arguments{
 \item{sample.names}{a sample list}
 
 \item{base.dir}{base directory}
 
+\item{raw}{to return raw data without mapping to signal}
+
 \item{mc}{use multiple cores}
 
 \item{mc.cores}{number of cores to use}
 }
 \value{
-a list of \code{SignalSet}s
+a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
 }
 \description{
 Each element of the returned list contains a matrix

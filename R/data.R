@@ -28,6 +28,8 @@
 'hm27.mask'
 #' hm450 masks
 'hm450.mask'
+#' EPIC masks
+'EPIC.mask'
 
 ## #' EPIC masks
 ## 'EPIC.mask'
