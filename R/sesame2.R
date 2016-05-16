@@ -64,7 +64,7 @@
 #' \describe{
 #'   \item{Documentation}{For full documentation of each method go to }
 #'   \item{\code{new(platform)}}{Create a SignalSet in the specified platform}
-#'   \item{\code{detectPValue()}{Detect P-value for each probe}
+#'   \item{\code{detectPValue()}}{Detect P-value for each probe}
 #' }
 SignalSet <- R6Class(
   'SignalSet',
