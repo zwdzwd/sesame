@@ -12,4 +12,4 @@ Description: This R package for array-based DNA methylation data.
 License: MIT + file LICENSE
 LazyData: TRUE
 RoxygenNote: 5.0.1
-Imports: R6, illuminaio, preprocessCore, MASS
+Imports: R6, illuminaio, MASS
