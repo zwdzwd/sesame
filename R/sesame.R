@@ -19,7 +19,7 @@
 #' library(sesame)
 #' 
 #' ## read IDATs
-#' ssets <- ReadIDATsFromDir(sample.dir, mc=TRUE)
+#' ssets <- ReadIDATsFromDir(sample.dir, mc=T)
 #'
 #' ## normalization
 #' ssets <- lapply(ssets, noob)
@@ -177,12 +177,13 @@ readIDAT1 <- function(idat.name) {
 #' 
 #' @param sample.names a sample list
 #' @param base.dir base directory
+#' @param raw to return raw data without mapping to signal
 #' @param mc use multiple cores
 #' @param mc.cores number of cores to use
 #' @import parallel
-#' @return a list of \code{SignalSet}s
+#' @return a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
 #' @export
-readIDATs <- function(sample.names, base.dir=NULL, mc=FALSE, mc.cores=8) {
+readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=8) {
   if (!is.null(base.dir))
     sample.paths <- paste0(base.dir,'/',sample.names)
   else
@@ -194,11 +195,14 @@ readIDATs <- function(sample.names, base.dir=NULL, mc=FALSE, mc.cores=8) {
     dms <- lapply(sample.paths, readIDAT1)
 
   names(dms) <- basename(sample.names)
-
-  if (mc) {
-    mclapply(dms, chipAddressToSignal, mc.cores=mc.cores)
+  if (!raw) {
+    if (mc) {
+      mclapply(dms, chipAddressToSignal, mc.cores=mc.cores)
+    } else {
+      lapply(dms, chipAddressToSignal)
+    }
   } else {
-    lapply(dms, chipAddressToSignal, mc.cores=mc.cores)
+    dms
   }
 }
 
