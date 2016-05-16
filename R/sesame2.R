@@ -16,6 +16,7 @@
 ## @references To appear
 ## @seealso To appear
 #' @examples
+#' \dontrun{
 #' library(sesame)
 #' 
 #' ## read IDATs
@@ -37,7 +38,7 @@
 #'
 #' ## mask repeats and SNPs
 #' betas <- MaskRepeatSNPs(betas, 'hm450')
-#' 
+#' }
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
 "_PACKAGE"
@@ -259,7 +260,7 @@ chipAddressToSignal <- function(dm) {
   sset <- SignalSet$new(platform)
 
   ## type I green channel / oob red channel
-  IordG <- dm.ordering[(dm.ordering$DESIGN=='I'&dm.ordering$col=='G'),]
+  IordG <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='G')),]
   ## 2-channel for green probes' M allele
   IuG2ch <- dm[match(IordG$U, rownames(dm)),]
   IuG <- IuG2ch[,1]
@@ -270,7 +271,7 @@ chipAddressToSignal <- function(dm) {
   sset$IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
   ## type I red channel / oob green channel
-  IordR <- dm.ordering[(dm.ordering$DESIGN=='I'&dm.ordering$col='R'),]
+  IordR <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col='R')),]
   ## 2-channel for red probes' m allele
   IuR2ch <- dm[match(IordR$U, rownames(dm)),]
   IuR <- IuR2ch[,2]
@@ -298,19 +299,22 @@ chipAddressToSignal <- function(dm) {
   sset
 }
 
-subsetBeta <- function(max=1.1, min=-0.1) {
+subsetBeta <- function(sset, max=1.1, min=-0.1) {
+  sset <- sset$clone()
   lapply(c('IG','IR','II'), function(nm.cat) {
-    s <- self[[nm.cat]]
+    s <- sset[[nm.cat]]
     b <- s[,'M']/(s[,'M']+s[,'U'])
-    self[[nm.cat]] <<- s[(b>min & b<max),]
+    sset[[nm.cat]] <<- s[(b>min & b<max),]
     invisible()
   })
   invisible()
 }
 
-subsetChromosome <- function(chrm) {
-  probe2chr <- getBuiltInData('hg19.probe2chr', self$platform)
-  IG <- IG[probe2chr[rownames(IG)] == chrm,]
-  IR <- IR[probe2chr[rownames(IR)] == chrm,]
-  II <- II[probe2chr[rownames(II)] == chrm,]
+subsetChromosome <- function(sset, chrm) {
+  sset <- sset$clone()
+  probe2chr <- getBuiltInData('hg19.probe2chr', sset$platform)
+  sset$IG <- sset$IG[probe2chr[rownames(sset$IG)] == chrm,]
+  sset$IR <- sset$IR[probe2chr[rownames(sset$IR)] == chrm,]
+  sset$II <- sset$II[probe2chr[rownames(sset$II)] == chrm,]
+  sset
 }
