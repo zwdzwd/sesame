@@ -18,11 +18,11 @@ processing >10,000 samples in parallel on clusters.
 library(sesame)
 
 ## read IDATs
-ssets <- ReadIDATsFromDir(sample.dir, mc=TRUE)
+ssets <- ReadIDATsFromDir(sample.dir, mc=T)
 
 ## normalization
-ssets <- lapply(ssets, noob)
-ssets <- lapply(ssets, dyeBiasCorr)
+ssets <- mclapply(ssets, noob)
+ssets <- mclapply(ssets, dyeBiasCorr)
 
 ## convert signal to beta values
 betas <- sapply(ssets, function(sset) sset$toBeta())

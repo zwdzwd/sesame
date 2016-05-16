@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 create.validation <- function() {
   library(methylumi)
   d <- getwd()
@@ -16,28 +18,28 @@ create.validation <- function() {
 
 # create.validation
 
-library(devtools)
-load_all("..",export_all=FALSE)
+library(sesame)
+setwd('~/tools/sesame/sesame/tests')
 
-dms <- ReadIDATsFromSampleSheet(
-  "data/tcga.random6/samples.csv", base.dir='data/tcga.random6')
-ssets <- lapply(dms, ChipAddressToSignal)
-ssets <- lapply(ssets, DetectPValue)
-ssets.noob <- lapply(ssets, BackgroundCorrectionNoob)
-ssets.noob.dye <- DyeBiasCorrectionMostBalanced(ssets.noob)
-betas <- sapply(ssets.noob.dye, SignalToBeta)
+ssets <- readIDATsFromSheet("data/tcga.random6/samples.csv", base.dir='data/tcga.random6', mc=T)
+ssets <- mclapply(ssets, noob)
+ssets <- mclapply(ssets, dyeBiasCorr)
+betas <- simplify2array(mclapply(ssets, function(sset) sset$toBeta(na.mask=FALSE), mc.cores=8))
 
 load('data/tcga.random6/test_noob_dyebias.Rout.rda')
-Message('Are testing the same as validation: ', all.equal(betas, betas.save))
+message('Are testing the same as validation: ', all.equal(betas, betas.save))
 
-Message('Head old:')
+message('Head old:')
 print(betas.save[1:5,])
 
-Message('Head new:')
+message('Head new:')
 print(betas[1:5,])
 
-Message('Tail old:')
+message('Tail old:')
 print(betas.save[(nrow(betas.save)-5):nrow(betas.save),])
 
-Message('Tail new:')
+message('Tail new:')
 print(betas[(nrow(betas)-5):nrow(betas),])
+
+message('is.na old:', sum(is.na(betas.save)))
+message('is.na new:', sum(is.na(betas)))

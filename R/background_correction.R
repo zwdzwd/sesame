@@ -9,7 +9,6 @@
 noob <- function(sset, offset=15) {
   
   sset <- sset$clone()
-  
   ## sort signal based on channel
   ibR <- c(sset$IR, sset$II[,'U'])              # in-band red signal
   ibG <- c(sset$IG, sset$II[,'M'])              # in-band green signal
