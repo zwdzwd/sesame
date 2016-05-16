@@ -27,9 +27,6 @@ ssets <- lapply(ssets, dyeBiasCorr)
 ## convert signal to beta values
 betas <- sapply(ssets, function(sset) sset$toBeta())
 
-## mask repeat and SNPs
-betas <- sapply(ssets, function(sset) sset$mask())
-
 }
 }
 \author{
