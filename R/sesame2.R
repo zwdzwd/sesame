@@ -1,13 +1,72 @@
+#' @title
+#' Analyze DNA methylation data
+#' 
+#' @description
+#' SEnsible and step-wise analysis of DNA methylation data
+#' 
+#' @details
+#' This package complements array functionalities that allow
+#' processing >10,000 samples in parallel on clusters.
+#' It supports both HM450 and EPIC platform.
+#' @aliases sesame
+#' @author
+#' Wanding Zhou \email{Wanding.Zhou@vai.org},
+#' Hui Shen \email{Hui.Shen@vai.org}
+#' 
+## @references To appear
+## @seealso To appear
+#' @examples
+#' library(sesame)
+#' 
+#' ## read IDATs
+#' dms <- ReadIDATsFromDir(sample.dir)
+#'
+#' ## translate chip address to probe address
+#' ssets <- mclapply(dms, ChipAddressToSignal)
+#'
+#' ## detect p-value
+#' ssets <- mclapply(ssets, DetectPValue)
+#'
+#' ## normalization
+#' ssets <- lapply(ssets, BackgroundCorrectionNoob)
+#' ssets <- DyeBiasCorrectionMostBalanced(ssets)
+#' ssets <- Funnorm(ssets)
+#'
+#' ## convert signal to beta values
+#' betas <- sapply(ssets, SignalToBeta)
+#'
+#' ## mask repeats and SNPs
+#' betas <- MaskRepeatSNPs(betas, 'hm450')
+#' 
+#' @keywords DNAMethylation Microarray QualityControl
+#' 
+"_PACKAGE"
 
 #' SignalSet class
 #' 
 #' @docType class
 #' @importFrom R6 R6Class
+#' @importFrom stats ecdf
 #' @export
-#' @format An \code{\link{R6Class}} generator object
-#' @keywords data
-SignalSet <- R6class(
+#' @return Object of class \code{SignalSet}
+#' @format An \code{\link{R6Class}} object.
+#' @examples
+#' SignalSet$new("EPIC")
+#' @field platform platform name, currently supports "EPIC", "hm450" and "hm27"
+#' @field IG intensity table for type I probes in green channel
+#' @field IR intensity table for type I probes in red channel
+#' @field II intensity table for type II probes
+#' @field oobG out-of-band probes in green channel
+#' @field oobR out-of-band probes in red channel
+#' @field ctl all the control probe intensities
+#' @field pval named numeric vector of p-values
+#' \describe{
+#'   \item{Documentation}{For full documentation of each method go to }
+#'   \item{\code{new(platform)}}{Create a SignalSet in the specified platform}
+#'   \item{\code{detectPValue()}{Detect P-value for each probe}
+SignalSet <- R6Class(
   'SignalSet',
+  portable = FALSE,
   public = list(
     platform = 'EPIC',
     IG = NULL,
@@ -16,56 +75,57 @@ SignalSet <- R6class(
     oobG = NULL,
     oobR = NULL,
     ctl = NULL,
+    pval = NULL,
     
-    initialize = function(x) .self$platform <- x,
+    initialize = function(x) self$platform <- x,
     
-    DetectPValue = function() {
-      negctls <- sset$ctl[grep('negative', tolower(rownames(sset$ctl))),]
+    detectPValue = function() {
+      negctls <- ctl[grep('negative', tolower(rownames(ctl))),]
       negctls <- subset(negctls, col!=-99)
 
-      library(stats)
       funcG <- ecdf(negctls$G)
       funcR <- ecdf(negctls$R)
 
       ## p-value is the minimium detection p-value of the 2 alleles
-      IR <- 1-apply(cbind(funcR(sset$IR[,'M']), funcR(sset$IR[,'U'])),1,max)
-      IG <- 1-apply(cbind(funcG(sset$IG[,'M']), funcG(sset$IG[,'U'])),1,max)
-      II <- 1-apply(cbind(funcG(sset$II[,'M']), funcR(sset$II[,'U'])),1,max)
+      pIR <- 1-apply(cbind(funcR(IR[,'M']), funcR(IR[,'U'])),1,max)
+      pIG <- 1-apply(cbind(funcG(IG[,'M']), funcG(IG[,'U'])),1,max)
+      pII <- 1-apply(cbind(funcG(II[,'M']), funcR(II[,'U'])),1,max)
 
-      names(IR) <- rownames(sset$IR)
-      names(IG) <- rownames(sset$IG)
-      names(II) <- rownames(sset$II)
+      names(pIR) <- rownames(IR)
+      names(pIG) <- rownames(IG)
+      names(pII) <- rownames(II)
 
-      sset$pval <- c(IR,IG,II)
-      sset$pval[order(names(sset$pval))]
-    }
+      pval <- c(pIR,pIG,pII)
+      pval <<- pval[order(names(pval))]
+      invisible()
+    },
     
-    ToBeta = function() {
+    toBeta = function() {
       betas1 <- pmax(IG[,'M'],1) / pmax(IG[,'M']+IG[,'U'],2)
       betas2 <- pmax(IR[,'M'],1) / pmax(IR[,'M']+IR[,'U'],2)
       betas3 <- pmax(II[,'M'],1) / pmax(II[,'M']+II[,'U'],2)
       betas <- c(betas1, betas2, betas3)
-      betas[.self$pval[names(betas)]>0.05] <- NA
+      betas[self$pval[names(betas)]>0.05] <- NA
       betas[order(names(betas))]
-    }
+    },
     
-    ToM = function() {
+    toM = function() {
       m1 <- log2(pmax(IG[,'M'],1) / pmax(IG[,'U']))
       m2 <- log2(pmax(IR[,'M'],1) / pmax(IR[,'U']))
       m3 <- log2(pmax(II[,'M'],1) / pmax(II[,'U']))
       m <- c(m1, m2, m3)
       m[pval[names(m)]>0.05] <- NA
       m[order(names(m))]
-    }
+    },
 
-    MaskRepeatSNPs <- function() {
-      dm.mask <- GetBuiltInData('mask', platform)
+    maskRepeatSNPs = function() {
+      dm.mask <- getBuiltInData('mask', platform)
       lapply(c('IG','IR','II'), function(nm.cat) 
         get(nm.cat)[rownames(sset[[nm.cat]]) %in% dm.mask,] <<- NA)
-    }
-
-    InferGender <- function() {
-      probe2chr <- GetBuiltInData('hg19.probe2chr', ssets[[1]]$platform)
+    },
+    
+    inferGender = function() {
+      probe2chr <- getBuiltInData('hg19.probe2chr', ssets[[1]]$platform)
       all.signals <- c(apply(IR,1,max), apply(IG,1,max), apply(II,1,max))
       all <- rbind(IG, IR, II)
       all.X <- all[(probe2chr[rownames(all)] == 'chrX'),]
@@ -84,11 +144,14 @@ SignalSet <- R6class(
         if (y.median < 2000 & x.intermed.frac>0.5) 0
         else 1
       }
-    }
+    },
 
-    MeasureInput <- function() {
+    measureInput = function() {
       log2(mean(c(IG, IR, II)))
-    }
+    },
+
+    noob = .backgroundCorrectionNoob,
+    dyebias = .dyeBiasCorrection
   )
 )
 
@@ -100,7 +163,7 @@ SignalSet <- R6class(
 #' @return a data frame with 2 columns, corresponding to
 #' cy3 (Grn) and cy5 (Red) color channel signal
 #' @export
-ReadIDAT1 <- function(idat.name) {
+readIDAT1 <- function(idat.name) {
   ida.grn <- readIDAT(paste0(idat.name,"_Grn.idat"));
   ida.red <- readIDAT(paste0(idat.name,"_Red.idat"));
   d <- cbind(cy3=ida.grn$Quants[,"Mean"], cy5=ida.red$Quants[,"Mean"])
@@ -121,36 +184,39 @@ ReadIDAT1 <- function(idat.name) {
 #' 
 #' @param samples sample list
 #' @param base.dir base directory
+#' @param mc use multiple cores
+#' @param mc.cores number of cores to use
+#' @import parallel
 #' @return a list of data frames. Each data frame corresponds to a sample.
 #' Data are signal intensities indexed by chip address.
 #' @export
-ReadIDATs <- function(sample.names, base.dir=NULL, mc=FALSE, mc.cores=8) {
+readIDATs <- function(sample.names, base.dir=NULL, mc=FALSE, mc.cores=8) {
   if (!is.null(base.dir))
     sample.paths <- paste0(base.dir,'/',sample.names)
   else
     sample.paths <- sample.names
   if (mc)
-    dms <- mclapply(sample.paths, ReadIDAT1, mc.cores=mc.cores)
+    dms <- mclapply(sample.paths, readIDAT1, mc.cores=mc.cores)
   else
-    dms <- lapply(sample.paths, ReadIDAT1)
+    dms <- lapply(sample.paths, readIDAT1)
   names(dms) <- basename(sample.names)
   dms
 }
 
 #' Import IDATs from a directory
 #' 
-#' 
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
 #' 
-#' @param dir directory name.
+#' @param dir.name directory name.
+#' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
 #' @return a list of data frames. Each data frame corresponds to a sample.
 #' Data are signal intensities indexed by chip address.
 #' @export
-ReadIDATsFromDir <- function(dir.name, ...) {
+readIDATsFromDir <- function(dir.name, ...) {
   fns <- list.files(dir.name)
   sample.names <- unique(sub("_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
-  ReadIDATs(paste0(dir.name,'/',sample.names), ...)
+  readIDATs(paste0(dir.name,'/',sample.names), ...)
 }
 
 #' Import IDATs from a sample sheet
@@ -158,14 +224,15 @@ ReadIDATsFromDir <- function(dir.name, ...) {
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
 #' 
-#' @param sample.sheet.path path to sample sheet
+#' @param sample.sheet path to sample sheet
 #' @param base.dir directory on which the \code{sample.sheet.path} is based
+#' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
 #' @return a list of data frames. Each data frame corresponds to a sample. 
 #' Data are signal intensities indexed by chip address.
 #' @export
-ReadIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL, ...) {
+readIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL, ...) {
   sample.names <- read.csv(sample.sheet, stringsAsFactors=F)
-  ReadIDATs(sample.names$barcode, base.dir=base.dir, ...)
+  readIDATs(sample.names$barcode, base.dir=base.dir, ...)
 }
 
 #' Lookup address in one sample
@@ -183,10 +250,10 @@ ReadIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL, ...) {
 #' @param dm data frame in chip address, 2 columns: cy3/Grn and cy5/Red
 #' @return a SignalSet, indexed by probe ID address
 #' @export
-ChipAddressToSignal <- function(dm) {
+chipAddressToSignal <- function(dm) {
 
   platform <- attr(dm, 'platform')
-  dm.ordering <- GetBuiltInData('ordering', platform)
+  dm.ordering <- getBuiltInData('ordering', platform)
 
   sset <- SignalSet$new(platform)
 
@@ -220,7 +287,7 @@ ChipAddressToSignal <- function(dm) {
   sset$II <- signal.II
 
   ## control probes
-  dm.controls <- GetBuiltInData('controls', platform)
+  dm.controls <- getBuiltInData('controls', platform)
   ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
   rownames(ctl) <- make.names(dm.controls$Name,unique=T)
   ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
@@ -230,25 +297,19 @@ ChipAddressToSignal <- function(dm) {
   sset
 }
 
-#' @export
-MaskRepeatSNPs <- function(x, platform) {
-  UseMethod('MaskRepeatSNP', x)
+subsetBeta = function(max=1.1, min=-0.1) {
+  lapply(c('IG','IR','II'), function(nm.cat) {
+    s <- self[[nm.cat]]
+    b <- s[,'M']/(s[,'M']+s[,'U'])
+    self[[nm.cat]] <<- s[(b>min & b<max),]
+    invisible()
+  })
+  invisible()
 }
 
-#' Mask SNPs and repeats
-#'
-#' Mask SNPs and repeats
-#' @param betas a matrix (multiple samples) or a vector of betas (one sample)
-#' @return masked matrix of beta values
-#' @export
-MaskRepeatSNPs.matrix <- function(betas, platform) {
-  dm.mask <- GetBuiltInData('mask', platform)
-  n.na <- sum(is.na(betas))
-  if (class(betas) == 'matrix')
-    betas[rownames(betas) %in% dm.mask,] <- NA
-  else
-    betas[names(betas) %in% dm.mask] <- NA
-  Message('Masked probes: ', n.na, ' (before) ', sum(is.na(betas)), ' (after).')
-  betas
+subsetChromosome = function(chrm) {
+  probe2chr <- GetBuiltInData('hg19.probe2chr', self$platform)
+  IG <- IG[probe2chr[rownames(IG)] == chrm,]
+  IR <- IR[probe2chr[rownames(IR)] == chrm,]
+  II <- II[probe2chr[rownames(II)] == chrm,]
 }
-
