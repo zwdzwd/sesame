@@ -1,60 +1,63 @@
-
-## Noob background correction
-## Norm-Exp deconvolution using Out-Of-Band (oob) probes
-## Note p-values are unchanged (based on the raw signal intensities).
-## @param offset 
-## @import MASS
-.backgroundCorrectionNoob <- function(offset=15) {
-
+#' Noob background correction
+#' 
+#' Norm-Exp deconvolution using Out-Of-Band (oob) probes
+#' Note p-values are unchanged (based on the raw signal intensities).
+#' @param sset a \code{SignalSet}
+#' @param offset offset
+#' @return a new \code{SignalSet} with noob background correction
+#' @export
+noob <- function(sset, offset=15) {
+  
+  sset <- sset$clone()
+  
   ## sort signal based on channel
-  ibR <- c(self$IR, self$II[,'U'])              # in-band red signal
-  ibG <- c(self$IG, self$II[,'M'])              # in-band green signal
+  ibR <- c(sset$IR, sset$II[,'U'])              # in-band red signal
+  ibG <- c(sset$IG, sset$II[,'M'])              # in-band green signal
 
   ## set signal to 1 if 0
   ibR[ibR==0] <- 1
   ibG[ibG==0] <- 1
 
   ## oobG and oobR are untouched besides the 0>1 switch
-  self$oobR[self$oobR==0] <- 1
-  self$oobG[self$oobG==0] <- 1
+  sset$oobR[sset$oobR==0] <- 1
+  sset$oobG[sset$oobG==0] <- 1
   
   ## do background correction in each channel
-  ibR.nl <- .backgroundCorrectionNoobCh1(ibR, self$oobR, self$ctl$R, offset=offset)
-  ibG.nl <- .backgroundCorrectionNoobCh1(ibG, self$oobG, self$ctl$G, offset=offset)
+  ibR.nl <- .backgroundCorrectionNoobCh1(ibR, sset$oobR, sset$ctl$R, offset=offset)
+  ibG.nl <- .backgroundCorrectionNoobCh1(ibG, sset$oobG, sset$ctl$G, offset=offset)
 
   ## build back the list
   ## type IG
-  if (length(self$IG)>0)
-    self$IG <- matrix(ibG.nl$i[1:length(self$IG)],
-                        nrow=nrow(self$IG), dimnames=dimnames(self$IG))
+  if (length(sset$IG)>0)
+    sset$IG <- matrix(ibG.nl$i[1:length(sset$IG)],
+                        nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
   else
-    self$IG <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sset$IG <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
   ## type IR
-  if (length(self$IR)>0)
-    self$IR <- matrix(ibR.nl$i[1:length(self$IR)],
-                      nrow=nrow(self$IR), dimnames=dimnames(self$IR))
+  if (length(sset$IR)>0)
+    sset$IR <- matrix(ibR.nl$i[1:length(sset$IR)],
+                      nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
   else
-    self$IR <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sset$IR <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
   ## type II
-  if (nrow(self$II) > 0)
-    self$II <- as.matrix(data.frame(
-      M=ibG.nl$i[(length(self$IG)+1):length(ibG)],
-      U=ibR.nl$i[(length(self$IR)+1):length(ibR)],
-      row.names=rownames(self$II)))
+  if (nrow(sset$II) > 0)
+    sset$II <- as.matrix(data.frame(
+      M=ibG.nl$i[(length(sset$IG)+1):length(ibG)],
+      U=ibR.nl$i[(length(sset$IR)+1):length(ibR)],
+      row.names=rownames(sset$II)))
   else
-    self$II <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sset$II <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
   ## controls
-  self$ctl$G <- ibG.nl$c
-  self$ctl$R <- ibR.nl$c
+  sset$ctl$G <- ibG.nl$c
+  sset$ctl$R <- ibR.nl$c
 
-  invisible()
+  sset
 }
 
 ## Noob background correction for one channel
-#' @importFrom MASS huber
 .backgroundCorrectionNoobCh1 <- function(ib, oob, ctl, offset=15) {
   ## @param ib array of in-band signal
   ## @param oob array of out-of-band-signal
@@ -62,10 +65,10 @@
   ## @param offset padding for normalized signal
   ## @return normalized in-band signal
 
-  e <- huber(oob)
+  e <- MASS::huber(oob)
   mu <- e$mu
   sigma <- e$s
-  alpha <- pmax(huber(ib)$mu-mu, 10)
+  alpha <- pmax(MASS::huber(ib)$mu-mu, 10)
   return(list(i=offset+.normExpSignal(mu, sigma, alpha, ib),
               c=offset+.normExpSignal(mu, sigma, alpha, ctl)))
 }
@@ -102,39 +105,43 @@
   c(G=mean(normctl.G$G, na.rm=TRUE), R=mean(normctl.R$R, na.rm=TRUE))
 }
 
-## #' Correct dye bias using most balanced sample
-## #'
-## #' In practice, it doesn't matter as long as the reference level does not deviate much
-## #' 
-## #' @param ssets a list of normalized \code{SignalSet}s
-## #' @return a list of normalized \code{SignalSet}s
-## #' @export
-## DyeBiasCorrectionMostBalanced <- function(ssets) {
-##   normctls <- vapply(ssets, .getNormCtls, numeric(2))
-##   most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
-##   ref <- mean(normctls[,most.balanced], na.rm=TRUE)
-##   lapply(ssets, function(sset) DyeBiasCorrection(sset, ref))
-## }
-
-## Correct dye bias
-##
-## @param sset a \code{SignalSet}s
-## @param ref reference signal level
-## @return a normalized \code{SignalSet}s
-.dyeBiasCorrection <- function(ref=7000) {
-  normctl <- .getNormCtls(self)
+#' Correct dye bias
+#'
+#' @param sset a \code{SignalSet}
+#' @param ref reference signal level
+#' @return a normalized \code{SignalSet}
+#' @export
+dyeBiasCorr <- function(sset, ref=5000) {
+  sset <- sset$clone()
+  normctl <- .getNormCtls(sset)
   fR <- ref/normctl['R']
   fG <- ref/normctl['G']
 
-  self$IG <- matrix(c(fG*self$IG[,'M'], fG*self$IG[,'U']),
-                    nrow=nrow(self$IG), ncol=ncol(self$IG), dimnames=dimnames(self$IG))
-  self$IR <- matrix(c(fR*self$IR[,'M'], fR*self$IR[,'U']),
-                    nrow=nrow(self$IR), ncol=ncol(self$IR), dimnames=dimnames(self$IR))
-  self$II <- matrix(c(fG*self$II[,'M'], fR*self$II[,'U']),
-                    nrow=nrow(self$II), ncol=ncol(self$II), dimnames=dimnames(self$II))
-  self$ctl$G <- fG*self$ctl$G
-  self$ctl$R <- fR*self$ctl$R
-  self$oobG <- fG*self$oobG
-  self$oobR <- fR*self$oobR
-  invisible()
+  sset$IG <- matrix(c(fG*sset$IG[,'M'], fG*sset$IG[,'U']),
+                    nrow=nrow(sset$IG), ncol=ncol(sset$IG), dimnames=dimnames(sset$IG))
+  sset$IR <- matrix(c(fR*sset$IR[,'M'], fR*sset$IR[,'U']),
+                    nrow=nrow(sset$IR), ncol=ncol(sset$IR), dimnames=dimnames(sset$IR))
+  sset$II <- matrix(c(fG*sset$II[,'M'], fR*sset$II[,'U']),
+                    nrow=nrow(sset$II), ncol=ncol(sset$II), dimnames=dimnames(sset$II))
+  sset$ctl$G <- fG*sset$ctl$G
+  sset$ctl$R <- fR*sset$ctl$R
+  sset$oobG <- fG*sset$oobG
+  sset$oobR <- fR*sset$oobR
+  sset
+}
+
+
+#' Correct dye bias using most balanced sample
+#'
+#' In practice, it doesn't matter as long as the
+#' reference level does not deviate much.
+#' 
+#' @param ssets a list of normalized \code{SignalSet}s
+#' @return a list of normalized \code{SignalSet}s
+#' @export
+dyeBiasCorrMostBalanced <- function(ssets) {
+  normctls <- vapply(ssets, .getNormCtls, numeric(2))
+  most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
+  ref <- mean(normctls[,most.balanced], na.rm=TRUE)
+  lapply(ssets, function(sset) dyeBiasCorr(sset, ref))
 }

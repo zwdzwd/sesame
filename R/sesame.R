@@ -7,7 +7,6 @@
 #' @details
 #' This package complements array functionalities that allow
 #' processing >10,000 samples in parallel on clusters.
-#' It supports both HM450 and EPIC platform.
 #' @aliases sesame
 #' @author
 #' Wanding Zhou \email{Wanding.Zhou@vai.org},
@@ -20,24 +19,18 @@
 #' library(sesame)
 #' 
 #' ## read IDATs
-#' dms <- ReadIDATsFromDir(sample.dir)
-#'
-#' ## translate chip address to probe address
-#' ssets <- mclapply(dms, ChipAddressToSignal)
-#'
-#' ## detect p-value
-#' ssets <- mclapply(ssets, DetectPValue)
+#' ssets <- ReadIDATsFromDir(sample.dir, mc=TRUE)
 #'
 #' ## normalization
-#' ssets <- lapply(ssets, BackgroundCorrectionNoob)
-#' ssets <- DyeBiasCorrectionMostBalanced(ssets)
-#' ssets <- Funnorm(ssets)
+#' ssets <- lapply(ssets, noob)
+#' ssets <- lapply(ssets, dyeBiasCorr)
 #'
 #' ## convert signal to beta values
-#' betas <- sapply(ssets, SignalToBeta)
+#' betas <- sapply(ssets, function(sset) sset$toBeta())
 #'
-#' ## mask repeats and SNPs
-#' betas <- MaskRepeatSNPs(betas, 'hm450')
+#' ## mask repeat and SNPs
+#' betas <- sapply(ssets, function(sset) sset$mask())
+#'
 #' }
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
@@ -61,10 +54,16 @@
 #' @field oobR out-of-band probes in red channel
 #' @field ctl all the control probe intensities
 #' @field pval named numeric vector of p-values
+#' @field mask probe mask
 #' \describe{
 #'   \item{Documentation}{For full documentation of each method go to }
 #'   \item{\code{new(platform)}}{Create a SignalSet in the specified platform}
 #'   \item{\code{detectPValue()}}{Detect P-value for each probe}
+#'   \item{\code{toBeta()}}{Convert to beta values}
+#'   \item{\code{toM()}}{Convert to M values}
+#'   \item{\code{setMask()}}{Mask repeat and SNPs}
+#'   \item{\code{measureInput()}}{Measure input}
+#'   \item{\code{inferSex()}}{Infer sex}
 #' }
 SignalSet <- R6Class(
   'SignalSet',
@@ -78,6 +77,7 @@ SignalSet <- R6Class(
     oobR = NULL,
     ctl = NULL,
     pval = NULL,
+    mask = NULL,
     
     initialize = function(x) self$platform <- x,
     
@@ -102,12 +102,14 @@ SignalSet <- R6Class(
       invisible()
     },
     
-    toBeta = function() {
+    toBeta = function(na.mask=TRUE) {
       betas1 <- pmax(IG[,'M'],1) / pmax(IG[,'M']+IG[,'U'],2)
       betas2 <- pmax(IR[,'M'],1) / pmax(IR[,'M']+IR[,'U'],2)
       betas3 <- pmax(II[,'M'],1) / pmax(II[,'M']+II[,'U'],2)
       betas <- c(betas1, betas2, betas3)
       betas[self$pval[names(betas)]>0.05] <- NA
+      if(na.mask && !is.null(mask))
+        betas[(rownames(betas) %in% mask),] <- NA
       betas[order(names(betas))]
     },
     
@@ -119,14 +121,13 @@ SignalSet <- R6Class(
       m[pval[names(m)]>0.05] <- NA
       m[order(names(m))]
     },
-
-    maskRepeatSNPs = function() {
-      dm.mask <- getBuiltInData('mask', platform)
-      lapply(c('IG','IR','II'), function(nm.cat) 
-        get(nm.cat)[rownames(sset[[nm.cat]]) %in% dm.mask,] <<- NA)
+    
+    setMask = function() {
+      mask <<- getBuiltInData('mask', platform)
+      invisible()
     },
     
-    inferGender = function() {
+    inferSex = function() {
       probe2chr <- getBuiltInData('hg19.probe2chr', ssets[[1]]$platform)
       all.signals <- c(apply(IR,1,max), apply(IG,1,max), apply(II,1,max))
       all <- rbind(IG, IR, II)
@@ -150,24 +151,17 @@ SignalSet <- R6Class(
 
     measureInput = function() {
       log2(mean(c(IG, IR, II)))
-    },
-
-    noob = .backgroundCorrectionNoob,
-    dyebias = .dyeBiasCorrection
+    }
   )
 )
 
 
-#' Import one IDAT file
-#'
-#' @param idat.name IDAT file name
-#' @importFrom illuminaio readIDAT
-#' @return a data frame with 2 columns, corresponding to
-#' cy3 (Grn) and cy5 (Red) color channel signal
-#' @export
+## Import one IDAT file
+## return a data frame with 2 columns, corresponding to
+## cy3 (Grn) and cy5 (Red) color channel signal
 readIDAT1 <- function(idat.name) {
-  ida.grn <- readIDAT(paste0(idat.name,"_Grn.idat"));
-  ida.red <- readIDAT(paste0(idat.name,"_Red.idat"));
+  ida.grn <- illuminaio::readIDAT(paste0(idat.name,"_Grn.idat"));
+  ida.red <- illuminaio::readIDAT(paste0(idat.name,"_Red.idat"));
   d <- cbind(cy3=ida.grn$Quants[,"Mean"], cy5=ida.red$Quants[,"Mean"])
   colnames(d) <- c('G', 'R')
   chip.type <- switch(
@@ -189,20 +183,26 @@ readIDAT1 <- function(idat.name) {
 #' @param mc use multiple cores
 #' @param mc.cores number of cores to use
 #' @import parallel
-#' @return a list of data frames. Each data frame corresponds to a sample.
-#' Data are signal intensities indexed by chip address.
+#' @return a list of \code{SignalSet}s
 #' @export
 readIDATs <- function(sample.names, base.dir=NULL, mc=FALSE, mc.cores=8) {
   if (!is.null(base.dir))
     sample.paths <- paste0(base.dir,'/',sample.names)
   else
     sample.paths <- sample.names
+
   if (mc)
     dms <- mclapply(sample.paths, readIDAT1, mc.cores=mc.cores)
   else
     dms <- lapply(sample.paths, readIDAT1)
+
   names(dms) <- basename(sample.names)
-  dms
+
+  if (mc) {
+    mclapply(dms, chipAddressToSignal, mc.cores=mc.cores)
+  } else {
+    lapply(dms, chipAddressToSignal, mc.cores=mc.cores)
+  }
 }
 
 #' Import IDATs from a directory
@@ -212,8 +212,7 @@ readIDATs <- function(sample.names, base.dir=NULL, mc=FALSE, mc.cores=8) {
 #' 
 #' @param dir.name directory name.
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
-#' @return a list of data frames. Each data frame corresponds to a sample.
-#' Data are signal intensities indexed by chip address.
+#' @return a list of \code{SignalSet}s
 #' @export
 readIDATsFromDir <- function(dir.name, ...) {
   fns <- list.files(dir.name)
@@ -229,8 +228,7 @@ readIDATsFromDir <- function(dir.name, ...) {
 #' @param sample.sheet path to sample sheet
 #' @param base.dir directory on which the \code{sample.sheet.path} is based
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
-#' @return a list of data frames. Each data frame corresponds to a sample. 
-#' Data are signal intensities indexed by chip address.
+#' @return a list of \code{SignalSet}s
 #' @export
 readIDATsFromSampleSheet <- function(sample.sheet, base.dir=NULL, ...) {
   sample.names <- read.csv(sample.sheet, stringsAsFactors=F)
@@ -296,6 +294,8 @@ chipAddressToSignal <- function(dm) {
   colnames(ctl) <- c('G','R','col','type')
   sset$ctl <- ctl
 
+  sset$detectPValue()
+  sset$setMask()
   sset
 }
 
