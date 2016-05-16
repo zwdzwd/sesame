@@ -14,7 +14,7 @@
 ## mask for snp and repeats
 'hm450.mask'
 
-GetBuiltInData <- function(nm, platform) {
+getBuiltInData <- function(nm, platform) {
   datanm <- paste0(platform,'.',nm)
   data(list=datanm)
   get(datanm)
