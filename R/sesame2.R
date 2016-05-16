@@ -64,6 +64,7 @@
 #'   \item{Documentation}{For full documentation of each method go to }
 #'   \item{\code{new(platform)}}{Create a SignalSet in the specified platform}
 #'   \item{\code{detectPValue()}{Detect P-value for each probe}
+#' }
 SignalSet <- R6Class(
   'SignalSet',
   portable = FALSE,
@@ -158,7 +159,7 @@ SignalSet <- R6Class(
 
 #' Import one IDAT file
 #'
-#' @param fn IDAT file name
+#' @param idat.name IDAT file name
 #' @importFrom illuminaio readIDAT
 #' @return a data frame with 2 columns, corresponding to
 #' cy3 (Grn) and cy5 (Red) color channel signal
@@ -182,7 +183,7 @@ readIDAT1 <- function(idat.name) {
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
 #' 
-#' @param samples sample list
+#' @param sample.names a sample list
 #' @param base.dir base directory
 #' @param mc use multiple cores
 #' @param mc.cores number of cores to use
@@ -258,7 +259,7 @@ chipAddressToSignal <- function(dm) {
   sset <- SignalSet$new(platform)
 
   ## type I green channel / oob red channel
-  IordG <- subset(dm.ordering, DESIGN=='I' & col=='G')
+  IordG <- dm.ordering[(dm.ordering$DESIGN=='I'&dm.ordering$col=='G'),]
   ## 2-channel for green probes' M allele
   IuG2ch <- dm[match(IordG$U, rownames(dm)),]
   IuG <- IuG2ch[,1]
@@ -269,7 +270,7 @@ chipAddressToSignal <- function(dm) {
   sset$IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
   ## type I red channel / oob green channel
-  IordR <- subset(dm.ordering, DESIGN=='I' & col=='R')
+  IordR <- dm.ordering[(dm.ordering$DESIGN=='I'&dm.ordering$col='R'),]
   ## 2-channel for red probes' m allele
   IuR2ch <- dm[match(IordR$U, rownames(dm)),]
   IuR <- IuR2ch[,2]
@@ -297,7 +298,7 @@ chipAddressToSignal <- function(dm) {
   sset
 }
 
-subsetBeta = function(max=1.1, min=-0.1) {
+subsetBeta <- function(max=1.1, min=-0.1) {
   lapply(c('IG','IR','II'), function(nm.cat) {
     s <- self[[nm.cat]]
     b <- s[,'M']/(s[,'M']+s[,'U'])
@@ -307,8 +308,8 @@ subsetBeta = function(max=1.1, min=-0.1) {
   invisible()
 }
 
-subsetChromosome = function(chrm) {
-  probe2chr <- GetBuiltInData('hg19.probe2chr', self$platform)
+subsetChromosome <- function(chrm) {
+  probe2chr <- getBuiltInData('hg19.probe2chr', self$platform)
   IG <- IG[probe2chr[rownames(IG)] == chrm,]
   IR <- IR[probe2chr[rownames(IR)] == chrm,]
   II <- II[probe2chr[rownames(II)] == chrm,]
