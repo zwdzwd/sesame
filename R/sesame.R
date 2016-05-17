@@ -20,14 +20,24 @@
 #' 
 #' ## read IDATs
 #' ssets <- ReadIDATsFromDir(sample.dir, mc=T)
-#'
+#' 
 #' ## normalization
 #' ssets <- mclapply(ssets, noob)
 #' ssets <- mclapply(ssets, dyeBiasCorr)
-#'
-#' ## convert signal to beta values
-#' betas <- signalToBeta(ssets)
 #' 
+#' ## convert signal to beta values
+#' betas <- signalToBeta(ssets, mc=T)
+#'
+#' ## be more parallel
+#' options(mc.cores=28)
+#' dms <- readIDATsFromSheet(sample.sheet, raw=T, mc=T)
+#' simplify2array(mclapply(names(dms), function(nm) {
+#'   dm <- dms[[nm]]
+#'   sset <- chipAddressToSignal(dm)
+#'   sset <- noob(sset)
+#'   sset <- dyeBiasCorr(sset)
+#'   sset$toBeta()
+#' }))
 #' }
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
@@ -327,7 +337,7 @@ signalToBeta <- function(ssets, na.mask=TRUE, mc=FALSE, mc.cores=NULL) {
   if (mc)
     simplify2array(mclapply(ssets, function(sset) sset$toBeta(na.mask=na.mask), mc.cores=mc.cores))
   else
-    sapply(ssets, function(sset) sset$toBeta())
+    sapply(ssets, function(sset) sset$toBeta(na.mask=na.mask))
 }
 
 subsetBeta <- function(sset, max=1.1, min=-0.1) {
