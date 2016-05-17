@@ -298,7 +298,7 @@ chipAddressToSignal <- function(dm) {
   ## 2-channel for green probes' U allele
   ImG2ch <- dm[match(IordG$M, rownames(dm)),]
   ImG <- ImG2ch[,1]
-  sset$oobR <- c(IuG2ch[,2], ImG2ch[,2])
+  sset$oobR <- as.matrix(data.frame(M=ImG2ch[,2], U=IuG2ch[,2], row.names=IordG$Probe_ID))
   sset$IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
   ## type I red channel / oob green channel
@@ -309,7 +309,7 @@ chipAddressToSignal <- function(dm) {
   ## 2-channel for red probes' u allele
   ImR2ch <- dm[match(IordR$M, rownames(dm)),]
   ImR <- ImR2ch[,2]
-  sset$oobG <- c(IuR2ch[,1], ImR2ch[,1])
+  sset$oobG <- as.matrix(data.frame(M=ImR2ch[,1], U=IuR2ch[,1], row.names=IordR$Probe_ID))
   sset$IR <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
 
   ## type II
