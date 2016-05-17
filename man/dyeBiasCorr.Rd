@@ -4,12 +4,14 @@
 \alias{dyeBiasCorr}
 \title{Correct dye bias}
 \usage{
-dyeBiasCorr(sset, ref = 5000)
+dyeBiasCorr(sset, ref = 5000, in.place = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SignalSet}}
 
 \item{ref}{reference signal level}
+
+\item{in.place}{modify \code{SignalSet} in place, faster}
 }
 \value{
 a normalized \code{SignalSet}

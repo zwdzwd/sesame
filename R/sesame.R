@@ -114,7 +114,7 @@ SignalSet <- R6Class(
       betas2 <- pmax(IR[,'M'],1) / pmax(IR[,'M']+IR[,'U'],2)
       betas3 <- pmax(II[,'M'],1) / pmax(II[,'M']+II[,'U'],2)
       betas <- c(betas1, betas2, betas3)
-      betas[self$pval[names(betas)]>0.05] <- NA
+      betas[pval[names(betas)]>0.05] <- NA
       if(na.mask && !is.null(mask))
         betas[names(betas) %in% mask] <- NA
       betas[order(names(betas))]
@@ -135,7 +135,7 @@ SignalSet <- R6Class(
     },
     
     inferSex = function() {
-      probe2chr <- getBuiltInData('hg19.probe2chr', ssets[[1]]$platform)
+      probe2chr <- getBuiltInData('hg19.probe2chr', platform)
       all.signals <- c(apply(IR,1,max), apply(IG,1,max), apply(II,1,max))
       all <- rbind(IG, IR, II)
       all.X <- all[(probe2chr[rownames(all)] == 'chrX'),]
@@ -162,6 +162,20 @@ SignalSet <- R6Class(
   )
 )
 
+
+#' subset a SignalSet
+#'
+#' @param sset a \code{SignalSet}
+#' @param probes probe names
+#' @return a \code{SignalSet} with only probes
+#' @export
+`[.WGroup` <- function(sset, probes) {
+  sset <- sset$clone()
+  sset$IR <- sset$IR[rownames(sset$IR) %in% probes,]
+  sset$IG <- sset$IG[rownames(sset$IG) %in% probes,]
+  sset$II <- sset$II[rownames(sset$II) %in% probes,]
+  sset
+}
 
 ## Import one IDAT file
 ## return a data frame with 2 columns, corresponding to
@@ -348,15 +362,5 @@ subsetBeta <- function(sset, max=1.1, min=-0.1) {
     sset[[nm.cat]] <<- s[(b>min & b<max),]
     invisible()
   })
-  invisible()
-}
-
-subsetChromosome <- function(sset, chrm) {
-  sset <- sset$clone()
-  probe2chr <- getBuiltInData('hg19.probe2chr', sset$platform)
-  sset$IG <- sset$IG[probe2chr[rownames(sset$IG)] == chrm,]
-  sset$IR <- sset$IR[probe2chr[rownames(sset$IR)] == chrm,]
-  sset$II <- sset$II[probe2chr[rownames(sset$II)] == chrm,]
   sset
 }
-

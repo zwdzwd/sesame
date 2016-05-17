@@ -22,3 +22,14 @@ MValueToBetaValue <- function(m) {
 smessage <- function(...) {
   cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
 }
+
+#' Get probe by chromosome
+#'
+#' @param chrm chromosome
+#' @param platform platform
+#' @return probes in the specified chromosome
+#' @export
+getProbeByChromosome <- function(chrm, platform) {
+  probe2chr <- getBuiltInData('hg19.probe2chr', platform)
+  names(probe2chr[probe2chr==chrm])
+}
