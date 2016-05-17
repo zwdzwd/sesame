@@ -25,7 +25,7 @@ ssets <- mclapply(ssets, noob)
 ssets <- mclapply(ssets, dyeBiasCorr)
 
 ## convert signal to beta values
-betas <- sapply(ssets, function(sset) sset$toBeta())
+betas <- signalToBeta(ssets)
 
 }
 }
