@@ -26,7 +26,7 @@
 #' ssets <- mclapply(ssets, dyeBiasCorr)
 #'
 #' ## convert signal to beta values
-#' betas <- sapply(ssets, function(sset) sset$toBeta())
+#' betas <- signalToBeta(ssets)
 #' 
 #' }
 #' @keywords DNAMethylation Microarray QualityControl
@@ -183,7 +183,15 @@ readIDAT1 <- function(idat.name) {
 #' @import parallel
 #' @return a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
 #' @export
-readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=8) {
+readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
+
+  if (is.null(mc.cores)) {
+    if (is.null(getOption('mc.cores')))
+      mc.cores <- 8
+    else
+      mc.cores <- getOption('mc.cores')
+  }
+  
   if (!is.null(base.dir))
     sample.paths <- paste0(base.dir,'/',sample.names)
   else
@@ -300,6 +308,28 @@ chipAddressToSignal <- function(dm) {
   sset
 }
 
+#' Convert multiple signals to beta
+#'
+#' @param ssets a list of \code{SignalSet}s
+#' @param na.mask NA-mask repetitive and SNP probes
+#' @param mc parallel
+#' @param mc.cores number of cores
+#' @return beta value matrix
+#' @export
+signalToBeta <- function(ssets, na.mask=TRUE, mc=FALSE, mc.cores=NULL) {
+  if (is.null(mc.cores)) {
+    if (is.null(getOption('mc.cores')))
+      mc.cores <- 8
+    else
+      mc.cores <- getOption('mc.cores')
+  }
+
+  if (mc)
+    simplify2array(mclapply(ssets, function(sset) sset$toBeta(na.mask=na.mask), mc.cores=mc.cores))
+  else
+    sapply(ssets, function(sset) sset$toBeta())
+}
+
 subsetBeta <- function(sset, max=1.1, min=-0.1) {
   sset <- sset$clone()
   lapply(c('IG','IR','II'), function(nm.cat) {
@@ -319,3 +349,4 @@ subsetChromosome <- function(sset, chrm) {
   sset$II <- sset$II[probe2chr[rownames(sset$II)] == chrm,]
   sset
 }
+
