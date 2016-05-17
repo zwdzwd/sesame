@@ -3,12 +3,14 @@
 #' Norm-Exp deconvolution using Out-Of-Band (oob) probes
 #' Note p-values are unchanged (based on the raw signal intensities).
 #' @param sset a \code{SignalSet}
+#' @param in.place modify \code{SignalSet} in place, faster
 #' @param offset offset
 #' @return a new \code{SignalSet} with noob background correction
 #' @export
-noob <- function(sset, offset=15) {
-  
-  sset <- sset$clone()
+noob <- function(sset, in.place=FALSE, offset=15) {
+
+  if (!in.place)
+    sset <- sset$clone()
   ## sort signal based on channel
   ibR <- c(sset$IR, sset$II[,'U'])              # in-band red signal
   ibG <- c(sset$IG, sset$II[,'M'])              # in-band green signal
@@ -108,10 +110,13 @@ noob <- function(sset, offset=15) {
 #'
 #' @param sset a \code{SignalSet}
 #' @param ref reference signal level
+#' @param in.place modify \code{SignalSet} in place, faster
 #' @return a normalized \code{SignalSet}
 #' @export
-dyeBiasCorr <- function(sset, ref=5000) {
-  sset <- sset$clone()
+dyeBiasCorr <- function(sset, ref=5000, in.place=FALSE) {
+
+  if (!in.place)
+    sset <- sset$clone()
   normctl <- .getNormCtls(sset)
   fR <- ref/normctl['R']
   fG <- ref/normctl['G']
