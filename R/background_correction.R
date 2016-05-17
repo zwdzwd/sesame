@@ -57,12 +57,12 @@ noob <- function(sset, offset=15) {
 }
 
 ## Noob background correction for one channel
+## ib array of in-band signal
+## oob array of out-of-band-signal
+## ctl control probe signals
+## offset padding for normalized signal
+## return normalized in-band signal
 .backgroundCorrectionNoobCh1 <- function(ib, oob, ctl, offset=15) {
-  ## @param ib array of in-band signal
-  ## @param oob array of out-of-band-signal
-  ## @param ctl control probe signals
-  ## @param offset padding for normalized signal
-  ## @return normalized in-band signal
 
   e <- MASS::huber(oob)
   mu <- e$mu
