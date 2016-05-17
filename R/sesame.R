@@ -169,7 +169,7 @@ SignalSet <- R6Class(
 #' @param probes probe names
 #' @return a \code{SignalSet} with only probes
 #' @export
-`[.WGroup` <- function(sset, probes) {
+`[.SignalSet` <- function(sset, probes) {
   sset <- sset$clone()
   sset$IR <- sset$IR[rownames(sset$IR) %in% probes,]
   sset$IG <- sset$IG[rownames(sset$IG) %in% probes,]
