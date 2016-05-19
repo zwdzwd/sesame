@@ -71,7 +71,7 @@
 #'   \item{\code{setMask()}}{Mask repeat and SNPs}
 #'   \item{\code{measureInput()}}{Measure input}
 #'   \item{\code{inferSex()}}{Infer sex}
-#'   \item{\code{totalIntensity()}}{Total intensity on each probe}
+#'   \item{\code{totalIntensities()}}{Total intensity on each probe}
 #' }
 SignalSet <- R6Class(
   'SignalSet',
@@ -161,7 +161,7 @@ SignalSet <- R6Class(
       log2(mean(c(IG, IR, II)))
     },
 
-    totalIntensity = function() {
+    totalIntensities = function() {
       log2(rowSums(rbind(IG, IR, II)))
     }
   )
