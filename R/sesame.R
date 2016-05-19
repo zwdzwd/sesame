@@ -158,11 +158,11 @@ SignalSet <- R6Class(
     },
 
     measureInput = function() {
-      log2(mean(c(IG, IR, II)))
+      mean(c(IG, IR, II))
     },
 
     totalIntensities = function() {
-      log2(rowSums(rbind(IG, IR, II)))
+      rowSums(rbind(IG, IR, II))
     }
   )
 )
