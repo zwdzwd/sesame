@@ -29,7 +29,7 @@ noob <- function(sset, offset=15) {
   ## type IG
   if (length(sset$IG)>0)
     sset$IG <- matrix(ibG.nl$i[1:length(sset$IG)],
-                        nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
+                      nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
   else
     sset$IG <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
@@ -53,6 +53,11 @@ noob <- function(sset, offset=15) {
   sset$ctl$G <- ibG.nl$c
   sset$ctl$R <- ibR.nl$c
 
+  ## out-of-band
+  sset$oobR <- ibR.nl$o
+  browser()
+  sset$oobG <- ibG.nl$o
+
   sset
 }
 
@@ -69,7 +74,8 @@ noob <- function(sset, offset=15) {
   sigma <- e$s
   alpha <- pmax(MASS::huber(ib)$mu-mu, 10)
   return(list(i=offset+.normExpSignal(mu, sigma, alpha, ib),
-              c=offset+.normExpSignal(mu, sigma, alpha, ctl)))
+              c=offset+.normExpSignal(mu, sigma, alpha, ctl),
+              o=offset+.normExpSignal(mu, sigma, alpha, oob)))
 }
 
 ## the following is adapted from Limma
