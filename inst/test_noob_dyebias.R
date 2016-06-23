@@ -3,7 +3,7 @@
 create.validation <- function() {
   library(methylumi)
   d <- getwd()
-  setwd('data/tcga.random6/')
+  setwd('../../test/data/tcga.random6/')
   map <- read.csv('samples.csv', stringsAsFactors=F)
   MSET <- methylumIDAT(map, parallel=T)
   MSET2 <- methylumi.bgcorr(MSET)
@@ -13,21 +13,21 @@ create.validation <- function() {
 
   mset <- processMethylumi()
   betas.save <- betas(mset)
-  save(betas.save, file='data/tcga.random6/test_noob_dyebias.Rout.rda')
+  save(betas.save, file='../../test/data/tcga.random6/test_noob_dyebias.Rout.rda')
 }
 
 # create.validation
 
 library(sesame)
 library(parallel)
-setwd('~/tools/sesame/sesame/inst')
 
-ssets <- readIDATsFromSheet("data/tcga.random6/samples.csv", base.dir='data/tcga.random6', mc=T)
+options(mc.cores=8)
+ssets <- readIDATsFromSheet("../../test/data/tcga.random6/samples.csv", base.dir='../../test/data/tcga.random6', mc=T)
 ssets <- mclapply(ssets, noob)
 ssets <- mclapply(ssets, dyeBiasCorr)
-betas <- simplify2array(mclapply(ssets, function(sset) sset$toBeta(na.mask=FALSE), mc.cores=8))
+betas <- signalToBeta(ssets, na.mask=F, mc=T)
 
-load('data/tcga.random6/test_noob_dyebias.Rout.rda')
+load('../../test/data/tcga.random6/test_noob_dyebias.Rout.rda')
 message('Are testing the same as validation: ', all.equal(betas, betas.save))
 
 message('Head old:')
