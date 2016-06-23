@@ -5,7 +5,7 @@
 \title{Import IDATs from a list of samples}
 \usage{
 readIDATs(sample.names, base.dir = NULL, raw = FALSE, mc = FALSE,
-  mc.cores = 8)
+  mc.cores = NULL)
 }
 \arguments{
 \item{sample.names}{a sample list}

@@ -1,10 +1,12 @@
-library(devtools)
-load_all('..', export_all=FALSE)
+#!/usr/bin/env Rscript
 
-dms <- ReadIDATsFromDir('data/EPIC.beta.test/')
-ssets <- lapply(dms, ChipAddressToSignal)
-pvals <- lapply(ssets, DetectPValue)
-ssets.noob <- lapply(ssets, BackgroundCorrectionNoob)
-ssets.noob.dye <- DyeBiasCorrectionMostBalanced(ssets.noob)
-betas <- mapply(SignalToBeta, ssets.noob.dye, pvals)
+library(sesame)
+library(parallel)
+options(mc.cores=4)
 
+ssets <- readIDATsFromDir('../../test/data/EPIC.beta.test/', mc=T)
+ssets <- mclapply(ssets, noob)
+ssets <- mclapply(ssets, dyeBiasCorr)
+
+sset <- ssets[[1]]
+cat(sset$inferSex())
