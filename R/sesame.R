@@ -24,10 +24,20 @@
 #' ## normalization
 #' ssets <- mclapply(ssets, noob)
 #' ssets <- mclapply(ssets, dyeBiasCorr)
-#'
-#' ## convert signal to beta values
-#' betas <- sapply(ssets, function(sset) sset$toBeta())
 #' 
+#' ## convert signal to beta values
+#' betas <- signalToBeta(ssets, mc=T)
+#'
+#' ## be more parallel
+#' options(mc.cores=28)
+#' dms <- readIDATsFromSheet(sample.sheet, raw=T, mc=T)
+#' simplify2array(mclapply(names(dms), function(nm) {
+#'   dm <- dms[[nm]]
+#'   sset <- chipAddressToSignal(dm)
+#'   sset <- noob(sset)
+#'   sset <- dyeBiasCorr(sset)
+#'   sset$toBeta()
+#' }))
 #' }
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
@@ -61,6 +71,7 @@
 #'   \item{\code{setMask()}}{Mask repeat and SNPs}
 #'   \item{\code{measureInput()}}{Measure input}
 #'   \item{\code{inferSex()}}{Infer sex}
+#'   \item{\code{totalIntensities()}}{Total intensity on each probe}
 #' }
 SignalSet <- R6Class(
   'SignalSet',
@@ -104,7 +115,7 @@ SignalSet <- R6Class(
       betas2 <- pmax(IR[,'M'],1) / pmax(IR[,'M']+IR[,'U'],2)
       betas3 <- pmax(II[,'M'],1) / pmax(II[,'M']+II[,'U'],2)
       betas <- c(betas1, betas2, betas3)
-      betas[self$pval[names(betas)]>0.05] <- NA
+      betas[pval[names(betas)]>0.05] <- NA
       if(na.mask && !is.null(mask))
         betas[names(betas) %in% mask] <- NA
       betas[order(names(betas))]
@@ -138,7 +149,7 @@ SignalSet <- R6Class(
     },
     
     inferSex = function() {
-      probe2chr <- getBuiltInData('hg19.probe2chr', ssets[[1]]$platform)
+      probe2chr <- getBuiltInData('hg19.probe2chr', platform)
       all.signals <- c(apply(IR,1,max), apply(IG,1,max), apply(II,1,max))
       all <- rbind(IG, IR, II)
       all.X <- all[(probe2chr[rownames(all)] == 'chrX'),]
@@ -160,11 +171,29 @@ SignalSet <- R6Class(
     },
 
     measureInput = function() {
-      log2(mean(c(IG, IR, II)))
+      mean(c(IG, IR, II))
+    },
+
+    totalIntensities = function() {
+      rowSums(rbind(IG, IR, II))
     }
   )
 )
 
+
+#' subset a SignalSet
+#'
+#' @param sset a \code{SignalSet}
+#' @param probes probe names
+#' @return a \code{SignalSet} with only probes
+#' @export
+`[.SignalSet` <- function(sset, probes) {
+  sset <- sset$clone()
+  sset$IR <- sset$IR[rownames(sset$IR) %in% probes,]
+  sset$IG <- sset$IG[rownames(sset$IG) %in% probes,]
+  sset$II <- sset$II[rownames(sset$II) %in% probes,]
+  sset
+}
 
 ## Import one IDAT file
 ## return a data frame with 2 columns, corresponding to
@@ -196,7 +225,15 @@ readIDAT1 <- function(idat.name) {
 #' @import parallel
 #' @return a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
 #' @export
-readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=8) {
+readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
+
+  if (is.null(mc.cores)) {
+    if (is.null(getOption('mc.cores')))
+      mc.cores <- 8
+    else
+      mc.cores <- getOption('mc.cores')
+  }
+  
   if (!is.null(base.dir))
     sample.paths <- paste0(base.dir,'/',sample.names)
   else
@@ -279,7 +316,7 @@ chipAddressToSignal <- function(dm) {
   ## 2-channel for green probes' U allele
   ImG2ch <- dm[match(IordG$M, rownames(dm)),]
   ImG <- ImG2ch[,1]
-  sset$oobR <- c(IuG2ch[,2], ImG2ch[,2])
+  sset$oobR <- as.matrix(data.frame(M=ImG2ch[,2], U=IuG2ch[,2], row.names=IordG$Probe_ID))
   sset$IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
   ## type I red channel / oob green channel
@@ -290,7 +327,7 @@ chipAddressToSignal <- function(dm) {
   ## 2-channel for red probes' u allele
   ImR2ch <- dm[match(IordR$M, rownames(dm)),]
   ImR <- ImR2ch[,2]
-  sset$oobG <- c(IuR2ch[,1], ImR2ch[,1])
+  sset$oobG <- as.matrix(data.frame(M=ImR2ch[,1], U=IuR2ch[,1], row.names=IordR$Probe_ID))
   sset$IR <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
 
   ## type II
@@ -313,6 +350,28 @@ chipAddressToSignal <- function(dm) {
   sset
 }
 
+#' Convert multiple signals to beta
+#'
+#' @param ssets a list of \code{SignalSet}s
+#' @param na.mask NA-mask repetitive and SNP probes
+#' @param mc parallel
+#' @param mc.cores number of cores
+#' @return beta value matrix
+#' @export
+signalToBeta <- function(ssets, na.mask=TRUE, mc=FALSE, mc.cores=NULL) {
+  if (is.null(mc.cores)) {
+    if (is.null(getOption('mc.cores')))
+      mc.cores <- 8
+    else
+      mc.cores <- getOption('mc.cores')
+  }
+
+  if (mc)
+    simplify2array(mclapply(ssets, function(sset) sset$toBeta(na.mask=na.mask), mc.cores=mc.cores))
+  else
+    sapply(ssets, function(sset) sset$toBeta(na.mask=na.mask))
+}
+
 subsetBeta <- function(sset, max=1.1, min=-0.1) {
   sset <- sset$clone()
   lapply(c('IG','IR','II'), function(nm.cat) {
@@ -321,14 +380,5 @@ subsetBeta <- function(sset, max=1.1, min=-0.1) {
     sset[[nm.cat]] <<- s[(b>min & b<max),]
     invisible()
   })
-  invisible()
-}
-
-subsetChromosome <- function(sset, chrm) {
-  sset <- sset$clone()
-  probe2chr <- getBuiltInData('hg19.probe2chr', sset$platform)
-  sset$IG <- sset$IG[probe2chr[rownames(sset$IG)] == chrm,]
-  sset$IR <- sset$IR[probe2chr[rownames(sset$IR)] == chrm,]
-  sset$II <- sset$II[probe2chr[rownames(sset$II)] == chrm,]
   sset
 }
