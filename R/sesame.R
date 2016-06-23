@@ -19,7 +19,7 @@
 #' library(sesame)
 #' 
 #' ## read IDATs
-#' ssets <- ReadIDATsFromDir(sample.dir, mc=T)
+#' ssets <- readIDATsFromDir(sample.dir, mc=T)
 #'
 #' ## normalization
 #' ssets <- mclapply(ssets, noob)
@@ -102,6 +102,19 @@ SignalSet <- R6Class(
     toBeta = function(na.mask=TRUE) {
       betas1 <- pmax(IG[,'M'],1) / pmax(IG[,'M']+IG[,'U'],2)
       betas2 <- pmax(IR[,'M'],1) / pmax(IR[,'M']+IR[,'U'],2)
+      betas3 <- pmax(II[,'M'],1) / pmax(II[,'M']+II[,'U'],2)
+      betas <- c(betas1, betas2, betas3)
+      betas[self$pval[names(betas)]>0.05] <- NA
+      if(na.mask && !is.null(mask))
+        betas[names(betas) %in% mask] <- NA
+      betas[order(names(betas))]
+    },
+
+    toBetaTypeIbySum = function(na.mask=TRUE) {
+      .oobR <- oobR[rownames(IG),]
+      .oobG <- oobG[rownames(IR),]
+      betas1 <- pmax(IG[,'M']+oobR[,'M'],1) / pmax(IG[,'M']+oobR[,'M']+IG[,'U']+oobR[,'U'],2)
+      betas2 <- pmax(IR[,'M']+oobG[,'M'],1) / pmax(IR[,'M']+oobG[,'M']+IR[,'U']+oobG[,'U'],2)
       betas3 <- pmax(II[,'M'],1) / pmax(II[,'M']+II[,'U'],2)
       betas <- c(betas1, betas2, betas3)
       betas[self$pval[names(betas)]>0.05] <- NA
