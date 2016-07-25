@@ -154,3 +154,33 @@ dyeBiasCorrMostBalanced <- function(ssets) {
   ref <- mean(normctls[,most.balanced], na.rm=TRUE)
   lapply(ssets, function(sset) dyeBiasCorr(sset, ref))
 }
+
+
+#' Correct dye bias using type I
+#'
+#' Correct dye bias using type I G,R distribution
+#'
+#' @param sset \code{SignalSet} to be modified in-place
+#' @return modified sset
+#' @importFrom preprocessCore normalize.quantiles.use.target
+#' @importFrom stats approx
+#' @export
+dyeBiasCorrTypeINorm <- function(sset) {
+
+  maxIG <- max(sset$IG)
+  minIG <- min(sset$IG)
+  maxIR <- max(sset$IR)
+  minIR <- min(sset$IR)
+  insupport <- sset$II[,'M'] <= maxIG & sset$II[,'M'] >= minIG
+  oversupport <- sset$II[,'M'] > maxIG
+  undersupport <- sset$II[,'M'] < minIG
+
+  IG1 <- sort(as.numeric(sset$IG))
+  IG2 <- sort(as.vector(normalize.quantiles.use.target(matrix(IG1), as.vector(sset$IR))))
+  fit.apx <- function(xx) approx(x=IG1, y=IG2, xout=xx)$y
+
+  sset$II[insupport,'M'] <- approx(x=IG1, y=IG2, xout=sset$II[insupport,'M'])$y
+  sset$II[oversupport,'M'] <- maxIR + (sset$II[oversupport,'M'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
+  sset$IG <- approx(x=IG1, y=IG2, xout=fit.apx(sset$IG))$y
+  sset
+}
