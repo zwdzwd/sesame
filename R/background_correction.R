@@ -171,16 +171,39 @@ dyeBiasCorrTypeINorm <- function(sset) {
   minIG <- min(sset$IG)
   maxIR <- max(sset$IR)
   minIR <- min(sset$IR)
-  insupport <- sset$II[,'M'] <= maxIG & sset$II[,'M'] >= minIG
-  oversupport <- sset$II[,'M'] > maxIG
-  undersupport <- sset$II[,'M'] < minIG
 
   IG1 <- sort(as.numeric(sset$IG))
   IG2 <- sort(as.vector(normalize.quantiles.use.target(matrix(IG1), as.vector(sset$IR))))
-  fit.apx <- function(xx) approx(x=IG1, y=IG2, xout=xx)$y
 
+  ## fit type II
+  insupport <- sset$II[,'M'] <= maxIG & sset$II[,'M'] >= minIG
+  oversupport <- sset$II[,'M'] > maxIG
+  undersupport <- sset$II[,'M'] < minIG
   sset$II[insupport,'M'] <- approx(x=IG1, y=IG2, xout=sset$II[insupport,'M'])$y
   sset$II[oversupport,'M'] <- maxIR + (sset$II[oversupport,'M'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-  sset$IG <- approx(x=IG1, y=IG2, xout=fit.apx(sset$IG))$y
+  sset$II[undersupport,'M'] <- minIR / minIG * sset$II[undersupport,'M']
+
+  ## fit IG
+  IG.fit <- approx(x=IG1, y=IG2, xout=sset$IG)$y
+  dim(IG.fit) <- dim(sset$IG)
+  dimnames(IG.fit) <- dimnames(sset$IG)
+  sset$IG <- IG.fit
+
+  ## fit control
+  insupport <- sset$ctl[,'G'] <= maxIG & sset$ctl[,'G'] >= minIG & (!is.na(sset$ctl[,'G']))
+  oversupport <- sset$ctl[,'G'] > maxIG & (!is.na(sset$ctl[,'G']))
+  undersupport <- sset$ctl[,'G'] < minIG & (!is.na(sset$ctl[,'G']))
+  sset$ctl[insupport,'G'] <- approx(x=IG1, y=IG2, xout=sset$ctl[insupport,'G'])$y
+  sset$ctl[oversupport,'G'] <- maxIR + (sset$ctl[oversupport,'G'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
+  sset$ctl[undersupport,'G'] <- minIR / minIG * sset$ctl[undersupport,'G']
+
+  ## fit oob
+  insupport <- sset$oobG <= maxIG & sset$oobG >= minIG & (!is.na(sset$oobG))
+  oversupport <- sset$oobG > maxIG & (!is.na(sset$oobG))
+  undersupport <- sset$oobG < minIG & (!is.na(sset$oobG))
+  sset$oobG[insupport] <- approx(x=IG1, y=IG2, xout=sset$oobG[insupport])$y
+  sset$oobG[oversupport] <- maxIR + (sset$oobG[oversupport] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
+  sset$oobG[undersupport] <- minIR / minIG * sset$oobG[undersupport]
+
   sset
 }
