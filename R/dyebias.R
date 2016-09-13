@@ -9,7 +9,6 @@
 #' @export
 dyeBiasCorrTypeINorm <- function(sset, in.place=FALSE) {
 
-  library(preprocessCore)
   if (!in.place)
     sset <- sset$clone()
 
@@ -77,7 +76,6 @@ dyeBiasCorrTypeINorm <- function(sset, in.place=FALSE) {
 ## M, U, green matched to red distribution
 dyeBiasCorrTypeINormG2R <- function(sset, in.place=FALSE) {
 
-  library(preprocessCore)
   if (!in.place)
     sset <- sset$clone()
 
@@ -87,7 +85,7 @@ dyeBiasCorrTypeINormG2R <- function(sset, in.place=FALSE) {
   minIR <- min(sset$IR)
 
   IG1 <- sort(as.numeric(sset$IG))
-  IG2 <- sort(as.vector(normalize.quantiles.use.target(matrix(IG1), as.vector(sset$IR))))
+  IG2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(matrix(IG1), as.vector(sset$IR))))
   fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx)$y
 
   ## fit type II
@@ -127,7 +125,6 @@ dyeBiasCorrTypeINormG2R <- function(sset, in.place=FALSE) {
 ## red matched to green distribution
 dyeBiasCorrTypeINormR2G <- function(sset, in.place=FALSE) {
 
-  library(preprocessCore)
   if (!in.place)
     sset <- sset$clone()
 
@@ -137,7 +134,7 @@ dyeBiasCorrTypeINormR2G <- function(sset, in.place=FALSE) {
   minIR <- min(sset$IR)
 
   IR1 <- sort(as.numeric(sset$IR))
-  IR2 <- sort(as.vector(normalize.quantiles.use.target(matrix(IR1), as.vector(sset$IG))))
+  IR2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(matrix(IR1), as.vector(sset$IG))))
   fitfun <- function(xx) approx(x=IR1, y=IR2, xout=xx)$y
 
   ## fit type II
@@ -183,7 +180,7 @@ dyeBiasCorrTypeINormMpU <- function(sset, in.place=FALSE) {
   minIR <- min(rowSums(sset$IR))
 
   IG1 <- sort(as.numeric(rowSums(sset$IG)))
-  IG2 <- sort(as.vector(normalize.quantiles.use.target(matrix(IG1), as.vector(rowSums(sset$IR)))))
+  IG2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(matrix(IG1), as.vector(rowSums(sset$IR)))))
   fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx)$y
 
   ## fit type II

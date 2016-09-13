@@ -138,7 +138,6 @@ train.model.glm <- function(input, output) {
 subtractBleeding <- function(sset, in.place=FALSE) {
   
   ## this subtract bleeding for type II probes using the same predict function as type I
-  library(mgcv)
   if (!in.place)
     sset <- sset$clone()
   
@@ -177,7 +176,6 @@ subtractBleeding <- function(sset, in.place=FALSE) {
 ## subtract bleeding-through separately for type II
 subtractBleedingTypeIIsep <- function(sset, in.place=FALSE) {
 
-  library(mgcv)
   if (!in.place)
     sset <- sset$clone()
   
