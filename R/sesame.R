@@ -89,12 +89,17 @@ SignalSet <- R6Class(
     
     initialize = function(x) self$platform <- x,
     
-    detectPValue = function() {
+    detectPValue = function(use.oob=T) {
       negctls <- ctl[grep('negative', tolower(rownames(ctl))),]
       negctls <- subset(negctls, col!=-99)
 
-      funcG <- ecdf(negctls$G)
-      funcR <- ecdf(negctls$R)
+      if (use.oob) {
+        funcG <- ecdf(negctls$G)
+        funcR <- ecdf(negctls$R)
+      } else {
+        funcG <- ecdf(oobG)
+        funcR <- ecdf(oobR)
+      }
 
       ## p-value is the minimium detection p-value of the 2 alleles
       pIR <- 1-apply(cbind(funcR(IR[,'M']), funcR(IR[,'U'])),1,max)
@@ -109,13 +114,13 @@ SignalSet <- R6Class(
       pval <<- pval[order(names(pval))]
       invisible()
     },
-    
-    toBeta = function(na.mask=TRUE) {
+
+    toBeta = function(na.mask=TRUE, pval.threshold=0.05) {
       betas1 <- pmax(IG[,'M'],1) / pmax(IG[,'M']+IG[,'U'],2)
       betas2 <- pmax(IR[,'M'],1) / pmax(IR[,'M']+IR[,'U'],2)
       betas3 <- pmax(II[,'M'],1) / pmax(II[,'M']+II[,'U'],2)
       betas <- c(betas1, betas2, betas3)
-      betas[pval[names(betas)]>0.05] <- NA
+      betas[pval[names(betas)]>pval.threshold] <- NA
       if(na.mask && !is.null(mask))
         betas[names(betas) %in% mask] <- NA
       betas[order(names(betas))]
