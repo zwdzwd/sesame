@@ -4,10 +4,12 @@
 \alias{chipAddressToSignal}
 \title{Lookup address in one sample}
 \usage{
-chipAddressToSignal(dm)
+chipAddressToSignal(dm, pval.use.oob = TRUE)
 }
 \arguments{
 \item{dm}{data frame in chip address, 2 columns: cy3/Grn and cy5/Red}
+
+\item{pval.use.oob}{if TRUE, p-value is calculated using out-of-band probes}
 }
 \value{
 a SignalSet, indexed by probe ID address
