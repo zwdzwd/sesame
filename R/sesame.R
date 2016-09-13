@@ -89,16 +89,16 @@ SignalSet <- R6Class(
     
     initialize = function(x) self$platform <- x,
     
-    detectPValue = function(use.oob=T) {
+    detectPValue = function(use.oob=TRUE) {
       negctls <- ctl[grep('negative', tolower(rownames(ctl))),]
       negctls <- subset(negctls, col!=-99)
 
       if (use.oob) {
-        funcG <- ecdf(negctls$G)
-        funcR <- ecdf(negctls$R)
-      } else {
         funcG <- ecdf(oobG)
         funcR <- ecdf(oobR)
+      } else {
+        funcG <- ecdf(negctls$G)
+        funcR <- ecdf(negctls$R)
       }
 
       ## p-value is the minimium detection p-value of the 2 alleles
@@ -304,9 +304,10 @@ readIDATsFromSheet <- function(sample.sheet, base.dir=NULL, ...) {
 #' using the other channel.
 #'
 #' @param dm data frame in chip address, 2 columns: cy3/Grn and cy5/Red
+#' @param pval.use.oob if TRUE, p-value is calculated using out-of-band probes
 #' @return a SignalSet, indexed by probe ID address
 #' @export
-chipAddressToSignal <- function(dm) {
+chipAddressToSignal <- function(dm, pval.use.oob=TRUE) {
 
   platform <- attr(dm, 'platform')
   dm.ordering <- getBuiltInData('ordering', platform)
@@ -350,7 +351,7 @@ chipAddressToSignal <- function(dm) {
   colnames(ctl) <- c('G','R','col','type')
   sset$ctl <- ctl
 
-  sset$detectPValue()
+  sset$detectPValue(use.oob=pval.use.oob)
   sset$setMask()
   sset
 }
