@@ -29,32 +29,32 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
   sset$oobG[sset$oobG==0] <- 1
 
   ## background correction Red
-  # use the other channel to predict background mean
-  bg.GpredictR <- train.model.glm(sset$IG, sset$oobR)
-  mu.bg.ibR <- bg.GpredictR(ibR.other.channel)
-  mu.bg.oobR <- bg.GpredictR(sset$IG)
-  mu.bg.ctlR <- bg.GpredictR(sset$ctl$G)
+  ## use the other channel to predict background mean
+  bg.GpredictR <- train.model.lm(sset$IG, sset$oobR)
+  pp.bg.ibR <- bg.GpredictR(ibR.other.channel)
+  pp.bg.oobR <- bg.GpredictR(sset$IG)
+  pp.bg.ctlR <- bg.GpredictR(sset$ctl$G)
   # parameter estimation
-  sigma.bgR <- MASS::huber(sset$oobR)$s # for now, use the global variance
-  alphaR <- pmax(MASS::huber(ibR - mu.bg.ibR)$mu, 10) # in-band variance
-  # correction
-  ibR <- .backgroundCorrCh1(ibR, mu.bg.ibR, sigma.bgR, alphaR, offset=offset)
-  oobR <- .backgroundCorrCh1(sset$oobR, mu.bg.oobR, sigma.bgR, alphaR, offset=offset)
-  ctlR <- .backgroundCorrCh1(sset$ctl$R, mu.bg.ctlR, sigma.bgR, alphaR, offset=offset)
+  # sigma.bgR <- MASS::huber(sset$oobR)$s # for now, use the global variance
+  alphaR <- pmax(MASS::huber(ibR - pp.bg.ibR$mu)$mu, 10) # in-band variance
+  ## correction
+  ibR <- .backgroundCorrCh1(ibR, pp.bg.ibR, alphaR, offset=offset)
+  oobR <- .backgroundCorrCh1(sset$oobR, pp.bg.oobR, alphaR, offset=offset)
+  ctlR <- .backgroundCorrCh1(sset$ctl$R, pp.bg.ctlR, alphaR, offset=offset)
   
   ## background correction Grn
   # use the other channel to predict background mean
-  bg.RpredictG <- train.model.glm(sset$IR, sset$oobG)
-  mu.bg.ibG <- bg.RpredictG(ibG.other.channel)
-  mu.bg.oobG <- bg.RpredictG(sset$IR)
-  mu.bg.ctlG <- bg.RpredictG(sset$ctl$R)
+  bg.RpredictG <- train.model.lm(sset$IR, sset$oobG)
+  pp.bg.ibG <- bg.RpredictG(ibG.other.channel)
+  pp.bg.oobG <- bg.RpredictG(sset$IR)
+  pp.bg.ctlG <- bg.RpredictG(sset$ctl$R)
   # parameter estimation
-  sigma.bgG <- MASS::huber(sset$oobG)$s # for now, use the global variance
-  alphaG <- pmax(MASS::huber(ibG - mu.bg.ibG)$mu, 10) # in-band variance
+  # sigma.bgG <- MASS::huber(sset$oobG)$s # for now, use the global variance
+  alphaG <- pmax(MASS::huber(ibG - pp.bg.ibG$mu)$mu, 10) # in-band variance
   # correction
-  ibG <- .backgroundCorrCh1(ibG, mu.bg.ibG, sigma.bgG, alphaG, offset=offset)
-  oobG <- .backgroundCorrCh1(sset$oobG, mu.bg.oobG, sigma.bgG, alphaG, offset=offset)
-  ctlG <- .backgroundCorrCh1(sset$ctl$G, mu.bg.ctlG, sigma.bgG, alphaG, offset=offset)
+  ibG <- .backgroundCorrCh1(ibG, pp.bg.ibG, alphaG, offset=offset)
+  oobG <- .backgroundCorrCh1(sset$oobG, pp.bg.oobG, alphaG, offset=offset)
+  ctlG <- .backgroundCorrCh1(sset$ctl$G, pp.bg.ctlG, alphaG, offset=offset)
 
   ## build back the list
   ## type IG
@@ -95,16 +95,19 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
 }
 
 ## Noob background correction for one channel
+## pp is the parameters
 ## ib array of in-band signal
 ## oob array of out-of-band-signal
 ## ctl control probe signals
 ## offset padding for normalized signal
 ## return normalized in-band signal
-.backgroundCorrCh1 <- function(x, mu.bg, sigma, alpha, offset=15) {
+.backgroundCorrCh1 <- function(x, pp, alpha, offset=15) {
+  mu.bg <- pp$mu
+  sigma <- pp$sigma
   sigma2 <- sigma * sigma
   if (alpha <= 0)
     stop("alpha must be positive")
-  if (sigma <= 0)
+  if (any(na.omit(sigma) <= 0))
     stop("sigma must be positive")
   mu.sf <- x - mu.bg - sigma2/alpha
   signal <- mu.sf + sigma2 * exp(
@@ -120,104 +123,17 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
   offset + signal
 }
 
-train.model.glm <- function(input, output) {
-  fitdata <- data.frame(IB=as.vector(input)+1,OB=as.vector(output)+1)
-  rg <- seq(min(fitdata$IB, na.rm=T), max(fitdata$IB, na.rm=T), length.out=1000)
-  fitdata <- do.call(rbind, lapply(split(fitdata, cut(fitdata$IB, rg)), function(x) {
-    lims <- quantile(x$OB, c(0.2,0.8))
-    x[x$OB>lims[1] & x$OB<lims[2],]
-  }))
-  m <- glm(OB~IB, data=fitdata, family=gaussian(link='log'))
+
+## train model using generalized linear model with log link
+train.model.lm <- function(input, output) {
+  fitdata <- data.frame(IB=as.vector(input)+1, LOB=log(as.vector(output)+1))
+  m <- lm(LOB~IB, data=fitdata)
+  #m <- MASS::rlm(LOB~IB, data=fitdata)
   function(d) {
     force(m)
-    pdt <- predict(m, newdata=data.frame(IB=as.vector(d)), se.fit=T, type='response')
-    pdt$fit # + 1000 #pdt$residual.scale * 10
+    pp <- predict(m, newdata=data.frame(IB=as.vector(d)), interval='prediction', level=0.8)
+    # use upper bound for mu since true signal is often much higher than noise
+    list(mu=exp(pp[,'upr']), sigma=(exp(pp[,'upr'])-exp(pp[,'lwr']))/10.13)
+    # list(mu=exp(pp[,'upr']), sigma=log(exp(pp[,'upr'])-exp(pp[,'lwr'])))
   }
 }
-
-subtractBleeding <- function(sset, in.place=FALSE) {
-  
-  ## this subtract bleeding for type II probes using the same predict function as type I
-  if (!in.place)
-    sset <- sset$clone()
-  
-  bg.GpredictR <- train.model.glm(sset$IG, sset$oobR)
-  bg.RpredictG <- train.model.glm(sset$IR, sset$oobG)
-
-  # type II
-  if (dim(sset$II)[1] > 0) {
-    newU <- sset$II[,'U'] - bg.GpredictR(sset$II[,'M'])
-    newM <- sset$II[,'M'] - bg.RpredictG(sset$II[,'U'])
-    sset$II <- cbind(M=ifelse(newM>0,newM,1), U=ifelse(newU>0,newU,1))
-  }
-  
-  # type I
-  bgR <- bg.GpredictR(as.vector(sset$oobG))
-  bgG <- bg.RpredictG(as.vector(sset$oobR))
-  bg.oobR <- bg.GpredictR(as.vector(sset$IG))
-  bg.oobG <- bg.RpredictG(as.vector(sset$IR))
-  dim(bgR) <- dim(sset$IR)
-  dim(bgG) <- dim(sset$IG)
-  dim(bg.oobR) <- dim(sset$oobR)
-  dim(bg.oobG) <- dim(sset$oobG)
-  sset$IR <- sset$IR - bgR
-  sset$IG <- sset$IG - bgG
-  sset$oobR <- sset$oobR - bg.oobR
-  sset$oobG <- sset$oobG - bg.oobG
-  
-  sset$IR <- ifelse(sset$IR>0, sset$IR, 1)
-  sset$IG <- ifelse(sset$IG>0, sset$IG, 1)
-  sset$oobR <- ifelse(sset$oobR>0, sset$oobR, 1)
-  sset$oobG <- ifelse(sset$oobG>0, sset$oobG, 1)
-  
-  sset
-}
-
-## subtract bleeding-through separately for type II
-subtractBleedingTypeIIsep <- function(sset, in.place=FALSE) {
-
-  if (!in.place)
-    sset <- sset$clone()
-  
-  bg.GpredictR <- train.model.glm(sset$IG, sset$oobR)
-  bg.RpredictG <- train.model.glm(sset$IR, sset$oobG)
-
-  ## type II
-  ## separate out methylated and unmethylated signal, may fail on extremes like TGCT.
-  if (dim(sset$II)[1] > 0) {
-    II.meth <- sset$II[sset$II[,'M'] / (sset$II[,'M']+sset$II[,'U']) > 0.8,]
-    II.unme <- sset$II[sset$II[,'M'] / (sset$II[,'M']+sset$II[,'U']) < 0.2,]
-    bg.GpredictR.II <- train.model.glm(II.meth[,'M'], II.meth[,'U'])
-    bg.RpredictG.II <- train.model.glm(II.unme[,'U'], II.unme[,'M'])
-
-    newU <- sset$II[,'U'] - bg.GpredictR.II(sset$II[,'M'])
-    newM <- sset$II[,'M'] - bg.RpredictG.II(sset$II[,'U'])
-    sset$II <- cbind(M=ifelse(newM>0,newM,1), U=ifelse(newU>0,newU,1))
-  } else {
-    bg.GpredictR.II <- function(x) x
-    bg.RpredictG.II <- function(x) x
-  }
-  
-  # type I
-  bgR <- bg.GpredictR(as.vector(sset$oobG))
-  bgG <- bg.RpredictG(as.vector(sset$oobR))
-  bg.oobR <- bg.GpredictR(as.vector(sset$IG))
-  bg.oobG <- bg.RpredictG(as.vector(sset$IR))
-  dim(bgR) <- dim(sset$IR)
-  dim(bgG) <- dim(sset$IG)
-  dim(bg.oobR) <- dim(sset$oobR)
-  dim(bg.oobG) <- dim(sset$oobG)
-  sset$IR <- sset$IR - bgR
-  sset$IG <- sset$IG - bgG
-  sset$oobR <- sset$oobR - bg.oobR
-  sset$oobG <- sset$oobG - bg.oobG
-  
-  sset$IR <- ifelse(sset$IR>0, sset$IR, 0)
-  sset$IG <- ifelse(sset$IG>0, sset$IG, 0)
-  sset$oobR <- ifelse(sset$oobR>0, sset$oobR, 0)
-  sset$oobG <- ifelse(sset$oobG>0, sset$oobG, 0)
-  
-  sset=sset
-}
-
-

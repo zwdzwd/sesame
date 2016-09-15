@@ -2,7 +2,7 @@
 % Please edit documentation in R/dyebias.R
 \name{dyeBiasCorrTypeINorm}
 \alias{dyeBiasCorrTypeINorm}
-\title{Dye bias correction by matching green to red}
+\title{Dye bias correction by matching green and red to mid point}
 \usage{
 dyeBiasCorrTypeINorm(sset, in.place = FALSE)
 }
@@ -15,6 +15,6 @@ dyeBiasCorrTypeINorm(sset, in.place = FALSE)
 a modified \code{SignalSet}
 }
 \description{
-Dye bias correction by matching green to red
+Dye bias correction by matching green and red to mid point
 }
 

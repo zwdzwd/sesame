@@ -1,5 +1,5 @@
 
-#' Dye bias correction by matching green to red
+#' Dye bias correction by matching green and red to mid point
 #'
 #' @param sset a \code{SignalSet}
 #' @param in.place to modify sset in place
