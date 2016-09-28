@@ -4,7 +4,7 @@
 \name{EPIC.mask}
 \alias{EPIC.mask}
 \title{EPIC masks}
-\format{An object of class \code{character} of length 79854.}
+\format{An object of class \code{character} of length 82108.}
 \usage{
 EPIC.mask
 }
