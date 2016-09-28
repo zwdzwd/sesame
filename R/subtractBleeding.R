@@ -132,8 +132,9 @@ train.model.lm <- function(input, output) {
   function(d) {
     force(m)
     pp <- predict(m, newdata=data.frame(IB=as.vector(d)), interval='prediction', level=0.8)
+    list(mu=exp(pp[,'fit']), sigma=(exp(pp[,'upr'])-exp(pp[,'lwr']))/10.13)
     # use upper bound for mu since true signal is often much higher than noise
-    list(mu=exp(pp[,'upr']), sigma=(exp(pp[,'upr'])-exp(pp[,'lwr']))/10.13)
+    # list(mu=exp(pp[,'upr']), sigma=(exp(pp[,'upr'])-exp(pp[,'lwr']))/10.13)
     # list(mu=exp(pp[,'upr']), sigma=log(exp(pp[,'upr'])-exp(pp[,'lwr'])))
   }
 }
