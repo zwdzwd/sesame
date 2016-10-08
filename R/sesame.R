@@ -219,7 +219,7 @@ getSexInfo <- function(sset) {
 #' @export
 inferSex <- function(sset) {
   sex.info <- getSexInfo(sset)
-  predict(get('sex.inference.model'), sex.info)
+  as.character(predict(get('sex.inference.model'), sex.info))
 }
 
 #' subset a SignalSet
