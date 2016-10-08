@@ -7,6 +7,16 @@
 #' EPIC probe2chromosome
 'EPIC.hg19.probe2chr'
 
+#' EPIC female clean chrY probes
+EPIC.female.clean.chrY.probes.rda
+#' hm450 female clean chrY probes
+hm450.female.clean.chrY.probes.rda
+
+#' EPIC female X linked probes
+EPIC.female.xlinked.chrX.probes.rda
+#' hm450 female X linked probes
+hm450.female.xlinked.chrX.probes.rda
+
 ## the design for each probes
 #' hm27 data ordering
 'hm27.ordering'
