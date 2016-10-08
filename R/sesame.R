@@ -70,7 +70,6 @@
 #'   \item{\code{toM()}}{Convert to M values}
 #'   \item{\code{setMask()}}{Mask repeat and SNPs}
 #'   \item{\code{measureInput()}}{Measure input}
-#'   \item{\code{inferSex()}}{Infer sex}
 #'   \item{\code{totalIntensities()}}{Total intensity on each probe}
 #' }
 SignalSet <- R6Class(
@@ -153,27 +152,27 @@ SignalSet <- R6Class(
       invisible()
     },
     
-    inferSex = function() {
-      probe2chr <- getBuiltInData('hg19.probe2chr', platform)
-      all.signals <- c(apply(IR,1,max), apply(IG,1,max), apply(II,1,max))
-      all <- rbind(IG, IR, II)
-      all.X <- all[(probe2chr[rownames(all)] == 'chrX'),]
-      all.X.betas <- all.X[,'M']/(all.X[,'M']+all.X[,'U'])
-      x.median <- median(all.signals[probe2chr[names(all.signals)] == 'chrX'])
-      y.median <- median(all.signals[probe2chr[names(all.signals)] == 'chrY'])
-      x.beta.median <- median(all.X.betas, na.rm=TRUE)
-      x.intermed.frac <- sum(all.X.betas>0.3 & all.X.betas<0.7, na.rm=TRUE) /
-        sum(!is.na(all.X.betas))
+    ## inferSex = function() {
+    ##   probe2chr <- getBuiltInData('hg19.probe2chr', platform)
+    ##   all.signals <- c(apply(IR,1,max), apply(IG,1,max), apply(II,1,max))
+    ##   all <- rbind(IG, IR, II)
+    ##   all.X <- all[(probe2chr[rownames(all)] == 'chrX'),]
+    ##   all.X.betas <- all.X[,'M']/(all.X[,'M']+all.X[,'U'])
+    ##   x.median <- median(all.signals[probe2chr[names(all.signals)] == 'chrX'])
+    ##   y.median <- median(all.signals[probe2chr[names(all.signals)] == 'chrY'])
+    ##   x.beta.median <- median(all.X.betas, na.rm=TRUE)
+    ##   x.intermed.frac <- sum(all.X.betas>0.3 & all.X.betas<0.7, na.rm=TRUE) /
+    ##     sum(!is.na(all.X.betas))
       
-      ## more accurate but "might" overfit
-      if (y.median < 500) {
-        if (y.median > 300 & x.intermed.frac<0.2) 1
-        else 0
-      } else {
-        if (y.median < 2000 & x.intermed.frac>0.5) 0
-        else 1
-      }
-    },
+    ##   ## more accurate but "might" overfit
+    ##   if (y.median < 500) {
+    ##     if (y.median > 300 & x.intermed.frac<0.2) 1
+    ##     else 0
+    ##   } else {
+    ##     if (y.median < 2000 & x.intermed.frac>0.5) 0
+    ##     else 1
+    ##   }
+    ## },
 
     measureInput = function() {
       mean(c(IG, IR, II))
@@ -185,6 +184,32 @@ SignalSet <- R6Class(
   )
 )
 
+#' get sex information
+#'
+#' @param sset a \code{SignalSet}
+#' @return medianY and fracXlinked
+#' @export
+getSexInfo <- function(sset) {
+  cleanY <- getBuiltInData('female.clean.chrY.probes', sset$platform)
+  xLinked <- getBuiltInData('female.xlinked.chrX.probes', sset$platform)
+  xLinkedBeta <- sset[xLinked]$toBeta(na.mask=F)
+  c(medianY=median(sset[cleanY]$totalIntensities()),
+    fracXlinked=(sum(xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) / sum(!(is.na(xLinkedBeta)))))
+}
+
+#' infer sex
+#'
+#' @param sset a \code{SignalSet}
+#' @return 'F' or 'M'
+#' @export
+inferSex <- function(sset) {
+  res <- getSexInfo(sset)
+  if (res['fracXlinked'] > 0.5 && res['medianY'] <2000) {
+    'F'
+  } else {
+    'M'
+  }
+}
 
 #' subset a SignalSet
 #'
