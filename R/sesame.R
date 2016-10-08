@@ -194,6 +194,7 @@ getSexInfo <- function(sset) {
   xLinked <- getBuiltInData('female.xlinked.chrX.probes', sset$platform)
   xLinkedBeta <- sset[xLinked]$toBeta(na.mask=F)
   c(medianY=median(sset[cleanY]$totalIntensities()),
+    medianX=median(sset[xLinked]$totalIntensities()),
     fracXlinked=(sum(xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) / sum(!(is.na(xLinkedBeta)))))
 }
 
@@ -201,14 +202,24 @@ getSexInfo <- function(sset) {
 #'
 #' @param sset a \code{SignalSet}
 #' @return 'F' or 'M'
+#' We established our sex calling based on the median intensity of
+#' chromosome X, Y and the fraction of intermediately methylated probes
+#' among the identified X-linked probes. This is similar to the
+#' approach by Minfi (Aryee et al., 2014) but also different in that
+#' we used the fraction of intermediate beta value rather than
+#' median intensity for all chromosome X probes. Instead of using
+#' all probes from the sex chromosomes, we used our curated set of Y
+#' chromosome probes and X-linked probes which exclude potential
+#' cross-hybridization and pseudo-autosomal effect.
+#'
+#' XXY male (Klinefelter's), 45,X female (Turner's) can confuse the
+#' model sometimes.
+#' Our function works on a single sample.
+#' @import randomForest
 #' @export
 inferSex <- function(sset) {
-  res <- getSexInfo(sset)
-  if (res['fracXlinked'] > 0.5 && res['medianY'] <2000) {
-    'F'
-  } else {
-    'M'
-  }
+  sex.info <- getSexInfo(sset)
+  predict(get('sex.inference.model'), sex.info)
 }
 
 #' subset a SignalSet

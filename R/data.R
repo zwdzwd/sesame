@@ -12,6 +12,9 @@
 #' hm450 female clean chrY probes
 'hm450.female.clean.chrY.probes'
 
+#' sex inference model
+'sex.inference.model'
+
 #' EPIC female X linked probes
 'EPIC.female.xlinked.chrX.probes'
 #' hm450 female X linked probes
