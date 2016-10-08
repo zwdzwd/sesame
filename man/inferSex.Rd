@@ -11,6 +11,19 @@ inferSex(sset)
 }
 \value{
 'F' or 'M'
+We established our sex calling based on the median intensity of
+chromosome X, Y and the fraction of intermediately methylated probes
+among the identified X-linked probes. This is similar to the
+approach by Minfi (Aryee et al., 2014) but also different in that
+we used the fraction of intermediate beta value rather than
+median intensity for all chromosome X probes. Instead of using
+all probes from the sex chromosomes, we used our curated set of Y
+chromosome probes and X-linked probes which exclude potential
+cross-hybridization and pseudo-autosomal effect.
+
+XXY male (Klinefelter's), 45,X female (Turner's) can confuse the
+model sometimes.
+Our function works on a single sample.
 }
 \description{
 infer sex
