@@ -42,7 +42,6 @@ SignalSet class
   \item{\code{toM()}}{Convert to M values}
   \item{\code{setMask()}}{Mask repeat and SNPs}
   \item{\code{measureInput()}}{Measure input}
-  \item{\code{inferSex()}}{Infer sex}
   \item{\code{totalIntensities()}}{Total intensity on each probe}
 }}
 }}
