@@ -1,3 +1,7 @@
+errFunc <- function(f, g, q) {
+  gamma <- q - g %*% f[2:length(f)]
+  sum(ifelse(gamma < f[1] / 2, abs(gamma), abs(gamma - f[1])), na.rm=T)
+}
 
 double.transform.f <- function(f, nu1, nu2, step.size) {
   if (f[nu1] + step.size > 1) return(NULL);
@@ -31,6 +35,7 @@ getg0 <- function(f, g, q) {
 #' @export
 estimateCellComposition <- function(g, q, temp=0.5, maxIter=1000) {
   ## initialize
+  M <- ncol(g)
   frac <- c(1, rep(0, M))
   errcurrent <- errFunc(frac, g, q)
   errmin <- errcurrent
