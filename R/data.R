@@ -44,6 +44,13 @@
 #' EPIC masks
 'EPIC.mask'
 
+#' ccs probes for ethnicity inference
+'ethnicity.ccs.probes'
+#' rs probes for ethnicity inference
+'ethnicity.rs.probes'
+#' model for ethnicity inference
+'ethnicity.model'
+
 ## #' EPIC masks
 ## 'EPIC.mask'
 
