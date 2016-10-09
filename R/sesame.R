@@ -84,7 +84,6 @@ SignalSet <- R6Class(
     oobR = NULL,
     ctl = NULL,
     pval = NULL,
-    mask = NULL,
     
     initialize = function(x) self$platform <- x,
     
@@ -113,30 +112,6 @@ SignalSet <- R6Class(
       pval <<- pval[order(names(pval))]
       invisible()
     },
-
-    toBeta = function(na.mask=TRUE, pval.threshold=0.05) {
-      betas1 <- pmax(IG[,'M'],1) / pmax(IG[,'M']+IG[,'U'],2)
-      betas2 <- pmax(IR[,'M'],1) / pmax(IR[,'M']+IR[,'U'],2)
-      betas3 <- pmax(II[,'M'],1) / pmax(II[,'M']+II[,'U'],2)
-      betas <- c(betas1, betas2, betas3)
-      betas[pval[names(betas)]>pval.threshold] <- NA
-      if(na.mask && !is.null(mask))
-        betas[names(betas) %in% mask] <- NA
-      betas[order(names(betas))]
-    },
-
-    toBetaTypeIbySum = function(na.mask=TRUE) {
-      .oobR <- oobR[rownames(IG),]
-      .oobG <- oobG[rownames(IR),]
-      betas1 <- pmax(IG[,'M']+oobR[,'M'],1) / pmax(IG[,'M']+oobR[,'M']+IG[,'U']+oobR[,'U'],2)
-      betas2 <- pmax(IR[,'M']+oobG[,'M'],1) / pmax(IR[,'M']+oobG[,'M']+IR[,'U']+oobG[,'U'],2)
-      betas3 <- pmax(II[,'M'],1) / pmax(II[,'M']+II[,'U'],2)
-      betas <- c(betas1, betas2, betas3)
-      betas[self$pval[names(betas)]>0.05] <- NA
-      if(na.mask && !is.null(mask))
-        betas[names(betas) %in% mask] <- NA
-      betas[order(names(betas))]
-    },
     
     toM = function() {
       m1 <- log2(pmax(IG[,'M'],1) / pmax(IG[,'U']))
@@ -145,11 +120,6 @@ SignalSet <- R6Class(
       m <- c(m1, m2, m3)
       m[pval[names(m)]>0.05] <- NA
       m[order(names(m))]
-    },
-    
-    setMask = function() {
-      mask <<- getBuiltInData('mask', platform)
-      invisible()
     },
     
     ## inferSex = function() {
@@ -222,6 +192,20 @@ inferSex <- function(sset) {
   as.character(predict(get('sex.inference.model'), sex.info))
 }
 
+#' infer ethnicity
+#'
+#' @param sset
+#' @return string of ethnicity
+#' @export
+inferEthnicity <- function(sset) {
+  ccsprobes <- get('ethnicity.ccs.probes')
+  rsprobes <- get('ethnicity.rs.probes')
+  ethnicity.model <- get('ethnicity.model')
+  af <- c(getBetas(sset[rsprobes], quality.mask = F, nondetection.mask=F),
+          getBetasTypeIbySumAlleles(sset[ccsprobes], quality.mask = F, nondetection.mask = F))
+  as.character(predict(ethnicity.model, af))
+}
+
 #' subset a SignalSet
 #'
 #' @param sset a \code{SignalSet}
@@ -233,7 +217,85 @@ inferSex <- function(sset) {
   sset$IR <- sset$IR[rownames(sset$IR) %in% probes,]
   sset$IG <- sset$IG[rownames(sset$IG) %in% probes,]
   sset$II <- sset$II[rownames(sset$II) %in% probes,]
+  sset$oobR <- sset$oobR[rownames(sset$oobR) %in% probes,]
+  sset$oobG <- sset$oobG[rownames(sset$oobG) %in% probes,]
   sset
+}
+
+#' get beta values
+#'
+#' @param sset \code{SignalSet}
+#' @param quality.mask whether to mask low quality probes
+#' @param nondetection.mask whether to mask nondetection
+#' @param pval.threshold p-value threshold for nondetection mask
+#' @return beta values
+#' @export
+getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+  betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
+  betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
+  betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
+  betas <- c(betas1, betas2, betas3)
+  if (nondetection.mask)
+    betas[sset$pval[names(betas)] > pval.threshold] <- NA
+  if (quality.mask) {
+    mask <- getBuiltInData('mask', sset$platform)
+    betas[names(betas) %in% mask] <- NA
+  }
+  betas[order(names(betas))]
+}
+
+#' get beta values treating type I by summing channels
+#'
+#' used for rescuing beta values on Color-Channel-Switching CCS probes
+#'
+#' @param sset \code{SignalSet}
+#' @param quality.mask whether to mask low quality probes
+#' @param nondetection.mask whether to mask nondetection
+#' @param pval.threshold p-value threshold for nondetection mask
+#' @return beta values
+#' @export
+getBetasTypeIbySumChannels <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+  ## .oobR <- oobR[rownames(IG),]
+  ## .oobG <- oobG[rownames(IR),]
+  betas1 <- pmax(sset$IG[,'M']+sset$oobR[,'M'],1) /
+    pmax(sset$IG[,'M']+sset$oobR[,'M']+sset$IG[,'U']+sset$oobR[,'U'],2)
+  betas2 <- pmax(sset$IR[,'M']+sset$oobG[,'M'],1) /
+    pmax(sset$IR[,'M']+sset$oobG[,'M']+sset$IR[,'U']+sset$oobG[,'U'],2)
+  betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
+  betas <- c(betas1, betas2, betas3)
+  if (nondetection.mask)
+    betas[sset$pval[names(betas)]>pval.threshold] <- NA
+  if (quality.mask) {
+    mask <- getBuiltInData('mask', sset$platform)
+    betas[names(betas) %in% mask] <- NA
+  }
+  betas[order(names(betas))]
+}
+
+#' get beta values treating type I by summing alleles
+#'
+#' used for extra allele frequency on Color-Channel-Switching CCS probes
+#'
+#' @param sset \code{SignalSet}
+#' @param quality.mask whether to mask low quality probes
+#' @param nondetection.mask whether to mask nondetection
+#' @param pval.threshold p-value threshold for nondetection mask
+#' @return beta values
+#' @export
+getBetasTypeIbySumAlleles <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+  ## .oobR <- oobR[rownames(IG),]
+  ## .oobG <- oobG[rownames(IR),]
+  betas1 <- pmax(rowSums(sset$oobR),1) / pmax(rowSums(sset$oobR) + rowSums(sset$IG), 2)
+  betas2 <- pmax(rowSums(sset$oobG),1) / pmax(rowSums(sset$oobG) + rowSums(sset$IR), 2)
+  betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
+  betas <- c(betas1, betas2, betas3)
+  if (nondetection.mask)
+    betas[sset$pval[names(betas)]>pval.threshold] <- NA
+  if (quality.mask) {
+    mask <- getBuiltInData('mask', sset$platform)
+    betas[names(betas) %in% mask] <- NA
+  }
+  betas[order(names(betas))]
 }
 
 ## Import one IDAT file
