@@ -194,8 +194,12 @@ inferSex <- function(sset) {
 
 #' infer ethnicity
 #'
-#' @param sset
+#' this uses both the built-in rsprobes as well as the type I
+#' Color-Channel-Switching probes
+#'
+#' @param sset a \code{SignalSet}
 #' @return string of ethnicity
+#' @import randomForest
 #' @export
 inferEthnicity <- function(sset) {
   ccsprobes <- get('ethnicity.ccs.probes')
