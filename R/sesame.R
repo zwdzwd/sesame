@@ -26,7 +26,7 @@
 #' ssets <- mclapply(ssets, dyeBiasCorr)
 #' 
 #' ## convert signal to beta values
-#' betas <- signalToBeta(ssets, mc=T)
+#' betas <- do.call(cbind, mclapply(ssets, getBetas))
 #'
 #' ## be more parallel
 #' options(mc.cores=28)
@@ -36,7 +36,7 @@
 #'   sset <- chipAddressToSignal(dm)
 #'   sset <- noob(sset)
 #'   sset <- dyeBiasCorr(sset)
-#'   sset$toBeta()
+#'   betas <- getBetas(sset)
 #' }))
 #' }
 #' @keywords DNAMethylation Microarray QualityControl
@@ -66,9 +66,7 @@
 #'   \item{Documentation}{For full documentation of each method go to }
 #'   \item{\code{new(platform)}}{Create a SignalSet in the specified platform}
 #'   \item{\code{detectPValue()}}{Detect P-value for each probe}
-#'   \item{\code{toBeta()}}{Convert to beta values}
 #'   \item{\code{toM()}}{Convert to M values}
-#'   \item{\code{setMask()}}{Mask repeat and SNPs}
 #'   \item{\code{measureInput()}}{Measure input}
 #'   \item{\code{totalIntensities()}}{Total intensity on each probe}
 #' }
@@ -162,7 +160,7 @@ SignalSet <- R6Class(
 getSexInfo <- function(sset) {
   cleanY <- getBuiltInData('female.clean.chrY.probes', sset$platform)
   xLinked <- getBuiltInData('female.xlinked.chrX.probes', sset$platform)
-  xLinkedBeta <- sset[xLinked]$toBeta(na.mask=F)
+  xLinkedBeta <- getBetas(sset[xLinked], quality.mask=F)
   c(medianY=median(sset[cleanY]$totalIntensities()),
     medianX=median(sset[xLinked]$totalIntensities()),
     fracXlinked=(sum(xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) / sum(!(is.na(xLinkedBeta)))))
@@ -196,6 +194,9 @@ inferSex <- function(sset) {
 #'
 #' this uses both the built-in rsprobes as well as the type I
 #' Color-Channel-Switching probes
+#'
+#' sset better be background subtracted and dyebias corrected for
+#' best accuracy
 #'
 #' @param sset a \code{SignalSet}
 #' @return string of ethnicity
@@ -454,30 +455,7 @@ chipAddressToSignal <- function(dm, pval.use.oob=TRUE) {
   sset$ctl <- ctl
 
   sset$detectPValue(use.oob=pval.use.oob)
-  sset$setMask()
   sset
-}
-
-#' Convert multiple signals to beta
-#'
-#' @param ssets a list of \code{SignalSet}s
-#' @param na.mask NA-mask repetitive and SNP probes
-#' @param mc parallel
-#' @param mc.cores number of cores
-#' @return beta value matrix
-#' @export
-signalToBeta <- function(ssets, na.mask=TRUE, mc=FALSE, mc.cores=NULL) {
-  if (is.null(mc.cores)) {
-    if (is.null(getOption('mc.cores')))
-      mc.cores <- 8
-    else
-      mc.cores <- getOption('mc.cores')
-  }
-
-  if (mc)
-    simplify2array(mclapply(ssets, function(sset) sset$toBeta(na.mask=na.mask), mc.cores=mc.cores))
-  else
-    sapply(ssets, function(sset) sset$toBeta(na.mask=na.mask))
 }
 
 subsetBeta <- function(sset, max=1.1, min=-0.1) {
