@@ -38,9 +38,7 @@ SignalSet class
   \item{Documentation}{For full documentation of each method go to }
   \item{\code{new(platform)}}{Create a SignalSet in the specified platform}
   \item{\code{detectPValue()}}{Detect P-value for each probe}
-  \item{\code{toBeta()}}{Convert to beta values}
   \item{\code{toM()}}{Convert to M values}
-  \item{\code{setMask()}}{Mask repeat and SNPs}
   \item{\code{measureInput()}}{Measure input}
   \item{\code{totalIntensities()}}{Total intensity on each probe}
 }}

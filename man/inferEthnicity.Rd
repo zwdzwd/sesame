@@ -16,4 +16,8 @@ string of ethnicity
 this uses both the built-in rsprobes as well as the type I
 Color-Channel-Switching probes
 }
+\details{
+sset better be background subtracted and dyebias corrected for
+best accuracy
+}
 
