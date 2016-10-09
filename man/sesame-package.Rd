@@ -25,7 +25,7 @@ ssets <- mclapply(ssets, noob)
 ssets <- mclapply(ssets, dyeBiasCorr)
 
 ## convert signal to beta values
-betas <- signalToBeta(ssets, mc=T)
+betas <- do.call(cbind, mclapply(ssets, getBetas))
 
 ## be more parallel
 options(mc.cores=28)
@@ -35,7 +35,7 @@ simplify2array(mclapply(names(dms), function(nm) {
   sset <- chipAddressToSignal(dm)
   sset <- noob(sset)
   sset <- dyeBiasCorr(sset)
-  sset$toBeta()
+  betas <- getBetas(sset)
 }))
 }
 }
