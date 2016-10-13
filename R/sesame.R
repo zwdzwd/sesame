@@ -183,7 +183,7 @@ getSexInfo <- function(sset) {
 #' XXY male (Klinefelter's), 45,X female (Turner's) can confuse the
 #' model sometimes.
 #' Our function works on a single sample.
-#' @import randomForest
+#' @importFrom randomForest randomForest
 #' @export
 inferSex <- function(sset) {
   sex.info <- getSexInfo(sset)
@@ -200,7 +200,7 @@ inferSex <- function(sset) {
 #'
 #' @param sset a \code{SignalSet}
 #' @return string of ethnicity
-#' @import randomForest
+#' @importFrom randomForest randomForest
 #' @export
 inferEthnicity <- function(sset) {
   ccsprobes <- get('ethnicity.ccs.probes')
