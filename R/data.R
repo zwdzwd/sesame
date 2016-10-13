@@ -68,9 +68,19 @@
 ## #' EPIC masks
 ## 'EPIC.mask'
 
+cacheEnv <- new.env()
+
 getBuiltInData <- function(nm, platform) {
   datanm <- paste0(platform,'.',nm)
-  ## data(list=datanm) ## used lazyData
-  get(datanm)
+  if (!exists(datanm, envir=cacheEnv)) {
+    return(get(datanm, envir=cacheEnv))
+  }
+
+  base.dir <- 'http://zwdzwd.io/sesame/20161013/'
+
+  x <- readRDS(gzcon(url(paste(base.dir, datanm, sep='/'))))
+  assign(datanm, x, envir=cacheEnv)
+
+  x
 }
 
