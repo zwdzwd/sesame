@@ -15,11 +15,13 @@ cn.segmentation <- function(sset, ssets.normal=NULL, refversion='hg19') {
   bin.coords <- getBinCoordinates(chrominfo, probe.coords)
 
   ## segmentation
-  probe.signals <- probeSignals(sset.target, ssets.normal)
+  probe.signals <- probeSignals(sset, ssets.normal)
   bin.signals <- binSignals(probe.signals, bin.coords, probe.coords)
-  segs <- segmentBins(bin.signals)
+  segs <- list()
+  segs$segs <- segmentBins(bin.signals)
   segs$chrominfo <- chrominfo
   segs$bin.coords <- bin.coords
+  segs$bin.signals <- bin.signals
 
   segs
 }
@@ -69,6 +71,8 @@ leftRightMerge1 <- function(chrom.windows, min.probes.per.bin=20) {
 #' @param chrominfo chromosome information object
 #' @param probe.coords probe coordinates
 #' @return bin.coords
+#' @import GenomicRanges
+#' @importFrom IRanges IRanges
 #' @export
 getBinCoordinates <- function(chrominfo, probe.coords) {
   tiles <- sort(tileGenome(chrominfo$seqinfo, tilewidth=50000, cut.last.tile.in.chrom = T))
@@ -105,9 +109,10 @@ probeSignals <- function(sset.target, ssets.normal) {
 
 #' Bin signals from probe signals
 #'
-#' @param probe.signals
+#' @param probe.signals probe signals
 #' @param bin.coords bin coordinates
 #' @param probe.coords probe coordinates
+#' @import GenomicRanges
 #' @export
 binSignals <- function(probe.signals, bin.coords, probe.coords) {
   ov <- findOverlaps(probe.coords, bin.coords)
@@ -120,9 +125,11 @@ binSignals <- function(probe.signals, bin.coords, probe.coords) {
 #' Segment bins
 #'
 #' @param bin.signals bin signals (input)
+#' @param bin.coords bin coordinates
 #' @return segment data frame
+#' @import DNAcopy
 #' @export
-segmentBins <- function(bin.signals) {
+segmentBins <- function(bin.signals, bin.coords) {
   ## make input data frame
   cna <- DNAcopy::CNA(genomdat=bin.signals,
                       chrom=as.character(seqnames(bin.coords)),
@@ -141,14 +148,16 @@ segmentBins <- function(bin.signals) {
 
 #' Visualize segments
 #'
-#' @param segs
+#' @param segs segments
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
+#' @importFrom scales squish
+#' @import ggplot2 
 #' @export
 visualize.segments <- function(segs, to.plot=NULL) {
 
   chrominfo <- segs$chrominfo
   bin.coords <- segs$bin.coords
-  library(scales)
+  bin.signals <- segs$bin.signals
   total.length <- sum(as.numeric(chrominfo$seqinfo@seqlengths), na.rm=T)
   # skip chromosome too small (e.g, chrM)
   if (is.null(to.plot))
