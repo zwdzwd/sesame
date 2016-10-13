@@ -22,8 +22,8 @@
 #' ssets <- readIDATsFromDir(sample.dir, mc=T)
 #'
 #' ## normalization
-#' ssets <- mclapply(ssets, noob)
-#' ssets <- mclapply(ssets, dyeBiasCorr)
+#' ssets <- mclapply(ssets, noob, mc.preschedule=F)
+#' ssets <- mclapply(ssets, dyeBiasCorr, mc.preschedule=F)
 #' 
 #' ## convert signal to beta values
 #' betas <- do.call(cbind, mclapply(ssets, getBetas))

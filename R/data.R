@@ -44,6 +44,20 @@
 #' EPIC masks
 'EPIC.mask'
 
+#' EPIC mapped probes hg19
+'EPIC.mapped.probes.hg19'
+#' EPIC mapped probes hg38
+'EPIC.mapped.probes.hg38'
+#' hm450 mapped probes hg19
+'hm450.mapped.probes.hg19'
+#' hm450 mapped probes hg38
+'hm450.mapped.probes.hg38'
+
+#' hg19 chromosome info
+'hg19.chrominfo'
+#' hg38 chromosome info
+'hg38.chrominfo'
+
 #' ccs probes for ethnicity inference
 'ethnicity.ccs.probes'
 #' rs probes for ethnicity inference
