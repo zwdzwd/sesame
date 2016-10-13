@@ -187,7 +187,7 @@ getSexInfo <- function(sset) {
 #' @export
 inferSex <- function(sset) {
   sex.info <- getSexInfo(sset)
-  as.character(predict(get('sex.inference.model'), sex.info))
+  as.character(predict(getBuiltInData('sex.inference.model'), sex.info))
 }
 
 #' infer ethnicity
@@ -203,9 +203,9 @@ inferSex <- function(sset) {
 #' @importFrom randomForest randomForest
 #' @export
 inferEthnicity <- function(sset) {
-  ccsprobes <- get('ethnicity.ccs.probes')
-  rsprobes <- get('ethnicity.rs.probes')
-  ethnicity.model <- get('ethnicity.model')
+  ccsprobes <- getBuiltInData('ethnicity.ccs.probes')
+  rsprobes <- getBuiltInData('ethnicity.rs.probes')
+  ethnicity.model <- getBuiltInData('ethnicity.model')
   af <- c(getBetas(sset[rsprobes], quality.mask = F, nondetection.mask=F),
           getBetasTypeIbySumAlleles(sset[ccsprobes], quality.mask = F, nondetection.mask = F))
   as.character(predict(ethnicity.model, af))
