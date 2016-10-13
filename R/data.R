@@ -48,7 +48,7 @@ cacheEnv <- new.env()
 
 getBuiltInData <- function(nm, platform) {
   datanm <- paste0(platform,'.',nm)
-  if (!exists(datanm, envir=cacheEnv)) {
+  if (exists(datanm, envir=cacheEnv)) {
     return(get(datanm, envir=cacheEnv))
   }
 
