@@ -5,7 +5,7 @@
 \title{get beta values}
 \usage{
 getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
-  pval.threshold = 0.05)
+  pval.threshold = 0.1)
 }
 \arguments{
 \item{sset}{\code{SignalSet}}
