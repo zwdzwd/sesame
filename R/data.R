@@ -66,3 +66,28 @@ getBuiltInData <- function(nm, platform='') {
   x
 }
 
+#' Retrieve SeSAMe examples
+#'
+#' @param nm name
+#' @param platform optional, hm450, EPIC or hm27
+#' @return example object
+#' @export
+getSesameExample <- function(nm, platform='') {
+  if (platform != '') {
+    datanm <- paste0(platform,'.',nm)
+  } else {
+    datanm <- nm
+  }
+  if (exists(datanm, envir=cacheEnv)) {
+    return(get(datanm, envir=cacheEnv))
+  }
+
+  base.dir <- 'http://zwdzwd.io/sesame/20161013/examples/'
+
+  message('Downloading ', datanm, '... ', appendLF=FALSE)
+  x <- readRDS(gzcon(url(paste0(base.dir, datanm, '.rds'))))
+  assign(datanm, x, envir=cacheEnv)
+  message('Done.')
+
+  x
+}
