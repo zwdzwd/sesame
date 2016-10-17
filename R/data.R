@@ -58,9 +58,10 @@ getBuiltInData <- function(nm, platform='') {
 
   base.dir <- 'http://zwdzwd.io/sesame/20161013/'
 
-  message('Downloading ', datanm, ' from ', base.dir, '.')
+  message('Caching ', datanm, '... ', appendLF=FALSE)
   x <- readRDS(gzcon(url(paste0(base.dir, datanm, '.rds'))))
   assign(datanm, x, envir=cacheEnv)
+  message('Done.')
 
   x
 }

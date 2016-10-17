@@ -4,10 +4,10 @@
 \alias{visualize.segments}
 \title{Visualize segments}
 \usage{
-visualize.segments(segs, to.plot = NULL)
+visualize.segments(seg, to.plot = NULL)
 }
 \arguments{
-\item{segs}{segments}
+\item{seg}{segments}
 
 \item{to.plot}{chromosome to plot (by default plot all chromosomes)}
 }

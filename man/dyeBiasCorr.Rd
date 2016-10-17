@@ -4,7 +4,7 @@
 \alias{dyeBiasCorr}
 \title{Correct dye bias}
 \usage{
-dyeBiasCorr(sset, ref = 5000, in.place = FALSE)
+dyeBiasCorr(sset, ref = NULL, in.place = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SignalSet}}
