@@ -86,13 +86,12 @@ SignalSet <- R6Class(
     initialize = function(x) self$platform <- x,
     
     detectPValue = function(use.oob=TRUE) {
-      negctls <- ctl[grep('negative', tolower(rownames(ctl))),]
-      negctls <- subset(negctls, col!=-99)
-
       if (use.oob) {
         funcG <- ecdf(oobG)
         funcR <- ecdf(oobR)
       } else {
+        negctls <- ctl[grep('negative', tolower(rownames(ctl))),]
+        negctls <- subset(negctls, col!=-99)
         funcG <- ecdf(negctls$G)
         funcR <- ecdf(negctls$R)
       }
@@ -235,7 +234,7 @@ inferEthnicity <- function(sset) {
 #' @param pval.threshold p-value threshold for nondetection mask
 #' @return beta values
 #' @export
-getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.10) {
   betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
   betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
   betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)

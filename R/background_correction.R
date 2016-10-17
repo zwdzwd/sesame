@@ -118,8 +118,12 @@ noob <- function(sset, in.place=FALSE, offset=15) {
 #' @param in.place modify \code{SignalSet} in place, faster
 #' @return a normalized \code{SignalSet}
 #' @export
-dyeBiasCorr <- function(sset, ref=5000, in.place=FALSE) {
+dyeBiasCorr <- function(sset, ref=NULL, in.place=FALSE) {
 
+  if (is.null(ref)) {
+    ref <- sset$measureInput()
+  }
+  
   if (!in.place)
     sset <- sset$clone()
   normctl <- .getNormCtls(sset)
