@@ -14,6 +14,10 @@ cn.segmentation <- function(sset, ssets.normal=NULL, refversion='hg19') {
   ## fix bin coordinates
   bin.coords <- getBinCoordinates(chrominfo, probe.coords)
 
+  if (is.null(ssets.normal)) {
+    ssets.normal <- getBuiltInData('cn.normals', sset$platform);
+  }
+
   ## segmentation
   probe.signals <- probeSignals(sset, ssets.normal)
   bin.signals <- binSignals(probe.signals, bin.coords, probe.coords)
