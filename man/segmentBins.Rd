@@ -12,7 +12,7 @@ segmentBins(bin.signals, bin.coords)
 \item{bin.coords}{bin coordinates}
 }
 \value{
-segment data frame
+segment signal data frame
 }
 \description{
 Segment bins
