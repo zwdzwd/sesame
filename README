@@ -63,7 +63,7 @@
              < https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86833 > 
         as example:
         
-		> example.sset <- getSesameExample('EPIC.LNCaP.Rep1')
+        > example.sset <- getSesameExample('EPIC.LNCaP.Rep1')
     	> segs <- cn.segmentation(example.sset)
 
     - cell composition
