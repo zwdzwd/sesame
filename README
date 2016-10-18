@@ -43,16 +43,18 @@
     
     	To run noob:
     
-    	> ssets <- lapply(ssets, noob)
-        
-        Or in parallel (using 4 cores):
-    
-    	> library(parallel)
-        > ssets <- mclapply(ssets, noob, mc.cores=4)
+        > noob(sset)
     
     - Dye bias correction
     
-    	> ssets <- lapply(ssets, dyeBiasCorr)
+    	> dyeBiasCorr(sset)
+        
+    - Get betas
+    
+    	> getBetas(sset)
+        
+        use option quality.mask = TRUE/FALSE to use probe quality mask
+        use option nondetection.mask = TRUE/FALSE to use detection call
         
     - Sex inference
     
