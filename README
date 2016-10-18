@@ -54,7 +54,7 @@
     	> getBetas(sset)
         
         use option quality.mask = TRUE/FALSE to use probe quality mask
-        use option nondetection.mask = TRUE/FALSE to use detection call
+        use option nondetection.mask = TRUE/FALSE to mask nondetection calls
         
     - Sex inference
     
@@ -72,6 +72,9 @@
         
         > example.sset <- getSesameExample('EPIC.LNCaP.Rep1')
     	> segs <- cn.segmentation(example.sset)
+        
+        To visualize segments,
+        > visualize.segments(segs)
 
     - cell composition
     
