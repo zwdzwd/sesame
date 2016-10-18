@@ -34,6 +34,11 @@
         
         A simple list of "SignalSet"s are returned.
         
+        Other options of data import include
+        
+          + readIDATs - from path
+          + readIDATsFromSheet - from data.frame "barcode" column
+        
     - Background subtraction
     
     	To run noob:
@@ -81,5 +86,6 @@
     4. About
     --------
     
-    This was a collaborative project by Wanding Zhou, Hui Shen and Peter W Laird from the Van Andel Research Institute.
+    This was a collaborative project by Wanding Zhou, Hui Shen and Peter W Laird
+    from the Van Andel Research Institute.
     
