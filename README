@@ -7,6 +7,8 @@
     
     	1. Install
         2. Usage
+        3. Bugs
+        4. License
     
     
     1. Install
@@ -15,7 +17,7 @@
     You need devtools from install.packages('devtools'). Then,
     
     	> library(devtools)
-        > install_github('https://github.com/zwdzwd/sesame')
+        > install_github(' https://github.com/zwdzwd/sesame ')
         
     2. Usage
     --------
@@ -59,7 +61,20 @@
     
     	> segs <- cn.segmentation(sset)
 
-	- cell composition
+    - cell composition
     
     	> estimateCellComposition(sset)
 
+    3. Bugs
+    -------
+    
+    Bug reports are appreciated. Register issues at the sesame issue tracker
+    
+                       < http://github.com/zwdzwd/sesame/issues >
+    
+    
+    4. About
+    --------
+    
+    This was a collaborative project by Wanding Zhou, Hui Shen and Peter W Laird from the Van Andel Research Institute.
+    
