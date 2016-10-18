@@ -59,7 +59,9 @@
         
     - CNV
     
-    	> segs <- cn.segmentation(sset)
+    	Use LNCaP EPIC data from < https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86833 > as example,
+		> example.sset <- getSesameExample('EPIC.LNCaP.Rep1')
+    	> segs <- cn.segmentation(example.sset)
 
     - cell composition
     
