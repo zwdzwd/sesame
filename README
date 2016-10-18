@@ -5,13 +5,61 @@
     Topics
     -------
     
-    1. Install
+    	1. Install
+        2. Usage
     
-    SeSAMe exists (perhaps only) on github. To install, you need devtools from install.packages('devtools'). Then,
+    
+    1. Install
+    ----------
+    
+    You need devtools from install.packages('devtools'). Then,
     
     	> library(devtools)
         > install_github("https://github.com/zwdzwd/sesame")
         
+    2. Usage
+    --------
     
+    - Load SeSAME
     
+    	> library(sesame)
+
+    - Data IO
+    
+    	To read IDATs from directory:
+    
+    	> ssets <- readIDATsFromDir('IDATs/')
+        
+        A simple list of "SignalSet"s are returned.
+        
+    - Background subtraction
+    
+    	To run noob:
+    
+    	> ssets <- lapply(ssets, noob)
+        
+        Or in parallel (using 4 cores):
+    
+    	> library(parallel)
+        > ssets <- mclapply(ssets, noob, mc.cores=4)
+    
+    - Dye bias correction
+    
+    	> ssets <- lapply(ssets, dyeBiasCorr)
+        
+    - Sex inference
+    
+    	> inferSex(sset)
+        
+    - Ethnicity inference
+    
+    	> inferEthnicity(sset)
+        
+    - CNV
+    
+    	> segs <- cn.segmentation(sset)
+
+	- cell composition
+    
+    	> estimateCellComposition(sset)
 
