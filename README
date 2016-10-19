@@ -76,7 +76,8 @@
 
     - cell composition
     
-    	> estimateCellComposition(sset)
+        > g <- diffRefSet(getRefSet(platform='hm450'))
+    	> comp <- estimateCellComposition(g, betas)
 
     3. Bugs
     -------
