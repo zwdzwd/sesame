@@ -8,8 +8,13 @@ cleanRefSet <- function(g, platform) {
   g.clean
 }
 
-## restrict refset to differentially methylated probes
-## use with care, might introduce bias
+#' restrict refset to differentially methylated probes
+#' use with care, might introduce bias
+#' 
+#' @param g reference set
+#' @return g
+#'
+#' @export
 diffRefSet <- function(g) {
   g <- g[apply(g, 1, function(x) min(x) != max(x)),]
   message('Reference set is based on ', dim(g)[1], ' probes from ', dim(g)[2], ' cell types.')
