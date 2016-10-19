@@ -46,7 +46,7 @@
 
 cacheEnv <- new.env()
 
-getBuiltInData <- function(nm, platform='') {
+getBuiltInData <- function(nm, platform='', subdir='') {
   if (platform != '') {
     datanm <- paste0(platform,'.',nm)
   } else {
@@ -57,6 +57,9 @@ getBuiltInData <- function(nm, platform='') {
   }
 
   base.dir <- 'http://zwdzwd.io/sesame/20161013/'
+  if (subdir != '') {
+    base.dir <- paste0(base.dir, subdir, '/');
+  }
 
   message('Caching ', datanm, '... ', appendLF=FALSE)
   x <- readRDS(gzcon(url(paste0(base.dir, datanm, '.rds'))))
@@ -73,21 +76,5 @@ getBuiltInData <- function(nm, platform='') {
 #' @return example object
 #' @export
 getSesameExample <- function(nm, platform='') {
-  if (platform != '') {
-    datanm <- paste0(platform,'.',nm)
-  } else {
-    datanm <- nm
-  }
-  if (exists(datanm, envir=cacheEnv)) {
-    return(get(datanm, envir=cacheEnv))
-  }
-
-  base.dir <- 'http://zwdzwd.io/sesame/20161013/examples/'
-
-  message('Downloading ', datanm, '... ', appendLF=FALSE)
-  x <- readRDS(gzcon(url(paste0(base.dir, datanm, '.rds'))))
-  assign(datanm, x, envir=cacheEnv)
-  message('Done.')
-
-  x
+  getBuiltInData(nm, platform, 'examples');
 }
