@@ -43,6 +43,7 @@ errFunc <- function(f, g, q) {
   sum(ifelse(gamma < f[1] / 2, abs(gamma), abs(gamma - f[1])), na.rm=T)
 }
 
+## transform fraction (f) by altering 2 components (nu1 and nu2) by step.size
 double.transform.f <- function(f, nu1, nu2, step.size) {
   if (f[nu1] + step.size > 1) return(NULL);
   if (f[nu2] - step.size < 0) return(NULL);
@@ -65,39 +66,35 @@ getg0 <- function(f, g, q) {
   ifelse(gamma < f[1] / 2, 0, 1)
 }
 
-#' Estimate cell composition using reference
-#'
-#' @param g reference methylation
-#' @param q target measurement: length(q) == nrow(g)
-#' @param temp annealing temperature
-#' @param maxIter maximum iteration number after nothing changed
-#' @param delta delta score to reset counter
-#' @param verbose output debug info
-#' @return a list of fraction, min error and unknown component methylation state
-#' @export
-estimateCellComposition <- function(g, q, temp=0.5, maxIter=1000, delta=0.0001, verbose=FALSE) {
+## @param frac0 initial fraction
+.optimizeCellComposition <- function(g, q, frac0=NULL, temp=0.5, maxIter=1000, delta=0.0001, step.max=1.0, verbose=FALSE) {
 
-  q <- dichotomize(q)
+  M <- ncol(g) # number of reference
+  if (is.null(frac0)) {
+    frac <- c(1, rep(0, M))
+  } else { # use given fraction estimate
+    frac <- frac0
+  }
   
   ## initialize
-  M <- ncol(g)
-  frac <- c(1, rep(0, M))
   errcurrent <- errFunc(frac, g, q)
   errmin <- errcurrent
   frac.min <- frac
   niter <- 1
+
+  ## initialize
   repeat {
     nu <- sample(1:(M+1), 2)
-    step.size <- runif(1)
+    step.size <- runif(1) * step.max
     frac.test <- double.transform.f(frac, nu[1], nu[2], step.size);
     if (!is.null(frac.test)) {
 
       if (verbose) {
-        message(errcurrent, '\t')
-        message(do.call(paste,
-                        lapply(frac, function(x) sprintf('%1.2f', x))),
-                '\t', step.size, '\t', temp, '\t',
-                do.call(paste, lapply(frac.min, function(x) sprintf('%1.2f', x))), '\t', errmin)
+        message('errcurrent=', errcurrent, 'frac=',
+                paste(lapply(frac, function(x) sprintf('%1.2f', x)), collapse='-'),
+                ';stepsize=', step.size, ';temp=', temp, ';best=',
+                paste(lapply(frac.min, function(x) sprintf('%1.2f', x)), collapse='-'),
+                ';err=', errmin)
       }
 
       errtest <- errFunc(frac.test, g, q)
@@ -123,7 +120,35 @@ estimateCellComposition <- function(g, q, temp=0.5, maxIter=1000, delta=0.0001, 
     }
   }
 
-  list(frac = setNames(frac.min, c("unknown", colnames(g))),
-       err = errmin,
-       g0 = getg0(frac.min, g, q))
+  list(frac.min=frac.min, errmin=errmin)
+}
+
+#' Estimate cell composition using reference
+#'
+#' @param g reference methylation
+#' @param q target measurement: length(q) == nrow(g)
+#' @param dichotomize to dichotomize query beta value before estimate,
+#' this relieves unclean background subtraction
+#' @param refine to refine estimate, takes longer
+#' @param ... extra parameters for optimization, this includes
+#' temp - annealing temperature (0.5)
+#' maxIter - maximum iteration to stop after converge (1000)
+#' delta - delta score to reset counter (0.0001)
+#' verbose - output debug info (FALSE)
+#' @return a list of fraction, min error and unknown component methylation state
+#' @export
+estimateCellComposition <- function(g, q, refine=TRUE, dichotomize=FALSE, ...) {
+
+  if (dichotomize) {
+    q <- dichotomize(q);
+  }
+
+  ## raw
+  res <- .optimizeCellComposition(g, q, step.max=1, ...);
+  ## refine
+  res <- .optimizeCellComposition(g, q, frac0=res$frac.min, step.max=0.05, ...)
+
+  list(frac = setNames(res$frac.min, c("unknown", colnames(g))),
+       err = res$errmin,
+       g0 = getg0(res$frac.min, g, q))
 }
