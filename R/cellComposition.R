@@ -68,15 +68,15 @@ getg0 <- function(f, g, q) {
 #' Estimate cell composition using reference
 #'
 #' @param g reference methylation
-#' @param q target measurement
+#' @param q target measurement: length(q) == nrow(g)
 #' @param temp annealing temperature
 #' @param maxIter maximum iteration number after nothing changed
 #' @param delta delta score to reset counter
+#' @param verbose output debug info
 #' @return a list of fraction, min error and unknown component methylation state
 #' @export
-estimateCellComposition <- function(g, q, temp=0.5, maxIter=1000, delta=0.0001) {
+estimateCellComposition <- function(g, q, temp=0.5, maxIter=1000, delta=0.0001, verbose=FALSE) {
 
-  q <- q[rownames(g)]
   q <- dichotomize(q)
   
   ## initialize
@@ -91,10 +91,15 @@ estimateCellComposition <- function(g, q, temp=0.5, maxIter=1000, delta=0.0001) 
     step.size <- runif(1)
     frac.test <- double.transform.f(frac, nu[1], nu[2], step.size);
     if (!is.null(frac.test)) {
-      
-      ## message(errcurrent, '\t')
-      ## message(do.call(paste, lapply(frac, function(x) sprintf('%1.2f', x))), '\t', step.size, '\t', temp,
-      ## '\t', do.call(paste, lapply(frac.min, function(x) sprintf('%1.2f', x))), '\t', errmin)
+
+      if (verbose) {
+        message(errcurrent, '\t')
+        message(do.call(paste,
+                        lapply(frac, function(x) sprintf('%1.2f', x))),
+                '\t', step.size, '\t', temp, '\t',
+                do.call(paste, lapply(frac.min, function(x) sprintf('%1.2f', x))), '\t', errmin)
+      }
+
       errtest <- errFunc(frac.test, g, q)
       
       ## update best
