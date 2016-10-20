@@ -54,7 +54,7 @@
     - Dye bias correction
     
     	> dyeBiasCorr(sset)
-        
+      
     - Get betas
     
     	> getBetas(sset)
