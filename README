@@ -77,7 +77,8 @@
     - cell composition
     
         > g <- diffRefSet(getRefSet(platform='hm450'))
-    	> comp <- estimateCellComposition(g, betas)
+        > betas <- getSesameExample('TCGA-2L-AAQA-01A-21D-A38H-05')
+        > estimateCellComposition(g, betas)$frac
 
     3. Bugs
     -------
