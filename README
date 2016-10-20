@@ -4,13 +4,19 @@
                      
     Topics
     -------
-    
-    	1. Install
+
+        0. Introduction
+        1. Install
         2. Usage
         3. Bugs
         4. About
-    
-    
+
+    0. Introduction
+    ---------------
+
+    SeSAMe is an R package for processing Infinium DNA methylation data. SeSAMe
+    currently supports EPIC, HM450 and HM27 platforms.
+
     1. Install
     ----------
     
