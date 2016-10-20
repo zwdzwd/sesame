@@ -133,10 +133,11 @@ binSignals <- function(probe.signals, bin.coords, probe.coords) {
 #' @import DNAcopy
 #' @export
 segmentBins <- function(bin.signals, bin.coords) {
+
   ## make input data frame
   cna <- DNAcopy::CNA(genomdat=bin.signals,
                       chrom=as.character(seqnames(bin.coords)),
-                      maploc=(start(bin.coords) + end(bin.coords))/2,
+                      maploc=as.integer((start(bin.coords) + end(bin.coords))/2),
                       data.type='logratio')
 
   seg <- DNAcopy::segment(x=cna, min.width = 5, 
