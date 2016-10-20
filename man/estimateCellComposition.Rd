@@ -4,18 +4,21 @@
 \alias{estimateCellComposition}
 \title{Estimate cell composition using reference}
 \usage{
-estimateCellComposition(g, q, temp = 0.5, maxIter = 1000, delta = 1e-04)
+estimateCellComposition(g, q, temp = 0.5, maxIter = 1000, delta = 1e-04,
+  verbose = FALSE)
 }
 \arguments{
 \item{g}{reference methylation}
 
-\item{q}{target measurement}
+\item{q}{target measurement: length(q) == nrow(g)}
 
 \item{temp}{annealing temperature}
 
 \item{maxIter}{maximum iteration number after nothing changed}
 
 \item{delta}{delta score to reset counter}
+
+\item{verbose}{output debug info}
 }
 \value{
 a list of fraction, min error and unknown component methylation state
