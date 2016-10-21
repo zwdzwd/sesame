@@ -119,8 +119,13 @@ probeSignals <- function(sset.target, ssets.normal) {
 #' @export
 binSignals <- function(probe.signals, bin.coords, probe.coords) {
   ov <- findOverlaps(probe.coords, bin.coords)
-  .bins <- names(bin.coords)[ov@subjectHits]
-  .probe.signals <- probe.signals[names(probe.coords)[ov@queryHits]]
+  if (.hasSlot(ov, 'queryHits')) {
+      .bins <- names(bin.coords)[ov@subjectHits]
+      .probe.signals <- probe.signals[names(probe.coords)[ov@queryHits]]
+    } else {
+      .bins <- names(bin.coords)[ov@to]
+      .probe.signals <- probe.signals[names(probe.coords)[ov@from]]
+    }
 
   bin.signals <- sapply(split(.probe.signals, .bins), median, na.rm=TRUE)
 }
