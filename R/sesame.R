@@ -234,7 +234,7 @@ inferEthnicity <- function(sset) {
 #' @param pval.threshold p-value threshold for nondetection mask
 #' @return beta values
 #' @export
-getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.10) {
+getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
   betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
   betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
   betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
@@ -466,4 +466,25 @@ subsetBeta <- function(sset, max=1.1, min=-0.1) {
     invisible()
   })
   sset
+}
+
+#' compute internal bisulfite conversion control
+#'
+#' compute GCT score for internal bisulfite conversion control
+#'
+#' The higher the GCT score, the more likely the incomplete conversion.
+#' The lower the GCT score, the more likely over-conversion.
+#' 
+#' @param sset signal set
+#' @param use.median use median to compute GCT
+#' @return GCT score (the higher, the more incomplete conversion)
+#' @export
+bisConversionControl <- function(sset, use.median=FALSE) {
+  extC <- getBuiltInData('typeI.extC', sset$platform)
+  extT <- getBuiltInData('typeI.extT', sset$platform)
+  if (use.median) {
+    median(sset$oobG[extC]) / median(sset$oobG[extT])
+  } else {
+    mean(sset$oobG[extC]) / mean(sset$oobG[extT])
+  }
 }
