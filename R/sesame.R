@@ -67,7 +67,6 @@
 #'   \item{\code{new(platform)}}{Create a SignalSet in the specified platform}
 #'   \item{\code{detectPValue()}}{Detect P-value for each probe}
 #'   \item{\code{toM()}}{Convert to M values}
-#'   \item{\code{measureInput()}}{Measure input}
 #'   \item{\code{totalIntensities()}}{Total intensity on each probe}
 #' }
 SignalSet <- R6Class(
@@ -140,16 +139,23 @@ SignalSet <- R6Class(
     ##     else 1
     ##   }
     ## },
-
-    measureInput = function() {
-      mean(c(IG, IR, II))
-    },
-
+    
     totalIntensities = function() {
       rowSums(rbind(IG, IR, II))
     }
   )
 )
+
+#' mean intensity
+#'
+#' mean intensity
+#'
+#' @param sset a \code{SignalSet}
+#' @return mean of all intensities
+#' @export
+meanIntensity <- function(sset) {
+  mean(c(sset$IG, sset$IR, sset$II))
+}
 
 #' get sex information
 #'

@@ -49,7 +49,7 @@
     
     	To run noob:
     
-        > noob(sset)
+      > noob(sset)
     
     - Dye bias correction
     
@@ -57,17 +57,17 @@
       
     - Get betas
     
-    	> getBetas(sset)
+      > getBetas(sset)
         
-        use option quality.mask = TRUE/FALSE to use probe quality mask
-        use option nondetection.mask = TRUE/FALSE to mask nondetection calls
+      use option quality.mask = TRUE/FALSE to use probe quality mask
+      use option nondetection.mask = TRUE/FALSE to mask nondetection calls
         
     - Sample/experiment QC
     
-    	> inferSex(sset)
-        > inferEthnicity(sset)
-        > sset$measureInput()
-        > bisConversionControl(sset)
+      > inferSex(sset)
+      > inferEthnicity(sset)
+      > meanIntensity(sset)
+      > bisConversionControl(sset)
         
     - CNV
     
@@ -75,21 +75,21 @@
              < https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86833 > 
         as example:
         
-        > example.sset <- getSesameExample('EPIC.LNCaP.Rep1')
-        > segs <- cn.segmentation(example.sset)
+      > example.sset <- sesameGetExample('EPIC.LNCaP.Rep1')
+      > segs <- cn.segmentation(example.sset)
         
-        To visualize segments,
+      To visualize segments,
         
-        > visualize.segments(segs)
+      > visualize.segments(segs)
 
     - cell composition
 
-        Use blood set as example,
+      Use blood set as example,
         
-        > g <- diffRefSet(getRefSet(c('CD4T','CD19B','CD14Monocytes','CD56NK',
-          'granulocytes'), platform='hm450'))
-        > betas <- getSesameExample('TCGA-2L-AAQA-01A-21D-A38H-05')
-        > estimateCellComposition(g, betas[rownames(g)])$frac
+      > g <- diffRefSet(getRefSet(c('CD4T','CD19B','CD14Monocytes','CD56NK',
+         'granulocytes'), platform='hm450'))
+      > betas <- getSesameExample('TCGA-2L-AAQA-01A-21D-A38H-05')
+      > estimateCellComposition(g, betas[rownames(g)])$frac
 
     3. Bugs
     -------
