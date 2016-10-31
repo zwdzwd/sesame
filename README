@@ -62,11 +62,12 @@
         use option quality.mask = TRUE/FALSE to use probe quality mask
         use option nondetection.mask = TRUE/FALSE to mask nondetection calls
         
-    - Sample/experiment properties
+    - Sample/experiment QC
     
     	> inferSex(sset)
         > inferEthnicity(sset)
         > sset$measureInput()
+        > bisConversionControl(sset)
         
     - CNV
     
