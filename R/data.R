@@ -75,6 +75,6 @@ getBuiltInData <- function(nm, platform='', subdir='') {
 #' @param platform optional, hm450, EPIC or hm27
 #' @return example object
 #' @export
-getSesameExample <- function(nm, platform='') {
+sesameGetExample <- function(nm, platform='') {
   getBuiltInData(nm, platform, 'examples');
 }
