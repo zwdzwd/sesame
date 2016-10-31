@@ -483,8 +483,8 @@ bisConversionControl <- function(sset, use.median=FALSE) {
   extC <- getBuiltInData('typeI.extC', sset$platform)
   extT <- getBuiltInData('typeI.extT', sset$platform)
   if (use.median) {
-    median(sset$oobG[extC]) / median(sset$oobG[extT])
+    median(sset$oobG[extC,], na.rm=TRUE) / median(sset$oobG[extT,], na.rm=TRUE)
   } else {
-    mean(sset$oobG[extC]) / mean(sset$oobG[extT])
+    mean(sset$oobG[extC,], na.rm=TRUE) / mean(sset$oobG[extT,], na.rm=TRUE)
   }
 }
