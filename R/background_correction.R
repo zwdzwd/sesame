@@ -121,7 +121,7 @@ noob <- function(sset, in.place=FALSE, offset=15) {
 dyeBiasCorr <- function(sset, ref=NULL, in.place=FALSE) {
 
   if (is.null(ref)) {
-    ref <- sset$measureInput()
+    ref <- meanIntensity(sset)
   }
   
   if (!in.place)

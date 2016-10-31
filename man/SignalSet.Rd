@@ -39,7 +39,6 @@ SignalSet class
   \item{\code{new(platform)}}{Create a SignalSet in the specified platform}
   \item{\code{detectPValue()}}{Detect P-value for each probe}
   \item{\code{toM()}}{Convert to M values}
-  \item{\code{measureInput()}}{Measure input}
   \item{\code{totalIntensities()}}{Total intensity on each probe}
 }}
 }}
