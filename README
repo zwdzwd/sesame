@@ -22,38 +22,38 @@
     
     You need devtools from install.packages('devtools'). Then,
     
-    	> library(devtools)
-        > install_github(' https://github.com/zwdzwd/sesame ')
+    > library(devtools)
+    > install_github(' https://github.com/zwdzwd/sesame ')
         
     2. Usage
     --------
     
     - Load SeSAME
     
-    	> library(sesame)
+      > library(sesame)
 
     - Data IO
     
-    	To read IDATs from directory:
+      To read IDATs from directory:
     
-    	> ssets <- readIDATsFromDir('IDATs/')
+      > ssets <- readIDATsFromDir('IDATs/')
         
-        A simple list of "SignalSet"s are returned.
+      A simple list of "SignalSet"s are returned.
         
-        Other options of data import include
+      Other options of data import include
         
-          + readIDATs - from path
-          + readIDATsFromSheet - from data.frame "barcode" column
+        + readIDATs - from path
+        + readIDATsFromSheet - from data.frame "barcode" column
         
     - Background subtraction
     
-    	To run noob:
+      To run noob:
     
       > noob(sset)
     
     - Dye bias correction
     
-    	> dyeBiasCorr(sset)
+      > dyeBiasCorr(sset)
       
     - Get betas
     
@@ -71,9 +71,8 @@
         
     - CNV
     
-    	Use LNCaP EPIC data from
+      Following example uses LNCaP EPIC data from
              < https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86833 > 
-        as example:
         
       > example.sset <- sesameGetExample('EPIC.LNCaP.Rep1')
       > segs <- cn.segmentation(example.sset)
