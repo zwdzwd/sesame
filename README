@@ -87,7 +87,7 @@
         
       > g <- diffRefSet(getRefSet(c('CD4T','CD19B','CD14Monocytes','CD56NK',
          'granulocytes'), platform='hm450'))
-      > betas <- getSesameExample('TCGA-2L-AAQA-01A-21D-A38H-05')
+      > betas <- sesameGetExample('TCGA-2L-AAQA-01A-21D-A38H-05')
       > estimateCellComposition(g, betas[rownames(g)])$frac
 
     3. Bugs
