@@ -47,13 +47,19 @@
         
     - Background subtraction
     
-      To run noob:
-    
+      noob:
       > noob(sset)
+      
+      noob with bleed-through subtraction
+      > noobsb(sset)
     
     - Dye bias correction
-    
+
+      linear scaling
       > dyeBiasCorr(sset)
+      
+      quantile interpolating Type-I probes
+      > dyeBiasCorrTypeINorm(sset)
       
     - Get betas
     
