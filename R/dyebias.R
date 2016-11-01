@@ -122,7 +122,7 @@ dyeBiasCorrTypeINormG2R <- function(sset, in.place=FALSE) {
 }
 
 
-## red matched to green distribution
+## M,U red matched to green distribution
 dyeBiasCorrTypeINormR2G <- function(sset, in.place=FALSE) {
 
   if (!in.place)
