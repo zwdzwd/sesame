@@ -63,10 +63,17 @@
       use option nondetection.mask = TRUE/FALSE to mask nondetection calls
         
     - Sample/experiment QC
-    
+
+      sex
       > inferSex(sset)
+
+      ethnicity
       > inferEthnicity(sset)
+
+      mean intensity
       > meanIntensity(sset)
+
+      bisulfite conversion control
       > bisConversionControl(sset)
         
     - CNV
