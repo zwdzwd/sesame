@@ -37,7 +37,7 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
   }
 
   merged.exons <- GenomicRanges::reduce(GenomicRanges::unlist(target.txns))
-  visualizeRegion(betas, GenomicRanges::seqnames(merged.exons[1]),
+  visualizeRegion(betas, as.character(GenomicRanges::seqnames(merged.exons[1])),
                   min(GenomicRanges::start(merged.exons)) - pad.start,
                   max(GenomicRanges::end(merged.exons)) + pad.end,
                   platform=platform, refversion=refversion, ...)
@@ -183,10 +183,10 @@ plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg19') {
   gList(
     grid.text(sprintf("%s:%d-%d", chrom, plt.beg, plt.end), 0, 0.9,
               just=c('left','bottom'), draw=FALSE),
-    grid.rect(sapply(cytoBand.target$chromStart, function(x) (x-chromBeg)/chromWid), 0.30,
-              (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid, 0.55,
+    grid.rect(sapply(cytoBand.target$chromStart, function(x) (x-chromBeg)/chromWid), 0.35,
+              (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid, 0.5,
               gp=gpar(fill=bandColor, col=bandColor),
               just=c('left','bottom'), draw=FALSE),
-    grid.segments(x0=pltx0, y0=0.3, x1=c(0,1), y1=0.1, draw=FALSE, gp=gpar(lty='dashed')),
-    grid.segments(x0=pltx0, y0=0.85, x1=pltx0, y1=0.55, draw=FALSE))
+    grid.segments(x0=pltx0, y0=0.3, x1=c(0,1), y1=0.1, draw=FALSE, gp=gpar(lty='dotted')),
+    grid.segments(x0=pltx0, y0=0.3, x1=pltx0, y1=0.85, draw=FALSE))
 }
