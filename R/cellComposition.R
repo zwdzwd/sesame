@@ -1,9 +1,10 @@
 ## clean reference set to non NA sites
 cleanRefSet <- function(g, platform) {
+  pkgTest('GenomicRanges')
   mapinfo <- getBuiltInData('mapped.probes.hg19', platform)
   g.clean <- g[apply(g, 1, function(x) !any(is.na(x))),]
   g.clean <- g.clean[rownames(g.clean) %in% names(mapinfo),]
-  g.clean <- g.clean[!(as.vector(seqnames(mapinfo[rownames(g.clean)])) %in% c('chrX','chrY','chrM')),]
+  g.clean <- g.clean[!(as.vector(GenomicRanges::seqnames(mapinfo[rownames(g.clean)])) %in% c('chrX','chrY','chrM')),]
   g.clean <- g.clean[grep('cg',rownames(g.clean)),]
   g.clean
 }

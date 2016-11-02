@@ -15,6 +15,6 @@ getBinCoordinates(chrominfo, probe.coords)
 bin.coords
 }
 \description{
-Get bin coordinates
+requires GenomicRanges, IRanges
 }
 

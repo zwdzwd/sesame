@@ -15,6 +15,6 @@ segmentBins(bin.signals, bin.coords)
 segment signal data frame
 }
 \description{
-Segment bins
+require DNAcopy
 }
 

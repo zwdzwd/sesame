@@ -68,28 +68,28 @@ leftRightMerge1 <- function(chrom.windows, min.probes.per.bin=20) {
 
 #' Get bin coordinates
 #'
+#' requires GenomicRanges, IRanges
+#' 
 #' @param chrominfo chromosome information object
 #' @param probe.coords probe coordinates
 #' @return bin.coords
-#' @import GenomicRanges
-#' @importFrom IRanges IRanges
 #' @export
 getBinCoordinates <- function(chrominfo, probe.coords) {
-  tiles <- sort(tileGenome(chrominfo$seqinfo, tilewidth=50000, cut.last.tile.in.chrom = T))
+  pkgTest('GenomicRanges')
+  pkgTest('IRanges')
+  
+  tiles <- sort(GenomicRanges::tileGenome(chrominfo$seqinfo, tilewidth=50000, cut.last.tile.in.chrom = T))
   tiles <- sort(c(setdiff(tiles[seq(1, length(tiles), 2)], chrominfo$gap), 
                   setdiff(tiles[seq(2, length(tiles), 2)], chrominfo$gap)))
-  values(tiles)$probes <- countOverlaps(tiles, probe.coords)
-  chrom.windows <- as.data.frame(split(sort(tiles), seqnames(tiles))[[2]])
+  GenomicRanges::values(tiles)$probes <- GenomicRanges::countOverlaps(tiles, probe.coords)
+  chrom.windows <- as.data.frame(split(sort(tiles), GenomicRanges::seqnames(tiles))[[2]])
 
-  bin.coords <- do.call(rbind, lapply(split(tiles, seqnames(tiles)),
+  bin.coords <- do.call(rbind, lapply(split(tiles, GenomicRanges::seqnames(tiles)),
                                       function(chrom.tiles) leftRightMerge1(as.data.frame(sort(chrom.tiles)))))
-  bin.coords <- sort(GRanges(seqnames=bin.coords$seqnames, IRanges(start=bin.coords$start, end=bin.coords$end), seqinfo = seqinfo(tiles)))
-  chr.cnts <- table(as.vector(seqnames(bin.coords)))
-  chr.names <- as.vector(seqnames(bin.coords))
-  names(bin.coords) <- paste(as.vector(seqnames(bin.coords)),
-                             formatC(unlist(lapply(seqnames(bin.coords)@lengths, seq_len)),
-                                     width=nchar(max(chr.cnts)),
-                                     format='d', flag='0'), sep='-')
+  bin.coords <- sort(GenomicRanges::GRanges(seqnames=bin.coords$seqnames, IRanges::IRanges(start=bin.coords$start, end=bin.coords$end), seqinfo = GenomicRanges::seqinfo(tiles)))
+  chr.cnts <- table(as.vector(GenomicRanges::seqnames(bin.coords)))
+  chr.names <- as.vector(GenomicRanges::seqnames(bin.coords))
+  names(bin.coords) <- paste(as.vector(GenomicRanges::seqnames(bin.coords)), formatC(unlist(lapply(GenomicRanges::seqnames(bin.coords)@lengths, seq_len)), width=nchar(max(chr.cnts)), format='d', flag='0'), sep='-')
   bin.coords
 }
 
@@ -112,13 +112,15 @@ probeSignals <- function(sset.target, ssets.normal) {
 
 #' Bin signals from probe signals
 #'
+#' require GenomicRanges
+#' 
 #' @param probe.signals probe signals
 #' @param bin.coords bin coordinates
 #' @param probe.coords probe coordinates
-#' @import GenomicRanges
 #' @export
 binSignals <- function(probe.signals, bin.coords, probe.coords) {
-  ov <- findOverlaps(probe.coords, bin.coords)
+  pkgTest('GenomicRanges')
+  ov <- GenomicRanges::findOverlaps(probe.coords, bin.coords)
   if (.hasSlot(ov, 'queryHits')) {
       .bins <- names(bin.coords)[ov@subjectHits]
       .probe.signals <- probe.signals[names(probe.coords)[ov@queryHits]]
@@ -132,24 +134,26 @@ binSignals <- function(probe.signals, bin.coords, probe.coords) {
 
 #' Segment bins
 #'
+#' require DNAcopy
 #' @param bin.signals bin signals (input)
 #' @param bin.coords bin coordinates
 #' @return segment signal data frame
-#' @import DNAcopy
 #' @export
 segmentBins <- function(bin.signals, bin.coords) {
 
+  pkgTest('DNAcopy')
+  
   ## make input data frame
   cna <- DNAcopy::CNA(genomdat=bin.signals,
-                      chrom=as.character(seqnames(bin.coords)),
+                      chrom=as.character(GenomicRanges::seqnames(bin.coords)),
                       maploc=as.integer((start(bin.coords) + end(bin.coords))/2),
                       data.type='logratio')
 
   seg <- DNAcopy::segment(x=cna, min.width = 5, 
                           nperm= 10000, alpha = 0.001, undo.splits = 'sdundo',
                           undo.SD= 2.2, verbose=0)
-  summary <- segments.summary(seg)
-  pval <- segments.p(seg)
+  summary <- DNAcopy::segments.summary(seg)
+  pval <- DNAcopy::segments.p(seg)
   seg.signals <- cbind(summary, pval[,c('pval','lcl','ucl')])
   seg.signals$chrom <- as.character(seg.signals$chrom)
   seg.signals
@@ -157,13 +161,15 @@ segmentBins <- function(bin.signals, bin.coords) {
 
 #' Visualize segments
 #'
+#' require ggplot2, scales
 #' @param seg segments
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
-#' @importFrom scales squish
-#' @import ggplot2 
 #' @export
 visualize.segments <- function(seg, to.plot=NULL) {
 
+  pkgTest('ggplot2')
+  pkgTest('scales')
+  
   chrominfo <- seg$chrominfo
   bin.coords <- seg$bin.coords
   bin.signals <- seg$bin.signals
@@ -179,23 +185,21 @@ visualize.segments <- function(seg, to.plot=NULL) {
   seqcumlen <- seqcumlen[-length(seqcumlen)]
   seqstart <- setNames(c(0,seqcumlen), seq.names)
 
-  bin.coords <- bin.coords[as.vector(seqnames(bin.coords)) %in% seq.names]
-  values(bin.coords)$bin.mids <- (start(bin.coords) + end(bin.coords))/2
-  values(bin.coords)$bin.x <- seqstart[as.character(seqnames(bin.coords))] + bin.coords$bin.mids
+  bin.coords <- bin.coords[as.vector(GenomicRanges::seqnames(bin.coords)) %in% seq.names]
+  GenomicRanges::values(bin.coords)$bin.mids <- (GenomicRanges::start(bin.coords) + GenomicRanges::end(bin.coords))/2
+  GenomicRanges::values(bin.coords)$bin.x <- seqstart[as.character(GenomicRanges::seqnames(bin.coords))] + bin.coords$bin.mids
 
   ## plot bin
-  p <- qplot(bin.coords$bin.x / total.length, bin.signals, color=bin.signals, alpha=I(0.7))
+  p <- ggplot2::qplot(bin.coords$bin.x / total.length, bin.signals, color=bin.signals, alpha=I(0.7))
   ## plot segment
-  p <- p + geom_segment(aes(x=(seqstart[seg.signals$chrom] + seg.signals$loc.start) / total.length,
-                            xend=(seqstart[seg.signals$chrom] + seg.signals$loc.end) / total.length,
-                            y=seg.signals$seg.mean, yend=seg.signals$seg.mean), size=1.5, color='blue')
+  p <- p + ggplot2::geom_segment(ggplot2::aes(x=(seqstart[seg.signals$chrom] + seg.signals$loc.start) / total.length, xend=(seqstart[seg.signals$chrom] + seg.signals$loc.end) / total.length, y=seg.signals$seg.mean, yend=seg.signals$seg.mean), size=1.5, color='blue')
   ## chromosome boundary
-  p <- p + geom_vline(xintercept=seqstart[-1]/total.length, alpha=I(0.5))
+  p <- p + ggplot2::geom_vline(xintercept=seqstart[-1]/total.length, alpha=I(0.5))
   
   ## chromosome label
-  p <- p + scale_x_continuous(labels=seq.names, breaks=(seqstart+seqlen/2)/total.length) + theme(axis.text.x = element_text(angle=90, hjust=0.5))
+  p <- p + ggplot2::scale_x_continuous(labels=seq.names, breaks=(seqstart+seqlen/2)/total.length) + ggplot2::theme(axis.text.x = ggplot2::element_text(angle=90, hjust=0.5))
   
   ## styling
-  p <- p + scale_colour_gradient2(limits=c(-0.3,0.3), low='red', mid='grey', high='green', oob=squish) + xlab('') + ylab('') + theme(legend.position="none")
+  p <- p + ggplot2::scale_colour_gradient2(limits=c(-0.3,0.3), low='red', mid='grey', high='green', oob=scales::squish) + ggplot2::xlab('') + ggplot2::ylab('') + ggplot2::theme(legend.position="none")
   p
 }
