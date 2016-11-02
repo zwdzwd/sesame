@@ -81,7 +81,12 @@
 
       bisulfite conversion control
       > bisConversionControl(sset)
-        
+
+    - visualize probes from gene
+
+      > betas <- sesameGetExample('hm450.betas.TCGAnormalPAAD')
+      > visualizeGene('DNMT1', betas, 'hm450')
+      
     - CNV
     
       Following example uses LNCaP EPIC data from
