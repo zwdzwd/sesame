@@ -171,13 +171,13 @@ plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg19') {
     c('stalk', 'gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100'))
   cytoBand2col['acen'] <- 'red'
   cytoBand2col['gvar'] <- cytoBand2col['gpos75']
-  bandColor <- cytoBand2col[as.character(cytoBand.target$gieStain)]
 
   ## chromosome range
   cytoBand.target <- cytoBand[cytoBand$chrom == chrom,]
   chromEnd <- max(cytoBand.target$chromEnd)
   chromBeg <- min(cytoBand.target$chromStart)
   chromWid <- chromEnd - chromBeg
+  bandColor <- cytoBand2col[as.character(cytoBand.target$gieStain)]
 
   pltx0 <- (c(plt.beg, plt.end)-chromBeg)/chromWid
   gList(
