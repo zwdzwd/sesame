@@ -4,18 +4,18 @@
 \alias{visualizeRegion}
 \title{visualize region}
 \usage{
-visualizeRegion(betas, chrm, plt.beg, plt.end, platform = "EPIC",
+visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
   refversion = "hg19", draw = TRUE, show.sampleNames = TRUE,
   show.probeNames = TRUE)
 }
 \arguments{
-\item{betas}{beta value matrix (row: probes, column: samples)}
-
 \item{chrm}{chromosome}
 
 \item{plt.beg}{begin of the region}
 
 \item{plt.end}{end of the region}
+
+\item{betas}{beta value matrix (row: probes, column: samples)}
 
 \item{platform}{hm450 (default) or EPIC}
 
