@@ -37,26 +37,26 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
   }
 
   merged.exons <- GenomicRanges::reduce(GenomicRanges::unlist(target.txns))
-  visualizeRegion(betas, as.character(GenomicRanges::seqnames(merged.exons[1])),
+  visualizeRegion(as.character(GenomicRanges::seqnames(merged.exons[1])),
                   min(GenomicRanges::start(merged.exons)) - pad.start,
                   max(GenomicRanges::end(merged.exons)) + pad.end,
-                  platform=platform, refversion=refversion, ...)
+                  betas, platform=platform, refversion=refversion, ...)
 }
 
 #' visualize region
 #'
-#' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform hm450 (default) or EPIC
 #' @param chrm chromosome
 #' @param plt.beg begin of the region
 #' @param plt.end end of the region
+#' @param betas beta value matrix (row: probes, column: samples)
+#' @param platform hm450 (default) or EPIC
 #' @param refversion hg19 or hg38
 #' @param draw draw figure or return betas
 #' @param show.sampleNames whether to show sample names
 #' @param show.probeNames whether to show probe names
 #' @import grid
 #' @export
-visualizeRegion <- function(betas, chrm, plt.beg, plt.end, platform='EPIC', refversion='hg19', draw=TRUE, show.sampleNames=TRUE, show.probeNames=TRUE) {
+visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg19', draw=TRUE, show.sampleNames=TRUE, show.probeNames=TRUE) {
 
   pkgTest('GenomicRanges')
   
