@@ -82,10 +82,15 @@
       bisulfite conversion control
       > bisConversionControl(sset)
 
-    - visualize probes from gene
+    - visualize probes
 
       > betas <- sesameGetExample('hm450.betas.TCGAnormalPAAD')
+
+      visualize probes from a gene
       > visualizeGene('DNMT1', betas, 'hm450')
+
+      visualize probes from arbitrary region
+      > visualizeRegion(betas, 'chr19',10260000,10380000)
       
     - CNV
     
@@ -93,11 +98,11 @@
              < https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE86833 > 
         
       > example.sset <- sesameGetExample('EPIC.LNCaP.Rep1')
-      > segs <- cn.segmentation(example.sset)
+      > segs <- cnSegmentation(example.sset)
         
       To visualize segments,
         
-      > visualize.segments(segs)
+      > visualizeSegments(segs)
 
     - cell composition
 

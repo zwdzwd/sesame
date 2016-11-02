@@ -5,7 +5,7 @@
 #' @param refversion hg19 or hg38
 #' @return segmentation
 #' @export
-cn.segmentation <- function(sset, ssets.normal=NULL, refversion='hg19') {
+cnSegmentation <- function(sset, ssets.normal=NULL, refversion='hg19') {
 
   ## retrieve chromosome info and probe coordinates
   chrominfo <- getBuiltInData(paste0(refversion, '.chrominfo'))
@@ -165,7 +165,7 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @param seg segments
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
 #' @export
-visualize.segments <- function(seg, to.plot=NULL) {
+visualizeSegments <- function(seg, to.plot=NULL) {
 
   pkgTest('ggplot2')
   pkgTest('scales')
