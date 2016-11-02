@@ -14,6 +14,6 @@ binSignals(probe.signals, bin.coords, probe.coords)
 \item{probe.coords}{probe coordinates}
 }
 \description{
-Bin signals from probe signals
+require GenomicRanges
 }
 

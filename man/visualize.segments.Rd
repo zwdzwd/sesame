@@ -12,6 +12,6 @@ visualize.segments(seg, to.plot = NULL)
 \item{to.plot}{chromosome to plot (by default plot all chromosomes)}
 }
 \description{
-Visualize segments
+require ggplot2, scales
 }
 

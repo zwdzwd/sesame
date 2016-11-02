@@ -33,3 +33,10 @@ getProbeByChromosome <- function(chrm, platform) {
   probe2chr <- getBuiltInData('hg19.probe2chr', platform)
   names(probe2chr[probe2chr==chrm])
 }
+
+
+pkgTest <- function(x) {
+  if (!require(x, character.only = TRUE)) {
+    stop("Optional package ", x, " not found. Please install before continue.")
+  }
+}
