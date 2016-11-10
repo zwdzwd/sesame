@@ -79,14 +79,15 @@ getBinCoordinates <- function(chrominfo, probe.coords) {
   pkgTest('IRanges')
   
   tiles <- sort(GenomicRanges::tileGenome(chrominfo$seqinfo, tilewidth=50000, cut.last.tile.in.chrom = T))
-  tiles <- sort(c(setdiff(tiles[seq(1, length(tiles), 2)], chrominfo$gap), 
-                  setdiff(tiles[seq(2, length(tiles), 2)], chrominfo$gap)))
+  tiles <- sort(c(GenomicRanges::setdiff(tiles[seq(1, length(tiles), 2)], chrominfo$gap), 
+                  GenomicRanges::setdiff(tiles[seq(2, length(tiles), 2)], chrominfo$gap)))
   GenomicRanges::values(tiles)$probes <- GenomicRanges::countOverlaps(tiles, probe.coords)
-  chrom.windows <- as.data.frame(split(sort(tiles), GenomicRanges::seqnames(tiles))[[2]])
+  ## chrom.windows <- as.data.frame(GenomicRanges::split(GenomicRanges::sort(tiles), GenomicRanges::seqnames(tiles)))
 
-  bin.coords <- do.call(rbind, lapply(split(tiles, GenomicRanges::seqnames(tiles)),
-                                      function(chrom.tiles) leftRightMerge1(as.data.frame(sort(chrom.tiles)))))
-  bin.coords <- sort(GenomicRanges::GRanges(seqnames=bin.coords$seqnames, IRanges::IRanges(start=bin.coords$start, end=bin.coords$end), seqinfo = GenomicRanges::seqinfo(tiles)))
+  bin.coords <- do.call(rbind, lapply(split(tiles, as.vector(GenomicRanges::seqnames(tiles))),
+                                      function(chrom.tiles)
+                                        leftRightMerge1(GenomicRanges::as.data.frame(GenomicRanges::sort(chrom.tiles)))))
+  bin.coords <- GenomicRanges::sort(GenomicRanges::GRanges(seqnames=bin.coords$seqnames, IRanges::IRanges(start=bin.coords$start, end=bin.coords$end), seqinfo = GenomicRanges::seqinfo(tiles)))
   chr.cnts <- table(as.vector(GenomicRanges::seqnames(bin.coords)))
   chr.names <- as.vector(GenomicRanges::seqnames(bin.coords))
   names(bin.coords) <- paste(as.vector(GenomicRanges::seqnames(bin.coords)), formatC(unlist(lapply(GenomicRanges::seqnames(bin.coords)@lengths, seq_len)), width=nchar(max(chr.cnts)), format='d', flag='0'), sep='-')
