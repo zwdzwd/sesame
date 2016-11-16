@@ -2,7 +2,7 @@
 % Please edit documentation in R/dm.R
 \name{diffMeth}
 \alias{diffMeth}
-\title{call differential methylation}
+\title{test differential methylation on each locus}
 \usage{
 diffMeth(betas, sample.data, formula, se.lb = 0.01)
 }
@@ -21,6 +21,6 @@ and are referenced in formula. Rows are samples.}
 cf coefficient table for each factor
 }
 \description{
-call differential methylation
+test differential methylation on each locus
 }
 
