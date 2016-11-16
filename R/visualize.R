@@ -43,6 +43,27 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
                   betas, platform=platform, refversion=refversion, ...)
 }
 
+#' visualize probes
+#'
+#' @param probeNames probe names
+#' @param betas beta value matrix (row: probes, column: samples)
+#' @param platform hm450 (default) or EPIC
+#' @param refversion hg19 or hg38
+#' @param upstream distance to extend upstream
+#' @param dwstream distance to extend downstream
+#' @param ... additional options, see visualizeRegion
+#' @export
+visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38', upstream=1000, dwstream=1000, ...) {
+  pkgTest('GenomicRanges')
+  
+  probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
+  target.probes <- probes[probeNames]
+  regBeg <- min(GenomicRanges::start(target.probes)) - upstream
+  regEnd <- max(GenomicRanges::end(target.probes)) + dwstream
+  visualizeRegion(as.character(GenomicRanges::seqnames(target.probes[1])), regBeg, regEnd,
+                  betas, platform=platform, refversion=refversion, ...)
+}
+
 #' visualize region
 #'
 #' @param chrm chromosome
@@ -52,11 +73,12 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
 #' @param platform hm450 (default) or EPIC
 #' @param refversion hg19 or hg38
 #' @param draw draw figure or return betas
+#' @param heat.height heatmap height (auto inferred based on rows)
 #' @param show.sampleNames whether to show sample names
 #' @param show.probeNames whether to show probe names
 #' @import grid
 #' @export
-visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg19', draw=TRUE, show.sampleNames=TRUE, show.probeNames=TRUE) {
+visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg19', heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.probeNames=TRUE) {
 
   pkgTest('GenomicRanges')
   
@@ -146,7 +168,8 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
     pkgTest('wheatmap')
     w <- wheatmap::WGrob(plt.txns, name='txn') +
       wheatmap::WGrob(plt.mapLines, wheatmap::Beneath(pad=0, height=0.15)) +
-        wheatmap::WHeatmap(t(betas[names(probes),]), wheatmap::Beneath(),
+        wheatmap::WHeatmap(t(betas[names(probes),]), wheatmap::Beneath(height=heat.height),
+                           cmp=wheatmap::CMPar(dmin=0, dmax=1),
                            xticklabels=show.sampleNames, xticklabel.rotat=45,
                            xticklabels.n=nprobes, yticklabels=show.probeNames)
     w <- w + wheatmap::WGrob(
