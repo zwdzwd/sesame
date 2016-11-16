@@ -35,7 +35,6 @@
     - Data IO
     
       To read IDATs from directory:
-    
       > ssets <- readIDATsFromDir('IDATs/')
         
       A simple list of "SignalSet"s are returned.
@@ -64,7 +63,6 @@
     - Get betas
     
       > getBetas(sset)
-        
       use option quality.mask = TRUE/FALSE to use probe quality mask
       use option nondetection.mask = TRUE/FALSE to mask nondetection calls
         
@@ -97,6 +95,7 @@
 
     - Differential methylation
 
+      test differential methylation on each locus
       > betas <- sesameGetExample('hm450.76matchedTCGAchr20')
       > sample.info <- sesameGetExample('hm450.76matchedTCGAchr20.sampleinfo')
       > cf <- diffMeth(betas, sample.info, ~patient+type)
