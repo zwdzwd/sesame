@@ -6,17 +6,31 @@
 #' and are referenced in formula. Rows are samples.
 #' @param formula formula
 #' @param se.lb lower bound to standard error of slope
+#' @param cf.test factors to test (default to all factors in formula except
+#' intercept). Use "all" for all factors.
 #' @return cf coefficient table for each factor
 #' @export
-diffMeth <- function(betas, sample.data, formula, se.lb=0.01) {
+diffMeth <- function(betas, sample.data, formula, se.lb=0.01, cf.test=NULL) {
 
   design <- model.matrix(formula, sample.data)
   n.cpg <- dim(betas)[1]
   n.cf <- dim(design)[2]
-  cf <- lapply(1:n.cf, function(i) matrix(data=NA, nrow=n.cpg, ncol=6, dimnames=list(rownames(betas), c('Estimate', 'Std. Error', 't-stat', 'Pr(>|t|)', 'residual d.f.', 'Effect size'))))
+
+  ## cf.test specify the factors to be reported
+  if (is.null(cf.test)) {
+    cf.test <- colnames(design)
+    cf.test <- cf.test[cf.test != '(Intercept)']
+  } else if (cf.test == 'all') {
+    cf.test <- colnames(design)
+  }
+
+  ## preprare output
+  cf <- lapply(cf.test, function(cfi) matrix(data=NA, nrow=n.cpg, ncol=6, dimnames=list(rownames(betas), c('Estimate', 'Std. Error', 't-stat', 'Pr(>|t|)', 'residual d.f.', 'Effect size'))))
+  names(cf) <- cf.test
+
+  cat('Testing differential methylation on each locus:\n')
   n.skip <- 0
   group <- factor(apply(design, 1, paste, collapse="_"))
-  cat('Testing differential methylation on each locus:\n')
   for (i in 1:n.cpg) {
 
     if (i%%5000==0) message('.', appendLF=FALSE);
@@ -71,17 +85,15 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.01) {
     stopifnot(!any(is.na(pval)))
     
     ## output
-    if (i==1) cfNames <- names(coefs)
     fitted.rg <- range(betas1 - z$residuals / wts)
     eff <- fitted.rg[2] - fitted.rg[1]  # effect size
     ans <- cbind(coefs, se, t.stat, pval, rdf, eff)
-    lapply(1:n.cf, function(cfi) cf[[cfi]][i,] <<- ans[cfi,])
+    lapply(cf.test, function(cfi) cf[[cfi]][i,] <<- ans[cfi,])
     ## z$residuals/wts
     ## betas.fitted[i,!sample.is.na] <- betas1 - z$residuals/wts
   }
   message('.\n', appendLF=FALSE)
   cf <- lapply(cf, function(cf1) cbind(cf1, P.adjusted=p.adjust(cf1[,'Pr(>|t|)'],method='BH')))
-  names(cf) <- cfNames
   class(cf) <- 'diffMeth'
 
   cf
