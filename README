@@ -91,6 +91,24 @@
 
       visualize probes from arbitrary region
       > visualizeRegion(betas, 'chr19',10260000,10380000)
+
+    - Differential methylation
+
+      > betas <- sesameGetExample('hm450.76matchedTCGAchr20.rds')
+      > sample.info <- sesameGetExample('hm450.76matchedTCGAchr20.sampleinfo.rds')
+      > cf <- diffMeth(betas, sample.info, ~patient+type)
+
+      top differentially methylated probes on factor "type"
+      > cf1 <- cf$typeTumour
+      > head(cf1[order(cf1[,'P.adjusted']),])
+
+      segment into DMR
+      > cf <- segmentDMR(myBetas, cf, platform = 'hm450')
+      
+      visualize top DMR
+      > top.dmr <- cf$typeTumour[order(cf[,'Seg.Pval']),'Seg.ID'][1]
+      > cf1 <- cf$typeTumour
+      > visualizeProbes(rownames(cf1[cf1[,'Seg.ID']==top.dmr,]), betas, upstream = 5000, dwstream=5000, platform='hm450',heat.height=3.5)
       
     - CNV
     
