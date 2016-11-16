@@ -1,4 +1,4 @@
-#' call differential methylation
+#' test differential methylation on each locus
 #'
 #' @param betas beta values
 #' @param sample.data data frame for sample information, column names
