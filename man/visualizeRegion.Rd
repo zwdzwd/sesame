@@ -5,8 +5,8 @@
 \title{visualize region}
 \usage{
 visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
-  refversion = "hg19", draw = TRUE, show.sampleNames = TRUE,
-  show.probeNames = TRUE)
+  refversion = "hg19", heat.height = NULL, draw = TRUE,
+  show.sampleNames = TRUE, show.probeNames = TRUE)
 }
 \arguments{
 \item{chrm}{chromosome}
@@ -20,6 +20,8 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 \item{platform}{hm450 (default) or EPIC}
 
 \item{refversion}{hg19 or hg38}
+
+\item{heat.height}{heatmap height (auto inferred based on rows)}
 
 \item{draw}{draw figure or return betas}
 
