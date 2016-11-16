@@ -87,10 +87,13 @@
       > betas <- sesameGetExample('hm450.betas.TCGAnormalPAAD')
 
       visualize probes from a gene
-      > visualizeGene('DNMT1', betas, 'hm450')
+      > visualizeGene('DNMT1', betas, platform='hm450')
 
       visualize probes from arbitrary region
-      > visualizeRegion(betas, 'chr19',10260000,10380000)
+      > visualizeRegion('chr19',10260000,10380000, betas, platform='hm450')
+
+      visualize by probe names
+      > visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='hm450')
 
     - Differential methylation
 
