@@ -4,7 +4,7 @@
 \alias{diffMeth}
 \title{test differential methylation on each locus}
 \usage{
-diffMeth(betas, sample.data, formula, se.lb = 0.01)
+diffMeth(betas, sample.data, formula, se.lb = 0.01, cf.test = NULL)
 }
 \arguments{
 \item{betas}{beta values}
@@ -16,6 +16,9 @@ and are referenced in formula. Rows are samples.}
 \item{formula}{formula}
 
 \item{se.lb}{lower bound to standard error of slope}
+
+\item{cf.test}{factors to test (default to all factors in formula except
+intercept). Use "all" for all factors.}
 }
 \value{
 cf coefficient table for each factor

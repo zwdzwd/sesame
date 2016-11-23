@@ -120,7 +120,7 @@
       To visualize segments,
       > visualizeSegments(segs)
 
-    - cell composition
+    - cell composition deconvolution
 
       Use blood set as example,
       > g <- diffRefSet(getRefSet(c('CD4T','CD19B','CD14Monocytes','CD56NK',
