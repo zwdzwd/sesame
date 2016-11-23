@@ -67,7 +67,7 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.01, cf.test=NULL) {
     } else {
       ## Welch-Satterthwaite correction for residual degree of freedom
       group1 <- group[!sample.is.na]
-      group1N <- tabulate(group1)
+      group1N <- pmax(tabulate(group1),1)
       rss.group <- vapply(split(z$residuals, group1), function(x) sum(x^2), numeric(1)) / group1N
       rdf <- sum(rss.group)^2/sum(rss.group^2/pmax(group1N-(z$rank-1),1))
       ## rdf <- length(betas1) - z$rank # only works for balanced design
@@ -88,7 +88,9 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.01, cf.test=NULL) {
     fitted.rg <- range(betas1 - z$residuals / wts)
     eff <- fitted.rg[2] - fitted.rg[1]  # effect size
     ans <- cbind(coefs, se, t.stat, pval, rdf, eff)
-    lapply(cf.test, function(cfi) cf[[cfi]][i,] <<- ans[cfi,])
+    lapply(cf.test, function(cfi)
+      if (cfi %in% rownames(ans))
+        cf[[cfi]][i,] <<- ans[cfi,])
     ## z$residuals/wts
     ## betas.fitted[i,!sample.is.na] <- betas1 - z$residuals/wts
   }
