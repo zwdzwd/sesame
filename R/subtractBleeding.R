@@ -124,7 +124,7 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
 }
 
 
-## train model using generalized linear model with log link
+## train model using linear model with log transformed response
 train.model.lm <- function(input, output) {
   fitdata <- data.frame(IB=as.vector(input)+1, LOB=log(as.vector(output)+1))
   m <- lm(LOB~IB, data=fitdata)
