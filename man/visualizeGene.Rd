@@ -5,7 +5,7 @@
 \title{visualize gene}
 \usage{
 visualizeGene(geneName, betas, platform = "EPIC", upstream = 2000,
-  dwstream = 2000, refversion = "hg19", ...)
+  dwstream = 2000, refversion = "hg38", ...)
 }
 \arguments{
 \item{geneName}{gene name}
