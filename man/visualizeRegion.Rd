@@ -5,7 +5,7 @@
 \title{visualize region}
 \usage{
 visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
-  refversion = "hg19", heat.height = NULL, draw = TRUE,
+  refversion = "hg38", heat.height = NULL, draw = TRUE,
   show.sampleNames = TRUE, show.probeNames = TRUE)
 }
 \arguments{

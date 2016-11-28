@@ -95,7 +95,8 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.01, cf.test=NULL) {
     ## betas.fitted[i,!sample.is.na] <- betas1 - z$residuals/wts
   }
   message('.\n', appendLF=FALSE)
-  cf <- lapply(cf, function(cf1) cbind(cf1, P.adjusted=p.adjust(cf1[,'Pr(>|t|)'],method='BH')))
+  ## CpGs are correlated, should apply p-value adjustment on segments
+  ## cf <- lapply(cf, function(cf1) cbind(cf1, P.adjusted=p.adjust(cf1[,'Pr(>|t|)'],method='BH')))
   class(cf) <- 'diffMeth'
 
   cf
@@ -129,10 +130,14 @@ segmentDMR <- function(betas, cf, dist.cutoff=NULL, dist.cutoff.quantile=0.5, pl
 
   message("Merging correlated CpGs...", appendLF=FALSE)
   cpg.ids <- rownames(betas.coord.srt)
+  cpg.coords <- probe.coords[cpg.ids]
+  cpg.chrm <- as.vector(GenomicRanges::seqnames(cpg.coords))
+  cpg.start <- GenomicRanges::start(cpg.coords)
+  cpg.end <- GenomicRanges::end(cpg.coords)
+
   n.cpg <- length(cpg.ids)
-  euc.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))) # euclidean distance
-  chrm <- GenomicRanges::seqnames(probe.coords[cpg.ids])
-  chrm.changed <- as.vector(chrm[-1]!=chrm[-n.cpg])
+  euc.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))) # euclidean distance  
+  chrm.changed <- (cpg.chrm[-1] != cpg.chrm[-n.cpg])
   dist.cutoff <- quantile(euc.dist, dist.cutoff.quantile) # empirical cutoff based on quantiles
   change.points <- (euc.dist > dist.cutoff | chrm.changed)
   seg.ids <- cumsum(c(TRUE,change.points))
@@ -142,17 +147,63 @@ segmentDMR <- function(betas, cf, dist.cutoff=NULL, dist.cutoff.quantile=0.5, pl
   all.cpg.ids <- rownames(betas)
   unmapped <- all.cpg.ids[!(all.cpg.ids %in% cpg.ids)]
   cpg.ids <- c(cpg.ids, unmapped)
+  cpg.chrm <- c(cpg.chrm, rep('*', length(unmapped)))
+  cpg.start <- c(cpg.start, rep(NA, length(unmapped)))
+  cpg.end <- c(cpg.end, rep(NA, length(unmapped)))
+
+  ## segment coordinates
   seg.ids <- c(seg.ids, seq.int(from=seg.ids[length(seg.ids)]+1, length.out=length(unmapped)))
+  seg.chrm <- as.vector(tapply(cpg.chrm, seg.ids, function(x) x[1]))
+  seg.start <- as.vector(tapply(cpg.start, seg.ids, function(x) x[1]))
+  seg.end <- as.vector(tapply(cpg.end, seg.ids, function(x) x[length(x)]))
 
   ## combine p-value
-  message("Combine p-values...", appendLF=FALSE)
+  message("Combine p-values... ", appendLF=FALSE)
   cf <- lapply(cf, function(cf1) {
-    seg.pval <- tapply(cf1[cpg.ids, 'P.adjusted'], seg.ids, function(x) pnorm(sum(qnorm(x))/sqrt(length(x)))) #  Stouffer's Z-score method
-    seg.ids.cf <- seg.ids[match(rownames(cf1), cpg.ids)]
-    cf1 <- cbind(cf1, Seg.ID = seg.ids.cf, Seg.Pval=seg.pval[seg.ids.cf])
+    seg.pval <- as.vector(tapply(cf1[cpg.ids, 'Pr(>|t|)'], seg.ids, function(x) pnorm(sum(qnorm(x))/sqrt(length(x))))) #  Stouffer's Z-score method
+    seg.pval.adj <- p.adjust(seg.pval, method="BH")
+    seg.ids.cf <- match(rownames(cf1), cpg.ids)
+    cf1 <- as.data.frame(cf1)
+    cf1$Seg.ID <- seg.ids[seg.ids.cf]
+    cf1$Seg.chrm <- seg.chrm[cf1$Seg.ID]
+    cf1$Seg.start <- seg.start[cf1$Seg.ID]
+    cf1$Seg.end <- seg.end[cf1$Seg.ID]
+    cf1$Seg.Pval <- seg.pval[cf1$Seg.ID]
+    cf1$Seg.Pval.adj <- seg.pval.adj[cf1$Seg.ID]
     cf1
   })
   message("Done.")
 
   cf
+}
+
+#' top segments in differential methylation
+#' 
+#' This is a convenience function to show top differential methylated segments.
+#' 
+#' @param cf1 coefficient table of one factor from segmentDMR
+#' @return coefficient table ordered by adjusted p-value of segments
+#' @export
+topSegments <- function(cf1) {
+  unique(cf1[order(cf1[,'Seg.Pval']),c('Seg.ID','Seg.chrm','Seg.start','Seg.end','Seg.Pval.adj')])
+}
+
+#' top loci in differential methylation
+#' 
+#' This is a convenience function to show top differential methylated segments.
+#' 
+#' @param cf1 coefficient table of one factor from diffMeth
+#' @return coefficient table ordered by p-value of each locus
+#' @export
+topLoci <- function(cf1) {
+  cf1[order(cf1[,'Pr(>|t|)']),]
+}
+
+#' select segment from coefficient table
+#'
+#' @param cf1 coefficient table of one factor from segmentDMR
+#' @param seg.id segment ID
+#' @return coefficient table from given segment
+getSegment <- function(cf1, seg.id) {
+  cf1[cf1[,'Seg.ID']==seg.id,]
 }

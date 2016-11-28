@@ -12,7 +12,7 @@
 #' @export
 visualizeGene <- function(geneName, betas, platform='EPIC',
                           upstream=2000, dwstream=2000,
-                          refversion='hg19', ...) {
+                          refversion='hg38', ...) {
 
   if (is.null(dim(betas))) {
     betas <- as.matrix(betas);
@@ -78,7 +78,7 @@ visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38
 #' @param show.probeNames whether to show probe names
 #' @import grid
 #' @export
-visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg19', heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.probeNames=TRUE) {
+visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg38', heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.probeNames=TRUE) {
 
   pkgTest('GenomicRanges')
   
@@ -109,57 +109,63 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
   padHeight <- isoformHeight*0.2
 
   ## plot transcripts
-  plt.txns <- do.call(gList, lapply(1:length(target.txns), function(i) {
-    txn <- target.txns[[i]]
-    txn.name <- names(target.txns)[i]
+  if (length(target.txns) > 0) {
+    plt.txns <- do.call(gList, lapply(1:length(target.txns), function(i) {
+      txn <- target.txns[[i]]
+      txn.name <- names(target.txns)[i]
 
-    txn.beg <- max(plt.beg, min(GenomicRanges::start(txn))-2000)
-    txn.end <- min(plt.end, max(GenomicRanges::end(txn))+2000)
+      txn.beg <- max(plt.beg, min(GenomicRanges::start(txn))-2000)
+      txn.end <- min(plt.end, max(GenomicRanges::end(txn))+2000)
 
-    txn <- GenomicRanges::subsetByOverlaps(txn, target.region)
+      txn <- GenomicRanges::subsetByOverlaps(txn, target.region)
 
-    txn.strand <- as.character(GenomicRanges::strand(txn[1]))
-    if (txn.strand == '+') {
-      line.direc <- c(txn.beg-plt.beg, txn.end-plt.beg) / plt.width
-    } else {
-      line.direc <- c(txn.end-plt.beg, txn.beg-plt.beg) / plt.width
-    }
-    
-    y.bot <- (i-1)*isoformHeight+padHeight
-    y.bot.exon <- y.bot+padHeight
-    y.hei <- isoformHeight-2*padHeight
-    y.hei.exon <- isoformHeight-4*padHeight
-
-    g <- gList(
-      ## plot transcript name
-      grid.text(sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
-                x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
-                just=c('center','bottom'), draw=FALSE),
+      txn.strand <- as.character(GenomicRanges::strand(txn[1]))
+      if (txn.strand == '+') {
+        line.direc <- c(txn.beg-plt.beg, txn.end-plt.beg) / plt.width
+      } else {
+        line.direc <- c(txn.end-plt.beg, txn.beg-plt.beg) / plt.width
+      }
       
-      ## plot transcript line
-      grid.lines(x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
-      grid.lines(x=c(0,1), y=y.bot+y.hei/2, gp=gpar(lty='dotted'), draw=FALSE),
+      y.bot <- (i-1)*isoformHeight+padHeight
+      y.bot.exon <- y.bot+padHeight
+      y.hei <- isoformHeight-2*padHeight
+      y.hei.exon <- isoformHeight-4*padHeight
 
-      ## plot exons
-      grid.rect((GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
-                GenomicRanges::width(txn)/plt.width, y.hei.exon, gp=gpar(fill='red',col='red'),
-                just=c('left','bottom'), draw=FALSE))
+      g <- gList(
+        ## plot transcript name
+        grid.text(sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
+                  x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
+                  just=c('center','bottom'), draw=FALSE),
+        
+        ## plot transcript line
+        grid.lines(x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
+        grid.lines(x=c(0,1), y=y.bot+y.hei/2, gp=gpar(lty='dotted'), draw=FALSE),
 
-    ## plot cds
-    cdsEnd <- as.integer(GenomicRanges::mcols(txn)$cdsEnd[1])
-    cdsStart <- as.integer(GenomicRanges::mcols(txn)$cdsStart[1])
-    txnCds <- txn[(GenomicRanges::start(txn) < cdsEnd) & (GenomicRanges::end(txn) > cdsStart)]
-    GenomicRanges::start(txnCds) <- pmax(GenomicRanges::start(txnCds), cdsStart)
-    GenomicRanges::end(txnCds) <- pmin(GenomicRanges::end(txnCds), cdsEnd)
+        ## plot exons
+        grid.rect((GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
+                  GenomicRanges::width(txn)/plt.width, y.hei.exon, gp=gpar(fill='red',col='red'),
+                  just=c('left','bottom'), draw=FALSE))
 
-    if (cdsEnd > cdsStart && length(txnCds) > 0) {
-      g <- gList(g, gList(
-        grid.rect((GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
-                  GenomicRanges::width(txnCds)/plt.width, y.hei, gp=gpar(fill='grey'),
-                  just=c('left','bottom'), draw=FALSE)))
-    }
-    g
-  }))
+      ## plot cds
+      cdsEnd <- as.integer(GenomicRanges::mcols(txn)$cdsEnd[1])
+      cdsStart <- as.integer(GenomicRanges::mcols(txn)$cdsStart[1])
+      txnCds <- txn[(GenomicRanges::start(txn) < cdsEnd) & (GenomicRanges::end(txn) > cdsStart)]
+      GenomicRanges::start(txnCds) <- pmax(GenomicRanges::start(txnCds), cdsStart)
+      GenomicRanges::end(txnCds) <- pmin(GenomicRanges::end(txnCds), cdsEnd)
+
+      if (cdsEnd > cdsStart && length(txnCds) > 0) {
+        g <- gList(g, gList(
+          grid.rect((GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
+                    GenomicRanges::width(txnCds)/plt.width, y.hei, gp=gpar(fill='grey'),
+                    just=c('left','bottom'), draw=FALSE)))
+      }
+      g
+    }))
+  } else {
+    plt.txns <- gList(
+      grid.rect(0,0.1,1,0.8, just = c('left','bottom'), draw=FALSE),
+      grid.text('No transcript found', x=0.5, y=0.5, draw=FALSE))
+  }
 
   plt.chromLine <- grid.lines(x=c(0, 1), y=c(1,1), draw=FALSE)
   plt.mapLines <- grid.segments((GenomicRanges::start(probes)-plt.beg) / plt.width,
@@ -168,7 +174,7 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
     pkgTest('wheatmap')
     w <- wheatmap::WGrob(plt.txns, name='txn') +
       wheatmap::WGrob(plt.mapLines, wheatmap::Beneath(pad=0, height=0.15)) +
-        wheatmap::WHeatmap(t(betas[names(probes),]), wheatmap::Beneath(height=heat.height),
+        wheatmap::WHeatmap(t(betas[names(probes),]), wheatmap::Beneath(height=heat.height), name='betas',
                            cmp=wheatmap::CMPar(dmin=0, dmax=1),
                            xticklabels=show.sampleNames, xticklabel.rotat=45,
                            xticklabels.n=nprobes, yticklabels=show.probeNames)
@@ -184,7 +190,7 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
 }
 
 ## plot chromosome of genomic ranges and cytobands
-plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg19') {
+plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg38') {
 
   cytoBand <- getBuiltInData(paste0('cytoBand.', refversion))
   
