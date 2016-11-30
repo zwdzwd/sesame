@@ -138,7 +138,11 @@ segmentDMR <- function(betas, cf, dist.cutoff=NULL, seg.per.locus=0.3, platform=
 
   n.cpg <- length(cpg.ids)
   ## beta.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))) # euclidean distance
-  beta.dist <- sapply(1:(n.cpg-1), function(i) 1-cor(betas.coord.srt[i,],betas.coord.srt[i+1,],use='complete.obs',method='spearman')) # 1-correlation coefficient
+  beta.dist <- sapply(1:(n.cpg-1), function(i) {
+    x <- cor(betas.coord.srt[i,],betas.coord.srt[i+1,],use='na.or.complete',method='spearman') # 1-correlation coefficient
+    if (is.na(x)) x <- 0
+    1-x
+  })
   chrm.changed <- (cpg.chrm[-1] != cpg.chrm[-n.cpg])
   if (is.null(dist.cutoff))
     dist.cutoff <- quantile(beta.dist, 1-seg.per.locus) # empirical cutoff based on quantiles
