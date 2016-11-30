@@ -10,7 +10,7 @@
 #' intercept). Use "all" for all factors.
 #' @return cf coefficient table for each factor
 #' @export
-diffMeth <- function(betas, sample.data, formula, se.lb=0.01, cf.test=NULL) {
+diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
 
   design <- model.matrix(formula, sample.data)
   n.cpg <- dim(betas)[1]
@@ -111,11 +111,12 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.01, cf.test=NULL) {
 #' @param betas beta values for distance calculation
 #' @param dist.cutoff distance cutoff (default to use dist.cutoff.quantile)
 #' @param dist.cutoff.quantile quantile to use in selecting cutoff distance
+#' higher value leads to fewer segments
 #' @param platform EPIC or hm450
 #' @param refversion hg38 or hg19
 #' @return coefficient table with segment ID and segment P-value
 #' @export
-segmentDMR <- function(betas, cf, dist.cutoff=NULL, dist.cutoff.quantile=0.5, platform='EPIC', refversion='hg38') {
+segmentDMR <- function(betas, cf, dist.cutoff=NULL, dist.cutoff.quantile=0.7, platform='EPIC', refversion='hg38') {
 
   pkgTest('GenomicRanges')
   
@@ -185,7 +186,9 @@ segmentDMR <- function(betas, cf, dist.cutoff=NULL, dist.cutoff.quantile=0.5, pl
 #' @return coefficient table ordered by adjusted p-value of segments
 #' @export
 topSegments <- function(cf1) {
-  unique(cf1[order(cf1[,'Seg.Pval']),c('Seg.ID','Seg.chrm','Seg.start','Seg.end','Seg.Pval.adj')])
+  x <- unique(cf1[order(cf1[,'Seg.Pval']),c('Seg.ID','Seg.chrm','Seg.start','Seg.end','Seg.Pval.adj')])
+  rownames(x) <- x[['Seg.ID']]
+  x
 }
 
 #' top loci in differential methylation
@@ -204,6 +207,7 @@ topLoci <- function(cf1) {
 #' @param cf1 coefficient table of one factor from segmentDMR
 #' @param seg.id segment ID
 #' @return coefficient table from given segment
+#' @export
 getSegment <- function(cf1, seg.id) {
   cf1[cf1[,'Seg.ID']==seg.id,]
 }
