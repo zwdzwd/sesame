@@ -55,8 +55,11 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
 #' @export
 visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38', upstream=1000, dwstream=1000, ...) {
   pkgTest('GenomicRanges')
-  
+
   probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
+  probeNames <- probeNames[probeNames %in% names(probes)]
+  if (length(probeNames)==0)
+    stop('Probe specified are not well mapped.')
   target.probes <- probes[probeNames]
   regBeg <- min(GenomicRanges::start(target.probes)) - upstream
   regEnd <- max(GenomicRanges::end(target.probes)) + dwstream

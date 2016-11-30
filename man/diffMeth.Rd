@@ -4,7 +4,7 @@
 \alias{diffMeth}
 \title{test differential methylation on each locus}
 \usage{
-diffMeth(betas, sample.data, formula, se.lb = 0.01, cf.test = NULL)
+diffMeth(betas, sample.data, formula, se.lb = 0.1, cf.test = NULL)
 }
 \arguments{
 \item{betas}{beta values}

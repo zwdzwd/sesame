@@ -78,9 +78,9 @@ getBuiltInData <- function(nm, platform='', subdir='') {
     if (seshome != "") {
       saveRDS(x, file=localpath)
     }
+    message('Done.')
   }
   assign(datanm, x, envir=cacheEnv)
-  message('Done.')
   x
 }
 
