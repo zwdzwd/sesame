@@ -25,7 +25,7 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
   }
 
   ## preprare output
-  cf <- lapply(cf.test, function(cfi) matrix(data=NA, nrow=n.cpg, ncol=6, dimnames=list(rownames(betas), c('Estimate', 'Std. Error', 't-stat', 'Pr(>|t|)', 'residual d.f.', 'Effect size'))))
+  cf <- lapply(cf.test, function(cfi) matrix(data=NA, nrow=n.cpg, ncol=5, dimnames=list(rownames(betas), c('Estimate', 'Std. Error', 't-stat', 'Pr(>|t|)', 'Effect size'))))
   names(cf) <- cf.test
 
   cat('Testing differential methylation on each locus:\n')
@@ -33,8 +33,8 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
   group <- factor(apply(design, 1, paste, collapse="_"))
   for (i in 1:n.cpg) {
 
-    if (i%%5000==0) message('.', appendLF=FALSE);
-    if (i%%300000==0) message('\n', appendLF=FALSE);
+    if (i%%as.integer(n.cpg/80)==0) message('.', appendLF=FALSE);
+    ## if (i%%300000==0) message('\n', appendLF=FALSE); #
     
     ## filter NA
     sample.is.na <- is.na(betas[i,])
@@ -65,11 +65,12 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
       rdf <- 1 # arbitrarily set degree of freedom
       se <- 1/wts # slope se
     } else {
-      ## Welch-Satterthwaite correction for residual degree of freedom
       group1 <- group[!sample.is.na]
       group1N <- pmax(tabulate(group1),1)
-      rss.group <- vapply(split(z$residuals, group1), function(x) sum(x^2), numeric(1)) / group1N
-      rdf <- sum(rss.group)^2/sum(rss.group^2/pmax(group1N-(z$rank-1),1))
+      rdf <- max(min(group1N-z$rank+1),1)        # just be conservative in rdf
+      ## Welch-Satterthwaite correction for residual degree of freedom
+      ## rss.group <- vapply(split(z$residuals, group1), function(x) sum(x^2), numeric(1)) / group1N
+      ## rdf <- sum(rss.group)^2/sum(rss.group^2/pmax(min(group1N-z$rank),1))
       ## rdf <- length(betas1) - z$rank # only works for balanced design
 
       ## slope se
@@ -87,7 +88,7 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
     ## output
     fitted.rg <- range(betas1 - z$residuals / wts)
     eff <- fitted.rg[2] - fitted.rg[1]  # effect size
-    ans <- cbind(coefs, se, t.stat, pval, rdf, eff)
+    ans <- cbind(coefs, se, t.stat, pval, eff)
     lapply(cf.test, function(cfi)
       if (cfi %in% rownames(ans))
         cf[[cfi]][i,] <<- ans[cfi,])
@@ -116,7 +117,7 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
 #' @param refversion hg38 or hg19
 #' @return coefficient table with segment ID and segment P-value
 #' @export
-segmentDMR <- function(betas, cf, dist.cutoff=NULL, seg.per.locus=0.3, platform='EPIC', refversion='hg38') {
+segmentDMR <- function(betas, cf, dist.cutoff=NULL, seg.per.locus=0.5, platform='EPIC', refversion='hg38') {
 
   pkgTest('GenomicRanges')
   
@@ -137,12 +138,12 @@ segmentDMR <- function(betas, cf, dist.cutoff=NULL, seg.per.locus=0.3, platform=
   cpg.end <- GenomicRanges::end(cpg.coords)
 
   n.cpg <- length(cpg.ids)
-  ## beta.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))) # euclidean distance
-  beta.dist <- sapply(1:(n.cpg-1), function(i) {
-    x <- cor(betas.coord.srt[i,],betas.coord.srt[i+1,],use='na.or.complete',method='spearman') # 1-correlation coefficient
-    if (is.na(x)) x <- 0
-    1-x
-  })
+  beta.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))) # euclidean distance
+  ## beta.dist <- sapply(1:(n.cpg-1), function(i) {
+  ##   x <- cor(betas.coord.srt[i,],betas.coord.srt[i+1,],use='na.or.complete',method='spearman') # 1-correlation coefficient
+  ##   if (is.na(x)) x <- 0
+  ##   1-x
+  ## })
   chrm.changed <- (cpg.chrm[-1] != cpg.chrm[-n.cpg])
   if (is.null(dist.cutoff))
     dist.cutoff <- quantile(beta.dist, 1-seg.per.locus) # empirical cutoff based on quantiles
