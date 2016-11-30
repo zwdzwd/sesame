@@ -4,7 +4,7 @@
 \alias{segmentDMR}
 \title{segment DMR}
 \usage{
-segmentDMR(betas, cf, dist.cutoff = NULL, dist.cutoff.quantile = 0.7,
+segmentDMR(betas, cf, dist.cutoff = NULL, seg.per.locus = 0.3,
   platform = "EPIC", refversion = "hg38")
 }
 \arguments{
@@ -14,8 +14,8 @@ segmentDMR(betas, cf, dist.cutoff = NULL, dist.cutoff.quantile = 0.7,
 
 \item{dist.cutoff}{distance cutoff (default to use dist.cutoff.quantile)}
 
-\item{dist.cutoff.quantile}{quantile to use in selecting cutoff distance
-higher value leads to fewer segments}
+\item{seg.per.locus}{number of segments per locus
+higher value leads to more segments}
 
 \item{platform}{EPIC or hm450}
 
