@@ -177,7 +177,7 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
     pkgTest('wheatmap')
     w <- wheatmap::WGrob(plt.txns, name='txn') +
       wheatmap::WGrob(plt.mapLines, wheatmap::Beneath(pad=0, height=0.15)) +
-        wheatmap::WHeatmap(t(betas[names(probes),]), wheatmap::Beneath(height=heat.height), name='betas',
+        wheatmap::WHeatmap(t(betas[names(probes),,drop=FALSE]), wheatmap::Beneath(height=heat.height), name='betas',
                            cmp=wheatmap::CMPar(dmin=0, dmax=1),
                            xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, xticklabels.n=nprobes)
     w <- w + wheatmap::WGrob(
@@ -185,7 +185,7 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
       wheatmap::TopOf('txn', height=0.25))
     w
   } else {
-    betas[names(probes),]
+    betas[names(probes),,drop=FALSE]
   }
   
   
