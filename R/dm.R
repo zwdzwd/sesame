@@ -110,13 +110,13 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
 #' @param cf coefficient table from diffMeth
 #' @param betas beta values for distance calculation
 #' @param dist.cutoff distance cutoff (default to use dist.cutoff.quantile)
-#' @param dist.cutoff.quantile quantile to use in selecting cutoff distance
-#' higher value leads to fewer segments
+#' @param seg.per.locus number of segments per locus
+#' higher value leads to more segments
 #' @param platform EPIC or hm450
 #' @param refversion hg38 or hg19
 #' @return coefficient table with segment ID and segment P-value
 #' @export
-segmentDMR <- function(betas, cf, dist.cutoff=NULL, dist.cutoff.quantile=0.7, platform='EPIC', refversion='hg38') {
+segmentDMR <- function(betas, cf, dist.cutoff=NULL, seg.per.locus=0.3, platform='EPIC', refversion='hg38') {
 
   pkgTest('GenomicRanges')
   
@@ -137,10 +137,12 @@ segmentDMR <- function(betas, cf, dist.cutoff=NULL, dist.cutoff.quantile=0.7, pl
   cpg.end <- GenomicRanges::end(cpg.coords)
 
   n.cpg <- length(cpg.ids)
-  euc.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))) # euclidean distance  
+  ## beta.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))) # euclidean distance
+  beta.dist <- sapply(1:(n.cpg-1), function(i) 1-cor(betas.coord.srt[i,],betas.coord.srt[i+1,],use='complete.obs',method='spearman')) # 1-correlation coefficient
   chrm.changed <- (cpg.chrm[-1] != cpg.chrm[-n.cpg])
-  dist.cutoff <- quantile(euc.dist, dist.cutoff.quantile) # empirical cutoff based on quantiles
-  change.points <- (euc.dist > dist.cutoff | chrm.changed)
+  if (is.null(dist.cutoff))
+    dist.cutoff <- quantile(beta.dist, 1-seg.per.locus) # empirical cutoff based on quantiles
+  change.points <- (beta.dist > dist.cutoff | chrm.changed)
   seg.ids <- cumsum(c(TRUE,change.points))
   message("Done.")
 
