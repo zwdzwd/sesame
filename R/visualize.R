@@ -176,8 +176,7 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
       wheatmap::WGrob(plt.mapLines, wheatmap::Beneath(pad=0, height=0.15)) +
         wheatmap::WHeatmap(t(betas[names(probes),]), wheatmap::Beneath(height=heat.height), name='betas',
                            cmp=wheatmap::CMPar(dmin=0, dmax=1),
-                           xticklabels=show.probeNames, xticklabel.rotat=45,
-                           xticklabels.n=nprobes, yticklabels=show.sampleNames)
+                           xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, xticklabels.n=nprobes)
     w <- w + wheatmap::WGrob(
       plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
       wheatmap::TopOf('txn', height=0.25))
