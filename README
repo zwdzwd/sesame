@@ -23,7 +23,14 @@
     You need devtools from install.packages('devtools'). Then,
     > library(devtools)
     > install_github(' https://github.com/zwdzwd/sesame ')
-        
+
+    optionally downlaod some data, otherwise, sesame needs to access
+    internet for data needed, this allows offline processing
+
+    > Sys.setenv(SESAMEHOME='<my.download.path>')
+    put "export SESAMEHOME=<my.download.path>" to .bashrc to avoid future setting of SESAMEHOME
+    > cacheBuiltInData()
+
     2. Usage
     --------
     

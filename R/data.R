@@ -61,12 +61,63 @@ getBuiltInData <- function(nm, platform='', subdir='') {
     base.dir <- paste0(base.dir, subdir, '/');
   }
 
-  message('Caching ', datanm, '... ', appendLF=FALSE)
-  x <- readRDS(gzcon(url(paste0(base.dir, datanm, '.rds'))))
+  seshome <- Sys.getenv('SESAMEHOME')
+  dir.create(seshome, showWarnings = FALSE) # make sure directory exists
+  localpath <- paste0(seshome, '/', datanm, '.rds')
+  if (seshome != "") {
+    if (file.exists(localpath)) {
+      x <- readRDS(localpath)
+    } else {
+      x <- NULL
+    }
+  }
+
+  if (is.null(x)) {
+    message('Caching ', datanm, '... ', appendLF=FALSE)
+    x <- readRDS(gzcon(url(paste0(base.dir, datanm, '.rds'))))
+    if (seshome != "") {
+      saveRDS(x, file=localpath)
+    }
+  }
   assign(datanm, x, envir=cacheEnv)
   message('Done.')
-
   x
+}
+
+#' Cache all the built in data from remote
+#'
+#' need environment SESAMEHOME be set
+#'
+#' @importFrom XML htmlTreeParse
+#' 
+#' @export
+cacheBuiltInData <- function() {
+  seshome <- Sys.getenv('SESAMEHOME')
+  if (seshome == '') {
+    stop("SESAMEHOME is not set. Abort caching.")
+  }
+  dir.create(seshome, showWarnings = FALSE)
+  base.dir <- 'http://zwdzwd.io/sesame/20161013/'
+  dwfiles <- unname(unlist(htmlTreeParse(base.dir, useInternalNodes=T)["//a/@href"]))
+  for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
+    download.file(paste0(base.dir,'/',dwfile), paste0(seshome,'/',dwfile))
+  }
+
+  subname <- 'cellref'
+  subdir <- paste0(base.dir, '/', subname, '/')
+  dwfiles <- unname(unlist(htmlTreeParse(subdir, useInternalNodes=T)["//a/@href"]))
+  dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
+  for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
+    download.file(paste0(base.dir,'/',subname,'/',dwfile), paste0(seshome,'/',subname,'/',dwfile))
+  }
+
+  subname <- 'examples'
+  subdir <- paste0(base.dir, '/', subname, '/')
+  dwfiles <- unname(unlist(htmlTreeParse(subdir, useInternalNodes=T)["//a/@href"]))
+  dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
+  for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
+    download.file(paste0(base.dir,'/',subname,'/',dwfile), paste0(seshome,'/',subname,'/',dwfile))
+  }
 }
 
 #' Retrieve SeSAMe examples
