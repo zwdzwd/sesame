@@ -7,14 +7,14 @@
 #' @param formula formula
 #' @param se.lb lower bound to standard error of slope, lower this to get
 #' more difference of small effect size.
-#' @param balanced whether design is balanced or not. default to TRUE, when
-#' unbalanced will use Welch's method to estimate standard error. This is slower
-#' balanced=TRUE still give a good result in most cases.
+#' @param balanced whether design is balanced or not. default to FALSE, when
+#' unbalanced will use Welch's method to estimate standard error.
+#' balance=TRUE is faster.
 #' @param cf.test factors to test (default to all factors in formula except
 #' intercept). Use "all" for all factors.
-#' @return cf coefficient table for each factor
+#' @return cf - a list of coefficient tables for each factor
 #' @export
-DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=TRUE, cf.test=NULL) {
+DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=FALSE, cf.test=NULL) {
 
   design <- model.matrix(formula, sample.data)
   n.cpg <- dim(betas)[1]
@@ -93,27 +93,27 @@ DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=TRUE, cf.test=
   message('.\n', appendLF=FALSE)
   ## CpGs are correlated, should apply p-value adjustment on segments
   ## cf <- lapply(cf, function(cf1) cbind(cf1, P.adjusted=p.adjust(cf1[,'Pr(>|t|)'],method='BH')))
-  class(cf) <- 'diffMeth'
 
   message('Significant loci (p<0.05):')
   sigcnts <- lapply(cf, function(x) sum(x[,'Pr(>|t|)'] < 0.05, na.rm=TRUE))
-  sigmsg <- lapply(seq_along(sigcnts), function(i) sprintf(' - %s: %d', names(sigcnts[i]), sigcnts[i][[1]]))
+  sigmsg <- lapply(seq_along(sigcnts), function(i) sprintf(' - %s: %d significant loci.', names(sigcnts[i]), sigcnts[i][[1]]))
   message(do.call(paste0, list(sigmsg, collapse='\n')))
 
   cf
 }
 
-#' find DMR
+#' find Differentially Methylated Region (DMR)
 #'
 #' This subroutine uses Euclidean distance to group CpGs and
 #' then combine p-values for each segment.
 #' 
-#' @param cf coefficient table from diffMeth, when NULL will be computed from beta
 #' @param betas beta values for distance calculation
 #' @param sample.data data frame for sample information, column names
 #' are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
 #' and are referenced in formula. Rows are samples.
 #' @param formula formula
+#' @param cf coefficient table from diffMeth, when NULL will be computed from
+#' beta. If cf is given, sample.data and formula are ignored.
 #' @param dist.cutoff distance cutoff (default to use dist.cutoff.quantile)
 #' @param seg.per.locus number of segments per locus
 #' higher value leads to more segments
@@ -141,7 +141,7 @@ DMR <- function(betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL
   probe.coords <- GenomicRanges::sort(probe.coords[cpg.ids])
   betas.coord.srt <- betas.noNA[names(probe.coords),]
 
-  message("Merging correlated CpGs...", appendLF=FALSE)
+  message("Merging correlated CpGs ... ", appendLF=FALSE)
   cpg.ids <- rownames(betas.coord.srt)
   cpg.coords <- probe.coords[cpg.ids]
   cpg.chrm <- as.vector(GenomicRanges::seqnames(cpg.coords))
@@ -181,9 +181,14 @@ DMR <- function(betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL
   seg.start <- as.vector(tapply(cpg.start, seg.ids, function(x) x[1]))
   seg.end <- as.vector(tapply(cpg.end, seg.ids, function(x) x[length(x)]))
 
+  message(sprintf('Generated %d segments.', seg.ids[length(seg.ids)]))
+
   ## combine p-value
-  message("Combine p-values... ", appendLF=FALSE)
-  cf <- lapply(cf, function(cf1) {
+  message("Combine p-values ... ", appendLF=FALSE)
+  cfnames <- names(cf)
+  cfmsg <- NULL
+  cf <- lapply(seq_along(cf), function(i) {
+    cf1 <- cf[[i]]
     seg.pval <- as.vector(tapply(cf1[cpg.ids, 'Pr(>|t|)'], seg.ids, function(x) pnorm(sum(qnorm(x))/sqrt(length(x))))) #  Stouffer's Z-score method
     seg.pval.adj <- p.adjust(seg.pval, method="BH")
     seg.ids.cf <- match(rownames(cf1), cpg.ids)
@@ -194,9 +199,15 @@ DMR <- function(betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL
     cf1$Seg.end <- seg.end[cf1$Seg.ID]
     cf1$Seg.Pval <- seg.pval[cf1$Seg.ID]
     cf1$Seg.Pval.adj <- seg.pval.adj[cf1$Seg.ID]
+    cfmsg <<- c(cfmsg, sprintf(' - %s: %d significant segments.', cfnames[i], sum(seg.pval<0.05, na.rm=TRUE)))
+    cfmsg <<- c(cfmsg, sprintf(' - %s: %d significant segments (after BH).',
+                              cfnames[i], sum(seg.pval.adj<0.05, na.rm=TRUE)))
     cf1
   })
+  names(cf) <- cfnames
   message("Done.")
+  message(paste0(cfmsg, collapse='\n'))
+  message("All done.")
 
   cf
 }
@@ -209,7 +220,7 @@ DMR <- function(betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL
 #' @return coefficient table ordered by adjusted p-value of segments
 #' @export
 topSegments <- function(cf1) {
-  x <- unique(cf1[order(cf1[,'Seg.Pval']),c('Seg.ID','Seg.chrm','Seg.start','Seg.end','Seg.Pval.adj')])
+  x <- unique(cf1[order(cf1[,'Seg.Pval']),c('Seg.ID','Seg.chrm','Seg.start','Seg.end','Seg.Pval','Seg.Pval.adj')])
   rownames(x) <- x[['Seg.ID']]
   x
 }
