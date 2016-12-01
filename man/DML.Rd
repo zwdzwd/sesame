@@ -4,7 +4,7 @@
 \alias{DML}
 \title{test differential methylation on each locus}
 \usage{
-DML(betas, sample.data, formula, se.lb = 0.06, balanced = TRUE,
+DML(betas, sample.data, formula, se.lb = 0.06, balanced = FALSE,
   cf.test = NULL)
 }
 \arguments{
@@ -19,15 +19,15 @@ and are referenced in formula. Rows are samples.}
 \item{se.lb}{lower bound to standard error of slope, lower this to get
 more difference of small effect size.}
 
-\item{balanced}{whether design is balanced or not. default to TRUE, when
-unbalanced will use Welch's method to estimate standard error. This is slower
-balanced=TRUE still give a good result in most cases.}
+\item{balanced}{whether design is balanced or not. default to FALSE, when
+unbalanced will use Welch's method to estimate standard error.
+balance=TRUE is faster.}
 
 \item{cf.test}{factors to test (default to all factors in formula except
 intercept). Use "all" for all factors.}
 }
 \value{
-cf coefficient table for each factor
+cf - a list of coefficient tables for each factor
 }
 \description{
 test differential methylation on each locus
