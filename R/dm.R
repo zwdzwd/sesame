@@ -17,6 +17,8 @@
 DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=FALSE, cf.test=NULL) {
 
   design <- model.matrix(formula, sample.data)
+  design.fac <- data.frame(lapply(as.data.frame(design), as.factor)) # convert to factor for faster processing
+  rdf0 <- unlist(lapply(design.fac, function(x) max(min(tabulate(x)),1)), recursive = FALSE, use.names=FALSE)
   n.cpg <- dim(betas)[1]
   n.cf <- dim(design)[2]
 
@@ -33,8 +35,6 @@ DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=FALSE, cf.test
   names(cf) <- cf.test
 
   message('Testing differential methylation on each locus:')
-  n.skip <- 0
-  group <- factor(apply(design, 1, paste, collapse="_"))
   for (i in 1:n.cpg) {
 
     if (i%%ceiling(n.cpg/80)==0) message('.', appendLF=FALSE);
@@ -42,12 +42,19 @@ DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=FALSE, cf.test
     ## filter NA
     sample.is.na <- is.na(betas[i,])
     if (all(sample.is.na)) next;
-    
-    design1 <- design[!sample.is.na,,drop=FALSE]
-    betas1 <- betas[i,!sample.is.na]
-    if (sum(apply(design1[,2:n.cf,drop=FALSE], 2, function(x) length(unique(x)))==1) > 0) {
-      n.skip <- n.skip + 1
-      next;
+
+    if (any(sample.is.na)) {          # this "if" improves performance
+      design1 <- design[!sample.is.na,,drop=FALSE]
+      design1.fac <- design.fac[!sample.is.na,]
+      betas1 <- betas[i,!sample.is.na]
+
+      if (sum(apply(design1[,2:n.cf,drop=FALSE], 2, function(x) length(unique(x)))==1) > 0) next;
+      rdf <- unlist(lapply(design1.fac, function(x) max(min(tabulate(x)),1)), recursive = FALSE, use.names=FALSE)
+    } else {
+      design1 <- design
+      design1.fac <- design.fac
+      betas1 <- betas[i,]
+      rdf <- rdf0
     }
 
     ## sigma is padded, boundary adjusted, and log2 damped (should use beta distribution)
@@ -55,7 +62,6 @@ DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=FALSE, cf.test
     pad <- 0.01
     betas1.padded <- pmin(pmax(betas1, pad), 1-pad)
     wts <- 1/(betas1.padded*(1-betas1.padded)) # 1/var
-    stopifnot(all(wts>0))
 
     ## QR-solve weighted least square
     z <- .lm.fit(design1*wts, betas1*wts)
@@ -69,25 +75,25 @@ DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=FALSE, cf.test
     } else {
       ## Welch-Satterthwaite se
       rs <- residuals^2
-      se <- apply(design1, 2, function(group1) {
+      se <- unlist(lapply(design1.fac, function(group1) {
         sqrt(sum(vapply(split(rs, group1), mean, numeric(1)), na.rm=TRUE))
-      })
+      }), recursive = FALSE, use.names=FALSE)
     }
     se <- pmax(se, se.lb)      # lower bound coefficient se, this selects against high effect size differences
-    rdf <- apply(design1, 2, function(x) max(min(tabulate(x)),1))
 
     ## t-statistics
     t.stat <- coefs / se
     pval <- 2*pt(abs(t.stat), rdf, lower.tail=FALSE)
     stopifnot(!any(is.na(pval)))
-    
+
     ## output
     fitted.rg <- range(betas1 - residuals)
     eff <- fitted.rg[2] - fitted.rg[1]  # effect size
     ans <- cbind(coefs, se, t.stat, pval, eff)
-    lapply(cf.test, function(cfi)
+    for (cfi in cf.test) {
       if (cfi %in% rownames(ans))
-        cf[[cfi]][i,] <<- ans[cfi,])
+        cf[[cfi]][i,] <- ans[cfi,]
+    }
     ## betas.fitted[i,!sample.is.na] <- betas1 - residuals
   }
   message('.\n', appendLF=FALSE)
@@ -96,7 +102,8 @@ DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=FALSE, cf.test
 
   message('Significant loci (p<0.05):')
   sigcnts <- lapply(cf, function(x) sum(x[,'Pr(>|t|)'] < 0.05, na.rm=TRUE))
-  sigmsg <- lapply(seq_along(sigcnts), function(i) sprintf(' - %s: %d significant loci.', names(sigcnts[i]), sigcnts[i][[1]]))
+  sigmsg <- lapply(seq_along(sigcnts),
+                   function(i) sprintf(' - %s: %d significant loci.', names(sigcnts[i]), sigcnts[i][[1]]))
   message(do.call(paste0, list(sigmsg, collapse='\n')))
 
   cf
@@ -122,7 +129,8 @@ DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=FALSE, cf.test
 #' @param ... additional parameters to DML
 #' @return coefficient table with segment ID and segment P-value
 #' @export
-DMR <- function(betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL, seg.per.locus=0.5, platform='EPIC', refversion='hg38', ...) {
+DMR <- function(betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL,
+                seg.per.locus=0.5, platform='EPIC', refversion='hg38', ...) {
 
   pkgTest('GenomicRanges')
 
@@ -189,7 +197,9 @@ DMR <- function(betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL
   cfmsg <- NULL
   cf <- lapply(seq_along(cf), function(i) {
     cf1 <- cf[[i]]
-    seg.pval <- as.vector(tapply(cf1[cpg.ids, 'Pr(>|t|)'], seg.ids, function(x) pnorm(sum(qnorm(x))/sqrt(length(x))))) #  Stouffer's Z-score method
+    seg.pval <- as.vector(tapply(
+      cf1[cpg.ids, 'Pr(>|t|)'], seg.ids,
+      function(x) pnorm(sum(qnorm(x))/sqrt(length(x))))) #  Stouffer's Z-score method
     seg.pval.adj <- p.adjust(seg.pval, method="BH")
     seg.ids.cf <- match(rownames(cf1), cpg.ids)
     cf1 <- as.data.frame(cf1)
