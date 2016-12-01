@@ -114,7 +114,7 @@
       
       visualize top DMR
       > visualizeProbes(rownames(cf1[cf1[,'Seg.ID']==topSegments(cf1)$Seg.ID[1],]),
-        betas, upstream = 5000, dwstream=5000, platform='hm450',heat.height=3.5)
+        betas, upstream=5000, dwstream=5000, platform='hm450',heat.height=3.5)
 
     - CNV
     
