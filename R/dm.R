@@ -5,12 +5,16 @@
 #' are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
 #' and are referenced in formula. Rows are samples.
 #' @param formula formula
-#' @param se.lb lower bound to standard error of slope
+#' @param se.lb lower bound to standard error of slope, lower this to get
+#' more difference of small effect size.
+#' @param balanced whether design is balanced or not. default to TRUE, when
+#' unbalanced will use Welch's method to estimate standard error. This is slower
+#' balanced=TRUE still give a good result in most cases.
 #' @param cf.test factors to test (default to all factors in formula except
 #' intercept). Use "all" for all factors.
 #' @return cf coefficient table for each factor
 #' @export
-diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
+DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=TRUE, cf.test=NULL) {
 
   design <- model.matrix(formula, sample.data)
   n.cpg <- dim(betas)[1]
@@ -28,13 +32,12 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
   cf <- lapply(cf.test, function(cfi) matrix(data=NA, nrow=n.cpg, ncol=5, dimnames=list(rownames(betas), c('Estimate', 'Std. Error', 't-stat', 'Pr(>|t|)', 'Effect size'))))
   names(cf) <- cf.test
 
-  cat('Testing differential methylation on each locus:\n')
+  message('Testing differential methylation on each locus:')
   n.skip <- 0
   group <- factor(apply(design, 1, paste, collapse="_"))
   for (i in 1:n.cpg) {
 
-    if (i%%as.integer(n.cpg/80)==0) message('.', appendLF=FALSE);
-    ## if (i%%300000==0) message('\n', appendLF=FALSE); #
+    if (i%%ceiling(n.cpg/80)==0) message('.', appendLF=FALSE);
     
     ## filter NA
     sample.is.na <- is.na(betas[i,])
@@ -59,67 +62,75 @@ diffMeth <- function(betas, sample.data, formula, se.lb=0.1, cf.test=NULL) {
     names(z$coefficients) <- colnames(design1)
     p1 <- 1:z$rank
     coefs <- z$coefficients[z$pivot[p1]]
+    residuals <- z$residuals / wts
 
-    rss <- sum(z$residuals^2) # residual sum of squares
-    if (rss<=0) {
-      rdf <- 1 # arbitrarily set degree of freedom
-      se <- 1/wts # slope se
+    if (balanced) {
+      se <- sum(residuals^2)/(length(residuals)-1)
     } else {
-      group1 <- group[!sample.is.na]
-      group1N <- pmax(tabulate(group1),1)
-      rdf <- max(min(group1N-z$rank+1),1)        # just be conservative in rdf
-      ## Welch-Satterthwaite correction for residual degree of freedom
-      ## rss.group <- vapply(split(z$residuals, group1), function(x) sum(x^2), numeric(1)) / group1N
-      ## rdf <- sum(rss.group)^2/sum(rss.group^2/pmax(min(group1N-z$rank),1))
-      ## rdf <- length(betas1) - z$rank # only works for balanced design
-
-      ## slope se
-      XTXinv <- chol2inv(z$qr[p1,p1,drop=FALSE]) # (t(X)*X)^-1
-      resvar <- rss/rdf # residual variance
-      se <- sqrt(diag(XTXinv)*resvar) # slope se
+      ## Welch-Satterthwaite se
+      rs <- residuals^2
+      se <- apply(design1, 2, function(group1) {
+        sqrt(sum(vapply(split(rs, group1), mean, numeric(1)), na.rm=TRUE))
+      })
     }
-    se <- pmax(se, se.lb)      # lower bound coefficient se
-    
+    se <- pmax(se, se.lb)      # lower bound coefficient se, this selects against high effect size differences
+    rdf <- apply(design1, 2, function(x) max(min(tabulate(x)),1))
+
     ## t-statistics
     t.stat <- coefs / se
     pval <- 2*pt(abs(t.stat), rdf, lower.tail=FALSE)
     stopifnot(!any(is.na(pval)))
     
     ## output
-    fitted.rg <- range(betas1 - z$residuals / wts)
+    fitted.rg <- range(betas1 - residuals)
     eff <- fitted.rg[2] - fitted.rg[1]  # effect size
     ans <- cbind(coefs, se, t.stat, pval, eff)
     lapply(cf.test, function(cfi)
       if (cfi %in% rownames(ans))
         cf[[cfi]][i,] <<- ans[cfi,])
-    ## z$residuals/wts
-    ## betas.fitted[i,!sample.is.na] <- betas1 - z$residuals/wts
+    ## betas.fitted[i,!sample.is.na] <- betas1 - residuals
   }
   message('.\n', appendLF=FALSE)
   ## CpGs are correlated, should apply p-value adjustment on segments
   ## cf <- lapply(cf, function(cf1) cbind(cf1, P.adjusted=p.adjust(cf1[,'Pr(>|t|)'],method='BH')))
   class(cf) <- 'diffMeth'
 
+  message('Significant loci (p<0.05):')
+  sigcnts <- lapply(cf, function(x) sum(x[,'Pr(>|t|)'] < 0.05, na.rm=TRUE))
+  sigmsg <- lapply(seq_along(sigcnts), function(i) sprintf(' - %s: %d', names(sigcnts[i]), sigcnts[i][[1]]))
+  message(do.call(paste0, list(sigmsg, collapse='\n')))
+
   cf
 }
 
-#' segment DMR
+#' find DMR
 #'
 #' This subroutine uses Euclidean distance to group CpGs and
 #' then combine p-values for each segment.
 #' 
-#' @param cf coefficient table from diffMeth
+#' @param cf coefficient table from diffMeth, when NULL will be computed from beta
 #' @param betas beta values for distance calculation
+#' @param sample.data data frame for sample information, column names
+#' are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
+#' and are referenced in formula. Rows are samples.
+#' @param formula formula
 #' @param dist.cutoff distance cutoff (default to use dist.cutoff.quantile)
 #' @param seg.per.locus number of segments per locus
 #' higher value leads to more segments
 #' @param platform EPIC or hm450
 #' @param refversion hg38 or hg19
+#' @param ... additional parameters to DML
 #' @return coefficient table with segment ID and segment P-value
 #' @export
-segmentDMR <- function(betas, cf, dist.cutoff=NULL, seg.per.locus=0.5, platform='EPIC', refversion='hg38') {
+DMR <- function(betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL, seg.per.locus=0.5, platform='EPIC', refversion='hg38', ...) {
 
   pkgTest('GenomicRanges')
+
+  if (is.null(cf)) {
+    if (is.null(sample.data) || is.null(formula))
+      stop('Need either cf or sample data and formula to run DML.')
+    cf <- DML(betas, sample.data, formula, ...)
+  }
   
   ## filter NA
   betas.noNA <- betas[!apply(betas, 1, function(x) all(is.na(x))),]
@@ -138,12 +149,17 @@ segmentDMR <- function(betas, cf, dist.cutoff=NULL, seg.per.locus=0.5, platform=
   cpg.end <- GenomicRanges::end(cpg.coords)
 
   n.cpg <- length(cpg.ids)
-  beta.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))) # euclidean distance
+
+  ## euclidean distance suffcies
+  beta.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE)))
+
+  ## 1-correlation coefficient
   ## beta.dist <- sapply(1:(n.cpg-1), function(i) {
-  ##   x <- cor(betas.coord.srt[i,],betas.coord.srt[i+1,],use='na.or.complete',method='spearman') # 1-correlation coefficient
+  ##   x <- cor(betas.coord.srt[i,],betas.coord.srt[i+1,],use='na.or.complete',method='spearman')
   ##   if (is.na(x)) x <- 0
   ##   1-x
   ## })
+  
   chrm.changed <- (cpg.chrm[-1] != cpg.chrm[-n.cpg])
   if (is.null(dist.cutoff))
     dist.cutoff <- quantile(beta.dist, 1-seg.per.locus) # empirical cutoff based on quantiles
