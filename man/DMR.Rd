@@ -2,7 +2,7 @@
 % Please edit documentation in R/dm.R
 \name{DMR}
 \alias{DMR}
-\title{find DMR}
+\title{find Differentially Methylated Region (DMR)}
 \usage{
 DMR(betas, sample.data = NULL, formula = NULL, cf = NULL,
   dist.cutoff = NULL, seg.per.locus = 0.5, platform = "EPIC",
@@ -17,7 +17,8 @@ and are referenced in formula. Rows are samples.}
 
 \item{formula}{formula}
 
-\item{cf}{coefficient table from diffMeth, when NULL will be computed from beta}
+\item{cf}{coefficient table from diffMeth, when NULL will be computed from
+beta. If cf is given, sample.data and formula are ignored.}
 
 \item{dist.cutoff}{distance cutoff (default to use dist.cutoff.quantile)}
 
