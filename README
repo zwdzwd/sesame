@@ -103,16 +103,13 @@
       test differential methylation on each locus
       > betas <- sesameGetExample('hm450.76matchedTCGAchr20')
       > sample.info <- sesameGetExample('hm450.76matchedTCGAchr20.sampleinfo')
-      > cf <- diffMeth(betas, sample.info, ~patient+type)
+      > cf <- DMR(betas, sample.info, ~patient+type, platform='hm450')
 
       top differentially methylated probes on factor "type"
-      > head(topLoci(cf$typeTumour))
-
-      segment into DMR
-      > cf <- segmentDMR(betas, cf, platform = 'hm450')
+      > cf1 <- cf$typeTumour
+      > head(topLoci(cf1))
 
       top segments
-      > cf1 <- cf$typeTumour
       > head(topSegments(cf1))
       
       visualize top DMR
