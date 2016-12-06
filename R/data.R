@@ -56,6 +56,7 @@ getBuiltInData <- function(nm, platform='', subdir='') {
     return(get(datanm, envir=cacheEnv))
   }
 
+  x <- NULL
   base.dir <- 'http://zwdzwd.io/sesame/20161013/'
   if (subdir != '') {
     base.dir <- paste0(base.dir, subdir, '/');
