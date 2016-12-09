@@ -6,7 +6,7 @@
 \usage{
 visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
   refversion = "hg38", heat.height = NULL, draw = TRUE,
-  show.sampleNames = TRUE, show.probeNames = TRUE)
+  show.sampleNames = TRUE, show.probeNames = TRUE, na.rm = FALSE)
 }
 \arguments{
 \item{chrm}{chromosome}
@@ -28,6 +28,8 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 \item{show.sampleNames}{whether to show sample names}
 
 \item{show.probeNames}{whether to show probe names}
+
+\item{na.rm}{remove probes with all NA.}
 }
 \description{
 visualize region
