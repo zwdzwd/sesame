@@ -159,7 +159,7 @@ DMR <- function(betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL
   n.cpg <- length(cpg.ids)
 
   ## euclidean distance suffcies
-  beta.dist <- sapply(1:(n.cpg-1), function(i) sqrt(sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE)))
+  beta.dist <- sapply(1:(n.cpg-1), function(i) sum((betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))
 
   ## 1-correlation coefficient
   ## beta.dist <- sapply(1:(n.cpg-1), function(i) {

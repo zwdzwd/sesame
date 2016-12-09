@@ -79,9 +79,10 @@ visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38
 #' @param heat.height heatmap height (auto inferred based on rows)
 #' @param show.sampleNames whether to show sample names
 #' @param show.probeNames whether to show probe names
+#' @param na.rm remove probes with all NA.
 #' @import grid
 #' @export
-visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg38', heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.probeNames=TRUE) {
+visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg38', heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.probeNames=TRUE, na.rm=FALSE) {
 
   pkgTest('GenomicRanges')
   
@@ -98,8 +99,9 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
 
   plt.width <- plt.end-plt.beg
   probes <- GenomicRanges::subsetByOverlaps(probes, target.region)
-
   probes <- probes[names(probes) %in% rownames(betas)]
+  if (na.rm)
+    probes <- probes[apply(betas[names(probes), ], 1, function(x) !all(is.na(x)))]
   nprobes <- length(probes)
   if (nprobes == 0)
     stop("No probe overlap region ", sprintf('%s:%d-%d', chrm, plt.beg, plt.end))
@@ -177,9 +179,7 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
     pkgTest('wheatmap')
     w <- wheatmap::WGrob(plt.txns, name='txn') +
       wheatmap::WGrob(plt.mapLines, wheatmap::Beneath(pad=0, height=0.15)) +
-        wheatmap::WHeatmap(t(betas[names(probes),,drop=FALSE]), wheatmap::Beneath(height=heat.height), name='betas',
-                           cmp=wheatmap::CMPar(dmin=0, dmax=1),
-                           xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, xticklabels.n=nprobes)
+        wheatmap::WHeatmap(t(betas[names(probes),,drop=FALSE]), wheatmap::Beneath(height=heat.height), name='betas', cmp=wheatmap::CMPar(dmin=0, dmax=1), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, xticklabels.n=nprobes)
     w <- w + wheatmap::WGrob(
       plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
       wheatmap::TopOf('txn', height=0.25))
