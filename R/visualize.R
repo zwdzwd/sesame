@@ -80,10 +80,11 @@ visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38
 #' @param show.sampleNames whether to show sample names
 #' @param show.probeNames whether to show probe names
 #' @param show.samples.n number of samples to show (default: all)
+#' @param sample.name.fontsize sample name font size
 #' @param na.rm remove probes with all NA.
 #' @import grid
 #' @export
-visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg38', heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.samples.n=NULL, show.probeNames=TRUE, na.rm=FALSE) {
+visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg38', sample.name.fontsize=10, heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.samples.n=NULL, show.probeNames=TRUE, na.rm=FALSE) {
 
   pkgTest('GenomicRanges')
   
@@ -184,7 +185,7 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
     pkgTest('wheatmap')
     w <- wheatmap::WGrob(plt.txns, name='txn') +
       wheatmap::WGrob(plt.mapLines, wheatmap::Beneath(pad=0, height=0.15)) +
-        wheatmap::WHeatmap(t(betas[names(probes),,drop=FALSE]), wheatmap::Beneath(height=heat.height), name='betas', cmp=wheatmap::CMPar(dmin=0, dmax=1), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, yticklabels.n=show.samples.n, xticklabels.n=nprobes)
+        wheatmap::WHeatmap(t(betas[names(probes),,drop=FALSE]), wheatmap::Beneath(height=heat.height), name='betas', cmp=wheatmap::CMPar(dmin=0, dmax=1), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, yticklabel.fontsize=sample.name.fontsize, yticklabels.n=show.samples.n, xticklabels.n=nprobes)
     w <- w + wheatmap::WGrob(
       plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
       wheatmap::TopOf('txn', height=0.25))

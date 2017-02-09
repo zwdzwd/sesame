@@ -154,7 +154,7 @@ SignalSet <- R6Class(
 #' @return mean of all intensities
 #' @export
 meanIntensity <- function(sset) {
-  mean(c(sset$IG, sset$IR, sset$II))
+  mean(c(sset$IG, sset$IR, sset$II), na.rm=TRUE)
 }
 
 #' get sex information
