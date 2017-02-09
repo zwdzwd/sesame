@@ -6,7 +6,8 @@
 \usage{
 visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
   refversion = "hg38", heat.height = NULL, draw = TRUE,
-  show.sampleNames = TRUE, show.probeNames = TRUE, na.rm = FALSE)
+  show.sampleNames = TRUE, show.samples.n = NULL, show.probeNames = TRUE,
+  na.rm = FALSE)
 }
 \arguments{
 \item{chrm}{chromosome}
@@ -26,6 +27,8 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 \item{draw}{draw figure or return betas}
 
 \item{show.sampleNames}{whether to show sample names}
+
+\item{show.samples.n}{number of samples to show (default: all)}
 
 \item{show.probeNames}{whether to show probe names}
 
