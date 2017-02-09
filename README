@@ -24,8 +24,8 @@
     > library(devtools)
     > install_github(' https://github.com/zwdzwd/sesame ')
 
-    optionally downlaod some data, otherwise, sesame needs to access
-    internet for data needed, this allows offline processing
+    optional: download data for offline processing. Otherwise, sesame needs to access
+    internet for data needed
 
     > Sys.setenv(SESAMEHOME='<my.download.path>')
     put "export SESAMEHOME=<my.download.path>" to .bashrc to avoid future setting of SESAMEHOME
@@ -62,14 +62,16 @@
       linear scaling
       > dyeBiasCorr(sset)
       
-      quantile interpolating Type-I probes
+      quantile interpolation with Type-I probes
       > dyeBiasCorrTypeINorm(sset)
       
     - Get betas
     
       > getBetas(sset)
-      use option quality.mask = TRUE/FALSE to use probe quality mask
-      use option nondetection.mask = TRUE/FALSE to mask nondetection calls
+      use option quality.mask = TRUE/FALSE to mask probes with mapping issues, SNPs 	and non-uniqueness, described in Zhou 2016 NAR.
+      use option nondetection.mask = TRUE/FALSE to mask nondetection calls.
+
+	Both masks are recommended to ensure data quality and defaulted to TRUE.
         
     - Sample/experiment QC
 
@@ -82,7 +84,7 @@
       mean intensity
       > meanIntensity(sset)
 
-      bisulfite conversion control
+      bisulfite conversion control using GCT score (Zhou 2016 NAR)
       > bisConversionControl(sset)
 
     - visualize probes
@@ -144,6 +146,6 @@
     4. About
     --------
     
-    This was a collaborative project by Wanding Zhou, Hui Shen and Peter W Laird
-    from the Van Andel Research Institute.
+    Authors: Wanding Zhou (wanding.zhou@vai.org), Peter W Laird and Hui Shen
+    
     
