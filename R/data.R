@@ -57,7 +57,7 @@ getBuiltInData <- function(nm, platform='', subdir='') {
   }
 
   x <- NULL
-  base.dir <- 'http://zwdzwd.io/sesame/20161013/'
+  base.dir <- 'http://zwdzwd.io/sesame/current/'
   if (subdir != '') {
     base.dir <- paste0(base.dir, subdir, '/');
   }
@@ -98,7 +98,7 @@ cacheBuiltInData <- function() {
     stop("SESAMEHOME is not set. Abort caching.")
   }
   dir.create(seshome, showWarnings = FALSE)
-  base.dir <- 'http://zwdzwd.io/sesame/20161013/'
+  base.dir <- 'http://zwdzwd.io/sesame/current/'
   dwfiles <- unname(unlist(htmlTreeParse(base.dir, useInternalNodes=T)["//a/@href"]))
   for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
     download.file(paste0(base.dir,'/',dwfile), paste0(seshome,'/',dwfile))
