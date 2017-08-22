@@ -80,11 +80,14 @@ visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38
 #' @param show.sampleNames whether to show sample names
 #' @param show.probeNames whether to show probe names
 #' @param show.samples.n number of samples to show (default: all)
+#' @param cluster.samples whether to cluster samples
 #' @param sample.name.fontsize sample name font size
+#' @param dmin data min
+#' @param dmax data max
 #' @param na.rm remove probes with all NA.
 #' @import grid
 #' @export
-visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg38', sample.name.fontsize=10, heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.samples.n=NULL, show.probeNames=TRUE, na.rm=FALSE) {
+visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg38', sample.name.fontsize=10, heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.samples.n=NULL, show.probeNames=TRUE, cluster.samples=FALSE, na.rm=FALSE, dmin=0, dmax=1) {
 
   pkgTest('GenomicRanges')
   
@@ -183,9 +186,12 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
                                 1, ((1:nprobes-0.5)/nprobes), 0, draw=FALSE)
   if (draw) {
     pkgTest('wheatmap')
+    if (cluster.samples) {
+      betas <- betas[,wheatmap::column.cluster(betas[names(probes),,drop=FALSE])$column.clust$order]
+    }
     w <- wheatmap::WGrob(plt.txns, name='txn') +
       wheatmap::WGrob(plt.mapLines, wheatmap::Beneath(pad=0, height=0.15)) +
-        wheatmap::WHeatmap(t(betas[names(probes),,drop=FALSE]), wheatmap::Beneath(height=heat.height), name='betas', cmp=wheatmap::CMPar(dmin=0, dmax=1), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, yticklabel.fontsize=sample.name.fontsize, yticklabels.n=show.samples.n, xticklabels.n=nprobes)
+        wheatmap::WHeatmap(t(betas[names(probes),,drop=FALSE]), wheatmap::Beneath(height=heat.height), name='betas', cmp=wheatmap::CMPar(dmin=dmin, dmax=dmax), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, yticklabel.fontsize=sample.name.fontsize, yticklabels.n=show.samples.n, xticklabels.n=nprobes)
     w <- w + wheatmap::WGrob(
       plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
       wheatmap::TopOf('txn', height=0.25))
@@ -193,8 +199,6 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
   } else {
     betas[names(probes),,drop=FALSE]
   }
-  
-  
 }
 
 ## plot chromosome of genomic ranges and cytobands
