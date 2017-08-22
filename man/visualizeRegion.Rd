@@ -5,9 +5,10 @@
 \title{visualize region}
 \usage{
 visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
-  refversion = "hg38", heat.height = NULL, draw = TRUE,
-  show.sampleNames = TRUE, show.samples.n = NULL, show.probeNames = TRUE,
-  na.rm = FALSE)
+  refversion = "hg38", sample.name.fontsize = 10, heat.height = NULL,
+  draw = TRUE, show.sampleNames = TRUE, show.samples.n = NULL,
+  show.probeNames = TRUE, cluster.samples = FALSE, na.rm = FALSE,
+  dmin = 0, dmax = 1)
 }
 \arguments{
 \item{chrm}{chromosome}
@@ -22,6 +23,8 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 
 \item{refversion}{hg19 or hg38}
 
+\item{sample.name.fontsize}{sample name font size}
+
 \item{heat.height}{heatmap height (auto inferred based on rows)}
 
 \item{draw}{draw figure or return betas}
@@ -32,7 +35,13 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 
 \item{show.probeNames}{whether to show probe names}
 
+\item{cluster.samples}{whether to cluster samples}
+
 \item{na.rm}{remove probes with all NA.}
+
+\item{dmin}{data min}
+
+\item{dmax}{data max}
 }
 \description{
 visualize region
