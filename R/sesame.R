@@ -237,10 +237,11 @@ inferEthnicity <- function(sset) {
 #' @param sset \code{SignalSet}
 #' @param quality.mask whether to mask low quality probes
 #' @param nondetection.mask whether to mask nondetection
+#' @param mask.use.tcga whether to use TCGA masking, only applies to hm450
 #' @param pval.threshold p-value threshold for nondetection mask
 #' @return beta values
 #' @export
-getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, mask.use.tcga=FALSE, pval.threshold=0.05) {
   betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
   betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
   betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
@@ -248,7 +249,11 @@ getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.thres
   if (nondetection.mask)
     betas[sset$pval[names(betas)] > pval.threshold] <- NA
   if (quality.mask) {
-    mask <- getBuiltInData('mask', sset$platform)
+    if (mask.use.tcga) {
+      mask <- getBuiltInData('mask', sset$platform)
+    } else {
+      mask <- getBuiltInData('mask.tcga', sset$platform)
+    }
     betas[names(betas) %in% mask] <- NA
   }
   betas[order(names(betas))]

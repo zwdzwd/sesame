@@ -197,7 +197,13 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
       wheatmap::TopOf('txn', height=0.25))
     w
   } else {
-    betas[names(probes),,drop=FALSE]
+    if (cluster.samples) {
+      pkgTest('wheatmap')
+      betas <- betas[,wheatmap::column.cluster(betas[names(probes),,drop=FALSE])$column.clust$order]
+    } else {
+      betas <- betas[names(probes),,drop=FALSE]
+    }
+    betas
   }
 }
 
