@@ -19,9 +19,9 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 
-\item{platform}{hm450 (default) or EPIC}
+\item{platform}{EPIC or hm450}
 
-\item{refversion}{hg19 or hg38}
+\item{refversion}{hg38 or hg19}
 
 \item{sample.name.fontsize}{sample name font size}
 

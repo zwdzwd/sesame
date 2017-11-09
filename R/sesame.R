@@ -250,9 +250,9 @@ getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, mask.use.t
     betas[sset$pval[names(betas)] > pval.threshold] <- NA
   if (quality.mask) {
     if (mask.use.tcga) {
-      mask <- getBuiltInData('mask', sset$platform)
-    } else {
       mask <- getBuiltInData('mask.tcga', sset$platform)
+    } else {
+      mask <- getBuiltInData('mask', sset$platform)
     }
     betas[names(betas) %in% mask] <- NA
   }
@@ -395,13 +395,14 @@ readIDATsFromDir <- function(dir.name, ...) {
 #' having signal intensity addressed by chip address
 #' 
 #' @param sample.sheet path to sample sheet
+#' @param column.name name of the column to use in the samplesheet
 #' @param base.dir directory on which the \code{sample.sheet.path} is based
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
 #' @return a list of \code{SignalSet}s
 #' @export
-readIDATsFromSheet <- function(sample.sheet, base.dir=NULL, ...) {
+readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NULL, ...) {
   sample.names <- read.csv(sample.sheet, stringsAsFactors=F)
-  readIDATs(sample.names$barcode, base.dir=base.dir, ...)
+  readIDATs(sample.names[[column.name]], base.dir=base.dir, ...)
 }
 
 #' Lookup address in one sample

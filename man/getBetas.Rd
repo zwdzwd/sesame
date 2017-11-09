@@ -5,7 +5,7 @@
 \title{get beta values}
 \usage{
 getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
-  pval.threshold = 0.05)
+  mask.use.tcga = FALSE, pval.threshold = 0.05)
 }
 \arguments{
 \item{sset}{\code{SignalSet}}
@@ -13,6 +13,8 @@ getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
 \item{quality.mask}{whether to mask low quality probes}
 
 \item{nondetection.mask}{whether to mask nondetection}
+
+\item{mask.use.tcga}{whether to use TCGA masking, only applies to hm450}
 
 \item{pval.threshold}{p-value threshold for nondetection mask}
 }
