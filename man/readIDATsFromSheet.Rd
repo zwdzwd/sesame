@@ -4,10 +4,13 @@
 \alias{readIDATsFromSheet}
 \title{Import IDATs from a sample sheet}
 \usage{
-readIDATsFromSheet(sample.sheet, base.dir = NULL, ...)
+readIDATsFromSheet(sample.sheet, column.name = "barcode", base.dir = NULL,
+  ...)
 }
 \arguments{
 \item{sample.sheet}{path to sample sheet}
+
+\item{column.name}{name of the column to use in the samplesheet}
 
 \item{base.dir}{directory on which the \code{sample.sheet.path} is based}
 

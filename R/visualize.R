@@ -67,14 +67,60 @@ visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38
                   betas, platform=platform, refversion=refversion, ...)
 }
 
+#' get probes by gene
+#'
+#' @param geneName gene name
+#' @param platform EPIC or hm450
+#' @param refversion hg38 or hg19
+#' @return probes that fall into the given gene
+#' @export
+getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
+  pkgTest('GenomicRanges')
+
+  gene2txn <- getBuiltInData(paste0('UCSC.refGene.gene2txn.', refversion))
+  if (!(geneName %in% names(gene2txn))) {
+    stop('Gene ', geneName, ' not found in this reference.');
+  }
+  txns <- getBuiltInData(paste0('UCSC.refGene.txns.', refversion))
+
+  target.txns <- txns[gene2txn[[geneName]]]
+  ## target.strand <- as.character(GenomicRanges::strand(target.txns[[1]][1]))
+
+  merged.exons <- GenomicRanges::reduce(GenomicRanges::unlist(target.txns))
+  getProbesByRegion(
+    as.character(GenomicRanges::seqnames(merged.exons[1])),
+    min(GenomicRanges::start(merged.exons)),
+    max(GenomicRanges::end(merged.exons)), platform=platform, refversion=refversion)
+}
+
+#' get probes by genomic region
+#'
+#' @param chrm chromosome
+#' @param beg begin
+#' @param end end
+#' @param platform EPIC or hm450
+#' @param refversion hg38 or hg19
+#' @return probes that fall into the given region
+#' @export
+getProbesByRegion <- function(chrm, beg, end, platform='EPIC', refversion='hg38') {
+  pkgTest('GenomicRanges')
+  probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
+  if (!(chrm %in% GenomicRanges::seqinfo(probes)@seqnames)) {
+    stop('No probes found in this reference');
+  }
+  message(sprintf('Extracting probes from %s:%d-%d.\n', chrm, beg, end))
+  target.region <- GenomicRanges::GRanges(chrm, IRanges::IRanges(beg, end))
+  GenomicRanges::subsetByOverlaps(probes, target.region)
+}
+
 #' visualize region
 #'
 #' @param chrm chromosome
 #' @param plt.beg begin of the region
 #' @param plt.end end of the region
 #' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform hm450 (default) or EPIC
-#' @param refversion hg19 or hg38
+#' @param platform EPIC or hm450
+#' @param refversion hg38 or hg19
 #' @param draw draw figure or return betas
 #' @param heat.height heatmap height (auto inferred based on rows)
 #' @param show.sampleNames whether to show sample names
@@ -182,27 +228,24 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
   }
 
   plt.chromLine <- grid.lines(x=c(0, 1), y=c(1,1), draw=FALSE)
-  plt.mapLines <- grid.segments((GenomicRanges::start(probes)-plt.beg) / plt.width,
-                                1, ((1:nprobes-0.5)/nprobes), 0, draw=FALSE)
-  if (draw) {
+  plt.mapLines <- grid.segments((GenomicRanges::start(probes)-plt.beg) / plt.width, 1, ((1:nprobes-0.5)/nprobes), 0, draw=FALSE)
+
+  ## clustering
+  betas <- betas[names(probes),,drop=FALSE]
+  if (cluster.samples) {
     pkgTest('wheatmap')
-    if (cluster.samples) {
-      betas <- betas[,wheatmap::column.cluster(betas[names(probes),,drop=FALSE])$column.clust$order]
-    }
+    betas <- wheatmap::column.cluster(betas[names(probes),,drop=FALSE])$mat
+  }
+
+  if (draw) {
     w <- wheatmap::WGrob(plt.txns, name='txn') +
       wheatmap::WGrob(plt.mapLines, wheatmap::Beneath(pad=0, height=0.15)) +
-        wheatmap::WHeatmap(t(betas[names(probes),,drop=FALSE]), wheatmap::Beneath(height=heat.height), name='betas', cmp=wheatmap::CMPar(dmin=dmin, dmax=dmax), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, yticklabel.fontsize=sample.name.fontsize, yticklabels.n=show.samples.n, xticklabels.n=nprobes)
+        wheatmap::WHeatmap(t(betas), wheatmap::Beneath(height=heat.height), name='betas', cmp=wheatmap::CMPar(dmin=dmin, dmax=dmax), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, yticklabel.fontsize=sample.name.fontsize, yticklabels.n=show.samples.n, xticklabels.n=nprobes)
     w <- w + wheatmap::WGrob(
       plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
       wheatmap::TopOf('txn', height=0.25))
     w
   } else {
-    if (cluster.samples) {
-      pkgTest('wheatmap')
-      betas <- betas[,wheatmap::column.cluster(betas[names(probes),,drop=FALSE])$column.clust$order]
-    } else {
-      betas <- betas[names(probes),,drop=FALSE]
-    }
     betas
   }
 }
