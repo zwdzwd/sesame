@@ -84,31 +84,6 @@ SignalSet <- R6Class(
     
     initialize = function(x) self$platform <- x,
     
-    detectPValue = function(use.oob=TRUE) {
-      if (use.oob) {
-        funcG <- ecdf(oobG)
-        funcR <- ecdf(oobR)
-      } else {
-        negctls <- ctl[grep('negative', tolower(rownames(ctl))),]
-        negctls <- subset(negctls, col!=-99)
-        funcG <- ecdf(negctls$G)
-        funcR <- ecdf(negctls$R)
-      }
-
-      ## p-value is the minimium detection p-value of the 2 alleles
-      pIR <- 1-apply(cbind(funcR(IR[,'M']), funcR(IR[,'U'])),1,max)
-      pIG <- 1-apply(cbind(funcG(IG[,'M']), funcG(IG[,'U'])),1,max)
-      pII <- 1-apply(cbind(funcG(II[,'M']), funcR(II[,'U'])),1,max)
-
-      names(pIR) <- rownames(IR)
-      names(pIG) <- rownames(IG)
-      names(pII) <- rownames(II)
-
-      pval <- c(pIR,pIG,pII)
-      pval <<- pval[order(names(pval))]
-      invisible()
-    },
-    
     toM = function() {
       m1 <- log2(pmax(IG[,'M'],1) / pmax(IG[,'U']))
       m2 <- log2(pmax(IR[,'M'],1) / pmax(IR[,'U']))
@@ -145,6 +120,52 @@ SignalSet <- R6Class(
     }
   )
 )
+
+#' detection P-value based on ECDF of negative control
+#'
+#' @param sset a \code{SignalSet}
+#' @return detection p-value
+#' @export
+detectionPnegEcdf <- function(sset) {
+  negctls <- sset$ctl[grep('negative', tolower(rownames(sset$ctl))),]
+  negctls <- subset(negctls, col!=-99)
+  funcG <- ecdf(negctls$G)
+  funcR <- ecdf(negctls$R)
+
+  ## p-value is the minimium detection p-value of the 2 alleles
+  pIR <- 1-apply(cbind(funcR(sset$IR[,'M']), funcR(sset$IR[,'U'])),1,max)
+  pIG <- 1-apply(cbind(funcG(sset$IG[,'M']), funcG(sset$IG[,'U'])),1,max)
+  pII <- 1-apply(cbind(funcG(sset$II[,'M']), funcR(sset$II[,'U'])),1,max)
+
+  names(pIR) <- rownames(sset$IR)
+  names(pIG) <- rownames(sset$IG)
+  names(pII) <- rownames(sset$II)
+
+  pval <- c(pIR,pIG,pII)
+  pval[order(names(pval))]
+}
+
+#' detection P-value based on ECDF of out-of-band signal
+#'
+#' @param sset a \code{SignalSet}
+#' @return detection p-value
+#' @export
+detectionPoobEcdf <- function(sset) {
+  funcG <- ecdf(sset$oobG)
+  funcR <- ecdf(sset$oobR)
+
+  ## p-value is the minimium detection p-value of the 2 alleles
+  pIR <- 1-apply(cbind(funcR(sset$IR[,'M']), funcR(sset$IR[,'U'])),1,max)
+  pIG <- 1-apply(cbind(funcG(sset$IG[,'M']), funcG(sset$IG[,'U'])),1,max)
+  pII <- 1-apply(cbind(funcG(sset$II[,'M']), funcR(sset$II[,'U'])),1,max)
+
+  names(pIR) <- rownames(sset$IR)
+  names(pIG) <- rownames(sset$IG)
+  names(pII) <- rownames(sset$II)
+
+  pval <- c(pIR,pIG,pII)
+  pval[order(names(pval))]
+}
 
 #' mean intensity
 #'
@@ -418,10 +439,9 @@ readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NUL
 #' using the other channel.
 #'
 #' @param dm data frame in chip address, 2 columns: cy3/Grn and cy5/Red
-#' @param pval.use.oob if TRUE, p-value is calculated using out-of-band probes
 #' @return a SignalSet, indexed by probe ID address
 #' @export
-chipAddressToSignal <- function(dm, pval.use.oob=TRUE) {
+chipAddressToSignal <- function(dm) {
 
   platform <- attr(dm, 'platform')
   dm.ordering <- getBuiltInData('ordering', platform)
@@ -465,7 +485,7 @@ chipAddressToSignal <- function(dm, pval.use.oob=TRUE) {
   colnames(ctl) <- c('G','R','col','type')
   sset$ctl <- ctl
 
-  sset$detectPValue(use.oob=pval.use.oob)
+  sset$pval <- detectionPoobEcdf(sset)
   sset
 }
 
