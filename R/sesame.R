@@ -119,7 +119,14 @@ SignalSet <- R6Class(
       rowSums(rbind(IG, IR, II))
     }
   )
-)
+  )
+
+## get negative control probes
+negControls <- function(sset) {
+  negctls <- sset$ctl[grep('negative', tolower(rownames(sset$ctl))),]
+  negctls <- subset(negctls, col!=-99)
+  negctls
+}
 
 #' detection P-value based on ECDF of negative control
 #'
@@ -127,8 +134,7 @@ SignalSet <- R6Class(
 #' @return detection p-value
 #' @export
 detectionPnegEcdf <- function(sset) {
-  negctls <- sset$ctl[grep('negative', tolower(rownames(sset$ctl))),]
-  negctls <- subset(negctls, col!=-99)
+  negctls <- negControls(sset)
   funcG <- ecdf(negctls$G)
   funcR <- ecdf(negctls$R)
 
@@ -137,6 +143,42 @@ detectionPnegEcdf <- function(sset) {
   pIG <- 1-apply(cbind(funcG(sset$IG[,'M']), funcG(sset$IG[,'U'])),1,max)
   pII <- 1-apply(cbind(funcG(sset$II[,'M']), funcR(sset$II[,'U'])),1,max)
 
+  names(pIR) <- rownames(sset$IR)
+  names(pIG) <- rownames(sset$IG)
+  names(pII) <- rownames(sset$II)
+
+  pval <- c(pIR,pIG,pII)
+  pval[order(names(pval))]
+}
+
+detectionPnegNorm <- function(sset) {
+  negctls <- negControls(sset)
+  sdG <- sd(negctls$G)
+  muG <- median(negctls$G)
+  sdR <- sd(negctls$R)
+  muR <- median(negctls$R)
+  pIR <- 1 - pnorm(pmax(sset$IR[,'M'], sset$IR[,'U']), mean=muR, sd=sdR)
+  pIG <- 1 - pnorm(pmax(sset$IG[,'M'], sset$IG[,'U']), mean=muG, sd=sdG)
+  pII <- pmin(1 - pnorm(sset$II[,'M'], mean=muG, sd=sdG), 1 - pnorm(sset$II[,'U'], mean=muR, sd=sdR))
+
+  names(pIR) <- rownames(sset$IR)
+  names(pIG) <- rownames(sset$IG)
+  names(pII) <- rownames(sset$II)
+
+  pval <- c(pIR,pIG,pII)
+  pval[order(names(pval))]
+}
+
+## how minfi does it
+detectionPnegNormTotal <- function(sset) {
+  negctls <- negControls(sset)
+  sdG <- sd(negctls$G)
+  muG <- median(negctls$G)
+  sdR <- sd(negctls$R)
+  muR <- median(negctls$R)
+  pIR <- 1 - pnorm(rowSums(sset$IR), mean=2*muR, sd=2*sdR)
+  pIG <- 1 - pnorm(rowSums(sset$IG), mean=2*muG, sd=2*sdG)
+  pII <- 1 - pnorm(rowSums(sset$II), mean=muR+muG, sd=sdR+sdG)
   names(pIR) <- rownames(sset$IR)
   names(pIG) <- rownames(sset$IG)
   names(pII) <- rownames(sset$II)
