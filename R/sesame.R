@@ -151,6 +151,11 @@ detectionPnegEcdf <- function(sset) {
   pval[order(names(pval))]
 }
 
+#' detection P-value based on normal fitting the negative controls
+#'
+#' @param sset a \code{SignalSet}
+#' @return detection p-value
+#' @export
 detectionPnegNorm <- function(sset) {
   negctls <- negControls(sset)
   sdG <- sd(negctls$G)
@@ -169,8 +174,32 @@ detectionPnegNorm <- function(sset) {
   pval[order(names(pval))]
 }
 
-## how minfi does it
+#' detection P-value emulating Genome Studio
+#'
+#' @param sset a \code{SignalSet}
+#' @return detection p-value
+#' @export
+detectionPnegNormGS <- function(sset) {
+  negctls <- negControls(sset)
+  BGsd <- sd(c(negctls$G, negctls$R))
+  BGmu <- mean(c(negctls$G, negctls$R))
+  pIR <- 1 - pnorm(rowSums(sset$IR), mean=BGmu, sd=BGsd)
+  pIG <- 1 - pnorm(rowSums(sset$IG), mean=BGmu, sd=BGsd)
+  pII <- 1 - pnorm(rowSums(sset$II), mean=BGmu, sd=BGsd)
+  names(pIR) <- rownames(sset$IR)
+  names(pIG) <- rownames(sset$IG)
+  names(pII) <- rownames(sset$II)
+  pval <- c(pIR,pIG,pII)
+  pval[order(names(pval))]
+}
+
+#' detection P-value based on normal fitting the negative controls, channels are first summed
+#'
+#' @param sset a \code{SignalSet}
+#' @return detection p-value
+#' @export
 detectionPnegNormTotal <- function(sset) {
+  ## how minfi does it
   negctls <- negControls(sset)
   sdG <- sd(negctls$G)
   muG <- median(negctls$G)
