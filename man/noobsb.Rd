@@ -22,4 +22,3 @@ a modified \code{SignalSet} with background correction
 Norm-Exp deconvolution using Out-Of-Band (oob) probes.
 Mean and standard deviations are estimated from cross-channel regression
 }
-

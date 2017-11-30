@@ -15,4 +15,3 @@ medianY and fracXlinked
 \description{
 get sex information
 }
-

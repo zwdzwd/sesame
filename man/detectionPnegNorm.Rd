@@ -15,4 +15,3 @@ detection p-value
 \description{
 detection P-value based on normal fitting the negative controls
 }
-

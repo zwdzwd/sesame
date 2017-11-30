@@ -24,4 +24,3 @@ beta values
 \description{
 get beta values
 }
-

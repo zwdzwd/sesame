@@ -1,4 +1,10 @@
 
+#' jet color stops
+"jet.stops"
+
+#' darker jet color stops
+"darkjet.stops"
+
 ## chromosome information (deprecated)
 ## hm27.hg19.probe2chr
 ## hm450.hg19.probe2chr
@@ -90,7 +96,7 @@ getBuiltInData <- function(nm, platform='', subdir='') {
 #' need environment SESAMEHOME be set
 #'
 #' @importFrom XML htmlTreeParse
-#' 
+#' @importFrom utils download.file
 #' @export
 cacheBuiltInData <- function() {
   seshome <- Sys.getenv('SESAMEHOME')

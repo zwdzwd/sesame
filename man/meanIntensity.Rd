@@ -15,4 +15,3 @@ mean of all intensities
 \description{
 mean intensity
 }
-

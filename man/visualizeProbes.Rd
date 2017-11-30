@@ -25,4 +25,3 @@ visualizeProbes(probeNames, betas, platform = "EPIC", refversion = "hg38",
 \description{
 visualize probes
 }
-

@@ -15,4 +15,3 @@ coefficient table ordered by p-value of each locus
 \description{
 This is a convenience function to show top differential methylated segments.
 }
-

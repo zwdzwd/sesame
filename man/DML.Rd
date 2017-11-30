@@ -32,4 +32,3 @@ cf - a list of coefficient tables for each factor
 \description{
 test differential methylation on each locus
 }
-

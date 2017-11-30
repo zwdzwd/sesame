@@ -11,6 +11,6 @@ Maintainer: Wanding Zhou <zhouwanding@gmail.com>
 Description: This R package for array-based DNA methylation data.
 License: MIT + file LICENSE
 LazyData: TRUE
-RoxygenNote: 5.0.1
-Imports: R6, illuminaio, MASS, grid, parallel, preprocessCore, stats, randomForest, XML
-Suggests: ggplot2, DNAcopy, GenomicRanges, IRanges, scales, wheatmap
+RoxygenNote: 6.0.1
+Imports: R6, illuminaio, MASS, grid, parallel, preprocessCore, stats, randomForest, XML, colorspace, RColorBrewer, methods
+Suggests: ggplot2, DNAcopy, GenomicRanges, IRanges, scales

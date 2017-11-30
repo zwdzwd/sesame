@@ -16,4 +16,3 @@ a list of normalized \code{SignalSet}s
 In practice, it doesn't matter as long as the
 reference level does not deviate much.
 }
-

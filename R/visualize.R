@@ -233,17 +233,16 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
   ## clustering
   betas <- betas[names(probes),,drop=FALSE]
   if (cluster.samples) {
-    pkgTest('wheatmap')
-    betas <- wheatmap::column.cluster(betas[names(probes),,drop=FALSE])$mat
+    betas <- column.cluster(betas[names(probes),,drop=FALSE])$mat
   }
 
   if (draw) {
-    w <- wheatmap::WGrob(plt.txns, name='txn') +
-      wheatmap::WGrob(plt.mapLines, wheatmap::Beneath(pad=0, height=0.15)) +
-        wheatmap::WHeatmap(t(betas), wheatmap::Beneath(height=heat.height), name='betas', cmp=wheatmap::CMPar(dmin=dmin, dmax=dmax), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, yticklabel.fontsize=sample.name.fontsize, yticklabels.n=show.samples.n, xticklabels.n=nprobes)
-    w <- w + wheatmap::WGrob(
+    w <- WGrob(plt.txns, name='txn') +
+      WGrob(plt.mapLines, Beneath(pad=0, height=0.15)) +
+        WHeatmap(t(betas), Beneath(height=heat.height), name='betas', cmp=CMPar(dmin=dmin, dmax=dmax), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, yticklabel.fontsize=sample.name.fontsize, yticklabels.n=show.samples.n, xticklabels.n=nprobes)
+    w <- w + WGrob(
       plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
-      wheatmap::TopOf('txn', height=0.25))
+      TopOf('txn', height=0.25))
     w
   } else {
     betas
@@ -251,6 +250,7 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
 }
 
 ## plot chromosome of genomic ranges and cytobands
+#' @importFrom grDevices gray.colors
 plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg38') {
 
   cytoBand <- getBuiltInData(paste0('cytoBand.', refversion))

@@ -14,4 +14,3 @@ visualizeSegments(seg, to.plot = NULL)
 \description{
 require ggplot2, scales
 }
-

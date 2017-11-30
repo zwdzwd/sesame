@@ -28,4 +28,3 @@ a list of fraction, min error and unknown component methylation state
 \description{
 Estimate cell composition using reference
 }
-

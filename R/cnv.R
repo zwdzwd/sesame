@@ -118,6 +118,7 @@ probeSignals <- function(sset.target, ssets.normal) {
 #' @param probe.signals probe signals
 #' @param bin.coords bin coordinates
 #' @param probe.coords probe coordinates
+#' @importFrom methods .hasSlot
 #' @export
 binSignals <- function(probe.signals, bin.coords, probe.coords) {
   pkgTest('GenomicRanges')

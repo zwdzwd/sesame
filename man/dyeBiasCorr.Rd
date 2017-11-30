@@ -19,4 +19,3 @@ a normalized \code{SignalSet}
 \description{
 Correct dye bias
 }
-

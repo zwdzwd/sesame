@@ -19,4 +19,3 @@ segmentation
 \description{
 perform copy number segmentation
 }
-
