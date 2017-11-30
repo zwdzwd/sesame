@@ -36,7 +36,7 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
     pad.end <- upstream
   }
 
-  merged.exons <- GenomicRanges::reduce(GenomicRanges::unlist(target.txns))
+  merged.exons <- GenomicRanges::reduce(unlist(target.txns))
   visualizeRegion(as.character(GenomicRanges::seqnames(merged.exons[1])),
                   min(GenomicRanges::start(merged.exons)) - pad.start,
                   max(GenomicRanges::end(merged.exons)) + pad.end,
@@ -86,7 +86,7 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
   target.txns <- txns[gene2txn[[geneName]]]
   ## target.strand <- as.character(GenomicRanges::strand(target.txns[[1]][1]))
 
-  merged.exons <- GenomicRanges::reduce(GenomicRanges::unlist(target.txns))
+  merged.exons <- GenomicRanges::reduce(unlist(target.txns))
   getProbesByRegion(
     as.character(GenomicRanges::seqnames(merged.exons[1])),
     min(GenomicRanges::start(merged.exons)),
@@ -101,6 +101,7 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
 #' @param platform EPIC or hm450
 #' @param refversion hg38 or hg19
 #' @return probes that fall into the given region
+#' @importMethodsFrom IRanges subsetByOverlaps
 #' @export
 getProbesByRegion <- function(chrm, beg, end, platform='EPIC', refversion='hg38') {
   pkgTest('GenomicRanges')
@@ -110,7 +111,7 @@ getProbesByRegion <- function(chrm, beg, end, platform='EPIC', refversion='hg38'
   }
   message(sprintf('Extracting probes from %s:%d-%d.\n', chrm, beg, end))
   target.region <- GenomicRanges::GRanges(chrm, IRanges::IRanges(beg, end))
-  GenomicRanges::subsetByOverlaps(probes, target.region)
+  subsetByOverlaps(probes, target.region)
 }
 
 #' visualize region
@@ -132,6 +133,7 @@ getProbesByRegion <- function(chrm, beg, end, platform='EPIC', refversion='hg38'
 #' @param dmax data max
 #' @param na.rm remove probes with all NA.
 #' @import grid
+#' @importMethodsFrom IRanges subsetByOverlaps
 #' @export
 visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg38', sample.name.fontsize=10, heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.samples.n=NULL, show.probeNames=TRUE, cluster.samples=FALSE, na.rm=FALSE, dmin=0, dmax=1) {
 
@@ -146,10 +148,10 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
   probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
 
   target.region <- GenomicRanges::GRanges(chrm, IRanges::IRanges(plt.beg, plt.end))
-  target.txns <- GenomicRanges::subsetByOverlaps(txns, target.region)
+  target.txns <- subsetByOverlaps(txns, target.region)
 
   plt.width <- plt.end-plt.beg
-  probes <- GenomicRanges::subsetByOverlaps(probes, target.region)
+  probes <- subsetByOverlaps(probes, target.region)
   probes <- probes[names(probes) %in% rownames(betas)]
   if (na.rm)
     probes <- probes[apply(betas[names(probes), ], 1, function(x) !all(is.na(x)))]
@@ -177,7 +179,7 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
       txn.beg <- max(plt.beg, min(GenomicRanges::start(txn))-2000)
       txn.end <- min(plt.end, max(GenomicRanges::end(txn))+2000)
 
-      txn <- GenomicRanges::subsetByOverlaps(txn, target.region)
+      txn <- subsetByOverlaps(txn, target.region)
 
       txn.strand <- as.character(GenomicRanges::strand(txn[1]))
       if (txn.strand == '+') {
