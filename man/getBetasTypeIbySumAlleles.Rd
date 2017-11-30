@@ -22,4 +22,3 @@ beta values
 \description{
 used for extra allele frequency on Color-Channel-Switching CCS probes
 }
-

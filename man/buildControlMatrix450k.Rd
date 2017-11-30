@@ -15,4 +15,3 @@ a vector with control summaries
 \description{
 Build control summary matrix
 }
-

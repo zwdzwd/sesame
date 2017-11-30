@@ -46,4 +46,3 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 \description{
 visualize region
 }
-

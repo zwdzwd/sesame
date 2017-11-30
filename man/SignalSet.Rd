@@ -42,8 +42,8 @@ SignalSet class
   \item{\code{totalIntensities()}}{Total intensity on each probe}
 }}
 }}
+
 \examples{
 SignalSet$new("EPIC")
 }
 \keyword{datasets}
-

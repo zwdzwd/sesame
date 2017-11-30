@@ -23,4 +23,3 @@ probes that fall into the given region
 \description{
 get probes by genomic region
 }
-

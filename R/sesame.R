@@ -490,6 +490,7 @@ readIDATsFromDir <- function(dir.name, ...) {
 #' @param column.name name of the column to use in the samplesheet
 #' @param base.dir directory on which the \code{sample.sheet.path} is based
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
+#' @importFrom utils read.csv
 #' @return a list of \code{SignalSet}s
 #' @export
 readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NULL, ...) {

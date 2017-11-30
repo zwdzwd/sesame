@@ -28,4 +28,3 @@ Our function works on a single sample.
 \description{
 infer sex
 }
-

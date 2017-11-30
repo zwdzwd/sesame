@@ -2,9 +2,9 @@
 % Please edit documentation in R/sesame.R
 \docType{package}
 \name{sesame-package}
+\alias{sesame-package}
 \alias{_PACKAGE}
 \alias{sesame}
-\alias{sesame-package}
 \title{Analyze DNA methylation data}
 \description{
 SEnsible and step-wise analysis of DNA methylation data
@@ -39,6 +39,13 @@ simplify2array(mclapply(names(dms), function(nm) {
 }))
 }
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/zwdzwd/sesame}
+}
+
+}
 \author{
 Wanding Zhou \email{Wanding.Zhou@vai.org},
 Hui Shen \email{Hui.Shen@vai.org}
@@ -46,4 +53,3 @@ Hui Shen \email{Hui.Shen@vai.org}
 \keyword{DNAMethylation}
 \keyword{Microarray}
 \keyword{QualityControl}
-

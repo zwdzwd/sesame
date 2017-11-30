@@ -15,4 +15,3 @@ coefficient table ordered by adjusted p-value of segments
 \description{
 This is a convenience function to show top differential methylated segments.
 }
-

@@ -24,4 +24,3 @@ at the same address. Grn channel is for methylated allele and Red channel is
 for unmethylated allele. The out-of-band signals are type I probes measured
 using the other channel.
 }
-

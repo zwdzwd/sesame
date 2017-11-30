@@ -17,4 +17,3 @@ a \code{SignalSet} with only probes
 \description{
 subset a SignalSet
 }
-
