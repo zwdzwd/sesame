@@ -15,4 +15,3 @@ detection p-value
 \description{
 detection P-value based on ECDF of out-of-band signal
 }
-

@@ -25,4 +25,3 @@ visualizeGene(geneName, betas, platform = "EPIC", upstream = 2000,
 \description{
 visualize gene
 }
-

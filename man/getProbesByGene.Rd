@@ -19,4 +19,3 @@ probes that fall into the given gene
 \description{
 get probes by gene
 }
-

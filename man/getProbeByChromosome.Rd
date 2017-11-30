@@ -17,4 +17,3 @@ probes in the specified chromosome
 \description{
 Get probe by chromosome
 }
-

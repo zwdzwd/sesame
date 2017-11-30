@@ -17,4 +17,3 @@ coefficient table from given segment
 \description{
 select segment from coefficient table
 }
-

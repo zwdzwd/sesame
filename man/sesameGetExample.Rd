@@ -17,4 +17,3 @@ example object
 \description{
 Retrieve SeSAMe examples
 }
-

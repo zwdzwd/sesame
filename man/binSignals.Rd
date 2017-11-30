@@ -16,4 +16,3 @@ binSignals(probe.signals, bin.coords, probe.coords)
 \description{
 require GenomicRanges
 }
-

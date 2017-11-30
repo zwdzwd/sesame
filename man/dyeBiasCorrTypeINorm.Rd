@@ -17,4 +17,3 @@ a modified \code{SignalSet}
 \description{
 Dye bias correction by matching green and red to mid point
 }
-

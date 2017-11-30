@@ -17,4 +17,3 @@ bin.coords
 \description{
 requires GenomicRanges, IRanges
 }
-

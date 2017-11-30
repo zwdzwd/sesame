@@ -15,4 +15,3 @@ a vector of M values
 \description{
 Convert beta-value to M-value (aka logit transform)
 }
-

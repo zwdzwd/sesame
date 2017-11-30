@@ -17,4 +17,3 @@ segment signal data frame
 \description{
 require DNAcopy
 }
-

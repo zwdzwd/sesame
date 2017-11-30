@@ -38,4 +38,3 @@ coefficient table with segment ID and segment P-value
 This subroutine uses Euclidean distance to group CpGs and
 then combine p-values for each segment.
 }
-
