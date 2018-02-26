@@ -2,5 +2,4 @@ language: r
 
 cache: packages
 
-r:
-  - bioc-3.6
+r: bioc-devel
