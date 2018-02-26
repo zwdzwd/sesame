@@ -82,22 +82,22 @@ Both masks are recommended to ensure data quality and defaulted to TRUE.
         
 ### Sample/experiment QC
 
-sex
+#### sex
 ```R
 inferSex(sset)
 ```
 
-ethnicity
+#### ethnicity
 ```R
 inferEthnicity(sset)
 ```
 
-mean intensity
+#### mean intensity
 ```R
 meanIntensity(sset)
 ```
 
-bisulfite conversion control using GCT score (Zhou 2016 NAR)
+#### bisulfite conversion control using GCT score (Zhou 2016 NAR)
 ```R
 bisConversionControl(sset)
 ```
