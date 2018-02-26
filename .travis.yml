@@ -1,1 +1,6 @@
 language: r
+
+cache: packages
+
+r:
+  - bioc-3.6

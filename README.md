@@ -31,16 +31,11 @@ cacheBuiltInData()
 
 ## Usage
 
-### Load SeSAME
-
-```R
-library(sesame)
-```
-
 ### Data IO
     
 To read IDATs from directory
 ```R
+library(sesame)
 ssets <- readIDATsFromDir('IDATs/')
 ```
         
@@ -97,7 +92,7 @@ inferEthnicity(sset)
 meanIntensity(sset)
 ```
 
-#### bisulfite conversion control using GCT score (Zhou 2016 NAR)
+#### bisulfite conversion control using [GCT score](https://academic.oup.com/nar/article/45/4/e22/2290930)
 ```R
 bisConversionControl(sset)
 ```
@@ -178,7 +173,6 @@ Bug reports are appreciated. Register issues at the sesame [issue tracker](http:
     
     
 ## About
-    
-Authors: Wanding Zhou (wanding.zhou@vai.org), Peter W Laird and Hui Shen
-    
+
+W Zhou, PW Laird, H Shen, in submission
     
