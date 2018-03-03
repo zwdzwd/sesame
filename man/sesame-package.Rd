@@ -18,25 +18,14 @@ processing >10,000 samples in parallel on clusters.
 library(sesame)
 
 ## read IDATs
-ssets <- readIDATsFromDir(sample.dir, mc=T)
+ssets <- readIDATsFromDir(sample.dir, mc=T, mc.cores=4)
 
 ## normalization
 ssets <- mclapply(ssets, noob, mc.preschedule=F)
-ssets <- mclapply(ssets, dyeBiasCorr, mc.preschedule=F)
+ssets <- mclapply(ssets, dyeBiasCorrTypeINorm, mc.preschedule=F)
 
 ## convert signal to beta values
 betas <- do.call(cbind, mclapply(ssets, getBetas))
-
-## be more parallel
-options(mc.cores=28)
-dms <- readIDATsFromSheet(sample.sheet, raw=T, mc=T)
-simplify2array(mclapply(names(dms), function(nm) {
-  dm <- dms[[nm]]
-  sset <- chipAddressToSignal(dm)
-  sset <- noob(sset)
-  sset <- dyeBiasCorr(sset)
-  betas <- getBetas(sset)
-}))
 }
 }
 \seealso{

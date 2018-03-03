@@ -3,7 +3,7 @@
 #'
 #' @param geneName gene name
 #' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform hm450 (default) or EPIC
+#' @param platform HM450 (default) or EPIC
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
 #' @param refversion hg19 or hg38
@@ -47,7 +47,7 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
 #'
 #' @param probeNames probe names
 #' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform hm450 (default) or EPIC
+#' @param platform HM450 (default) or EPIC
 #' @param refversion hg19 or hg38
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
@@ -70,9 +70,11 @@ visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38
 #' get probes by gene
 #'
 #' @param geneName gene name
-#' @param platform EPIC or hm450
+#' @param platform EPIC or HM450
 #' @param refversion hg38 or hg19
 #' @return probes that fall into the given gene
+#' @examples
+#' probes <- getProbesByGene('CDKN2A')
 #' @export
 getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
   pkgTest('GenomicRanges')
@@ -93,34 +95,13 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
     max(GenomicRanges::end(merged.exons)), platform=platform, refversion=refversion)
 }
 
-#' get probes by genomic region
-#'
-#' @param chrm chromosome
-#' @param beg begin
-#' @param end end
-#' @param platform EPIC or hm450
-#' @param refversion hg38 or hg19
-#' @return probes that fall into the given region
-#' @importMethodsFrom IRanges subsetByOverlaps
-#' @export
-getProbesByRegion <- function(chrm, beg, end, platform='EPIC', refversion='hg38') {
-  pkgTest('GenomicRanges')
-  probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
-  if (!(chrm %in% GenomicRanges::seqinfo(probes)@seqnames)) {
-    stop('No probes found in this reference');
-  }
-  message(sprintf('Extracting probes from %s:%d-%d.\n', chrm, beg, end))
-  target.region <- GenomicRanges::GRanges(chrm, IRanges::IRanges(beg, end))
-  subsetByOverlaps(probes, target.region)
-}
-
 #' visualize region
 #'
 #' @param chrm chromosome
 #' @param plt.beg begin of the region
 #' @param plt.end end of the region
 #' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform EPIC or hm450
+#' @param platform EPIC or HM450
 #' @param refversion hg38 or hg19
 #' @param draw draw figure or return betas
 #' @param heat.height heatmap height (auto inferred based on rows)
@@ -132,6 +113,7 @@ getProbesByRegion <- function(chrm, beg, end, platform='EPIC', refversion='hg38'
 #' @param dmin data min
 #' @param dmax data max
 #' @param na.rm remove probes with all NA.
+#' @return graphics or a matrix containing the captured beta values
 #' @import grid
 #' @importMethodsFrom IRanges subsetByOverlaps
 #' @export

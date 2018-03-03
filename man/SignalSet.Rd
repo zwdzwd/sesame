@@ -17,7 +17,7 @@ SignalSet class
 \section{Fields}{
 
 \describe{
-\item{\code{platform}}{platform name, currently supports "EPIC", "hm450" and "hm27"}
+\item{\code{platform}}{platform name, currently supports "EPIC", "HM450" and "HM27"}
 
 \item{\code{IG}}{intensity table for type I probes in green channel}
 

@@ -25,7 +25,7 @@ beta. If cf is given, sample.data and formula are ignored.}
 \item{seg.per.locus}{number of segments per locus
 higher value leads to more segments}
 
-\item{platform}{EPIC or hm450}
+\item{platform}{EPIC or HM450}
 
 \item{refversion}{hg38 or hg19}
 

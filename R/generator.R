@@ -6,7 +6,6 @@
 #' @param x a WGenerator object
 #' @param ... additional options
 #' @return the WGroup containing the plotting object
-#' @export
 print.WGenerator <- function(x, ...) {
   x <- x(NULL)
   group <- ResolvedWGroup(x)

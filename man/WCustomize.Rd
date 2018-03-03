@@ -24,9 +24,3 @@ an object of class WCustomize
 \description{
 Customize an existing plot
 }
-\examples{
-WHeatmap(matrix(c('fred','frank','brad',
-                'frank','fred','frank'), ncol=2)) +
-  WLegendV(NULL, RightOf(), label.fontsize = 20) +
-  WCustomize(mar.right=0.1)
-}

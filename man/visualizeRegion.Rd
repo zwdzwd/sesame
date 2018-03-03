@@ -19,7 +19,7 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 
-\item{platform}{EPIC or hm450}
+\item{platform}{EPIC or HM450}
 
 \item{refversion}{hg38 or hg19}
 
@@ -42,6 +42,9 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 \item{dmin}{data min}
 
 \item{dmax}{data max}
+}
+\value{
+graphics or a matrix containing the captured beta values
 }
 \description{
 visualize region

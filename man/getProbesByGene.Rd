@@ -9,7 +9,7 @@ getProbesByGene(geneName, platform = "EPIC", refversion = "hg38")
 \arguments{
 \item{geneName}{gene name}
 
-\item{platform}{EPIC or hm450}
+\item{platform}{EPIC or HM450}
 
 \item{refversion}{hg38 or hg19}
 }
@@ -18,4 +18,7 @@ probes that fall into the given gene
 }
 \description{
 get probes by gene
+}
+\examples{
+probes <- getProbesByGene('CDKN2A')
 }

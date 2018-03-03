@@ -19,25 +19,14 @@
 #' library(sesame)
 #' 
 #' ## read IDATs
-#' ssets <- readIDATsFromDir(sample.dir, mc=T)
+#' ssets <- readIDATsFromDir(sample.dir, mc=T, mc.cores=4)
 #'
 #' ## normalization
 #' ssets <- mclapply(ssets, noob, mc.preschedule=F)
-#' ssets <- mclapply(ssets, dyeBiasCorr, mc.preschedule=F)
+#' ssets <- mclapply(ssets, dyeBiasCorrTypeINorm, mc.preschedule=F)
 #' 
 #' ## convert signal to beta values
 #' betas <- do.call(cbind, mclapply(ssets, getBetas))
-#'
-#' ## be more parallel
-#' options(mc.cores=28)
-#' dms <- readIDATsFromSheet(sample.sheet, raw=T, mc=T)
-#' simplify2array(mclapply(names(dms), function(nm) {
-#'   dm <- dms[[nm]]
-#'   sset <- chipAddressToSignal(dm)
-#'   sset <- noob(sset)
-#'   sset <- dyeBiasCorr(sset)
-#'   betas <- getBetas(sset)
-#' }))
 #' }
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
@@ -53,7 +42,7 @@
 #' @format An \code{\link{R6Class}} object.
 #' @examples
 #' SignalSet$new("EPIC")
-#' @field platform platform name, currently supports "EPIC", "hm450" and "hm27"
+#' @field platform platform name, currently supports "EPIC", "HM450" and "HM27"
 #' @field IG intensity table for type I probes in green channel
 #' @field IR intensity table for type I probes in red channel
 #' @field II intensity table for type II probes
@@ -93,33 +82,60 @@ SignalSet <- R6Class(
       m[order(names(m))]
     },
     
-    ## inferSex = function() {
-    ##   probe2chr <- getBuiltInData('hg19.probe2chr', platform)
-    ##   all.signals <- c(apply(IR,1,max), apply(IG,1,max), apply(II,1,max))
-    ##   all <- rbind(IG, IR, II)
-    ##   all.X <- all[(probe2chr[rownames(all)] == 'chrX'),]
-    ##   all.X.betas <- all.X[,'M']/(all.X[,'M']+all.X[,'U'])
-    ##   x.median <- median(all.signals[probe2chr[names(all.signals)] == 'chrX'])
-    ##   y.median <- median(all.signals[probe2chr[names(all.signals)] == 'chrY'])
-    ##   x.beta.median <- median(all.X.betas, na.rm=TRUE)
-    ##   x.intermed.frac <- sum(all.X.betas>0.3 & all.X.betas<0.7, na.rm=TRUE) /
-    ##     sum(!is.na(all.X.betas))
-      
-    ##   ## more accurate but "might" overfit
-    ##   if (y.median < 500) {
-    ##     if (y.median > 300 & x.intermed.frac<0.2) 1
-    ##     else 0
-    ##   } else {
-    ##     if (y.median < 2000 & x.intermed.frac>0.5) 0
-    ##     else 1
-    ##   }
-    ## },
-    
     totalIntensities = function() {
       rowSums(rbind(IG, IR, II))
     }
   )
-  )
+)
+
+#' Make a simulated SeSAMe data set
+#'
+#' Constructs a simulated dataset.
+#'
+#' @param platform optional, HM450, EPIC or HM27
+#' @return Object of class \code{SignalSet}
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#'
+#' @export
+makeExampleSeSAMeDataSet <- function(platform='HM450') {
+  dm.ordering <- getBuiltInData('ordering', platform)
+  sset <- SignalSet$new(platform)
+  probes <- rownames(dm.ordering[dm.ordering$DESIGN=='I' & dm.ordering$COLOR_CHANNEL=='Grn',])
+  mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
+  rownames(mt) <- probes
+  colnames(mt) <- c('M','U')
+  sset$IG <- mt
+  mt <- matrix(pmax(rnorm(length(probes)*2, 400, 200),0), ncol=2)
+  rownames(mt) <- probes
+  colnames(mt) <- c('M','U')
+  sset$oobR <- mt
+
+  probes <- rownames(dm.ordering[dm.ordering$DESIGN=='I' & dm.ordering$COLOR_CHANNEL=='Red',])
+  mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
+  rownames(mt) <- probes
+  colnames(mt) <- c('M','U')
+  sset$IR <- mt
+  mt <- matrix(pmax(rnorm(length(probes)*2, 400, 200),0), ncol=2)
+  rownames(mt) <- probes
+  colnames(mt) <- c('M','U')
+  sset$oobG <- mt
+
+  probes <- rownames(dm.ordering[dm.ordering$DESIGN=='II',])
+  mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
+  rownames(mt) <- probes
+  colnames(mt) <- c('M','U')
+  sset$II <- mt
+
+  dm.controls <- getBuiltInData('controls', platform)
+  ctl <- as.data.frame(matrix(pmax(rnorm(2*nrow(dm.controls), 400, 300),0), ncol=2))
+  rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
+  ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
+  colnames(ctl) <- c('G','R','col','type')
+  sset$ctl <- ctl
+
+  sset
+}
 
 ## get negative control probes
 negControls <- function(sset) {
@@ -128,122 +144,15 @@ negControls <- function(sset) {
   negctls
 }
 
-#' detection P-value based on ECDF of negative control
-#'
-#' @param sset a \code{SignalSet}
-#' @return detection p-value
-#' @export
-detectionPnegEcdf <- function(sset) {
-  negctls <- negControls(sset)
-  funcG <- ecdf(negctls$G)
-  funcR <- ecdf(negctls$R)
-
-  ## p-value is the minimium detection p-value of the 2 alleles
-  pIR <- 1-apply(cbind(funcR(sset$IR[,'M']), funcR(sset$IR[,'U'])),1,max)
-  pIG <- 1-apply(cbind(funcG(sset$IG[,'M']), funcG(sset$IG[,'U'])),1,max)
-  pII <- 1-apply(cbind(funcG(sset$II[,'M']), funcR(sset$II[,'U'])),1,max)
-
-  names(pIR) <- rownames(sset$IR)
-  names(pIG) <- rownames(sset$IG)
-  names(pII) <- rownames(sset$II)
-
-  pval <- c(pIR,pIG,pII)
-  pval[order(names(pval))]
-}
-
-#' detection P-value based on normal fitting the negative controls
-#'
-#' @param sset a \code{SignalSet}
-#' @return detection p-value
-#' @export
-detectionPnegNorm <- function(sset) {
-  negctls <- negControls(sset)
-  sdG <- sd(negctls$G)
-  muG <- median(negctls$G)
-  sdR <- sd(negctls$R)
-  muR <- median(negctls$R)
-  pIR <- 1 - pnorm(pmax(sset$IR[,'M'], sset$IR[,'U']), mean=muR, sd=sdR)
-  pIG <- 1 - pnorm(pmax(sset$IG[,'M'], sset$IG[,'U']), mean=muG, sd=sdG)
-  pII <- pmin(1 - pnorm(sset$II[,'M'], mean=muG, sd=sdG), 1 - pnorm(sset$II[,'U'], mean=muR, sd=sdR))
-
-  names(pIR) <- rownames(sset$IR)
-  names(pIG) <- rownames(sset$IG)
-  names(pII) <- rownames(sset$II)
-
-  pval <- c(pIR,pIG,pII)
-  pval[order(names(pval))]
-}
-
-#' detection P-value emulating Genome Studio
-#'
-#' @param sset a \code{SignalSet}
-#' @return detection p-value
-#' @export
-detectionPnegNormGS <- function(sset) {
-  negctls <- negControls(sset)
-  BGsd <- sd(c(negctls$G, negctls$R))
-  BGmu <- mean(c(negctls$G, negctls$R))
-  pIR <- 1 - pnorm(rowSums(sset$IR), mean=BGmu, sd=BGsd)
-  pIG <- 1 - pnorm(rowSums(sset$IG), mean=BGmu, sd=BGsd)
-  pII <- 1 - pnorm(rowSums(sset$II), mean=BGmu, sd=BGsd)
-  names(pIR) <- rownames(sset$IR)
-  names(pIG) <- rownames(sset$IG)
-  names(pII) <- rownames(sset$II)
-  pval <- c(pIR,pIG,pII)
-  pval[order(names(pval))]
-}
-
-#' detection P-value based on normal fitting the negative controls, channels are first summed
-#'
-#' @param sset a \code{SignalSet}
-#' @return detection p-value
-#' @export
-detectionPnegNormTotal <- function(sset) {
-  ## how minfi does it
-  negctls <- negControls(sset)
-  sdG <- sd(negctls$G)
-  muG <- median(negctls$G)
-  sdR <- sd(negctls$R)
-  muR <- median(negctls$R)
-  pIR <- 1 - pnorm(rowSums(sset$IR), mean=2*muR, sd=2*sdR)
-  pIG <- 1 - pnorm(rowSums(sset$IG), mean=2*muG, sd=2*sdG)
-  pII <- 1 - pnorm(rowSums(sset$II), mean=muR+muG, sd=sdR+sdG)
-  names(pIR) <- rownames(sset$IR)
-  names(pIG) <- rownames(sset$IG)
-  names(pII) <- rownames(sset$II)
-
-  pval <- c(pIR,pIG,pII)
-  pval[order(names(pval))]
-}
-
-#' detection P-value based on ECDF of out-of-band signal
-#'
-#' @param sset a \code{SignalSet}
-#' @return detection p-value
-#' @export
-detectionPoobEcdf <- function(sset) {
-  funcG <- ecdf(sset$oobG)
-  funcR <- ecdf(sset$oobR)
-
-  ## p-value is the minimium detection p-value of the 2 alleles
-  pIR <- 1-apply(cbind(funcR(sset$IR[,'M']), funcR(sset$IR[,'U'])),1,max)
-  pIG <- 1-apply(cbind(funcG(sset$IG[,'M']), funcG(sset$IG[,'U'])),1,max)
-  pII <- 1-apply(cbind(funcG(sset$II[,'M']), funcR(sset$II[,'U'])),1,max)
-
-  names(pIR) <- rownames(sset$IR)
-  names(pIG) <- rownames(sset$IG)
-  names(pII) <- rownames(sset$II)
-
-  pval <- c(pIR,pIG,pII)
-  pval[order(names(pval))]
-}
-
 #' mean intensity
 #'
 #' mean intensity
 #'
 #' @param sset a \code{SignalSet}
 #' @return mean of all intensities
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' intensities <- meanIntensity(sset)
 #' @export
 meanIntensity <- function(sset) {
   mean(c(sset$IG, sset$IR, sset$II), na.rm=TRUE)
@@ -253,11 +162,14 @@ meanIntensity <- function(sset) {
 #'
 #' @param sset a \code{SignalSet}
 #' @return medianY and fracXlinked
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' getSexInfo(sset)
 #' @export
 getSexInfo <- function(sset) {
   cleanY <- getBuiltInData('female.clean.chrY.probes', sset$platform)
   xLinked <- getBuiltInData('female.xlinked.chrX.probes', sset$platform)
-  xLinkedBeta <- getBetas(sset[xLinked], quality.mask=F)
+  xLinkedBeta <- getBetas(sset[xLinked], quality.mask=FALSE)
   c(medianY=median(sset[cleanY]$totalIntensities()),
     medianX=median(sset[xLinked]$totalIntensities()),
     fracXlinked=(sum(xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) / sum(!(is.na(xLinkedBeta)))))
@@ -281,6 +193,8 @@ getSexInfo <- function(sset) {
 #' model sometimes.
 #' Our function works on a single sample.
 #' @importFrom randomForest randomForest
+#' @examples
+#' sex <- inferSex(sset)
 #' @export
 inferSex <- function(sset) {
   sex.info <- getSexInfo(sset)
@@ -298,13 +212,20 @@ inferSex <- function(sset) {
 #' @param sset a \code{SignalSet}
 #' @return string of ethnicity
 #' @importFrom randomForest randomForest
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet("HM450")
+#' inferEthnicity(sset)
 #' @export
 inferEthnicity <- function(sset) {
   ccsprobes <- getBuiltInData('ethnicity.ccs.probes')
   rsprobes <- getBuiltInData('ethnicity.rs.probes')
   ethnicity.model <- getBuiltInData('ethnicity.model')
-  af <- c(getBetas(sset[rsprobes], quality.mask = F, nondetection.mask=F),
-          getBetasTypeIbySumAlleles(sset[ccsprobes], quality.mask = F, nondetection.mask = F))
+  af <- c(getBetas(sset[rsprobes], quality.mask = FALSE,
+                   nondetection.mask=FALSE),
+          getAFTypeIbySumAlleles(
+            sset[ccsprobes],
+            quality.mask = FALSE,
+            nondetection.mask = FALSE))
   as.character(predict(ethnicity.model, af))
 }
 
@@ -329,9 +250,12 @@ inferEthnicity <- function(sset) {
 #' @param sset \code{SignalSet}
 #' @param quality.mask whether to mask low quality probes
 #' @param nondetection.mask whether to mask nondetection
-#' @param mask.use.tcga whether to use TCGA masking, only applies to hm450
+#' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @param pval.threshold p-value threshold for nondetection mask
-#' @return beta values
+#' @return a numeric vector, beta values
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet('HM450')
+#' betas <- getBetas(sset)
 #' @export
 getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, mask.use.tcga=FALSE, pval.threshold=0.05) {
   betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
@@ -360,6 +284,9 @@ getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, mask.use.t
 #' @param nondetection.mask whether to mask nondetection
 #' @param pval.threshold p-value threshold for nondetection mask
 #' @return beta values
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' betas <- getBetasTypeIbySumChannels(sset)
 #' @export
 getBetasTypeIbySumChannels <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
   ## .oobR <- oobR[rownames(IG),]
@@ -379,7 +306,7 @@ getBetasTypeIbySumChannels <- function(sset, quality.mask=TRUE, nondetection.mas
   betas[order(names(betas))]
 }
 
-#' get beta values treating type I by summing alleles
+#' get allele frequency treating type I by summing alleles
 #'
 #' used for extra allele frequency on Color-Channel-Switching CCS probes
 #'
@@ -388,8 +315,9 @@ getBetasTypeIbySumChannels <- function(sset, quality.mask=TRUE, nondetection.mas
 #' @param nondetection.mask whether to mask nondetection
 #' @param pval.threshold p-value threshold for nondetection mask
 #' @return beta values
-#' @export
-getBetasTypeIbySumAlleles <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+#' sset <- makeExampleSeSAMeDataSet()
+#' betas <- getBetasTypeIbySumAlleles(sset)
+getAFTypeIbySumAlleles <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
   ## .oobR <- oobR[rownames(IG),]
   ## .oobG <- oobG[rownames(IR),]
   betas1 <- pmax(rowSums(sset$oobR),1) / pmax(rowSums(sset$oobR) + rowSums(sset$IG), 2)
@@ -416,8 +344,8 @@ readIDAT1 <- function(idat.name) {
   chip.type <- switch(
     ida.red$ChipType,
     'BeadChip 8x5'='EPIC',
-    'BeadChip 12x8'='hm450',
-    'BeadChip 12x1'='hm27')
+    'BeadChip 12x8'='HM450',
+    'BeadChip 12x1'='HM27')
   attr(d, 'platform') <- chip.type
   d
 }
@@ -434,12 +362,16 @@ readIDAT1 <- function(idat.name) {
 #' @param mc.cores number of cores to use
 #' @import parallel
 #' @return a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
+#' @examples
+#' \dontrun{
+#' ssets <- readIDATs(c('data/5775041003_R02C01', 'data/5775041003_R03C01'))
+#' }
 #' @export
 readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
 
   if (is.null(mc.cores)) {
     if (is.null(getOption('mc.cores')))
-      mc.cores <- 8
+      mc.cores <- 4
     else
       mc.cores <- getOption('mc.cores')
   }
@@ -494,7 +426,7 @@ readIDATsFromDir <- function(dir.name, ...) {
 #' @return a list of \code{SignalSet}s
 #' @export
 readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NULL, ...) {
-  sample.names <- read.csv(sample.sheet, stringsAsFactors=F)
+  sample.names <- read.csv(sample.sheet, stringsAsFactors=FALSE)
   readIDATs(sample.names[[column.name]], base.dir=base.dir, ...)
 }
 
@@ -512,7 +444,6 @@ readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NUL
 #'
 #' @param dm data frame in chip address, 2 columns: cy3/Grn and cy5/Red
 #' @return a SignalSet, indexed by probe ID address
-#' @export
 chipAddressToSignal <- function(dm) {
 
   platform <- attr(dm, 'platform')
@@ -552,7 +483,7 @@ chipAddressToSignal <- function(dm) {
   ## control probes
   dm.controls <- getBuiltInData('controls', platform)
   ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
-  rownames(ctl) <- make.names(dm.controls$Name,unique=T)
+  rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
   ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
   colnames(ctl) <- c('G','R','col','type')
   sset$ctl <- ctl
@@ -582,6 +513,10 @@ subsetBeta <- function(sset, max=1.1, min=-0.1) {
 #' @param sset signal set
 #' @param use.median use median to compute GCT
 #' @return GCT score (the higher, the more incomplete conversion)
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet('HM450')
+#' bisConversionControl(sset)
+#' 
 #' @export
 bisConversionControl <- function(sset, use.median=FALSE) {
   extC <- getBuiltInData('typeI.extC', sset$platform)

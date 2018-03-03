@@ -23,7 +23,6 @@
 #' @param gp a list of graphical parameters
 #' @param sub.name subclass name
 #' @return one or a list of heatmaps (depends on whether dimension is split)
-#' @export
 WHeatmap <- function(data=NULL, dm=NULL, name='', continuous=NULL,
                      cmp = CMPar(), # colormapping parameters
                      cm = NULL,
@@ -163,7 +162,6 @@ SplitWHeatmap <- function(hm, dm, cm, group) {
 #' @param hm an object of class WHeatmap
 #' @param group an object of class WGroup
 #' @return an object of class WDim in coordinate points
-#' @export
 CalcTextBounding.WHeatmap <- function(hm, group) {
 
   ## this needs be called at the ROOT view port
@@ -245,7 +243,6 @@ CalcTextBounding.WHeatmap <- function(hm, group) {
 #' @param ... additional options
 #' @return \code{NULL}
 #' @import grid
-#' @export
 print.WHeatmap <- function(x, cex=1, layout.only=FALSE, stand.alone=TRUE, ...) {
 
   if (stand.alone) {

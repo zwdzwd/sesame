@@ -15,3 +15,7 @@ medianY and fracXlinked
 \description{
 get sex information
 }
+\examples{
+sset <- makeExampleSeSAMeDataSet()
+getSexInfo(sset)
+}

@@ -25,8 +25,12 @@ diffRefSet <- function(g) {
 #' retrieve reference set
 #'
 #' @param cells reference cell types
-#' @param platform EPIC or hm450
+#' @param platform EPIC or HM450
 #' @return g
+#' @examples
+#' \dontrun{
+#' betas <- getRefSet('CD4T')
+#' }
 #' @export
 getRefSet <- function(cells=NULL, platform='EPIC') {
   if (is.null(cells)) {
@@ -41,7 +45,7 @@ getRefSet <- function(cells=NULL, platform='EPIC') {
 
 errFunc <- function(f, g, q) {
   gamma <- q - g %*% f[2:length(f)]
-  sum(ifelse(gamma < f[1] / 2, abs(gamma), abs(gamma - f[1])), na.rm=T)
+  sum(ifelse(gamma < f[1] / 2, abs(gamma), abs(gamma - f[1])), na.rm=TRUE)
 }
 
 ## transform fraction (f) by altering 2 components (nu1 and nu2) by step.size

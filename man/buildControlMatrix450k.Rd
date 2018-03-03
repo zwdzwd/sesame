@@ -15,3 +15,8 @@ a vector with control summaries
 \description{
 Build control summary matrix
 }
+\examples{
+sset <- makeExampleSeSAMeDataSet()
+control.summary <- buildControlMatrix450k(sset)
+
+}

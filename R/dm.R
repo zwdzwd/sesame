@@ -124,7 +124,7 @@ DML <- function(betas, sample.data, formula, se.lb=0.06, balanced=FALSE, cf.test
 #' @param dist.cutoff distance cutoff (default to use dist.cutoff.quantile)
 #' @param seg.per.locus number of segments per locus
 #' higher value leads to more segments
-#' @param platform EPIC or hm450
+#' @param platform EPIC or HM450
 #' @param refversion hg38 or hg19
 #' @param ... additional parameters to DML
 #' @return coefficient table with segment ID and segment P-value

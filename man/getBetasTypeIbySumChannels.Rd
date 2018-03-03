@@ -22,3 +22,7 @@ beta values
 \description{
 used for rescuing beta values on Color-Channel-Switching CCS probes
 }
+\examples{
+sset <- makeExampleSeSAMeDataSet()
+betas <- getBetasTypeIbySumChannels(sset)
+}

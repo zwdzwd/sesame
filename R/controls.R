@@ -4,6 +4,10 @@
 #' 
 #' @param sset an object of class SignalSet
 #' @return a vector with control summaries
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' control.summary <- buildControlMatrix450k(sset)
+#' 
 #' @export
 buildControlMatrix450k <- function(sset) {
   
