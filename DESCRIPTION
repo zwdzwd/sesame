@@ -12,7 +12,7 @@ Description: This R package for array-based DNA methylation data.
 License: Artistic-2.0
 LazyData: TRUE
 RoxygenNote: 6.0.1
-Imports: R6, illuminaio, MASS, GenomicRanges, IRanges, grid, parallel, preprocessCore, stats, randomForest, XML, colorspace, RColorBrewer, methods
+Imports: R6, grDevices, utils, illuminaio, MASS, GenomicRanges, IRanges, grid, parallel, preprocessCore, stats, randomForest, XML, colorspace, RColorBrewer, methods
 Suggests: ggplot2, DNAcopy, scales, knitr, rmarkdown
 VignetteBuilder: knitr
 biocViews: DNAMethylation, MethylationArray, Preprocessing, QualityControl

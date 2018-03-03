@@ -22,6 +22,9 @@ visualizeProbes(probeNames, betas, platform = "EPIC", refversion = "hg38",
 
 \item{...}{additional options, see visualizeRegion}
 }
+\value{
+None
+}
 \description{
 visualize probes
 }
