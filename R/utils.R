@@ -7,7 +7,7 @@
 #' BetaValueToMValue(c(0.1, 0.5, 0.9))
 #' @export
 BetaValueToMValue <- function(b) {
-  log2(b/(1-b))
+    log2(b/(1-b))
 }
 
 #' Convert M-value to beta-value
@@ -19,18 +19,18 @@ BetaValueToMValue <- function(b) {
 #' MValueToBetaValue(c(-3, 0, 3))
 #' @export
 MValueToBetaValue <- function(m) {
-  2^m/(1+2^m)
+    2^m/(1+2^m)
 }
 
 ## print message
 smessage <- function(...) {
-  cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
+    cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
 }
 
 pkgTest <- function(x) {
-  if (!require(x, character.only = TRUE)) {
-    stop("Optional package ", x, " not found. Please install before continue.")
-  }
+    if (!require(x, character.only = TRUE)) {
+        stop("Optional package ", x, " not found. Please install before continue.")
+    }
 }
 
 #' get probes by genomic region
@@ -46,15 +46,15 @@ pkgTest <- function(x) {
 #' getProbesByRegion('chr5', 135413937, 135419936, refversion='hg19', platform='hm450')
 #' @export
 getProbesByRegion <- function(chrm, beg=1, end=-1, platform='EPIC', refversion='hg38') {
-  if (end < 0) {
-    end <- getBuiltInData(paste0(refversion, '.chrominfo'))
-  }
-  pkgTest('GenomicRanges')
-  probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
-  if (!(chrm %in% GenomicRanges::seqinfo(probes)@seqnames)) {
-    stop('No probes found in this reference');
-  }
-  message(sprintf('Extracting probes from %s:%d-%d.\n', chrm, beg, end))
-  target.region <- GenomicRanges::GRanges(chrm, IRanges::IRanges(beg, end))
-  subsetByOverlaps(probes, target.region)
+    if (end < 0) {
+        end <- getBuiltInData(paste0(refversion, '.chrominfo'))
+    }
+    pkgTest('GenomicRanges')
+    probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
+    if (!(chrm %in% GenomicRanges::seqinfo(probes)@seqnames)) {
+        stop('No probes found in this reference');
+    }
+    message(sprintf('Extracting probes from %s:%d-%d.\n', chrm, beg, end))
+    target.region <- GenomicRanges::GRanges(chrm, IRanges::IRanges(beg, end))
+    subsetByOverlaps(probes, target.region)
 }
