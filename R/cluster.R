@@ -8,7 +8,6 @@
 #' @param hc.method method to use in hclust
 #' @param dist.method method to use in dist
 #' @return a list of clustered row, column and matrix
-#' @export
 row.cluster <- function(mat, ..., hc.method='ward.D2', dist.method='euclidean') {
   d.row <- dist(mat, method=dist.method)
   r <- list()
@@ -34,7 +33,6 @@ row.cluster <- function(mat, ..., hc.method='ward.D2', dist.method='euclidean') 
 #' @param hc.method method to use in hclust
 #' @param dist.method method to use in dist
 #' @return a list of clustered row, column and matrix
-#' @export
 column.cluster <- function(mat, ..., hc.method='ward.D2', dist.method='euclidean') {
   d.column <- dist(t(mat), method=dist.method)
   r <- list()
@@ -62,7 +60,6 @@ column.cluster <- function(mat, ..., hc.method='ward.D2', dist.method='euclidean
 #' @param extra.column extra column reordering
 #' @return a list of clustered row, column and matrix
 #' @import stats
-#' @export
 both.cluster <- function(mat, extra.row=NULL, extra.column=NULL, hc.method='ward.D2', dist.method='euclidean') {
   d.row <- dist(mat, method=dist.method)
   d.column <- dist(t(mat), method=dist.method)

@@ -59,8 +59,6 @@ YFromAffine <- function(y, dm.sys) {
 #' @param nc number of columns
 #' @param mar a WMar object
 #' @return a WGroup object
-#' 
-#' @export
 WGroup <- function(..., name='', group.dm=NULL, group.from.member=FALSE, mar=WMar(), affine=FALSE, nr=NULL, nc=NULL) {
   ## row and column.split must be a set separately ??
   objs <- list(...)
@@ -232,7 +230,6 @@ GroupAssignNames <- function(group.obj, n=1) {
 #'
 #' @param x a WGroup object
 #' @param i integer indexing element
-#' @export
 `[.WGroup` <- function(x, i) {
   if(is.numeric(i))
     return(x$children[[i]])
@@ -322,7 +319,6 @@ WFlatten <- function(.obs) {
 #' show layout
 #'
 #' @param x plot
-#' @export
 ly <- function(x) print(x, layout.only=TRUE)
 
 #' Scale group
@@ -368,7 +364,6 @@ ScaleGroup <- function(group.obj) {
 #' @param stand.alone to plot stand alone
 #' @param ... additional options
 #' @import grid
-#' @export
 print.WGroup <- function(x, stand.alone=TRUE, cex=1, layout.only=FALSE, ...) {
 
   if (stand.alone) {

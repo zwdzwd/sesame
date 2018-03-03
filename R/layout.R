@@ -6,7 +6,6 @@
 #' @param objs a list of plotting objects either WObject or gg
 #' @param ncols number of columns
 #' @return WGroup
-#' @export
 WMatrix <- function(objs, ncols=1) {
   objs <- lapply(objs, function(x) {
     if ('gg' %in% class(x)) {

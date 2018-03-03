@@ -78,7 +78,7 @@ getBinCoordinates <- function(chrominfo, probe.coords) {
   pkgTest('GenomicRanges')
   pkgTest('IRanges')
   
-  tiles <- sort(GenomicRanges::tileGenome(chrominfo$seqinfo, tilewidth=50000, cut.last.tile.in.chrom = T))
+  tiles <- sort(GenomicRanges::tileGenome(chrominfo$seqinfo, tilewidth=50000, cut.last.tile.in.chrom = TRUE))
   tiles <- sort(c(GenomicRanges::setdiff(tiles[seq(1, length(tiles), 2)], chrominfo$gap), 
                   GenomicRanges::setdiff(tiles[seq(2, length(tiles), 2)], chrominfo$gap)))
   GenomicRanges::values(tiles)$probes <- GenomicRanges::countOverlaps(tiles, probe.coords)
@@ -99,7 +99,6 @@ getBinCoordinates <- function(chrominfo, probe.coords) {
 #' @param sset.target \code{SignalSet} for target
 #' @param ssets.normal \code{SignalSet}s from normal samples
 #' @return probe.signals
-#' @export
 probeSignals <- function(sset.target, ssets.normal) {
   target.intens <- sset.target$totalIntensities()
   normal.intens <- sapply(ssets.normal, function(sset) {
@@ -119,7 +118,7 @@ probeSignals <- function(sset.target, ssets.normal) {
 #' @param bin.coords bin coordinates
 #' @param probe.coords probe coordinates
 #' @importFrom methods .hasSlot
-#' @export
+#' @return bin signals
 binSignals <- function(probe.signals, bin.coords, probe.coords) {
   pkgTest('GenomicRanges')
   ov <- GenomicRanges::findOverlaps(probe.coords, bin.coords)
@@ -132,6 +131,7 @@ binSignals <- function(probe.signals, bin.coords, probe.coords) {
     }
 
   bin.signals <- sapply(split(.probe.signals, .bins), median, na.rm=TRUE)
+  bin.signals
 }
 
 #' Segment bins
@@ -176,13 +176,13 @@ visualizeSegments <- function(seg, to.plot=NULL) {
   bin.coords <- seg$bin.coords
   bin.signals <- seg$bin.signals
   seg.signals <- seg$seg.signals
-  total.length <- sum(as.numeric(chrominfo$seqinfo@seqlengths), na.rm=T)
+  total.length <- sum(as.numeric(chrominfo$seqinfo@seqlengths), na.rm=TRUE)
   # skip chromosome too small (e.g, chrM)
   if (is.null(to.plot))
     to.plot <- (chrominfo$seqinfo@seqlengths > total.length*0.01)
   seqlen <- as.numeric(chrominfo$seqinfo@seqlengths[to.plot])
   seq.names <- chrominfo$seqinfo@seqnames[to.plot]
-  total.length <- sum(seqlen, na.rm=T)
+  total.length <- sum(seqlen, na.rm=TRUE)
   seqcumlen <- cumsum(seqlen)
   seqcumlen <- seqcumlen[-length(seqcumlen)]
   seqstart <- setNames(c(0,seqcumlen), seq.names)

@@ -8,8 +8,6 @@
 #' @param fill fill color
 #' @param name name
 #' @return a WRect object
-#'
-#' @export
 WRect <- function(obj=NULL, x.span=NULL, y.span=NULL, color='black', lwd=3, fill=NA, name='') {
 
   rect <- lapply(formals(), eval)

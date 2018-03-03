@@ -13,9 +13,6 @@
 #' @param height height of each unit in plotted legend
 #' @param ... additional options to WHeatmap
 #' @return an object of class WLegendV
-#' @examples
-#' WHeatmap(matrix(1:4,nrow=2))+WLegendV(NULL, RightOf())
-#' @export
 WLegendV <- function(x=NULL, dm=NULL, name='',
                      n.stops=20, n.text=5, label.fontsize=12,
                      width=0.05, height=0.02, ...) {
@@ -78,9 +75,6 @@ WLegendV <- function(x=NULL, dm=NULL, name='',
 #' @param height height of each unit in plotted legend
 #' @param ... additional options to WHeatmap
 #' @return an object of class WLegendH
-#' @examples
-#' WHeatmap(matrix(1:4,nrow=2))+WLegendH(NULL, Beneath())
-#' @export
 WLegendH <- function(x=NULL, dm=NULL, name='',
                      n.stops=20, n.text=5, label.fontsize=12,
                      width=0.02, height=0.05, ...) {

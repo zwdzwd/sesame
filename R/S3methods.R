@@ -2,7 +2,6 @@
 #' 
 #' @param x the target
 #' @param ... extra options
-#' @export
 Resolve <- function(x, ...) {
   UseMethod('Resolve')
 }

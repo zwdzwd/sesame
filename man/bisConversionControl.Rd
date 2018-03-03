@@ -21,3 +21,8 @@ compute GCT score for internal bisulfite conversion control
 The higher the GCT score, the more likely the incomplete conversion.
 The lower the GCT score, the more likely over-conversion.
 }
+\examples{
+sset <- makeExampleSeSAMeDataSet('HM450')
+bisConversionControl(sset)
+
+}

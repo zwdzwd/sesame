@@ -23,7 +23,6 @@
 #' @param stop.points custome stop points
 #' @param grey.scale whether to use grey scale
 #' @return an object of class CMPar
-#' @export
 CMPar <- function(dmin = NULL, dmax = NULL, # color scale max and min
                   brewer.name=NULL, brewer.n=3,
                   colorspace.name=NULL, colorspace.n=2,
@@ -48,7 +47,6 @@ CMPar <- function(dmin = NULL, dmax = NULL, # color scale max and min
 #' @param scaler scaler function from data range to 0-1
 #' @param mapper function that maps data to color
 #' @return an object of class ColorMap
-#' @export
 ColorMap <- function(continuous=TRUE,
                      colors=NULL,
                      dmin=NULL, dmax=NULL,
@@ -71,7 +69,6 @@ ColorMap <- function(continuous=TRUE,
 #' @importFrom grDevices rgb colorRamp
 #' @importFrom grDevices col2rgb
 #' @return an object of ColorMap
-#' @export
 MapToContinuousColors <- function(data, cmp=CMPar(), given.cm=NULL) {
 
   if (!is.null(given.cm)) {
@@ -138,7 +135,6 @@ MapToContinuousColors <- function(data, cmp=CMPar(), given.cm=NULL) {
 #' @import RColorBrewer
 #' @import colorspace
 #' @importFrom grDevices rgb colorRamp
-#' @export
 MapToDiscreteColors <- function(data, cmp=CMPar(), given.cm=NULL) {
 
   if (!is.null(given.cm)) {

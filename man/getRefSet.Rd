@@ -9,11 +9,16 @@ getRefSet(cells = NULL, platform = "EPIC")
 \arguments{
 \item{cells}{reference cell types}
 
-\item{platform}{EPIC or hm450}
+\item{platform}{EPIC or HM450}
 }
 \value{
 g
 }
 \description{
 retrieve reference set
+}
+\examples{
+\dontrun{
+betas <- getRefSet('CD4T')
+}
 }

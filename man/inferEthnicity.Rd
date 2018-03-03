@@ -20,3 +20,7 @@ Color-Channel-Switching probes
 sset better be background subtracted and dyebias corrected for
 best accuracy
 }
+\examples{
+sset <- makeExampleSeSAMeDataSet("HM450")
+inferEthnicity(sset)
+}

@@ -1,4 +1,57 @@
 
+#' Correct dye bias
+#'
+#' @param sset a \code{SignalSet}
+#' @param ref reference signal level
+#' @param in.place modify \code{SignalSet} in place, faster
+#' @return a normalized \code{SignalSet}
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' sset.db <- dyeBiasCorr(sset)
+#' @export
+dyeBiasCorr <- function(sset, ref=NULL, in.place=FALSE) {
+
+  if (is.null(ref)) {
+    ref <- meanIntensity(sset)
+  }
+  
+  if (!in.place)
+    sset <- sset$clone()
+  normctl <- .getNormCtls(sset)
+  fR <- ref/normctl['R']
+  fG <- ref/normctl['G']
+
+  sset$IG <- matrix(c(fG*sset$IG[,'M'], fG*sset$IG[,'U']),
+                    nrow=nrow(sset$IG), ncol=ncol(sset$IG), dimnames=dimnames(sset$IG))
+  sset$IR <- matrix(c(fR*sset$IR[,'M'], fR*sset$IR[,'U']),
+                    nrow=nrow(sset$IR), ncol=ncol(sset$IR), dimnames=dimnames(sset$IR))
+  sset$II <- matrix(c(fG*sset$II[,'M'], fR*sset$II[,'U']),
+                    nrow=nrow(sset$II), ncol=ncol(sset$II), dimnames=dimnames(sset$II))
+  sset$ctl$G <- fG*sset$ctl$G
+  sset$ctl$R <- fR*sset$ctl$R
+  sset$oobG <- fG*sset$oobG
+  sset$oobR <- fR*sset$oobR
+  sset
+}
+
+#' Correct dye bias using most balanced sample
+#'
+#' In practice, it doesn't matter as long as the
+#' reference level does not deviate much.
+#' 
+#' @param ssets a list of normalized \code{SignalSet}s
+#' @return a list of normalized \code{SignalSet}s
+#' @examples
+#' ssets <- list(s1=makeExampleSeSAMeDataSet(), s2=makeExampleSeSAMeDataSet())
+#' ssets.db <- dyeBiasCorrMostBalanced(ssets)
+#' @export
+dyeBiasCorrMostBalanced <- function(ssets) {
+  normctls <- vapply(ssets, .getNormCtls, numeric(2))
+  most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
+  ref <- mean(normctls[,most.balanced], na.rm=TRUE)
+  lapply(ssets, function(sset) dyeBiasCorr(sset, ref))
+}
+
 #' Dye bias correction by matching green and red to mid point
 #'
 #' @param sset a \code{SignalSet}
@@ -6,6 +59,9 @@
 #' @return a modified \code{SignalSet}
 #' @importFrom preprocessCore normalize.quantiles.use.target
 #' @importFrom stats approx
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' sset.db <- dyeBiasCorrTypeINorm(sset)
 #' @export
 dyeBiasCorrTypeINorm <- function(sset, in.place=FALSE) {
 

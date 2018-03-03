@@ -1,7 +1,6 @@
 #' Get dimensions
 #' 
 #' @param x WDim object or a plotting object
-#' @export
 getdim <- function(x) {
   if('WDim' %in% class(x))
     dm <- x
@@ -9,21 +8,6 @@ getdim <- function(x) {
     dm <- x$dm
   cat(dm$left, ' ', dm$bottom, ' ', dm$width, ' ', dm$height,'\n')
 }
-
-## #' format WDim
-## #'
-## #' @param object dimension
-## #' @param ... additional parameters
-## #' @return NULL, output WDim representation
-## #' @export
-## str.WDim <- function(object, ...) {
-##   browser()
-##   message("WDim object")
-##   message(sprintf(" - l: %1.2f | b: %1.2f | w: %1.2f | h: %1.2f",
-##                   object$left, object$bottom, object$width, object$height))
-##   message(sprintf(' - nr: %d | nc: %d', object$nr, object$nc))
-##   invisible(NULL)
-## }
 
 Resolve.WGenerator <- function(x, group) {
   x(group)
@@ -127,7 +111,6 @@ DimInPoints <- function(dm) {
 #' @param text.just just for text
 #' @param column.split a list of WDim objects for column split
 #' @param row.split a list of WDim objects for row split
-#' @export
 WDim <- function(left=0, bottom=0, width=1, height=1, nr=1, nc=1,
                  text.x=0, text.y=0, text.just=c('center','center'),
                  column.split=NULL, row.split=NULL) {
@@ -188,7 +171,6 @@ ResolveToTopDim <- function(x, group) {
 #' @param v.pad vertical translational padding [0.0]
 #' @param h.pad horizontal translational padding [0.0]
 #' @return a WDimGenerator
-#' @export
 TopLeftOf <- function(x=NULL,
                       just=c('right','bottom'),
                       v.pad=0.0, h.pad=0.0) {
@@ -245,7 +227,6 @@ TopLeftOf <- function(x=NULL,
 #' @param v.pad vertical translational padding [0.0]
 #' @param h.pad horizontal translational padding [0.0]
 #' @return a WDimGenerator
-#' @export
 TopRightOf <- function(x=NULL,
                        just=c('left','bottom'),
                        v.pad=0.0, h.pad=0.0) {
@@ -302,7 +283,6 @@ TopRightOf <- function(x=NULL,
 #' @param v.pad vertical translational padding [0.0]
 #' @param h.pad horizontal translational padding [0.0]
 #' @return a WDimGenerator
-#' @export
 BottomLeftOf <- function(x=NULL,
                          just=c('right', 'bottom'),
                          v.pad=0.0, h.pad=0.0) {
@@ -359,7 +339,6 @@ BottomLeftOf <- function(x=NULL,
 #' @param v.pad vertical translational padding [0.0]
 #' @param h.pad horizontal translational padding [0.0]
 #' @return a WDimGenerator
-#' @export
 BottomRightOf <- function(x=NULL,
                           just=c('left','bottom'),
                           v.pad=0.0, h.pad=0.0) {
@@ -421,7 +400,6 @@ BottomRightOf <- function(x=NULL,
 #' @param v.scale object for vertical scaling (when NULL, set to x)
 #' @param v.scale.proportional when v.scale is provided, whether to make proportional to data
 #' @return a dimension generator on top of x
-#' @export
 TopOf <- function(x=NULL, height=NULL, pad=0.01, min.ratio=0.02,
                   h.aln=NULL, v.scale=NULL, v.scale.proportional=FALSE) {
 
@@ -486,7 +464,6 @@ TopOf <- function(x=NULL, height=NULL, pad=0.01, min.ratio=0.02,
 #' @param v.scale object for vertical scaling (when NULL, set to x)
 #' @param v.scale.proportional when v.scale is provided, whether to make proportional to data
 #' @return a dimension generator beneath x
-#' @export
 Beneath <- function(x=NULL, height=NULL, pad=0.01, min.ratio=0.02,
                     h.aln=NULL, v.scale=NULL, v.scale.proportional=FALSE) {
 
@@ -551,7 +528,6 @@ Beneath <- function(x=NULL, height=NULL, pad=0.01, min.ratio=0.02,
 #' @param h.scale object for horizontal scaling (when NULL, set to x)
 #' @param h.scale.proportional when h.scale is provided, whether to make proportional to data
 #' @return a dimension to the left of x
-#' @export
 LeftOf <- function(x=NULL, width=NULL, pad=0.01, min.ratio=0.02,
                    v.aln=NULL, h.scale=NULL, h.scale.proportional=FALSE) {
 
@@ -616,7 +592,6 @@ LeftOf <- function(x=NULL, width=NULL, pad=0.01, min.ratio=0.02,
 #' @param h.scale object for horizontal scaling (when NULL, set to x)
 #' @param h.scale.proportional when h.scale is provided, whether to make proportional to data
 #' @return a dimension to the right of x
-#' @export
 RightOf <- function(x=NULL, width=NULL, pad=0.01, min.ratio=0.02, 
                     v.aln=NULL, h.scale=NULL, h.scale.proportional=FALSE) {
 
@@ -677,7 +652,6 @@ RightOf <- function(x=NULL, width=NULL, pad=0.01, min.ratio=0.02,
 #' @param just adjustment of new plot
 #' @param data.coord whether the coordinates is in term of data
 #' @return a WDimGenerator object
-#' @export
 WPosition <- function(anchor.x, anchor.y, x=NULL, just=c('left','bottom'), data.coord=FALSE) {
   stopifnot(just[1] %in% c('left','center','right'))
   stopifnot(just[2] %in% c('bottom','center','top'))

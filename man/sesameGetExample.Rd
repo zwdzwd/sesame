@@ -9,7 +9,7 @@ sesameGetExample(nm, platform = "")
 \arguments{
 \item{nm}{name}
 
-\item{platform}{optional, hm450, EPIC or hm27}
+\item{platform}{optional, HM450, EPIC or HM27}
 }
 \value{
 example object

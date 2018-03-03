@@ -25,3 +25,8 @@ a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
 Each element of the returned list contains a matrix
 having signal intensity addressed by chip address
 }
+\examples{
+\dontrun{
+ssets <- readIDATs(c('data/5775041003_R02C01', 'data/5775041003_R03C01'))
+}
+}

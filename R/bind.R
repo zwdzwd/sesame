@@ -6,7 +6,6 @@
 #' @param nr number of rows
 #' @param nc number of columns
 #' @return an object of class WDim
-#' @export
 WColumnBind <- function(..., nr=NULL, nc=NULL) {
 
   ## a function returns dm
@@ -41,7 +40,6 @@ WColumnBind <- function(..., nr=NULL, nc=NULL) {
 #' @param nr number of rows
 #' @param nc number of columns
 #' @return an object of class WDim
-#' @export
 WRowBind <- function(..., nr=NULL, nc=NULL) {
 
   ## a function returns dm

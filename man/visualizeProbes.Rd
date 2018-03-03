@@ -12,7 +12,7 @@ visualizeProbes(probeNames, betas, platform = "EPIC", refversion = "hg38",
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 
-\item{platform}{hm450 (default) or EPIC}
+\item{platform}{HM450 (default) or EPIC}
 
 \item{refversion}{hg19 or hg38}
 
