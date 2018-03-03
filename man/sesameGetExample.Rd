@@ -17,3 +17,6 @@ example object
 \description{
 Retrieve SeSAMe examples
 }
+\examples{
+betas <- sesameGetExample('TCGA-2L-AAQA-01A-21D-A38H-05')
+}

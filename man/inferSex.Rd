@@ -29,5 +29,6 @@ Our function works on a single sample.
 infer sex
 }
 \examples{
+sset <- makeExampleSeSAMeDataSet()
 sex <- inferSex(sset)
 }

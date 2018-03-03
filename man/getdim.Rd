@@ -9,6 +9,9 @@ getdim(x)
 \arguments{
 \item{x}{WDim object or a plotting object}
 }
+\value{
+vector of dimensions
+}
 \description{
 Get dimensions
 }
