@@ -1,0 +1,15 @@
+---
+title: "SeSAMe User Guide"
+shorttitle: "sesame guide"
+author: "Wanding Zhou"
+package: sesame
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{SeSAMe User Guide}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepage[utf8]{inputenc}
+---
+
+# Introduction
+
+Under construction

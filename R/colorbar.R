@@ -9,7 +9,6 @@
 #' @param label.fontsize label font size
 #' @param label.pad label padding
 #' @return an object of class WColorBarV
-#' @export
 WColorBarV <- function(data, ...,
                        label=NULL, label.side='t',
                        label.fontsize = 12, label.pad = 0.005) {
@@ -43,7 +42,6 @@ WColorBarV <- function(data, ...,
 #' @param label.fontsize label font size
 #' @param label.pad label padding
 #' @return an object of class WColorBarH
-#' @export
 WColorBarH <- function(data, ...,
                        label=NULL, label.side='r',
                        label.fontsize = 12, label.pad = 0.005) {

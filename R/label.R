@@ -7,8 +7,6 @@
 #' @param rot rotation
 #' @param color color of the label
 #' @return a WLabel object
-#' 
-#' @export
 WLabel <- function(x=NULL, dm=WDim(), name='', fontsize=12, rot=0, color='black') {
 
   label <- lapply(formals(), eval)
@@ -32,7 +30,6 @@ WLabel <- function(x=NULL, dm=WDim(), name='', fontsize=12, rot=0, color='black'
 #' @param ... additional options
 #' @import grid
 #' @return NULL
-#' @export
 print.WLabel <- function(x, cex=1, layout.only=FALSE, stand.alone=TRUE, ...) {
 
   if (stand.alone) {

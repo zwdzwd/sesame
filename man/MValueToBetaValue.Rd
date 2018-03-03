@@ -15,3 +15,6 @@ a vector of beta values
 \description{
 Convert M-value to beta-value (aka inverse logit transform)
 }
+\examples{
+MValueToBetaValue(c(-3, 0, 3))
+}

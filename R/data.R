@@ -6,37 +6,37 @@
 "darkjet.stops"
 
 ## chromosome information (deprecated)
-## hm27.hg19.probe2chr
-## hm450.hg19.probe2chr
+## HM27.hg19.probe2chr
+## HM450.hg19.probe2chr
 ## EPIC.hg19.probe2chr
 
 ## for sex inference
 ## sex.inference.model
 ## EPIC.female.clean.chrY.probes
-## hm450.female.clean.chrY.probes
+## HM450.female.clean.chrY.probes
 ## EPIC.female.xlinked.chrX.probes
-## hm450.female.xlinked.chrX.probes
+## HM450.female.xlinked.chrX.probes
 
 ## production probes
-## hm27.ordering
-## hm450.ordering
+## HM27.ordering
+## HM450.ordering
 ## EPIC.ordering
 
 ## the control probes
-## hm27.controls
-## hm450.controls
+## HM27.controls
+## HM450.controls
 ## EPIC.controls
 
 ## mask for snp and repeats
-## hm27.mask
-## hm450.mask
+## HM27.mask
+## HM450.mask
 ## EPIC.mask
 
 ## for cnv segmentation
 ## EPIC.mapped.probes.hg19
 ## EPIC.mapped.probes.hg38
-## hm450.mapped.probes.hg19
-## hm450.mapped.probes.hg38
+## HM450.mapped.probes.hg19
+## HM450.mapped.probes.hg38
 ## hg19.chrominfo
 ## hg38.chrominfo
 
@@ -53,6 +53,7 @@
 cacheEnv <- new.env()
 
 getBuiltInData <- function(nm, platform='', subdir='') {
+  platform <- toupper(platform) # HM450, HM27 or EPIC
   if (platform != '') {
     datanm <- paste0(platform,'.',nm)
   } else {
@@ -97,6 +98,7 @@ getBuiltInData <- function(nm, platform='', subdir='') {
 #'
 #' @importFrom XML htmlTreeParse
 #' @importFrom utils download.file
+#'  
 #' @export
 cacheBuiltInData <- function() {
   seshome <- Sys.getenv('SESAMEHOME')
@@ -105,14 +107,14 @@ cacheBuiltInData <- function() {
   }
   dir.create(seshome, showWarnings = FALSE)
   base.dir <- 'http://zwdzwd.io/sesame/current/'
-  dwfiles <- unname(unlist(htmlTreeParse(base.dir, useInternalNodes=T)["//a/@href"]))
+  dwfiles <- unname(unlist(htmlTreeParse(base.dir, useInternalNodes=TRUE)["//a/@href"]))
   for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
     download.file(paste0(base.dir,'/',dwfile), paste0(seshome,'/',dwfile))
   }
 
   subname <- 'cellref'
   subdir <- paste0(base.dir, '/', subname, '/')
-  dwfiles <- unname(unlist(htmlTreeParse(subdir, useInternalNodes=T)["//a/@href"]))
+  dwfiles <- unname(unlist(htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
   dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
   for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
     download.file(paste0(base.dir,'/',subname,'/',dwfile), paste0(seshome,'/',subname,'/',dwfile))
@@ -120,7 +122,7 @@ cacheBuiltInData <- function() {
 
   subname <- 'examples'
   subdir <- paste0(base.dir, '/', subname, '/')
-  dwfiles <- unname(unlist(htmlTreeParse(subdir, useInternalNodes=T)["//a/@href"]))
+  dwfiles <- unname(unlist(htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
   dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
   for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
     download.file(paste0(base.dir,'/',subname,'/',dwfile), paste0(seshome,'/',subname,'/',dwfile))
@@ -130,7 +132,7 @@ cacheBuiltInData <- function() {
 #' Retrieve SeSAMe examples
 #'
 #' @param nm name
-#' @param platform optional, hm450, EPIC or hm27
+#' @param platform optional, HM450, EPIC or HM27
 #' @return example object
 #' @export
 sesameGetExample <- function(nm, platform='') {

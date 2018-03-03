@@ -8,6 +8,9 @@
 #' @param offset offset
 #' @param detailed if TRUE, return a list of \code{SignalSet} and regression function
 #' @return a modified \code{SignalSet} with background correction
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet('HM450')
+#' sset.nb <- noobsb(sset)
 #' @export
 noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
 
@@ -118,7 +121,7 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
     warning("Limit of numerical accuracy reached with very low intensity or very high background:\nsetting adjusted intensities to small value")
     signal[o] <- pmax(signal[o], 1e-06)
   }
-  signal.min <- min(signal, na.rm = T)
+  signal.min <- min(signal, na.rm = TRUE)
   signal <- signal - signal.min
   offset + signal
 }

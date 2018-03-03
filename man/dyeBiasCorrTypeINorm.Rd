@@ -17,3 +17,7 @@ a modified \code{SignalSet}
 \description{
 Dye bias correction by matching green and red to mid point
 }
+\examples{
+sset <- makeExampleSeSAMeDataSet()
+sset.db <- dyeBiasCorrTypeINorm(sset)
+}

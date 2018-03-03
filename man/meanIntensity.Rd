@@ -15,3 +15,7 @@ mean of all intensities
 \description{
 mean intensity
 }
+\examples{
+sset <- makeExampleSeSAMeDataSet()
+intensities <- meanIntensity(sset)
+}

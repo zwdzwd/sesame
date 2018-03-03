@@ -14,13 +14,17 @@ getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
 
 \item{nondetection.mask}{whether to mask nondetection}
 
-\item{mask.use.tcga}{whether to use TCGA masking, only applies to hm450}
+\item{mask.use.tcga}{whether to use TCGA masking, only applies to HM450}
 
 \item{pval.threshold}{p-value threshold for nondetection mask}
 }
 \value{
-beta values
+a numeric vector, beta values
 }
 \description{
 get beta values
+}
+\examples{
+sset <- makeExampleSeSAMeDataSet('HM450')
+betas <- getBetas(sset)
 }

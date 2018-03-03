@@ -6,7 +6,6 @@
 #' @param dm dimension
 #' @param name name
 #' @return WGrob object
-#' @export
 WGrob <- function(glist, dm=NULL, name='') {
   if (is.null(dm)) {
     dm <- WDim(0,0,1,1,nr=1,nc=1)
@@ -29,7 +28,6 @@ WGrob <- function(glist, dm=NULL, name='') {
 #' @param layout.only plot layout
 #' @param stand.alone produce a stand.alone plot
 #' @param ... extra options
-#' @export
 print.WGrob <- function(x, cex=1, layout.only=FALSE, stand.alone=TRUE, ...) {
 
   if (stand.alone) {
