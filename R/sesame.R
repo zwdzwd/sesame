@@ -194,6 +194,7 @@ getSexInfo <- function(sset) {
 #' Our function works on a single sample.
 #' @importFrom randomForest randomForest
 #' @examples
+#' sset <- makeExampleSeSAMeDataSet()
 #' sex <- inferSex(sset)
 #' @export
 inferSex <- function(sset) {
@@ -424,6 +425,10 @@ readIDATsFromDir <- function(dir.name, ...) {
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
 #' @importFrom utils read.csv
 #' @return a list of \code{SignalSet}s
+#' @examples
+#' \dontrun{
+#' readIDATsFromSheet(data.frame(barcode=c('data/5775041003_R02C01', 'data/5775041003_R03C01')))
+#' }
 #' @export
 readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NULL, ...) {
   sample.names <- read.csv(sample.sheet, stringsAsFactors=FALSE)

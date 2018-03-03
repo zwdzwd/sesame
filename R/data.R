@@ -98,7 +98,11 @@ getBuiltInData <- function(nm, platform='', subdir='') {
 #'
 #' @importFrom XML htmlTreeParse
 #' @importFrom utils download.file
-#'  
+#'
+#' @examples
+#' \dontrun{
+#' cacheBuiltInData() # download annotation data to $SESAMEHOME
+#' }
 #' @export
 cacheBuiltInData <- function() {
   seshome <- Sys.getenv('SESAMEHOME')
@@ -134,6 +138,8 @@ cacheBuiltInData <- function() {
 #' @param nm name
 #' @param platform optional, HM450, EPIC or HM27
 #' @return example object
+#' @examples
+#' betas <- sesameGetExample('TCGA-2L-AAQA-01A-21D-A38H-05')
 #' @export
 sesameGetExample <- function(nm, platform='') {
   getBuiltInData(nm, platform, 'examples');

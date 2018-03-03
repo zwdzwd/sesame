@@ -9,3 +9,8 @@ cacheBuiltInData()
 \description{
 need environment SESAMEHOME be set
 }
+\examples{
+\dontrun{
+cacheBuiltInData() # download annotation data to $SESAMEHOME
+}
+}
