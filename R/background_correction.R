@@ -36,15 +36,17 @@ noob <- function(sset, in.place=FALSE, offset=15) {
     ## build back the list
     ## type IG
     if (length(sset$IG)>0)
-        sset$IG <- matrix(ibG.nl$i[1:length(sset$IG)],
-                          nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
+        sset$IG <- matrix(
+            ibG.nl$i[1:length(sset$IG)],
+            nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
     else
         sset$IG <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
     ## type IR
     if (length(sset$IR)>0)
-        sset$IR <- matrix(ibR.nl$i[1:length(sset$IR)],
-                          nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
+        sset$IR <- matrix(
+            ibR.nl$i[1:length(sset$IR)],
+            nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
     else
         sset$IR <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
@@ -183,15 +185,17 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
     ## build back the list
     ## type IG
     if (length(sset$IG)>0)
-        sset$IG <- matrix(ibG[1:length(sset$IG)],
-                          nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
+        sset$IG <- matrix(
+            ibG[1:length(sset$IG)],
+            nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
     else
         sset$IG <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
     ## type IR
     if (length(sset$IR)>0)
-        sset$IR <- matrix(ibR[1:length(sset$IR)],
-                          nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
+        sset$IR <- matrix(
+            ibR[1:length(sset$IR)],
+            nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
     else
         sset$IR <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 

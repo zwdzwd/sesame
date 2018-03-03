@@ -7,10 +7,15 @@
 visualizeSegments(seg, to.plot = NULL)
 }
 \arguments{
-\item{seg}{segments}
+\item{seg}{a \code{CNSegment} object}
 
 \item{to.plot}{chromosome to plot (by default plot all chromosomes)}
 }
 \description{
 require ggplot2, scales
+}
+\examples{
+seg <- SeSAMeGetExample('EPIC.seg.LNCaP.Rep1')
+visualizeSegments(seg)
+
 }

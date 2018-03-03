@@ -53,43 +53,45 @@
 cacheEnv <- new.env()
 
 getBuiltInData <- function(nm, platform='', subdir='') {
-  platform <- toupper(platform) # HM450, HM27 or EPIC
-  if (platform != '') {
-    datanm <- paste0(platform,'.',nm)
-  } else {
-    datanm <- nm
-  }
-  if (exists(datanm, envir=cacheEnv)) {
-    return(get(datanm, envir=cacheEnv))
-  }
 
-  x <- NULL
-  base.dir <- 'http://zwdzwd.io/sesame/current/'
-  if (subdir != '') {
-    base.dir <- paste0(base.dir, subdir, '/');
-  }
-
-  seshome <- Sys.getenv('SESAMEHOME')
-  dir.create(seshome, showWarnings = FALSE) # make sure directory exists
-  localpath <- paste0(seshome, '/', datanm, '.rds')
-  if (seshome != "") {
-    if (file.exists(localpath)) {
-      x <- readRDS(localpath)
+    if (platform != '') {
+        platform <- toupper(platform) # HM450, HM27 or EPIC
+        datanm <- paste0(platform,'.',nm)
     } else {
-      x <- NULL
+        datanm <- nm
     }
-  }
+    if (exists(datanm, envir=cacheEnv)) {
+        return(get(datanm, envir=cacheEnv))
+    }
 
-  if (is.null(x)) {
-    message('Caching ', datanm, '... ', appendLF=FALSE)
-    x <- readRDS(gzcon(url(paste0(base.dir, datanm, '.rds'))))
-    if (seshome != "") {
-      saveRDS(x, file=localpath)
+    x <- NULL
+    base.dir <- 'http://zwdzwd.io/sesame/current/'
+    if (subdir != '') {
+        base.dir <- paste0(base.dir, subdir, '/');
     }
-    message('Done.')
-  }
-  assign(datanm, x, envir=cacheEnv)
-  x
+
+    seshome <- Sys.getenv('SESAMEHOME')
+    dir.create(seshome, showWarnings = FALSE) # make sure directory exists
+    localpath <- paste0(seshome, '/', datanm, '.rds')
+    if (seshome != "") {
+        if (file.exists(localpath)) {
+            x <- readRDS(localpath)
+        } else {
+            x <- NULL
+        }
+    }
+
+    if (is.null(x)) {
+        message('Caching ', datanm, '... ', appendLF=FALSE)
+        x <- readRDS(gzcon(url(paste0(base.dir, datanm, '.rds'))))
+        if (seshome != "") {
+            saveRDS(x, file=localpath)
+        }
+        message('Done.')
+    }
+    assign(datanm, x, envir=cacheEnv)
+    x
+    
 }
 
 #' Cache all the built in data from remote
@@ -105,32 +107,46 @@ getBuiltInData <- function(nm, platform='', subdir='') {
 #' }
 #' @export
 cacheBuiltInData <- function() {
-  seshome <- Sys.getenv('SESAMEHOME')
-  if (seshome == '') {
-    stop("SESAMEHOME is not set. Abort caching.")
-  }
-  dir.create(seshome, showWarnings = FALSE)
-  base.dir <- 'http://zwdzwd.io/sesame/current/'
-  dwfiles <- unname(unlist(htmlTreeParse(base.dir, useInternalNodes=TRUE)["//a/@href"]))
-  for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
-    download.file(paste0(base.dir,'/',dwfile), paste0(seshome,'/',dwfile))
-  }
 
-  subname <- 'cellref'
-  subdir <- paste0(base.dir, '/', subname, '/')
-  dwfiles <- unname(unlist(htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
-  dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
-  for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
-    download.file(paste0(base.dir,'/',subname,'/',dwfile), paste0(seshome,'/',subname,'/',dwfile))
-  }
+    seshome <- Sys.getenv('SESAMEHOME')
+    if (seshome == '') {
+        stop("SESAMEHOME is not set. Abort caching.")
+    }
+    dir.create(seshome, showWarnings = FALSE)
+    base.dir <- 'http://zwdzwd.io/sesame/current/'
 
-  subname <- 'examples'
-  subdir <- paste0(base.dir, '/', subname, '/')
-  dwfiles <- unname(unlist(htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
-  dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
-  for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
-    download.file(paste0(base.dir,'/',subname,'/',dwfile), paste0(seshome,'/',subname,'/',dwfile))
-  }
+    dwfiles <- unname(
+        unlist(htmlTreeParse(base.dir, useInternalNodes=TRUE)["//a/@href"]))
+
+    for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
+        download.file(
+            paste0(base.dir,'/',dwfile),
+            paste0(seshome,'/',dwfile))
+    }
+
+    subname <- 'cellref'
+    subdir <- paste0(base.dir, '/', subname, '/')
+    dwfiles <- unname(
+        unlist(htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
+    
+    dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
+    for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
+        download.file(
+            paste0(base.dir,'/',subname,'/',dwfile),
+            paste0(seshome,'/',subname,'/',dwfile))
+    }
+
+    subname <- 'examples'
+    subdir <- paste0(base.dir, '/', subname, '/')
+    dwfiles <- unname(
+        unlist(htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
+    
+    dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
+    for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
+        download.file(
+            paste0(base.dir,'/',subname,'/',dwfile),
+            paste0(seshome,'/',subname,'/',dwfile))
+    }
 }
 
 #' Retrieve SeSAMe examples
@@ -139,8 +155,8 @@ cacheBuiltInData <- function() {
 #' @param platform optional, HM450, EPIC or HM27
 #' @return example object
 #' @examples
-#' betas <- sesameGetExample('TCGA-2L-AAQA-01A-21D-A38H-05')
+#' betas <- SeSAMeGetExample('TCGA-2L-AAQA-01A-21D-A38H-05')
 #' @export
-sesameGetExample <- function(nm, platform='') {
-  getBuiltInData(nm, platform, 'examples');
+SeSAMeGetExample <- function(nm, platform='') {
+    getBuiltInData(nm, platform, 'examples');
 }

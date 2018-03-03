@@ -11,9 +11,10 @@
 #' @import grid
 #' @return None
 #' @export
-visualizeGene <- function(geneName, betas, platform='EPIC',
-                          upstream=2000, dwstream=2000,
-                          refversion='hg38', ...) {
+visualizeGene <- function(
+    geneName, betas, platform='EPIC',
+    upstream=2000, dwstream=2000,
+    refversion='hg38', ...) {
 
     if (is.null(dim(betas))) {
         betas <- as.matrix(betas);
@@ -38,10 +39,11 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
     }
 
     merged.exons <- GenomicRanges::reduce(unlist(target.txns))
-    visualizeRegion(as.character(GenomicRanges::seqnames(merged.exons[1])),
-                    min(GenomicRanges::start(merged.exons)) - pad.start,
-                    max(GenomicRanges::end(merged.exons)) + pad.end,
-                    betas, platform=platform, refversion=refversion, ...)
+    visualizeRegion(
+        as.character(GenomicRanges::seqnames(merged.exons[1])),
+        min(GenomicRanges::start(merged.exons)) - pad.start,
+        max(GenomicRanges::end(merged.exons)) + pad.end,
+        betas, platform=platform, refversion=refversion, ...)
 }
 
 #' visualize probes
@@ -55,18 +57,27 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
 #' @param ... additional options, see visualizeRegion
 #' @return None
 #' @export
-visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38', upstream=1000, dwstream=1000, ...) {
+visualizeProbes <- function(
+    probeNames, betas,
+    platform='EPIC',
+    refversion='hg38',
+    upstream=1000, dwstream=1000, ...) {
+    
     pkgTest('GenomicRanges')
-
     probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
     probeNames <- probeNames[probeNames %in% names(probes)]
+
     if (length(probeNames)==0)
         stop('Probes specified are not well mapped.')
+
     target.probes <- probes[probeNames]
+
     regBeg <- min(GenomicRanges::start(target.probes)) - upstream
     regEnd <- max(GenomicRanges::end(target.probes)) + dwstream
-    visualizeRegion(as.character(GenomicRanges::seqnames(target.probes[1])), regBeg, regEnd,
-                    betas, platform=platform, refversion=refversion, ...)
+    
+    visualizeRegion(
+        as.character(GenomicRanges::seqnames(target.probes[1])), regBeg, regEnd,
+        betas, platform=platform, refversion=refversion, ...)
 }
 
 #' get probes by gene
@@ -119,7 +130,17 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
 #' @import grid
 #' @importMethodsFrom IRanges subsetByOverlaps
 #' @export
-visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refversion='hg38', sample.name.fontsize=10, heat.height=NULL, draw=TRUE, show.sampleNames=TRUE, show.samples.n=NULL, show.probeNames=TRUE, cluster.samples=FALSE, na.rm=FALSE, dmin=0, dmax=1) {
+visualizeRegion <- function(
+    chrm, plt.beg, plt.end, betas,
+    platform='EPIC', refversion='hg38',
+    sample.name.fontsize=10,
+    heat.height=NULL,
+    draw=TRUE,
+    show.sampleNames=TRUE,
+    show.samples.n=NULL,
+    show.probeNames=TRUE,
+    cluster.samples=FALSE,
+    na.rm=FALSE, dmin=0, dmax=1) {
 
     pkgTest('GenomicRanges')
     
@@ -179,18 +200,20 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
 
             g <- gList(
                 ## plot transcript name
-                grid.text(sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
-                          x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
-                          just=c('center','bottom'), draw=FALSE),
+                grid.text(
+                    sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
+                    x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
+                    just=c('center','bottom'), draw=FALSE),
                 
                 ## plot transcript line
                 grid.lines(x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
                 grid.lines(x=c(0,1), y=y.bot+y.hei/2, gp=gpar(lty='dotted'), draw=FALSE),
 
                 ## plot exons
-                grid.rect((GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
-                          GenomicRanges::width(txn)/plt.width, y.hei.exon, gp=gpar(fill='red',col='red'),
-                          just=c('left','bottom'), draw=FALSE))
+                grid.rect(
+                    (GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
+                    GenomicRanges::width(txn)/plt.width, y.hei.exon, gp=gpar(fill='red',col='red'),
+                    just=c('left','bottom'), draw=FALSE))
 
             ## plot cds
             cdsEnd <- as.integer(GenomicRanges::mcols(txn)$cdsEnd[1])
@@ -201,9 +224,10 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
 
             if (cdsEnd > cdsStart && length(txnCds) > 0) {
                 g <- gList(g, gList(
-                    grid.rect((GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
-                              GenomicRanges::width(txnCds)/plt.width, y.hei, gp=gpar(fill='grey'),
-                              just=c('left','bottom'), draw=FALSE)))
+                    grid.rect(
+                        (GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
+                        GenomicRanges::width(txnCds)/plt.width, y.hei, gp=gpar(fill='grey'),
+                        just=c('left','bottom'), draw=FALSE)))
             }
             g
         }))
@@ -226,16 +250,17 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
     if (draw) {
         w <- WGrob(plt.txns, name='txn') +
             WGrob(plt.mapLines, Beneath(pad=0, height=0.15)) +
-                WHeatmap(t(betas),
-                         Beneath(height=heat.height),
-                         name='betas',
-                         cmp=CMPar(dmin=dmin, dmax=dmax),
-                         xticklabels=show.probeNames,
-                         xticklabel.rotat=45,
-                         yticklabels=show.sampleNames,
-                         yticklabel.fontsize=sample.name.fontsize,
-                         yticklabels.n=show.samples.n,
-                         xticklabels.n=nprobes)
+                WHeatmap(
+                    t(betas),
+                    Beneath(height=heat.height),
+                    name='betas',
+                    cmp=CMPar(dmin=dmin, dmax=dmax),
+                    xticklabels=show.probeNames,
+                    xticklabel.rotat=45,
+                    yticklabels=show.sampleNames,
+                    yticklabel.fontsize=sample.name.fontsize,
+                    yticklabels.n=show.samples.n,
+                    xticklabels.n=nprobes)
         w <- w + WGrob(
             plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
             TopOf('txn', height=0.25))
@@ -267,12 +292,18 @@ plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg38') {
 
     pltx0 <- (c(plt.beg, plt.end)-chromBeg)/chromWid
     gList(
-      grid.text(sprintf("%s:%d-%d", chrom, plt.beg, plt.end), 0, 0.9,
-                just=c('left','bottom'), draw=FALSE),
-      grid.rect(sapply(cytoBand.target$chromStart, function(x) (x-chromBeg)/chromWid), 0.35,
-                (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid, 0.5,
-                gp=gpar(fill=bandColor, col=bandColor),
-                just=c('left','bottom'), draw=FALSE),
-      grid.segments(x0=pltx0, y0=0.3, x1=c(0,1), y1=0.1, draw=FALSE, gp=gpar(lty='dotted')),
-      grid.segments(x0=pltx0, y0=0.3, x1=pltx0, y1=0.85, draw=FALSE))
+        grid.text(
+            sprintf("%s:%d-%d", chrom, plt.beg, plt.end), 0, 0.9,
+            just=c('left','bottom'), draw=FALSE),
+        grid.rect(
+            sapply(cytoBand.target$chromStart, function(x) (x-chromBeg)/chromWid), 0.35,
+            (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid, 0.5,
+            gp=gpar(fill=bandColor, col=bandColor),
+            just=c('left','bottom'), draw=FALSE),
+        grid.segments(
+            x0=pltx0, y0=0.3,
+            x1=c(0,1), y1=0.1, draw=FALSE, gp=gpar(lty='dotted')),
+        grid.segments(
+            x0=pltx0, y0=0.3,
+            x1=pltx0, y1=0.85, draw=FALSE))
 }
