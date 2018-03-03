@@ -14,8 +14,14 @@ cnSegmentation(sset, ssets.normal = NULL, refversion = "hg19")
 \item{refversion}{hg19 or hg38}
 }
 \value{
-segmentation
+an object of \code{CNSegment}
 }
 \description{
 perform copy number segmentation
+}
+\examples{
+sset <- SeSAMeGetExample("EPIC.sset.LNCaP.Rep1.chr4")
+ssets.normal <- SeSAMeGetExample("EPIC.sset.5normal.chr4")
+seg <- cnSegmentation(sset, ssets.normal)
+
 }
