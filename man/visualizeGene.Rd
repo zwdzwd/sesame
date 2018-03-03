@@ -22,6 +22,9 @@ visualizeGene(geneName, betas, platform = "EPIC", upstream = 2000,
 
 \item{...}{additional options, see visualizeRegion}
 }
+\value{
+None
+}
 \description{
 visualize gene
 }

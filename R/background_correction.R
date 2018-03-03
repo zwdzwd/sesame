@@ -14,6 +14,7 @@ noob <- function(sset, in.place=FALSE, offset=15) {
 
     if (!in.place)
         sset <- sset$clone()
+    
     ## sort signal based on channel
     ibR <- c(sset$IR, sset$II[,'U'])              # in-band red signal
     ibG <- c(sset$IG, sset$II[,'M'])              # in-band green signal
@@ -28,9 +29,9 @@ noob <- function(sset, in.place=FALSE, offset=15) {
     
     ## do background correction in each channel
     ibR.nl <- .backgroundCorrectionNoobCh1(
-      ibR, sset$oobR, sset$ctl$R, offset=offset)
+        ibR, sset$oobR, sset$ctl$R, offset=offset)
     ibG.nl <- .backgroundCorrectionNoobCh1(
-      ibG, sset$oobG, sset$ctl$G, offset=offset)
+        ibG, sset$oobG, sset$ctl$G, offset=offset)
 
     ## build back the list
     ## type IG
@@ -50,9 +51,9 @@ noob <- function(sset, in.place=FALSE, offset=15) {
     ## type II
     if (nrow(sset$II) > 0)
         sset$II <- as.matrix(data.frame(
-          M=ibG.nl$i[(length(sset$IG)+1):length(ibG)],
-          U=ibR.nl$i[(length(sset$IR)+1):length(ibR)],
-          row.names=rownames(sset$II)))
+            M=ibG.nl$i[(length(sset$IG)+1):length(ibG)],
+            U=ibR.nl$i[(length(sset$IR)+1):length(ibR)],
+            row.names=rownames(sset$II)))
     else
         sset$II <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
@@ -94,8 +95,8 @@ noob <- function(sset, in.place=FALSE, offset=15) {
         stop("sigma must be positive")
     mu.sf <- x - mu - sigma2/alpha
     signal <- mu.sf + sigma2 * exp(
-      dnorm(0, mean = mu.sf, sd = sigma, log = TRUE) -
-        pnorm(0, mean = mu.sf, sd = sigma, lower.tail = FALSE, log.p = TRUE))
+        dnorm(0, mean = mu.sf, sd = sigma, log = TRUE) -
+            pnorm(0, mean = mu.sf, sd = sigma, lower.tail = FALSE, log.p = TRUE))
     o <- !is.na(signal)
     if (any(signal[o] < 0)) {
         warning("Limit of numerical accuracy reached with very low intensity or very high background:\nsetting adjusted intensities to small value")
@@ -164,7 +165,7 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
     ibR <- .backgroundCorrCh1(ibR, pp.bg.ibR, alphaR, offset=offset)
     oobR <- .backgroundCorrCh1(sset$oobR, pp.bg.oobR, alphaR, offset=offset)
     ctlR <- .backgroundCorrCh1(sset$ctl$R, pp.bg.ctlR, alphaR, offset=offset)
-  
+    
     ## background correction Grn
     ## use the other channel to predict background mean
     bg.RpredictG <- train.model.lm(sset$IR, sset$oobG)
@@ -197,9 +198,9 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
     ## type II
     if (nrow(sset$II) > 0)
         sset$II <- as.matrix(data.frame(
-          M=ibG[(length(sset$IG)+1):length(ibG)],
-          U=ibR[(length(sset$IR)+1):length(ibR)],
-          row.names=rownames(sset$II)))
+            M=ibG[(length(sset$IG)+1):length(ibG)],
+            U=ibR[(length(sset$IR)+1):length(ibR)],
+            row.names=rownames(sset$II)))
     else
         sset$II <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
@@ -234,8 +235,8 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
         stop("sigma must be positive")
     mu.sf <- x - mu.bg - sigma2/alpha
     signal <- mu.sf + sigma2 * exp(
-      dnorm(0, mean = mu.sf, sd = sigma, log = TRUE) -
-        pnorm(0, mean = mu.sf, sd = sigma, lower.tail = FALSE, log.p = TRUE))
+        dnorm(0, mean = mu.sf, sd = sigma, log = TRUE) -
+            pnorm(0, mean = mu.sf, sd = sigma, lower.tail = FALSE, log.p = TRUE))
     o <- !is.na(signal)
     if (any(signal[o] < 0)) {
         warning("Limit of numerical accuracy reached with very low intensity or very high background:\nsetting adjusted intensities to small value")

@@ -9,6 +9,7 @@
 #' @param refversion hg19 or hg38
 #' @param ... additional options, see visualizeRegion
 #' @import grid
+#' @return None
 #' @export
 visualizeGene <- function(geneName, betas, platform='EPIC',
                           upstream=2000, dwstream=2000,
@@ -52,6 +53,7 @@ visualizeGene <- function(geneName, betas, platform='EPIC',
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
 #' @param ... additional options, see visualizeRegion
+#' @return None
 #' @export
 visualizeProbes <- function(probeNames, betas, platform='EPIC', refversion='hg38', upstream=1000, dwstream=1000, ...) {
     pkgTest('GenomicRanges')
@@ -90,9 +92,9 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
 
     merged.exons <- GenomicRanges::reduce(unlist(target.txns))
     getProbesByRegion(
-      as.character(GenomicRanges::seqnames(merged.exons[1])),
-      min(GenomicRanges::start(merged.exons)),
-      max(GenomicRanges::end(merged.exons)), platform=platform, refversion=refversion)
+        as.character(GenomicRanges::seqnames(merged.exons[1])),
+        min(GenomicRanges::start(merged.exons)),
+        max(GenomicRanges::end(merged.exons)), platform=platform, refversion=refversion)
 }
 
 #' visualize region
@@ -176,19 +178,19 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
             y.hei.exon <- isoformHeight-4*padHeight
 
             g <- gList(
-              ## plot transcript name
-              grid.text(sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
-                        x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
-                        just=c('center','bottom'), draw=FALSE),
-              
-              ## plot transcript line
-              grid.lines(x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
-              grid.lines(x=c(0,1), y=y.bot+y.hei/2, gp=gpar(lty='dotted'), draw=FALSE),
+                ## plot transcript name
+                grid.text(sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
+                          x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
+                          just=c('center','bottom'), draw=FALSE),
+                
+                ## plot transcript line
+                grid.lines(x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
+                grid.lines(x=c(0,1), y=y.bot+y.hei/2, gp=gpar(lty='dotted'), draw=FALSE),
 
-              ## plot exons
-              grid.rect((GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
-                        GenomicRanges::width(txn)/plt.width, y.hei.exon, gp=gpar(fill='red',col='red'),
-                        just=c('left','bottom'), draw=FALSE))
+                ## plot exons
+                grid.rect((GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
+                          GenomicRanges::width(txn)/plt.width, y.hei.exon, gp=gpar(fill='red',col='red'),
+                          just=c('left','bottom'), draw=FALSE))
 
             ## plot cds
             cdsEnd <- as.integer(GenomicRanges::mcols(txn)$cdsEnd[1])
@@ -199,20 +201,21 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
 
             if (cdsEnd > cdsStart && length(txnCds) > 0) {
                 g <- gList(g, gList(
-                  grid.rect((GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
-                            GenomicRanges::width(txnCds)/plt.width, y.hei, gp=gpar(fill='grey'),
-                            just=c('left','bottom'), draw=FALSE)))
+                    grid.rect((GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
+                              GenomicRanges::width(txnCds)/plt.width, y.hei, gp=gpar(fill='grey'),
+                              just=c('left','bottom'), draw=FALSE)))
             }
             g
         }))
     } else {
         plt.txns <- gList(
-          grid.rect(0,0.1,1,0.8, just = c('left','bottom'), draw=FALSE),
-          grid.text('No transcript found', x=0.5, y=0.5, draw=FALSE))
+            grid.rect(0,0.1,1,0.8, just = c('left','bottom'), draw=FALSE),
+            grid.text('No transcript found', x=0.5, y=0.5, draw=FALSE))
     }
 
     plt.chromLine <- grid.lines(x=c(0, 1), y=c(1,1), draw=FALSE)
-    plt.mapLines <- grid.segments((GenomicRanges::start(probes)-plt.beg) / plt.width, 1, ((1:nprobes-0.5)/nprobes), 0, draw=FALSE)
+    plt.mapLines <- grid.segments(
+        (GenomicRanges::start(probes)-plt.beg) / plt.width, 1, ((1:nprobes-0.5)/nprobes), 0, draw=FALSE)
 
     ## clustering
     betas <- betas[names(probes),,drop=FALSE]
@@ -222,11 +225,20 @@ visualizeRegion <- function(chrm, plt.beg, plt.end, betas, platform='EPIC', refv
 
     if (draw) {
         w <- WGrob(plt.txns, name='txn') +
-          WGrob(plt.mapLines, Beneath(pad=0, height=0.15)) +
-            WHeatmap(t(betas), Beneath(height=heat.height), name='betas', cmp=CMPar(dmin=dmin, dmax=dmax), xticklabels=show.probeNames, xticklabel.rotat=45, yticklabels=show.sampleNames, yticklabel.fontsize=sample.name.fontsize, yticklabels.n=show.samples.n, xticklabels.n=nprobes)
+            WGrob(plt.mapLines, Beneath(pad=0, height=0.15)) +
+                WHeatmap(t(betas),
+                         Beneath(height=heat.height),
+                         name='betas',
+                         cmp=CMPar(dmin=dmin, dmax=dmax),
+                         xticklabels=show.probeNames,
+                         xticklabel.rotat=45,
+                         yticklabels=show.sampleNames,
+                         yticklabel.fontsize=sample.name.fontsize,
+                         yticklabels.n=show.samples.n,
+                         xticklabels.n=nprobes)
         w <- w + WGrob(
-          plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
-          TopOf('txn', height=0.25))
+            plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
+            TopOf('txn', height=0.25))
         w
     } else {
         betas
