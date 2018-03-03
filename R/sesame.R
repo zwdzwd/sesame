@@ -59,33 +59,33 @@
 #'   \item{\code{totalIntensities()}}{Total intensity on each probe}
 #' }
 SignalSet <- R6Class(
-  'SignalSet',
-  portable = FALSE,
-  public = list(
-    platform = 'EPIC',
-    IG = NULL,
-    IR = NULL,
-    II = NULL,
-    oobG = NULL,
-    oobR = NULL,
-    ctl = NULL,
-    pval = NULL,
+    'SignalSet',
+    portable = FALSE,
+    public = list(
+        platform = 'EPIC',
+        IG = NULL,
+        IR = NULL,
+        II = NULL,
+        oobG = NULL,
+        oobR = NULL,
+        ctl = NULL,
+        pval = NULL,
     
-    initialize = function(x) self$platform <- x,
+        initialize = function(x) self$platform <- x,
     
-    toM = function() {
-      m1 <- log2(pmax(IG[,'M'],1) / pmax(IG[,'U']))
-      m2 <- log2(pmax(IR[,'M'],1) / pmax(IR[,'U']))
-      m3 <- log2(pmax(II[,'M'],1) / pmax(II[,'U']))
-      m <- c(m1, m2, m3)
-      m[pval[names(m)]>0.05] <- NA
-      m[order(names(m))]
-    },
+        toM = function() {
+            m1 <- log2(pmax(IG[,'M'],1) / pmax(IG[,'U']))
+            m2 <- log2(pmax(IR[,'M'],1) / pmax(IR[,'U']))
+            m3 <- log2(pmax(II[,'M'],1) / pmax(II[,'U']))
+            m <- c(m1, m2, m3)
+            m[pval[names(m)]>0.05] <- NA
+            m[order(names(m))]
+        },
     
-    totalIntensities = function() {
-      rowSums(rbind(IG, IR, II))
-    }
-  )
+        totalIntensities = function() {
+            rowSums(rbind(IG, IR, II))
+        }
+    )
 )
 
 #' Make a simulated SeSAMe data set
@@ -99,49 +99,51 @@ SignalSet <- R6Class(
 #'
 #' @export
 makeExampleSeSAMeDataSet <- function(platform='HM450') {
-  dm.ordering <- getBuiltInData('ordering', platform)
-  sset <- SignalSet$new(platform)
-  probes <- rownames(dm.ordering[dm.ordering$DESIGN=='I' & dm.ordering$COLOR_CHANNEL=='Grn',])
-  mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$IG <- mt
-  mt <- matrix(pmax(rnorm(length(probes)*2, 400, 200),0), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$oobR <- mt
 
-  probes <- rownames(dm.ordering[dm.ordering$DESIGN=='I' & dm.ordering$COLOR_CHANNEL=='Red',])
-  mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$IR <- mt
-  mt <- matrix(pmax(rnorm(length(probes)*2, 400, 200),0), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$oobG <- mt
+    dm.ordering <- getBuiltInData('ordering', platform)
+    sset <- SignalSet$new(platform)
+    probes <- rownames(dm.ordering[dm.ordering$DESIGN=='I' & dm.ordering$COLOR_CHANNEL=='Grn',])
+    mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$IG <- mt
+    mt <- matrix(pmax(rnorm(length(probes)*2, 400, 200),0), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$oobR <- mt
 
-  probes <- rownames(dm.ordering[dm.ordering$DESIGN=='II',])
-  mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$II <- mt
+    probes <- rownames(dm.ordering[dm.ordering$DESIGN=='I' & dm.ordering$COLOR_CHANNEL=='Red',])
+    mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$IR <- mt
+    mt <- matrix(pmax(rnorm(length(probes)*2, 400, 200),0), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$oobG <- mt
 
-  dm.controls <- getBuiltInData('controls', platform)
-  ctl <- as.data.frame(matrix(pmax(rnorm(2*nrow(dm.controls), 400, 300),0), ncol=2))
-  rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
-  ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
-  colnames(ctl) <- c('G','R','col','type')
-  sset$ctl <- ctl
+    probes <- rownames(dm.ordering[dm.ordering$DESIGN=='II',])
+    mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$II <- mt
 
-  sset
+    dm.controls <- getBuiltInData('controls', platform)
+    ctl <- as.data.frame(matrix(pmax(rnorm(2*nrow(dm.controls), 400, 300),0), ncol=2))
+    rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
+    ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
+    colnames(ctl) <- c('G','R','col','type')
+    sset$ctl <- ctl
+
+    sset
 }
 
 ## get negative control probes
 negControls <- function(sset) {
-  negctls <- sset$ctl[grep('negative', tolower(rownames(sset$ctl))),]
-  negctls <- subset(negctls, col!=-99)
-  negctls
+    
+    negctls <- sset$ctl[grep('negative', tolower(rownames(sset$ctl))),]
+    negctls <- subset(negctls, col!=-99)
+    negctls
 }
 
 #' mean intensity
@@ -155,7 +157,7 @@ negControls <- function(sset) {
 #' intensities <- meanIntensity(sset)
 #' @export
 meanIntensity <- function(sset) {
-  mean(c(sset$IG, sset$IR, sset$II), na.rm=TRUE)
+    mean(c(sset$IG, sset$IR, sset$II), na.rm=TRUE)
 }
 
 #' get sex information
@@ -167,12 +169,12 @@ meanIntensity <- function(sset) {
 #' getSexInfo(sset)
 #' @export
 getSexInfo <- function(sset) {
-  cleanY <- getBuiltInData('female.clean.chrY.probes', sset$platform)
-  xLinked <- getBuiltInData('female.xlinked.chrX.probes', sset$platform)
-  xLinkedBeta <- getBetas(sset[xLinked], quality.mask=FALSE)
-  c(medianY=median(sset[cleanY]$totalIntensities()),
-    medianX=median(sset[xLinked]$totalIntensities()),
-    fracXlinked=(sum(xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) / sum(!(is.na(xLinkedBeta)))))
+    cleanY <- getBuiltInData('female.clean.chrY.probes', sset$platform)
+    xLinked <- getBuiltInData('female.xlinked.chrX.probes', sset$platform)
+    xLinkedBeta <- getBetas(sset[xLinked], quality.mask=FALSE)
+    c(medianY=median(sset[cleanY]$totalIntensities()),
+      medianX=median(sset[xLinked]$totalIntensities()),
+      fracXlinked=(sum(xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) / sum(!(is.na(xLinkedBeta)))))
 }
 
 #' infer sex
@@ -198,8 +200,8 @@ getSexInfo <- function(sset) {
 #' sex <- inferSex(sset)
 #' @export
 inferSex <- function(sset) {
-  sex.info <- getSexInfo(sset)
-  as.character(predict(getBuiltInData('sex.inference.model'), sex.info))
+    sex.info <- getSexInfo(sset)
+    as.character(predict(getBuiltInData('sex.inference.model'), sex.info))
 }
 
 #' infer ethnicity
@@ -218,16 +220,16 @@ inferSex <- function(sset) {
 #' inferEthnicity(sset)
 #' @export
 inferEthnicity <- function(sset) {
-  ccsprobes <- getBuiltInData('ethnicity.ccs.probes')
-  rsprobes <- getBuiltInData('ethnicity.rs.probes')
-  ethnicity.model <- getBuiltInData('ethnicity.model')
-  af <- c(getBetas(sset[rsprobes], quality.mask = FALSE,
-                   nondetection.mask=FALSE),
-          getAFTypeIbySumAlleles(
-            sset[ccsprobes],
-            quality.mask = FALSE,
-            nondetection.mask = FALSE))
-  as.character(predict(ethnicity.model, af))
+    ccsprobes <- getBuiltInData('ethnicity.ccs.probes')
+    rsprobes <- getBuiltInData('ethnicity.rs.probes')
+    ethnicity.model <- getBuiltInData('ethnicity.model')
+    af <- c(getBetas(sset[rsprobes], quality.mask = FALSE,
+                     nondetection.mask=FALSE),
+            getAFTypeIbySumAlleles(
+                sset[ccsprobes],
+                quality.mask = FALSE,
+                nondetection.mask = FALSE))
+    as.character(predict(ethnicity.model, af))
 }
 
 #' subset a SignalSet
@@ -237,13 +239,13 @@ inferEthnicity <- function(sset) {
 #' @return a \code{SignalSet} with only probes
 #' @export
 `[.SignalSet` <- function(sset, probes) {
-  sset <- sset$clone()
-  sset$IR <- sset$IR[rownames(sset$IR) %in% probes,]
-  sset$IG <- sset$IG[rownames(sset$IG) %in% probes,]
-  sset$II <- sset$II[rownames(sset$II) %in% probes,]
-  sset$oobR <- sset$oobR[rownames(sset$oobR) %in% probes,]
-  sset$oobG <- sset$oobG[rownames(sset$oobG) %in% probes,]
-  sset
+    sset <- sset$clone()
+    sset$IR <- sset$IR[rownames(sset$IR) %in% probes,]
+    sset$IG <- sset$IG[rownames(sset$IG) %in% probes,]
+    sset$II <- sset$II[rownames(sset$II) %in% probes,]
+    sset$oobR <- sset$oobR[rownames(sset$oobR) %in% probes,]
+    sset$oobG <- sset$oobG[rownames(sset$oobG) %in% probes,]
+    sset
 }
 
 #' get beta values
@@ -259,21 +261,21 @@ inferEthnicity <- function(sset) {
 #' betas <- getBetas(sset)
 #' @export
 getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, mask.use.tcga=FALSE, pval.threshold=0.05) {
-  betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
-  betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
-  betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
-  betas <- c(betas1, betas2, betas3)
-  if (nondetection.mask)
-    betas[sset$pval[names(betas)] > pval.threshold] <- NA
-  if (quality.mask) {
-    if (mask.use.tcga) {
-      mask <- getBuiltInData('mask.tcga', sset$platform)
-    } else {
-      mask <- getBuiltInData('mask', sset$platform)
+    betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
+    betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
+    betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
+    betas <- c(betas1, betas2, betas3)
+    if (nondetection.mask)
+        betas[sset$pval[names(betas)] > pval.threshold] <- NA
+    if (quality.mask) {
+        if (mask.use.tcga) {
+            mask <- getBuiltInData('mask.tcga', sset$platform)
+        } else {
+            mask <- getBuiltInData('mask', sset$platform)
+        }
+        betas[names(betas) %in% mask] <- NA
     }
-    betas[names(betas) %in% mask] <- NA
-  }
-  betas[order(names(betas))]
+    betas[order(names(betas))]
 }
 
 #' get beta values treating type I by summing channels
@@ -290,21 +292,21 @@ getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, mask.use.t
 #' betas <- getBetasTypeIbySumChannels(sset)
 #' @export
 getBetasTypeIbySumChannels <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
-  ## .oobR <- oobR[rownames(IG),]
-  ## .oobG <- oobG[rownames(IR),]
-  betas1 <- pmax(sset$IG[,'M']+sset$oobR[,'M'],1) /
-    pmax(sset$IG[,'M']+sset$oobR[,'M']+sset$IG[,'U']+sset$oobR[,'U'],2)
-  betas2 <- pmax(sset$IR[,'M']+sset$oobG[,'M'],1) /
-    pmax(sset$IR[,'M']+sset$oobG[,'M']+sset$IR[,'U']+sset$oobG[,'U'],2)
-  betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
-  betas <- c(betas1, betas2, betas3)
-  if (nondetection.mask)
-    betas[sset$pval[names(betas)]>pval.threshold] <- NA
-  if (quality.mask) {
-    mask <- getBuiltInData('mask', sset$platform)
-    betas[names(betas) %in% mask] <- NA
-  }
-  betas[order(names(betas))]
+    ## .oobR <- oobR[rownames(IG),]
+    ## .oobG <- oobG[rownames(IR),]
+    betas1 <- pmax(sset$IG[,'M']+sset$oobR[,'M'],1) /
+        pmax(sset$IG[,'M']+sset$oobR[,'M']+sset$IG[,'U']+sset$oobR[,'U'],2)
+    betas2 <- pmax(sset$IR[,'M']+sset$oobG[,'M'],1) /
+        pmax(sset$IR[,'M']+sset$oobG[,'M']+sset$IR[,'U']+sset$oobG[,'U'],2)
+    betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
+    betas <- c(betas1, betas2, betas3)
+    if (nondetection.mask)
+        betas[sset$pval[names(betas)]>pval.threshold] <- NA
+    if (quality.mask) {
+        mask <- getBuiltInData('mask', sset$platform)
+        betas[names(betas) %in% mask] <- NA
+    }
+    betas[order(names(betas))]
 }
 
 #' get allele frequency treating type I by summing alleles
@@ -319,36 +321,36 @@ getBetasTypeIbySumChannels <- function(sset, quality.mask=TRUE, nondetection.mas
 #' sset <- makeExampleSeSAMeDataSet()
 #' betas <- getBetasTypeIbySumAlleles(sset)
 getAFTypeIbySumAlleles <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
-  ## .oobR <- oobR[rownames(IG),]
-  ## .oobG <- oobG[rownames(IR),]
-  betas1 <- pmax(rowSums(sset$oobR),1) / pmax(rowSums(sset$oobR) + rowSums(sset$IG), 2)
-  betas2 <- pmax(rowSums(sset$oobG),1) / pmax(rowSums(sset$oobG) + rowSums(sset$IR), 2)
-  betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
-  betas <- c(betas1, betas2, betas3)
-  if (nondetection.mask)
-    betas[sset$pval[names(betas)]>pval.threshold] <- NA
-  if (quality.mask) {
-    mask <- getBuiltInData('mask', sset$platform)
-    betas[names(betas) %in% mask] <- NA
-  }
-  betas[order(names(betas))]
+    ## .oobR <- oobR[rownames(IG),]
+    ## .oobG <- oobG[rownames(IR),]
+    betas1 <- pmax(rowSums(sset$oobR),1) / pmax(rowSums(sset$oobR) + rowSums(sset$IG), 2)
+    betas2 <- pmax(rowSums(sset$oobG),1) / pmax(rowSums(sset$oobG) + rowSums(sset$IR), 2)
+    betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
+    betas <- c(betas1, betas2, betas3)
+    if (nondetection.mask)
+        betas[sset$pval[names(betas)]>pval.threshold] <- NA
+    if (quality.mask) {
+        mask <- getBuiltInData('mask', sset$platform)
+        betas[names(betas) %in% mask] <- NA
+    }
+    betas[order(names(betas))]
 }
 
 ## Import one IDAT file
 ## return a data frame with 2 columns, corresponding to
 ## cy3 (Grn) and cy5 (Red) color channel signal
 readIDAT1 <- function(idat.name) {
-  ida.grn <- illuminaio::readIDAT(paste0(idat.name,"_Grn.idat"));
-  ida.red <- illuminaio::readIDAT(paste0(idat.name,"_Red.idat"));
-  d <- cbind(cy3=ida.grn$Quants[,"Mean"], cy5=ida.red$Quants[,"Mean"])
-  colnames(d) <- c('G', 'R')
-  chip.type <- switch(
-    ida.red$ChipType,
-    'BeadChip 8x5'='EPIC',
-    'BeadChip 12x8'='HM450',
-    'BeadChip 12x1'='HM27')
-  attr(d, 'platform') <- chip.type
-  d
+    ida.grn <- illuminaio::readIDAT(paste0(idat.name,"_Grn.idat"));
+    ida.red <- illuminaio::readIDAT(paste0(idat.name,"_Red.idat"));
+    d <- cbind(cy3=ida.grn$Quants[,"Mean"], cy5=ida.red$Quants[,"Mean"])
+    colnames(d) <- c('G', 'R')
+    chip.type <- switch(
+        ida.red$ChipType,
+        'BeadChip 8x5'='EPIC',
+        'BeadChip 12x8'='HM450',
+        'BeadChip 12x1'='HM27')
+    attr(d, 'platform') <- chip.type
+    d
 }
 
 #' Import IDATs from a list of samples
@@ -370,33 +372,33 @@ readIDAT1 <- function(idat.name) {
 #' @export
 readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
 
-  if (is.null(mc.cores)) {
-    if (is.null(getOption('mc.cores')))
-      mc.cores <- 4
-    else
-      mc.cores <- getOption('mc.cores')
-  }
-  
-  if (!is.null(base.dir))
-    sample.paths <- paste0(base.dir,'/',sample.names)
-  else
-    sample.paths <- sample.names
-
-  if (mc)
-    dms <- mclapply(sample.paths, readIDAT1, mc.cores=mc.cores)
-  else
-    dms <- lapply(sample.paths, readIDAT1)
-
-  names(dms) <- basename(sample.names)
-  if (!raw) {
-    if (mc) {
-      mclapply(dms, chipAddressToSignal, mc.cores=mc.cores)
-    } else {
-      lapply(dms, chipAddressToSignal)
+    if (is.null(mc.cores)) {
+        if (is.null(getOption('mc.cores')))
+            mc.cores <- 4
+        else
+            mc.cores <- getOption('mc.cores')
     }
-  } else {
-    dms
-  }
+    
+    if (!is.null(base.dir))
+        sample.paths <- paste0(base.dir,'/',sample.names)
+    else
+        sample.paths <- sample.names
+
+    if (mc)
+        dms <- mclapply(sample.paths, readIDAT1, mc.cores=mc.cores)
+    else
+        dms <- lapply(sample.paths, readIDAT1)
+
+    names(dms) <- basename(sample.names)
+    if (!raw) {
+        if (mc) {
+            mclapply(dms, chipAddressToSignal, mc.cores=mc.cores)
+        } else {
+            lapply(dms, chipAddressToSignal)
+        }
+    } else {
+        dms
+    }
 }
 
 #' Import IDATs from a directory
@@ -409,9 +411,9 @@ readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores
 #' @return a list of \code{SignalSet}s
 #' @export
 readIDATsFromDir <- function(dir.name, ...) {
-  fns <- list.files(dir.name)
-  sample.names <- unique(sub("_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
-  readIDATs(paste0(dir.name,'/',sample.names), ...)
+    fns <- list.files(dir.name)
+    sample.names <- unique(sub("_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
+    readIDATs(paste0(dir.name,'/',sample.names), ...)
 }
 
 #' Import IDATs from a sample sheet
@@ -431,8 +433,8 @@ readIDATsFromDir <- function(dir.name, ...) {
 #' }
 #' @export
 readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NULL, ...) {
-  sample.names <- read.csv(sample.sheet, stringsAsFactors=FALSE)
-  readIDATs(sample.names[[column.name]], base.dir=base.dir, ...)
+    sample.names <- read.csv(sample.sheet, stringsAsFactors=FALSE)
+    readIDATs(sample.names[[column.name]], base.dir=base.dir, ...)
 }
 
 #' Lookup address in one sample
@@ -451,61 +453,61 @@ readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NUL
 #' @return a SignalSet, indexed by probe ID address
 chipAddressToSignal <- function(dm) {
 
-  platform <- attr(dm, 'platform')
-  dm.ordering <- getBuiltInData('ordering', platform)
+    platform <- attr(dm, 'platform')
+    dm.ordering <- getBuiltInData('ordering', platform)
 
-  sset <- SignalSet$new(platform)
+    sset <- SignalSet$new(platform)
 
-  ## type I green channel / oob red channel
-  IordG <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='G')),]
-  ## 2-channel for green probes' M allele
-  IuG2ch <- dm[match(IordG$U, rownames(dm)),]
-  IuG <- IuG2ch[,1]
-  ## 2-channel for green probes' U allele
-  ImG2ch <- dm[match(IordG$M, rownames(dm)),]
-  ImG <- ImG2ch[,1]
-  sset$oobR <- as.matrix(data.frame(M=ImG2ch[,2], U=IuG2ch[,2], row.names=IordG$Probe_ID))
-  sset$IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
+    ## type I green channel / oob red channel
+    IordG <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='G')),]
+    ## 2-channel for green probes' M allele
+    IuG2ch <- dm[match(IordG$U, rownames(dm)),]
+    IuG <- IuG2ch[,1]
+    ## 2-channel for green probes' U allele
+    ImG2ch <- dm[match(IordG$M, rownames(dm)),]
+    ImG <- ImG2ch[,1]
+    sset$oobR <- as.matrix(data.frame(M=ImG2ch[,2], U=IuG2ch[,2], row.names=IordG$Probe_ID))
+    sset$IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
-  ## type I red channel / oob green channel
-  IordR <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='R')),]
-  ## 2-channel for red probes' m allele
-  IuR2ch <- dm[match(IordR$U, rownames(dm)),]
-  IuR <- IuR2ch[,2]
-  ## 2-channel for red probes' u allele
-  ImR2ch <- dm[match(IordR$M, rownames(dm)),]
-  ImR <- ImR2ch[,2]
-  sset$oobG <- as.matrix(data.frame(M=ImR2ch[,1], U=IuR2ch[,1], row.names=IordR$Probe_ID))
-  sset$IR <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
+    ## type I red channel / oob green channel
+    IordR <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='R')),]
+    ## 2-channel for red probes' m allele
+    IuR2ch <- dm[match(IordR$U, rownames(dm)),]
+    IuR <- IuR2ch[,2]
+    ## 2-channel for red probes' u allele
+    ImR2ch <- dm[match(IordR$M, rownames(dm)),]
+    ImR <- ImR2ch[,2]
+    sset$oobG <- as.matrix(data.frame(M=ImR2ch[,1], U=IuR2ch[,1], row.names=IordR$Probe_ID))
+    sset$IR <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
 
-  ## type II
-  IIord <- dm.ordering[dm.ordering$DESIGN=="II",]
-  signal.II <- dm[match(IIord$U, rownames(dm)),]
-  colnames(signal.II) <- c('M', 'U')
-  rownames(signal.II) <- IIord$Probe_ID
-  sset$II <- signal.II
+    ## type II
+    IIord <- dm.ordering[dm.ordering$DESIGN=="II",]
+    signal.II <- dm[match(IIord$U, rownames(dm)),]
+    colnames(signal.II) <- c('M', 'U')
+    rownames(signal.II) <- IIord$Probe_ID
+    sset$II <- signal.II
 
-  ## control probes
-  dm.controls <- getBuiltInData('controls', platform)
-  ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
-  rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
-  ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
-  colnames(ctl) <- c('G','R','col','type')
-  sset$ctl <- ctl
+    ## control probes
+    dm.controls <- getBuiltInData('controls', platform)
+    ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
+    rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
+    ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
+    colnames(ctl) <- c('G','R','col','type')
+    sset$ctl <- ctl
 
-  sset$pval <- detectionPoobEcdf(sset)
-  sset
+    sset$pval <- detectionPoobEcdf(sset)
+    sset
 }
 
 subsetBeta <- function(sset, max=1.1, min=-0.1) {
-  sset <- sset$clone()
-  lapply(c('IG','IR','II'), function(nm.cat) {
-    s <- sset[[nm.cat]]
-    b <- s[,'M']/(s[,'M']+s[,'U'])
-    sset[[nm.cat]] <<- s[(b>min & b<max),]
-    invisible()
-  })
-  sset
+    sset <- sset$clone()
+    lapply(c('IG','IR','II'), function(nm.cat) {
+        s <- sset[[nm.cat]]
+        b <- s[,'M']/(s[,'M']+s[,'U'])
+        sset[[nm.cat]] <<- s[(b>min & b<max),]
+        invisible()
+    })
+    sset
 }
 
 #' compute internal bisulfite conversion control
@@ -524,11 +526,11 @@ subsetBeta <- function(sset, max=1.1, min=-0.1) {
 #' 
 #' @export
 bisConversionControl <- function(sset, use.median=FALSE) {
-  extC <- getBuiltInData('typeI.extC', sset$platform)
-  extT <- getBuiltInData('typeI.extT', sset$platform)
-  if (use.median) {
-    median(sset$oobG[extC,], na.rm=TRUE) / median(sset$oobG[extT,], na.rm=TRUE)
-  } else {
-    mean(sset$oobG[extC,], na.rm=TRUE) / mean(sset$oobG[extT,], na.rm=TRUE)
-  }
+    extC <- getBuiltInData('typeI.extC', sset$platform)
+    extT <- getBuiltInData('typeI.extT', sset$platform)
+    if (use.median) {
+        median(sset$oobG[extC,], na.rm=TRUE) / median(sset$oobG[extT,], na.rm=TRUE)
+    } else {
+        mean(sset$oobG[extC,], na.rm=TRUE) / mean(sset$oobG[extT,], na.rm=TRUE)
+    }
 }
