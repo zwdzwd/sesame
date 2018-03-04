@@ -28,3 +28,7 @@ None
 \description{
 visualize gene
 }
+\examples{
+betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+visualizeGene('ADA', betas, 'HM450')
+}

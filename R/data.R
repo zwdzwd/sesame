@@ -100,11 +100,13 @@ getBuiltInData <- function(nm, platform='', subdir='') {
 #'
 #' @importFrom XML htmlTreeParse
 #' @importFrom utils download.file
-#'
+#' @return NULL
 #' @examples
 #' \dontrun{
 #' cacheBuiltInData() # download annotation data to $SESAMEHOME
 #' }
+#'
+#' cat("Data will be deposited to", Sys.getenv('SESAMEHOME'), "\n")
 #' @export
 cacheBuiltInData <- function() {
 

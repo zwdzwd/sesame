@@ -13,4 +13,6 @@ need environment SESAMEHOME be set
 \dontrun{
 cacheBuiltInData() # download annotation data to $SESAMEHOME
 }
+
+cat("Data will be deposited to", Sys.getenv('SESAMEHOME'), "\\n")
 }

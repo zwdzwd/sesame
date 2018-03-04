@@ -28,3 +28,14 @@ a list of fraction, min error and unknown component methylation state
 \description{
 Estimate cell composition using reference
 }
+\examples{
+g <- diffRefSet(getRefSet(platform='hm450'))
+M <- ncol(g)
+trueFrac <- runif(M+1)
+trueFrac <- trueFrac / sum(trueFrac)
+g0 <- sample(c(0,1), nrow(g), replace=TRUE)
+q <- cbind(g0, g) \%*\% trueFrac + rnorm(length(g0), mean=0, sd = 0.0)
+q[q<0] <- 0
+q[q>1] <- 1
+est <- estimateCellComposition(g, q)
+}

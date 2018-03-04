@@ -7,7 +7,7 @@
 getSegment(cf1, seg.id)
 }
 \arguments{
-\item{cf1}{coefficient table of one factor from segmentDMR}
+\item{cf1}{coefficient table of one factor from DMR}
 
 \item{seg.id}{segment ID}
 }
@@ -16,4 +16,10 @@ coefficient table from given segment
 }
 \description{
 select segment from coefficient table
+}
+\examples{
+betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+cf <- DMR(betas, sample.info, ~type)
+getSegment(cf[[1]], cf[[1]][['Seg.ID']][1])
 }
