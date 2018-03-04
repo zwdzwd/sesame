@@ -4,9 +4,11 @@
 \alias{makeExampleSeSAMeDataSet}
 \title{Make a simulated SeSAMe data set}
 \usage{
-makeExampleSeSAMeDataSet(platform = "HM450")
+makeExampleSeSAMeDataSet(n = 1000, platform = "HM450")
 }
 \arguments{
+\item{n}{optional,}
+
 \item{platform}{optional, HM450, EPIC or HM27}
 }
 \value{

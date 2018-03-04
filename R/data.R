@@ -155,7 +155,7 @@ cacheBuiltInData <- function() {
 #' @param platform optional, HM450, EPIC or HM27
 #' @return example object
 #' @examples
-#' betas <- SeSAMeGetExample('TCGA-2L-AAQA-01A-21D-A38H-05')
+#' betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
 #' @export
 SeSAMeGetExample <- function(nm, platform='') {
     getBuiltInData(nm, platform, 'examples');

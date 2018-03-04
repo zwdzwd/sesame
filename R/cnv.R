@@ -12,6 +12,8 @@
 #' @export
 cnSegmentation <- function(sset, ssets.normal=NULL, refversion='hg19') {
 
+    pkgTest('GenomicRanges')
+    
     ## retrieve chromosome info and probe coordinates
     chrominfo <- getBuiltInData(paste0(refversion, '.chrominfo'))
     probe.coords <- getBuiltInData(paste0(sset$platform, '.mapped.probes.', refversion))
@@ -123,8 +125,8 @@ getBinCoordinates <- function(chrominfo, probe.coords) {
     
     bin.coords <- GenomicRanges::sort(
         GenomicRanges::GRanges(
-            seqnames=bin.coords$seqnames,
-            IRanges::IRanges(start=bin.coords$start, end=bin.coords$end),
+            seqnames = bin.coords$seqnames,
+            IRanges::IRanges(start = bin.coords$start, end = bin.coords$end),
             seqinfo = GenomicRanges::seqinfo(tiles)))
     
     chr.cnts <- table(as.vector(GenomicRanges::seqnames(bin.coords)))
