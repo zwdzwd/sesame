@@ -28,9 +28,7 @@ diffRefSet <- function(g) {
 #' @param platform EPIC or HM450
 #' @return g
 #' @examples
-#' \dontrun{
-#' betas <- getRefSet('CD4T')
-#' }
+#' betas <- getRefSet('CD4T', platform='HM450')
 #' @export
 getRefSet <- function(cells=NULL, platform='EPIC') {
     if (is.null(cells)) {

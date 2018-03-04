@@ -10,6 +10,9 @@
 #' @param ... additional options, see visualizeRegion
 #' @import grid
 #' @return None
+#' @examples
+#' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+#' visualizeGene('ADA', betas, 'HM450')
 #' @export
 visualizeGene <- function(
     geneName, betas, platform='EPIC',
