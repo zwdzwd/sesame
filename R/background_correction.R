@@ -7,7 +7,7 @@
 #' @param offset offset
 #' @return a new \code{SignalSet} with noob background correction
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet('HM450')
+#' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)
 #' @export
 noob <- function(sset, in.place=FALSE, offset=15) {

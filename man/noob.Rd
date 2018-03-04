@@ -21,6 +21,6 @@ Norm-Exp deconvolution using Out-Of-Band (oob) probes
 Note p-values are unchanged (based on the raw signal intensities).
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet('HM450')
+sset <- makeExampleTinyEPICDataSet()
 sset.nb <- noob(sset)
 }
