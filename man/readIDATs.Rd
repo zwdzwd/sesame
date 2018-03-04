@@ -29,4 +29,7 @@ having signal intensity addressed by chip address
 \dontrun{
 ssets <- readIDATs(c('data/5775041003_R02C01', 'data/5775041003_R03C01'))
 }
+
+cat('sample.names is a vector of common prefixes
+between the _Grn.idat and _Red.idat\\n')
 }

@@ -7,11 +7,17 @@
 topSegments(cf1)
 }
 \arguments{
-\item{cf1}{coefficient table of one factor from segmentDMR}
+\item{cf1}{coefficient table of one factor from DMR}
 }
 \value{
 coefficient table ordered by adjusted p-value of segments
 }
 \description{
 This is a convenience function to show top differential methylated segments.
+}
+\examples{
+betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+cf <- DMR(betas, sample.info, ~type)
+topSegments(cf[[1]])
 }

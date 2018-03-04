@@ -200,6 +200,7 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' require ggplot2, scales
 #' @param seg a \code{CNSegment} object
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
+#' @return plot graphics
 #' @examples
 #' seg <- SeSAMeGetExample('EPIC.seg.LNCaP.Rep1')
 #' visualizeSegments(seg)

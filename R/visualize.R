@@ -49,7 +49,7 @@ visualizeGene <- function(
         betas, platform=platform, refversion=refversion, ...)
 }
 
-#' visualize probes
+#' Visualize region that contains the specified probes
 #'
 #' @param probeNames probe names
 #' @param betas beta value matrix (row: probes, column: samples)
@@ -59,12 +59,17 @@ visualizeGene <- function(
 #' @param dwstream distance to extend downstream
 #' @param ... additional options, see visualizeRegion
 #' @return None
+#' @examples
+#' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+#' visualizeProbes(c('cg22316575', 'cg16084772', 'cg20622019'), betas, 'HM450')
 #' @export
 visualizeProbes <- function(
     probeNames, betas,
     platform='EPIC',
     refversion='hg38',
     upstream=1000, dwstream=1000, ...) {
+
+    stopifnot(refversion %in% c('hg19','hg38'))
     
     pkgTest('GenomicRanges')
     probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
@@ -83,7 +88,7 @@ visualizeProbes <- function(
         betas, platform=platform, refversion=refversion, ...)
 }
 
-#' get probes by gene
+#' Get probes by gene
 #'
 #' @param geneName gene name
 #' @param platform EPIC or HM450
@@ -132,6 +137,9 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
 #' @return graphics or a matrix containing the captured beta values
 #' @import grid
 #' @importMethodsFrom IRanges subsetByOverlaps
+#' @examples
+#' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+#' visualizeRegion('chr20', 44648623, 44652152, betas, 'HM450')
 #' @export
 visualizeRegion <- function(
     chrm, plt.beg, plt.end, betas,
@@ -146,7 +154,7 @@ visualizeRegion <- function(
     na.rm=FALSE, dmin=0, dmax=1) {
 
     pkgTest('GenomicRanges')
-    
+
     if (is.null(dim(betas))) {
         betas <- as.matrix(betas);
     }
@@ -297,16 +305,18 @@ plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg38') {
     gList(
         grid.text(
             sprintf("%s:%d-%d", chrom, plt.beg, plt.end), 0, 0.9,
-            just=c('left','bottom'), draw=FALSE),
+            just = c('left','bottom'), draw = FALSE),
         grid.rect(
-            sapply(cytoBand.target$chromStart, function(x) (x-chromBeg)/chromWid), 0.35,
-            (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid, 0.5,
-            gp=gpar(fill=bandColor, col=bandColor),
-            just=c('left','bottom'), draw=FALSE),
+            sapply(
+                cytoBand.target$chromStart, function(x) (x-chromBeg)/chromWid),
+            0.35,
+            (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid,
+            0.5, gp = gpar(fill = bandColor, col = bandColor),
+            just = c('left','bottom'), draw = FALSE),
         grid.segments(
-            x0=pltx0, y0=0.3,
-            x1=c(0,1), y1=0.1, draw=FALSE, gp=gpar(lty='dotted')),
+            x0 = pltx0, y0 = 0.3,
+            x1 = c(0,1), y1 = 0.1, draw = FALSE, gp = gpar(lty='dotted')),
         grid.segments(
-            x0=pltx0, y0=0.3,
-            x1=pltx0, y1=0.85, draw=FALSE))
+            x0 = pltx0, y0 = 0.3,
+            x1 = pltx0, y1 = 0.85, draw = FALSE))
 }

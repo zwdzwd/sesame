@@ -1,11 +1,12 @@
 ## clean reference set to non NA sites
 cleanRefSet <- function(g, platform) {
+
     pkgTest('GenomicRanges')
     mapinfo <- getBuiltInData('mapped.probes.hg19', platform)
-    g.clean <- g[apply(g, 1, function(x) !any(is.na(x))),]
-    g.clean <- g.clean[rownames(g.clean) %in% names(mapinfo),]
-    g.clean <- g.clean[!(as.vector(GenomicRanges::seqnames(mapinfo[rownames(g.clean)])) %in% c('chrX','chrY','chrM')),]
-    g.clean <- g.clean[grep('cg',rownames(g.clean)),]
+    g.clean <- g[apply(g, 1, function(x) !any(is.na(x))),,drop=FALSE]
+    g.clean <- g.clean[rownames(g.clean) %in% names(mapinfo),,drop=FALSE]
+    g.clean <- g.clean[!(as.vector(GenomicRanges::seqnames(mapinfo[rownames(g.clean)])) %in% c('chrX','chrY','chrM')),,drop=FALSE]
+    g.clean <- g.clean[grep('cg',rownames(g.clean)),,drop=FALSE]
     g.clean
 }
 
@@ -14,7 +15,8 @@ cleanRefSet <- function(g, platform) {
 #' 
 #' @param g reference set
 #' @return g
-#'
+#' @examples
+#' g <- diffRefSet(getRefSet(platform='hm450'))
 #' @export
 diffRefSet <- function(g) {
     g <- g[apply(g, 1, function(x) min(x) != max(x)),]
@@ -139,6 +141,16 @@ getg0 <- function(f, g, q) {
 #' delta - delta score to reset counter (0.0001)
 #' verbose - output debug info (FALSE)
 #' @return a list of fraction, min error and unknown component methylation state
+#' @examples
+#' g <- diffRefSet(getRefSet(platform='hm450'))
+#' M <- ncol(g)
+#' trueFrac <- runif(M+1)
+#' trueFrac <- trueFrac / sum(trueFrac)
+#' g0 <- sample(c(0,1), nrow(g), replace=TRUE)
+#' q <- cbind(g0, g) %*% trueFrac + rnorm(length(g0), mean=0, sd = 0.0)
+#' q[q<0] <- 0
+#' q[q>1] <- 1
+#' est <- estimateCellComposition(g, q)
 #' @export
 estimateCellComposition <- function(g, q, refine=TRUE, dichotomize=FALSE, ...) {
 

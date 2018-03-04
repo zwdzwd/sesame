@@ -24,7 +24,7 @@
 #' @param sub.name subclass name
 #' @return one or a list of heatmaps (depends on whether dimension is split)
 WHeatmap <- function(data=NULL, dm=NULL, name='', continuous=NULL,
-                     cmp = CMPar(), # colormapping parameters
+                     cmp = NULL, # colormapping parameters
                      cm = NULL,
 
                      ## tick label on x-axis
@@ -49,58 +49,61 @@ WHeatmap <- function(data=NULL, dm=NULL, name='', continuous=NULL,
                      ## graph parameters
                      gp = NULL) {
 
-  if(!('matrix' %in% class(data))) {
-    data <- tryCatch({
-      as.matrix(data)
-    }, error = function(e) {
-      message('data argument must be matrix-like. Abort.')
-      stop()
-    })
-  }
-
-  hm <- lapply(formals(), eval)
-  invisible(lapply(names(as.list(match.call()))[-1], function (nm) {
-    hm[[nm]] <<- get(nm)
-  }))
-
-  if (is.null(hm$dm))
-    hm$dm <- WDim(0,0,1,1,nr=nrow(data), nc=ncol(data))
-
-  ## auto-infer continuous/discrete
-  if (is.null(continuous)) {
-    if (!is.null(cm))
-      hm$continuous <- cm$continuous
-    else if (!is.numeric(data) || length(unique(data)) < 5)
-      hm$continuous <- FALSE
-    else
-      hm$continuous <- TRUE
-  }
-
-  ## graph parameters
-  hm$gp <- list()
-  hm$gp$col <- 'white'
-  hm$gp$lty <- 'blank'
-  lapply(names(gp), function(x) {hm$gp[[x]] <<- gp[[x]]})
-
-  ## map to colors
-  if (hm$continuous)
-    hm$cm <- MapToContinuousColors(hm$data, cmp=hm$cmp, given.cm=cm)
-  else
-    hm$cm <- MapToDiscreteColors(hm$data, cmp=hm$cmp, given.cm=cm)
-
-  class(hm) <- c('WHeatmap', 'WObject')
-  if (!is.null(sub.name))
-    class(hm) <- c(sub.name, class(hm))
-
-  force(hm);
-  structure(function(group) {
-    hm$dm <- Resolve(hm$dm, group, nr=nrow(hm$data), nc=ncol(hm$data))
-    ## split if dimension indicates so
-    if (!is.null(hm$dm$column.split) || !is.null(hm$dm$row.split)) {
-      return(SplitWHeatmap(hm, hm$dm, cm, group))
+    if (is.null(cmp))
+        cmp = CMPar()
+    
+    if(!('matrix' %in% class(data))) {
+        data <- tryCatch({
+            as.matrix(data)
+        }, error = function(e) {
+            message('data argument must be matrix-like. Abort.')
+            stop()
+        })
     }
-    hm
-  }, class=c('WGenerator', 'WObject'))
+
+    hm <- lapply(formals(), eval)
+    invisible(lapply(names(as.list(match.call()))[-1], function (nm) {
+        hm[[nm]] <<- get(nm)
+    }))
+
+    if (is.null(hm$dm))
+        hm$dm <- WDim(0,0,1,1,nr=nrow(data), nc=ncol(data))
+
+    ## auto-infer continuous/discrete
+    if (is.null(continuous)) {
+        if (!is.null(cm))
+            hm$continuous <- cm$continuous
+        else if (!is.numeric(data) || length(unique(data)) < 5)
+            hm$continuous <- FALSE
+        else
+            hm$continuous <- TRUE
+    }
+
+    ## graph parameters
+    hm$gp <- list()
+    hm$gp$col <- 'white'
+    hm$gp$lty <- 'blank'
+    lapply(names(gp), function(x) {hm$gp[[x]] <<- gp[[x]]})
+
+    ## map to colors
+    if (hm$continuous)
+        hm$cm <- MapToContinuousColors(hm$data, cmp=hm$cmp, given.cm=cm)
+    else
+        hm$cm <- MapToDiscreteColors(hm$data, cmp=hm$cmp, given.cm=cm)
+
+    class(hm) <- c('WHeatmap', 'WObject')
+    if (!is.null(sub.name))
+        class(hm) <- c(sub.name, class(hm))
+
+    force(hm);
+    structure(function(group) {
+        hm$dm <- Resolve(hm$dm, group, nr=nrow(hm$data), nc=ncol(hm$data))
+        ## split if dimension indicates so
+        if (!is.null(hm$dm$column.split) || !is.null(hm$dm$row.split)) {
+            return(SplitWHeatmap(hm, hm$dm, cm, group))
+        }
+        hm
+    }, class=c('WGenerator', 'WObject'))
 }
 
 SplitWHeatmap <- function(hm, dm, cm, group) {
