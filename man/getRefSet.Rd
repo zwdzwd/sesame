@@ -18,7 +18,5 @@ g
 retrieve reference set
 }
 \examples{
-\dontrun{
-betas <- getRefSet('CD4T')
-}
+betas <- getRefSet('CD4T', platform='HM450')
 }

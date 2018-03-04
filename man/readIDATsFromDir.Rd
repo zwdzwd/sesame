@@ -18,3 +18,9 @@ a list of \code{SignalSet}s
 Each element of the returned list contains a matrix
 having signal intensity addressed by chip address
 }
+\examples{
+\dontrun{
+ssets <- readIDATsFromDir('.')
+}
+cat('dir.name is the folder containing the IDAT files\\n')
+}

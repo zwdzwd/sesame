@@ -319,6 +319,9 @@ readIDAT1 <- function(idat.name) {
 #' \dontrun{
 #' ssets <- readIDATs(c('data/5775041003_R02C01', 'data/5775041003_R03C01'))
 #' }
+#'
+#' cat('sample.names is a vector of common prefixes
+#' between the _Grn.idat and _Red.idat\n')
 #' @export
 readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
 
@@ -359,6 +362,11 @@ readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores
 #' @param dir.name directory name.
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
 #' @return a list of \code{SignalSet}s
+#' @examples
+#' \dontrun{
+#' ssets <- readIDATsFromDir('.')
+#' }
+#' cat('dir.name is the folder containing the IDAT files\n')
 #' @export
 readIDATsFromDir <- function(dir.name, ...) {
     fns <- list.files(dir.name)
@@ -381,6 +389,8 @@ readIDATsFromDir <- function(dir.name, ...) {
 #' \dontrun{
 #' readIDATsFromSheet(data.frame(barcode=c('data/5775041003_R02C01', 'data/5775041003_R03C01')))
 #' }
+#' cat('sample.sheet is a data.frame with a column called
+#' barcode that contains sample prefixes (excluding _Grn.idat and _Red.idat)')
 #' @export
 readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NULL, ...) {
     sample.names <- read.csv(sample.sheet, stringsAsFactors=FALSE)

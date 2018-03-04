@@ -49,3 +49,7 @@ graphics or a matrix containing the captured beta values
 \description{
 visualize region
 }
+\examples{
+betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+visualizeRegion('chr20', 44648623, 44652152, betas, 'HM450')
+}

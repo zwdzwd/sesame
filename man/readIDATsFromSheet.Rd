@@ -27,4 +27,6 @@ having signal intensity addressed by chip address
 \dontrun{
 readIDATsFromSheet(data.frame(barcode=c('data/5775041003_R02C01', 'data/5775041003_R03C01')))
 }
+cat('sample.sheet is a data.frame with a column called
+barcode that contains sample prefixes (excluding _Grn.idat and _Red.idat)')
 }

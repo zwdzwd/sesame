@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualize.R
 \name{visualizeProbes}
 \alias{visualizeProbes}
-\title{visualize probes}
+\title{Visualize region that contains the specified probes}
 \usage{
 visualizeProbes(probeNames, betas, platform = "EPIC", refversion = "hg38",
   upstream = 1000, dwstream = 1000, ...)
@@ -26,5 +26,9 @@ visualizeProbes(probeNames, betas, platform = "EPIC", refversion = "hg38",
 None
 }
 \description{
-visualize probes
+Visualize region that contains the specified probes
+}
+\examples{
+betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+visualizeProbes(c('cg22316575', 'cg16084772', 'cg20622019'), betas, 'HM450')
 }

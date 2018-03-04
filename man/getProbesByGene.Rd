@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualize.R
 \name{getProbesByGene}
 \alias{getProbesByGene}
-\title{get probes by gene}
+\title{Get probes by gene}
 \usage{
 getProbesByGene(geneName, platform = "EPIC", refversion = "hg38")
 }
@@ -17,7 +17,7 @@ getProbesByGene(geneName, platform = "EPIC", refversion = "hg38")
 probes that fall into the given gene
 }
 \description{
-get probes by gene
+Get probes by gene
 }
 \examples{
 probes <- getProbesByGene('CDKN2A')
