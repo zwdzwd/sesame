@@ -25,9 +25,9 @@ optional: download data for offline processing. Otherwise, sesame needs to acces
 
 ```R
 Sys.setenv(SESAMEHOME='<my.download.path>')
-put "export SESAMEHOME=<my.download.path>" to .bashrc to avoid future setting of SESAMEHOME
 cacheBuiltInData()
 ```
+put `export SESAMEHOME=<my.download.path>` to .bashrc to avoid future setting of SESAMEHOME
 
 ## Usage
 
@@ -122,8 +122,8 @@ visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='hm450')
 
 test differential methylation on each locus
 ```R
-betas <- sesameGetExample('hm450.76matchedTCGAchr20')
-sample.info <- sesameGetExample('hm450.76matchedTCGAchr20.sampleinfo')
+betas <- sesameGetExample('HM450.betas.76matchedTCGAchr20')
+sample.info <- sesameGetExample('HM450.sampleinfo.76matchedTCGAchr20')
 cf <- DMR(betas, sample.info, ~patient+type, platform='hm450')
 ```
 
@@ -148,7 +148,7 @@ visualizeProbes(rownames(cf1[cf1[,'Seg.ID']==topSegments(cf1)$Seg.ID[1],]), beta
     
 uses LNCaP EPIC data from GSE86833
 ```R
-example.sset <- sesameGetExample('EPIC.LNCaP.Rep1')
+example.sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
 segs <- cnSegmentation(example.sset)
 ```
 
@@ -163,7 +163,7 @@ Use blood set as example,
 
 ```R
 g <- diffRefSet(getRefSet(c('CD4T','CD19B','CD14Monocytes','CD56NK', 'granulocytes'), platform='hm450'))
-betas <- sesameGetExample('TCGA-2L-AAQA-01A-21D-A38H-05')
+betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
 estimateCellComposition(g, betas[rownames(g)])$frac
 ```
 

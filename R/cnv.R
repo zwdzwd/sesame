@@ -13,7 +13,7 @@
 cnSegmentation <- function(sset, ssets.normal=NULL, refversion='hg19') {
 
     pkgTest('GenomicRanges')
-    
+
     ## retrieve chromosome info and probe coordinates
     chrominfo <- getBuiltInData(paste0(refversion, '.chrominfo'))
     probe.coords <- getBuiltInData(paste0(sset$platform, '.mapped.probes.', refversion))
@@ -29,6 +29,7 @@ cnSegmentation <- function(sset, ssets.normal=NULL, refversion='hg19') {
 
     ## find overlapping probes
     pb <- intersect(rownames(normal.intens), names(target.intens))
+    pb <- intersect(names(probe.coords), pb)
     target.intens <- target.intens[pb]
     normal.intens <- normal.intens[pb,]
     probe.coords <- probe.coords[pb]
