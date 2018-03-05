@@ -6,6 +6,9 @@
 \usage{
 cacheBuiltInData()
 }
+\value{
+the object NULL
+}
 \description{
 need environment SESAMEHOME be set
 }
