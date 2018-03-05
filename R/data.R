@@ -100,7 +100,7 @@ getBuiltInData <- function(nm, platform='', subdir='') {
 #'
 #' @importFrom XML htmlTreeParse
 #' @importFrom utils download.file
-#' @return NULL
+#' @return the object NULL
 #' @examples
 #' \dontrun{
 #' cacheBuiltInData() # download annotation data to $SESAMEHOME
@@ -149,6 +149,7 @@ cacheBuiltInData <- function() {
             paste0(base.dir,'/',subname,'/',dwfile),
             paste0(seshome,'/',subname,'/',dwfile))
     }
+    NULL
 }
 
 #' Retrieve SeSAMe examples
