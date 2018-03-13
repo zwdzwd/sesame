@@ -7,8 +7,8 @@
 #' @param ... additional options
 #' @return the WGroup containing the plotting object
 print.WGenerator <- function(x, ...) {
-  x <- x(NULL)
-  group <- ResolvedWGroup(x)
-  print(group)
-  return(group)
+    x <- x(NULL)
+    group <- ResolvedWGroup(x)
+    print(group)
+    return(group)
 }

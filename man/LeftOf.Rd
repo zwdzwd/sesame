@@ -10,7 +10,8 @@ LeftOf(x = NULL, width = NULL, pad = 0.01, min.ratio = 0.02,
 \arguments{
 \item{x}{an object with dimension}
 
-\item{width}{the width of the new object (when NULL, set proportional to data)}
+\item{width}{the width of the new object (when NULL, set proportional to
+data)}
 
 \item{pad}{padding between the target and current}
 
@@ -20,7 +21,8 @@ LeftOf(x = NULL, width = NULL, pad = 0.01, min.ratio = 0.02,
 
 \item{h.scale}{object for horizontal scaling (when NULL, set to x)}
 
-\item{h.scale.proportional}{when h.scale is provided, whether to make proportional to data}
+\item{h.scale.proportional}{when h.scale is provided, whether to make
+proportional to data}
 }
 \value{
 a dimension to the left of x

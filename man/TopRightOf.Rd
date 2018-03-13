@@ -7,7 +7,8 @@
 TopRightOf(x = NULL, just = c("left", "bottom"), v.pad = 0, h.pad = 0)
 }
 \arguments{
-\item{x}{target object, either a name, a object or NULL which refers to the last plotting object}
+\item{x}{target object, either a name, a object or NULL which refers
+to the last plotting object}
 
 \item{just}{the part from the new object that should be attached to}
 

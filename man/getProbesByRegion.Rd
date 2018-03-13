@@ -25,5 +25,6 @@ probes that fall into the given region
 get probes by genomic region
 }
 \examples{
-getProbesByRegion('chr5', 135413937, 135419936, refversion='hg19', platform='hm450')
+getProbesByRegion('chr5', 135413937, 135419936,
+refversion='hg19', platform='hm450')
 }

@@ -18,6 +18,9 @@
 
 \item{...}{extra options}
 }
+\value{
+printed ggobj object
+}
 \description{
 plot WGG object
 }

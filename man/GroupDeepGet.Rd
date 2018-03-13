@@ -11,10 +11,12 @@ GroupDeepGet(x, nm, force.unique = TRUE)
 
 \item{nm}{name}
 
-\item{force.unique}{assume the name is unique in the descendants and get one object instead of a list}
+\item{force.unique}{assume the name is unique in the descendants and
+get one object instead of a list}
 }
 \value{
-if `force.unique==FALSE` return a list. Otherwise, one plotting object.
+if `force.unique==FALSE` return a list. Otherwise, one
+plotting object.
 }
 \description{
 Get an plotting object from a group's descendants

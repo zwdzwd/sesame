@@ -18,6 +18,9 @@
 
 \item{...}{additional options}
 }
+\value{
+grid text object
+}
 \description{
 print WLabel
 }

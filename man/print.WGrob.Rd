@@ -18,6 +18,9 @@
 
 \item{...}{extra options}
 }
+\value{
+view port that contains the grob
+}
 \description{
 plot WGrob object
 }

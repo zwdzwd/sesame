@@ -13,7 +13,9 @@ makeExampleSeSAMeDataSet <- function(n=1000, platform='HM450') {
 
     dm.ordering <- getBuiltInData('ordering', platform)
     sset <- SignalSet$new(platform)
-    probes <- rownames(dm.ordering[dm.ordering$DESIGN=='I' & dm.ordering$COLOR_CHANNEL=='Grn',])
+    probes <- rownames(
+        dm.ordering[dm.ordering$DESIGN=='I' &
+                        dm.ordering$COLOR_CHANNEL=='Grn',])
     mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
     rownames(mt) <- probes
     colnames(mt) <- c('M','U')
@@ -23,7 +25,8 @@ makeExampleSeSAMeDataSet <- function(n=1000, platform='HM450') {
     colnames(mt) <- c('M','U')
     sset$oobR <- mt
 
-    probes <- rownames(dm.ordering[dm.ordering$DESIGN=='I' & dm.ordering$COLOR_CHANNEL=='Red',])
+    probes <- rownames(dm.ordering[(
+        dm.ordering$DESIGN=='I' & dm.ordering$COLOR_CHANNEL=='Red'),])
     mt <- matrix(pmax(rnorm(length(probes)*2, 4000, 200),0), ncol=2)
     rownames(mt) <- probes
     colnames(mt) <- c('M','U')
@@ -40,7 +43,8 @@ makeExampleSeSAMeDataSet <- function(n=1000, platform='HM450') {
     sset$II <- mt
 
     dm.controls <- getBuiltInData('controls', platform)
-    ctl <- as.data.frame(matrix(pmax(rnorm(2*nrow(dm.controls), 400, 300),0), ncol=2))
+    ctl <- as.data.frame(matrix(pmax(rnorm(
+        2*nrow(dm.controls), 400, 300),0), ncol=2))
     rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
     ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
     colnames(ctl) <- c('G','R','col','type')
@@ -58,53 +62,53 @@ makeExampleSeSAMeDataSet <- function(n=1000, platform='HM450') {
 #'
 #' @export
 makeExampleTinyEPICDataSet <- function() {
-  
-  platform <- 'EPIC'
-  sset <- SignalSet$new(platform)
-  probes <- c(
-      "cg18478105", "cg01763666", "cg25813447",
-      "cg07779434", "cg13417420", "cg24133276")
-  mt <- matrix(as.integer(
-      pmax(rnorm(length(probes)*2, 4000, 200),0)), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$IG <- mt
-  mt <- matrix(as.integer(
-      pmax(rnorm(length(probes)*2, 400, 200),0)), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$oobR <- mt
-  
-  probes <- c(
-      "cg16619049", "cg01782097", "cg12712429",
-      "cg24373735", "cg18865112", "cg22226438")
-  mt <- matrix(as.integer(
-      pmax(rnorm(length(probes)*2, 4000, 200),0)), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$IR <- mt
-  mt <- matrix(as.integer(
-      pmax(rnorm(length(probes)*2, 400, 200),0)), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$oobG <- mt
-  
-  probes <- c(
-      "cg07881041", "cg23229610", "cg03513874",
-      "cg05451842", "cg14797042", "cg09838562")
-  mt <- matrix(as.integer(
-      pmax(rnorm(length(probes)*2, 4000, 200),0)), ncol=2)
-  rownames(mt) <- probes
-  colnames(mt) <- c('M','U')
-  sset$II <- mt
-  
-  dm.controls <- getBuiltInData('controls', platform)
-  ctl <- as.data.frame(matrix(as.integer(
-      pmax(rnorm(2*nrow(dm.controls), 400, 300),0)), ncol=2))
-  rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
-  ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
-  colnames(ctl) <- c('G','R','col','type')
-  sset$ctl <- ctl
-  
-  sset
+    
+    platform <- 'EPIC'
+    sset <- SignalSet$new(platform)
+    probes <- c(
+        "cg18478105", "cg01763666", "cg25813447",
+        "cg07779434", "cg13417420", "cg24133276")
+    mt <- matrix(as.integer(
+        pmax(rnorm(length(probes)*2, 4000, 200),0)), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$IG <- mt
+    mt <- matrix(as.integer(
+        pmax(rnorm(length(probes)*2, 400, 200),0)), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$oobR <- mt
+    
+    probes <- c(
+        "cg16619049", "cg01782097", "cg12712429",
+        "cg24373735", "cg18865112", "cg22226438")
+    mt <- matrix(as.integer(
+        pmax(rnorm(length(probes)*2, 4000, 200),0)), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$IR <- mt
+    mt <- matrix(as.integer(
+        pmax(rnorm(length(probes)*2, 400, 200),0)), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$oobG <- mt
+    
+    probes <- c(
+        "cg07881041", "cg23229610", "cg03513874",
+        "cg05451842", "cg14797042", "cg09838562")
+    mt <- matrix(as.integer(
+        pmax(rnorm(length(probes)*2, 4000, 200),0)), ncol=2)
+    rownames(mt) <- probes
+    colnames(mt) <- c('M','U')
+    sset$II <- mt
+    
+    dm.controls <- getBuiltInData('controls', platform)
+    ctl <- as.data.frame(matrix(as.integer(
+        pmax(rnorm(2*nrow(dm.controls), 400, 300),0)), ncol=2))
+    rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
+    ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
+    colnames(ctl) <- c('G','R','col','type')
+    sset$ctl <- ctl
+    
+    sset
 }

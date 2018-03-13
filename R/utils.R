@@ -29,7 +29,8 @@ smessage <- function(...) {
 
 pkgTest <- function(x) {
     if (!require(x, character.only = TRUE)) {
-        stop("Optional package ", x, " not found. Please install before continue.")
+        stop("Optional package ", x, " not found.
+Please install before continue.")
     }
 }
 
@@ -43,14 +44,20 @@ pkgTest <- function(x) {
 #' @return probes that fall into the given region
 #' @importMethodsFrom IRanges subsetByOverlaps
 #' @examples
-#' getProbesByRegion('chr5', 135413937, 135419936, refversion='hg19', platform='hm450')
+#' getProbesByRegion('chr5', 135413937, 135419936,
+#' refversion='hg19', platform='hm450')
 #' @export
-getProbesByRegion <- function(chrm, beg=1, end=-1, platform='EPIC', refversion='hg38') {
+getProbesByRegion <- function(
+    chrm, beg=1, end=-1, platform='EPIC', refversion='hg38') {
+    
     if (end < 0) {
         end <- getBuiltInData(paste0(refversion, '.chrominfo'))
     }
+
     pkgTest('GenomicRanges')
-    probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
+    probes <- getBuiltInData(paste0(
+        'mapped.probes.', refversion), platform=platform)
+    
     if (!(chrm %in% GenomicRanges::seqinfo(probes)@seqnames)) {
         stop('No probes found in this reference');
     }

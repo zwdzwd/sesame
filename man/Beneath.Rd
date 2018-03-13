@@ -10,7 +10,8 @@ Beneath(x = NULL, height = NULL, pad = 0.01, min.ratio = 0.02,
 \arguments{
 \item{x}{an object with dimension}
 
-\item{height}{the height of the new object (when NULL set proportional to the data)}
+\item{height}{the height of the new object (when NULL set
+proportional to the data)}
 
 \item{pad}{padding between the target and current}
 
@@ -20,7 +21,8 @@ Beneath(x = NULL, height = NULL, pad = 0.01, min.ratio = 0.02,
 
 \item{v.scale}{object for vertical scaling (when NULL, set to x)}
 
-\item{v.scale.proportional}{when v.scale is provided, whether to make proportional to data}
+\item{v.scale.proportional}{when v.scale is provided, whether to make
+proportional to data}
 }
 \value{
 a dimension generator beneath x

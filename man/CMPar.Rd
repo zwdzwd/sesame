@@ -16,7 +16,8 @@ CMPar(dmin = NULL, dmax = NULL, brewer.name = NULL, brewer.n = 3,
 
 \item{brewer.name}{palette name for RColorbrewer}
 
-\item{brewer.n}{number of stop points in RColorBrewer for continuous color map}
+\item{brewer.n}{number of stop points in RColorBrewer for continuous
+color map}
 
 \item{colorspace.name}{colorspace name}
 
@@ -24,7 +25,8 @@ CMPar(dmin = NULL, dmax = NULL, brewer.name = NULL, brewer.n = 3,
 
 \item{cmap}{customized colormap name}
 
-\item{label2color}{a named vector or list that defines label to color mapping
+\item{label2color}{a named vector or list that defines label to color
+mapping
 explicitly for discrete color mapping}
 
 \item{use.data}{use data as color, data must be either common color names
