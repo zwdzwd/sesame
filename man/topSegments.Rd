@@ -13,7 +13,7 @@ topSegments(cf1)
 coefficient table ordered by adjusted p-value of segments
 }
 \description{
-This is a convenience function to show top differential methylated segments.
+This is a utility function to show top differential methylated segments.
 }
 \examples{
 betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')

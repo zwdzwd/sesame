@@ -9,6 +9,9 @@ ly(x)
 \arguments{
 \item{x}{plot}
 }
+\value{
+layout plot
+}
 \description{
 show layout
 }

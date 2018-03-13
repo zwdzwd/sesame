@@ -13,7 +13,8 @@ noobsb(sset, in.place = FALSE, offset = 15, detailed = FALSE)
 
 \item{offset}{offset}
 
-\item{detailed}{if TRUE, return a list of \code{SignalSet} and regression function}
+\item{detailed}{if TRUE, return a list of \code{SignalSet}
+and regression function}
 }
 \value{
 a modified \code{SignalSet} with background correction

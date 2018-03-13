@@ -18,6 +18,9 @@
 
 \item{...}{additional options}
 }
+\value{
+view port that contains the WGroup graphics
+}
 \description{
 Draw WGroup
 }

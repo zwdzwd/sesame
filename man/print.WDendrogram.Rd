@@ -18,6 +18,9 @@
 
 \item{...}{additional options (ignored)}
 }
+\value{
+view port that contains the plotted dendrogram
+}
 \description{
 print a dendrogram
 }

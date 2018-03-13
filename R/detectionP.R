@@ -45,7 +45,9 @@ detectionPnegNorm <- function(sset) {
     muR <- median(negctls$R)
     pIR <- 1 - pnorm(pmax(sset$IR[,'M'], sset$IR[,'U']), mean=muR, sd=sdR)
     pIG <- 1 - pnorm(pmax(sset$IG[,'M'], sset$IG[,'U']), mean=muG, sd=sdG)
-    pII <- pmin(1 - pnorm(sset$II[,'M'], mean=muG, sd=sdG), 1 - pnorm(sset$II[,'U'], mean=muR, sd=sdR))
+    pII <- pmin(
+        1 - pnorm(sset$II[,'M'], mean=muG, sd=sdG),
+        1 - pnorm(sset$II[,'U'], mean=muR, sd=sdR))
 
     names(pIR) <- rownames(sset$IR)
     names(pIG) <- rownames(sset$IG)
@@ -81,7 +83,8 @@ detectionPnegNormGS <- function(sset) {
     
 }
 
-#' detection P-value based on normal fitting the negative controls, channels are first summed
+#' detection P-value based on normal fitting the negative controls,
+#' channels are first summed
 #'
 #' @param sset a \code{SignalSet}
 #' @return detection p-value

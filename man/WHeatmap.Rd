@@ -18,15 +18,18 @@ WHeatmap(data = NULL, dm = NULL, name = "", continuous = NULL,
 
 \item{name}{name of the plot}
 
-\item{continuous}{whether the data should be treated as continuous or discrete}
+\item{continuous}{whether the data should be treated as continuous
+or discrete}
 
 \item{cmp}{a CMPar object, for tunning color mapping parameters}
 
 \item{cm}{a given color map}
 
-\item{xticklabels}{to plot xtick labels, one may supply characters to plot just a subset of xtick labels}
+\item{xticklabels}{to plot xtick labels, one may supply characters
+to plot just a subset of xtick labels}
 
-\item{xticklabels.n}{number of xtick labels to plot (resample for aethetics by default)}
+\item{xticklabels.n}{number of xtick labels to plot (resample for
+aethetics by default)}
 
 \item{xticklabel.side}{xticklabel side (t or b)}
 
@@ -36,9 +39,11 @@ WHeatmap(data = NULL, dm = NULL, name = "", continuous = NULL,
 
 \item{xticklabel.pad}{padding between xticklabel and x-axis}
 
-\item{yticklabels}{to plot ytick labels, one may supply characters to plot just a subset of ytick labels}
+\item{yticklabels}{to plot ytick labels, one may supply characters
+to plot just a subset of ytick labels}
 
-\item{yticklabels.n}{number of ytick labels to plot (resample for aethetics by default)}
+\item{yticklabels.n}{number of ytick labels to plot (resample for
+aethetics by default)}
 
 \item{yticklabel.side}{yticklabel side (l or r)}
 

@@ -12,10 +12,11 @@ WGroup(..., name = "", group.dm = NULL, group.from.member = FALSE,
 
 \item{name}{name of the group}
 
-\item{group.dm}{group dimension, by default use the dm of the merge of members}
+\item{group.dm}{group dimension, by default use the dm of the merge
+of members}
 
-\item{group.from.member}{group merged from member coordinates (require affine == FALSE),
-the supplied group.dm is ignored}
+\item{group.from.member}{group merged from member coordinates (require
+affine == FALSE), the supplied group.dm is ignored}
 
 \item{mar}{a WMar object}
 

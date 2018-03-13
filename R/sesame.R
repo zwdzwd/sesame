@@ -42,7 +42,7 @@
 #' @format An \code{\link{R6Class}} object.
 #' @examples
 #' SignalSet$new("EPIC")
-#' @field platform platform name, currently supports "EPIC", "HM450" and "HM27"
+#' @field platform platform name, supports "EPIC", "HM450" and "HM27"
 #' @field IG intensity table for type I probes in green channel
 #' @field IR intensity table for type I probes in red channel
 #' @field II intensity table for type II probes
@@ -122,9 +122,12 @@ getSexInfo <- function(sset) {
     cleanY <- getBuiltInData('female.clean.chrY.probes', sset$platform)
     xLinked <- getBuiltInData('female.xlinked.chrX.probes', sset$platform)
     xLinkedBeta <- getBetas(sset[xLinked], quality.mask=FALSE)
-    c(medianY=median(sset[cleanY]$totalIntensities()),
-      medianX=median(sset[xLinked]$totalIntensities()),
-      fracXlinked=(sum(xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) / sum(!(is.na(xLinkedBeta)))))
+    c(
+        medianY=median(sset[cleanY]$totalIntensities()),
+        medianX=median(sset[xLinked]$totalIntensities()),
+        fracXlinked=(sum(
+            xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) /
+                sum(!(is.na(xLinkedBeta)))))
 }
 
 #' infer sex
@@ -173,12 +176,15 @@ inferEthnicity <- function(sset) {
     ccsprobes <- getBuiltInData('ethnicity.ccs.probes')
     rsprobes <- getBuiltInData('ethnicity.rs.probes')
     ethnicity.model <- getBuiltInData('ethnicity.model')
-    af <- c(getBetas(sset[rsprobes], quality.mask = FALSE,
-                     nondetection.mask=FALSE),
-            getAFTypeIbySumAlleles(
-                sset[ccsprobes],
-                quality.mask = FALSE,
-                nondetection.mask = FALSE))
+    af <- c(
+        getBetas(
+            sset[rsprobes], quality.mask = FALSE,
+            nondetection.mask=FALSE),
+        getAFTypeIbySumAlleles(
+            sset[ccsprobes],
+            quality.mask = FALSE,
+            nondetection.mask = FALSE))
+    
     as.character(predict(ethnicity.model, af))
 }
 
@@ -210,7 +216,10 @@ inferEthnicity <- function(sset) {
 #' sset <- makeExampleSeSAMeDataSet('HM450')
 #' betas <- getBetas(sset)
 #' @export
-getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, mask.use.tcga=FALSE, pval.threshold=0.05) {
+getBetas <- function(
+    sset, quality.mask=TRUE, nondetection.mask=TRUE,
+    mask.use.tcga=FALSE, pval.threshold=0.05) {
+    
     betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
     betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
     betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
@@ -241,7 +250,9 @@ getBetas <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, mask.use.t
 #' sset <- makeExampleSeSAMeDataSet()
 #' betas <- getBetasTypeIbySumChannels(sset)
 #' @export
-getBetasTypeIbySumChannels <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+getBetasTypeIbySumChannels <- function(
+    sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+    
     ## .oobR <- oobR[rownames(IG),]
     ## .oobG <- oobG[rownames(IR),]
     betas1 <- pmax(sset$IG[,'M']+sset$oobR[,'M'],1) /
@@ -270,11 +281,15 @@ getBetasTypeIbySumChannels <- function(sset, quality.mask=TRUE, nondetection.mas
 #' @return beta values
 #' sset <- makeExampleSeSAMeDataSet()
 #' betas <- getBetasTypeIbySumAlleles(sset)
-getAFTypeIbySumAlleles <- function(sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+getAFTypeIbySumAlleles <- function(
+    sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+    
     ## .oobR <- oobR[rownames(IG),]
     ## .oobG <- oobG[rownames(IR),]
-    betas1 <- pmax(rowSums(sset$oobR),1) / pmax(rowSums(sset$oobR) + rowSums(sset$IG), 2)
-    betas2 <- pmax(rowSums(sset$oobG),1) / pmax(rowSums(sset$oobG) + rowSums(sset$IR), 2)
+    betas1 <- pmax(rowSums(sset$oobR),1) /
+        pmax(rowSums(sset$oobR) + rowSums(sset$IG), 2)
+    betas2 <- pmax(rowSums(sset$oobG),1) /
+        pmax(rowSums(sset$oobG) + rowSums(sset$IR), 2)
     betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
     betas <- c(betas1, betas2, betas3)
     if (nondetection.mask)
@@ -323,7 +338,8 @@ readIDAT1 <- function(idat.name) {
 #' cat('sample.names is a vector of common prefixes
 #' between the _Grn.idat and _Red.idat\n')
 #' @export
-readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
+readIDATs <- function(
+    sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
 
     if (is.null(mc.cores)) {
         if (is.null(getOption('mc.cores')))
@@ -370,7 +386,8 @@ readIDATs <- function(sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores
 #' @export
 readIDATsFromDir <- function(dir.name, ...) {
     fns <- list.files(dir.name)
-    sample.names <- unique(sub("_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
+    sample.names <- unique(sub(
+        "_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
     readIDATs(paste0(dir.name,'/',sample.names), ...)
 }
 
@@ -387,12 +404,15 @@ readIDATsFromDir <- function(dir.name, ...) {
 #' @return a list of \code{SignalSet}s
 #' @examples
 #' \dontrun{
-#' readIDATsFromSheet(data.frame(barcode=c('data/5775041003_R02C01', 'data/5775041003_R03C01')))
+#' readIDATsFromSheet(data.frame(barcode=c('data/5775041003_R02C01',
+#' 'data/5775041003_R03C01')))
 #' }
 #' cat('sample.sheet is a data.frame with a column called
 #' barcode that contains sample prefixes (excluding _Grn.idat and _Red.idat)')
 #' @export
-readIDATsFromSheet <- function(sample.sheet, column.name='barcode', base.dir=NULL, ...) {
+readIDATsFromSheet <- function(
+    sample.sheet, column.name='barcode', base.dir=NULL, ...) {
+
     sample.names <- read.csv(sample.sheet, stringsAsFactors=FALSE)
     readIDATs(sample.names[[column.name]], base.dir=base.dir, ...)
 }
@@ -426,7 +446,8 @@ chipAddressToSignal <- function(dm) {
     ## 2-channel for green probes' U allele
     ImG2ch <- dm[match(IordG$M, rownames(dm)),]
     ImG <- ImG2ch[,1]
-    sset$oobR <- as.matrix(data.frame(M=ImG2ch[,2], U=IuG2ch[,2], row.names=IordG$Probe_ID))
+    sset$oobR <- as.matrix(
+        data.frame(M=ImG2ch[,2], U=IuG2ch[,2], row.names=IordG$Probe_ID))
     sset$IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
     ## type I red channel / oob green channel
@@ -437,7 +458,8 @@ chipAddressToSignal <- function(dm) {
     ## 2-channel for red probes' u allele
     ImR2ch <- dm[match(IordR$M, rownames(dm)),]
     ImR <- ImR2ch[,2]
-    sset$oobG <- as.matrix(data.frame(M=ImR2ch[,1], U=IuR2ch[,1], row.names=IordR$Probe_ID))
+    sset$oobG <- as.matrix(
+        data.frame(M=ImR2ch[,1], U=IuR2ch[,1], row.names=IordR$Probe_ID))
     sset$IR <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
 
     ## type II
@@ -489,8 +511,10 @@ bisConversionControl <- function(sset, use.median=FALSE) {
     extC <- getBuiltInData('typeI.extC', sset$platform)
     extT <- getBuiltInData('typeI.extT', sset$platform)
     if (use.median) {
-        median(sset$oobG[extC,], na.rm=TRUE) / median(sset$oobG[extT,], na.rm=TRUE)
+        median(sset$oobG[extC,], na.rm=TRUE) /
+            median(sset$oobG[extT,], na.rm=TRUE)
     } else {
-        mean(sset$oobG[extC,], na.rm=TRUE) / mean(sset$oobG[extT,], na.rm=TRUE)
+        mean(sset$oobG[extC,], na.rm=TRUE) /
+            mean(sset$oobG[extT,], na.rm=TRUE)
     }
 }

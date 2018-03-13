@@ -72,7 +72,8 @@ visualizeProbes <- function(
     stopifnot(refversion %in% c('hg19','hg38'))
     
     pkgTest('GenomicRanges')
-    probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
+    probes <- getBuiltInData(paste0(
+        'mapped.probes.', refversion), platform=platform)
     probeNames <- probeNames[probeNames %in% names(probes)]
 
     if (length(probeNames)==0)
@@ -84,7 +85,8 @@ visualizeProbes <- function(
     regEnd <- max(GenomicRanges::end(target.probes)) + dwstream
     
     visualizeRegion(
-        as.character(GenomicRanges::seqnames(target.probes[1])), regBeg, regEnd,
+        as.character(GenomicRanges::seqnames(
+            target.probes[1])), regBeg, regEnd,
         betas, platform=platform, refversion=refversion, ...)
 }
 
@@ -107,13 +109,15 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
     txns <- getBuiltInData(paste0('UCSC.refGene.txns.', refversion))
 
     target.txns <- txns[gene2txn[[geneName]]]
-    ## target.strand <- as.character(GenomicRanges::strand(target.txns[[1]][1]))
+    ## target.strand <- as.character(
+    ## GenomicRanges::strand(target.txns[[1]][1]))
 
     merged.exons <- GenomicRanges::reduce(unlist(target.txns))
     getProbesByRegion(
         as.character(GenomicRanges::seqnames(merged.exons[1])),
         min(GenomicRanges::start(merged.exons)),
-        max(GenomicRanges::end(merged.exons)), platform=platform, refversion=refversion)
+        max(GenomicRanges::end(merged.exons)),
+        platform=platform, refversion=refversion)
 }
 
 #' visualize region
@@ -161,23 +165,27 @@ visualizeRegion <- function(
 
     txns <- getBuiltInData(paste0('UCSC.refGene.txns.', refversion))
     txn2gene <- getBuiltInData(paste0('UCSC.refGene.txn2gene.', refversion))
-    probes <- getBuiltInData(paste0('mapped.probes.', refversion), platform=platform)
+    probes <- getBuiltInData(paste0(
+        'mapped.probes.', refversion), platform=platform)
 
-    target.region <- GenomicRanges::GRanges(chrm, IRanges::IRanges(plt.beg, plt.end))
+    target.region <- GenomicRanges::GRanges(
+        chrm, IRanges::IRanges(plt.beg, plt.end))
     target.txns <- subsetByOverlaps(txns, target.region)
 
     plt.width <- plt.end-plt.beg
     probes <- subsetByOverlaps(probes, target.region)
     probes <- probes[names(probes) %in% rownames(betas)]
     if (na.rm)
-        probes <- probes[apply(betas[names(probes), ], 1, function(x) !all(is.na(x)))]
+        probes <- probes[apply(
+            betas[names(probes), ], 1, function(x) !all(is.na(x)))]
     nprobes <- length(probes)
 
     if (is.null(show.samples.n))
         show.samples.n <- dim(betas)[2]
     
     if (nprobes == 0)
-        stop("No probe overlap region ", sprintf('%s:%d-%d', chrm, plt.beg, plt.end))
+        stop("No probe overlap region ", sprintf(
+            '%s:%d-%d', chrm, plt.beg, plt.end))
 
     if (nprobes > 1000) {
         stop('Too many probes. Consider smaller region?')
@@ -217,28 +225,39 @@ visualizeRegion <- function(
                     just=c('center','bottom'), draw=FALSE),
                 
                 ## plot transcript line
-                grid.lines(x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
-                grid.lines(x=c(0,1), y=y.bot+y.hei/2, gp=gpar(lty='dotted'), draw=FALSE),
+                grid.lines(
+                    x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
+
+                grid.lines(
+                    x=c(0,1), y=y.bot+y.hei/2,
+                    gp=gpar(lty='dotted'), draw=FALSE),
 
                 ## plot exons
                 grid.rect(
                     (GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
-                    GenomicRanges::width(txn)/plt.width, y.hei.exon, gp=gpar(fill='red',col='red'),
+                    GenomicRanges::width(txn)/plt.width, y.hei.exon,
+                    gp=gpar(fill='red',col='red'),
                     just=c('left','bottom'), draw=FALSE))
 
             ## plot cds
             cdsEnd <- as.integer(GenomicRanges::mcols(txn)$cdsEnd[1])
             cdsStart <- as.integer(GenomicRanges::mcols(txn)$cdsStart[1])
-            txnCds <- txn[(GenomicRanges::start(txn) < cdsEnd) & (GenomicRanges::end(txn) > cdsStart)]
-            GenomicRanges::start(txnCds) <- pmax(GenomicRanges::start(txnCds), cdsStart)
-            GenomicRanges::end(txnCds) <- pmin(GenomicRanges::end(txnCds), cdsEnd)
+            txnCds <- txn[(
+                GenomicRanges::start(txn) < cdsEnd) &
+                    (GenomicRanges::end(txn) > cdsStart)]
+            
+            GenomicRanges::start(txnCds) <- pmax(
+                GenomicRanges::start(txnCds), cdsStart)
+            
+            GenomicRanges::end(txnCds) <- pmin(
+                GenomicRanges::end(txnCds), cdsEnd)
 
             if (cdsEnd > cdsStart && length(txnCds) > 0) {
-                g <- gList(g, gList(
-                    grid.rect(
-                        (GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
-                        GenomicRanges::width(txnCds)/plt.width, y.hei, gp=gpar(fill='grey'),
-                        just=c('left','bottom'), draw=FALSE)))
+                g <- gList(g, gList(grid.rect(
+                    (GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
+                    GenomicRanges::width(txnCds)/plt.width,
+                    y.hei, gp=gpar(fill='grey'),
+                    just=c('left','bottom'), draw=FALSE)))
             }
             g
         }))
@@ -250,7 +269,8 @@ visualizeRegion <- function(
 
     plt.chromLine <- grid.lines(x=c(0, 1), y=c(1,1), draw=FALSE)
     plt.mapLines <- grid.segments(
-        (GenomicRanges::start(probes)-plt.beg) / plt.width, 1, ((1:nprobes-0.5)/nprobes), 0, draw=FALSE)
+        (GenomicRanges::start(probes)-plt.beg) / plt.width, 1,
+        ((1:nprobes-0.5)/nprobes), 0, draw=FALSE)
 
     ## clustering
     betas <- betas[names(probes),,drop=FALSE]
@@ -272,6 +292,7 @@ visualizeRegion <- function(
                     yticklabel.fontsize=sample.name.fontsize,
                     yticklabels.n=show.samples.n,
                     xticklabels.n=nprobes)
+        
         w <- w + WGrob(
             plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
             TopOf('txn', height=0.25))
@@ -289,8 +310,8 @@ plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg38') {
     
     ## set cytoband color
     cytoBand2col <- setNames(
-      gray.colors(7, start=0.9,end=0),
-      c('stalk', 'gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100'))
+        gray.colors(7, start=0.9,end=0),
+        c('stalk', 'gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100'))
     cytoBand2col['acen'] <- 'red'
     cytoBand2col['gvar'] <- cytoBand2col['gpos75']
 
@@ -308,7 +329,8 @@ plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg38') {
             just = c('left','bottom'), draw = FALSE),
         grid.rect(
             sapply(
-                cytoBand.target$chromStart, function(x) (x-chromBeg)/chromWid),
+                cytoBand.target$chromStart,
+                function(x) (x-chromBeg)/chromWid),
             0.35,
             (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid,
             0.5, gp = gpar(fill = bandColor, col = bandColor),
