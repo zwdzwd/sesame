@@ -31,6 +31,9 @@ WDim(left = 0, bottom = 0, width = 1, height = 1, nr = 1, nc = 1,
 
 \item{row.split}{a list of WDim objects for row split}
 }
+\value{
+a WDim object
+}
 \description{
 class WDim
 }

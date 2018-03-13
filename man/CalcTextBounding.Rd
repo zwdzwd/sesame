@@ -11,6 +11,9 @@ CalcTextBounding(x, ...)
 
 \item{...}{extra options}
 }
+\value{
+bounding box coordinates
+}
 \description{
 Calculate bounding box including texts.
 }

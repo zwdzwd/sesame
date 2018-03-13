@@ -16,8 +16,8 @@ noob <- function(sset, in.place=FALSE, offset=15) {
         sset <- sset$clone()
     
     ## sort signal based on channel
-    ibR <- c(sset$IR, sset$II[,'U'])              # in-band red signal
-    ibG <- c(sset$IG, sset$II[,'M'])              # in-band green signal
+    ibR <- c(sset$IR, sset$II[,'U'])    # in-band red signal
+    ibG <- c(sset$IG, sset$II[,'M'])    # in-band green signal
 
     ## set signal to 1 if 0
     ibR[ibR==0] <- 1
@@ -82,26 +82,36 @@ noob <- function(sset, in.place=FALSE, offset=15) {
     mu <- e$mu
     sigma <- e$s
     alpha <- pmax(MASS::huber(ib)$mu-mu, 10)
-    return(list(i=offset+.normExpSignal(mu, sigma, alpha, ib),
-                c=offset+.normExpSignal(mu, sigma, alpha, ctl),
-                o=offset+.normExpSignal(mu, sigma, alpha, oob)))
+    list(
+        i=offset+.normExpSignal(mu, sigma, alpha, ib),
+        c=offset+.normExpSignal(mu, sigma, alpha, ctl),
+        o=offset+.normExpSignal(mu, sigma, alpha, oob))
 }
 
 ## the following is adapted from Limma
-## normal-exponential deconvolution (conditional expectation of xs|xf; WEHI code)
+## normal-exponential deconvolution (conditional expectation of
+## xs|xf; WEHI code)
 .normExpSignal <- function (mu, sigma, alpha, x)  {
+
     sigma2 <- sigma * sigma
+
     if (alpha <= 0)
         stop("alpha must be positive")
     if (sigma <= 0)
         stop("sigma must be positive")
+    
     mu.sf <- x - mu - sigma2/alpha
     signal <- mu.sf + sigma2 * exp(
         dnorm(0, mean = mu.sf, sd = sigma, log = TRUE) -
-            pnorm(0, mean = mu.sf, sd = sigma, lower.tail = FALSE, log.p = TRUE))
+            pnorm(
+                0, mean = mu.sf, sd = sigma,
+                lower.tail = FALSE, log.p = TRUE))
+    
     o <- !is.na(signal)
     if (any(signal[o] < 0)) {
-        warning("Limit of numerical accuracy reached with very low intensity or very high background:\nsetting adjusted intensities to small value")
+        warning("Limit of numerical accuracy reached with very
+low intensity or very high background:\nsetting adjusted intensities
+to small value")
         signal[o] <- pmax(signal[o], 1e-06)
     }
     signal
@@ -110,7 +120,7 @@ noob <- function(sset, in.place=FALSE, offset=15) {
 .getNormCtls <- function(sset) {
     
     if (sset$platform == 'hm27') {
-        ## controversial to use, maybe the mean of all signals in each channel?
+        ## controversial to use, maybe mean of all signals in each channel?
         normctl.G <- sset$ctl[grep('norm.green', tolower(rownames(sset$ctl))),]
         normctl.R <- sset$ctl[grep('norm.red', tolower(rownames(sset$ctl))),]
     } else {                              # HM450 and EPIC
@@ -129,7 +139,8 @@ noob <- function(sset, in.place=FALSE, offset=15) {
 #' @param sset a \code{SignalSet}
 #' @param in.place modify in place
 #' @param offset offset
-#' @param detailed if TRUE, return a list of \code{SignalSet} and regression function
+#' @param detailed if TRUE, return a list of \code{SignalSet}
+#' and regression function
 #' @return a modified \code{SignalSet} with background correction
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet('HM450')
@@ -142,9 +153,9 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
     
     ## sanitize
     ## sort signal based on channel
-    ibR <- c(sset$IR, sset$II[,'U'])              # in-band red signal
+    ibR <- c(sset$IR, sset$II[,'U'])    # in-band red signal
     ibR.other.channel <- c(sset$oobG, sset$II[,'M'])
-    ibG <- c(sset$IG, sset$II[,'M'])              # in-band green signal
+    ibG <- c(sset$IG, sset$II[,'M'])    # in-band green signal
     ibG.other.channel <- c(sset$oobR, sset$II[,'U'])
     ## set signal to 1 if 0
     ibR[ibR==0] <- 1
@@ -230,22 +241,31 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
 ## offset padding for normalized signal
 ## return normalized in-band signal
 .backgroundCorrCh1 <- function(x, pp, alpha, offset=15) {
+    
     mu.bg <- pp$mu
     sigma <- pp$sigma
     sigma2 <- sigma * sigma
+
     if (alpha <= 0)
         stop("alpha must be positive")
     if (any(na.omit(sigma) <= 0))
         stop("sigma must be positive")
+
     mu.sf <- x - mu.bg - sigma2/alpha
     signal <- mu.sf + sigma2 * exp(
         dnorm(0, mean = mu.sf, sd = sigma, log = TRUE) -
-            pnorm(0, mean = mu.sf, sd = sigma, lower.tail = FALSE, log.p = TRUE))
+            pnorm(
+                0, mean = mu.sf, sd = sigma,
+                lower.tail = FALSE, log.p = TRUE))
+    
     o <- !is.na(signal)
     if (any(signal[o] < 0)) {
-        warning("Limit of numerical accuracy reached with very low intensity or very high background:\nsetting adjusted intensities to small value")
+        warning("Limit of numerical accuracy reached with
+very low intensity or very high background:\nsetting adjusted
+intensities to small value")
         signal[o] <- pmax(signal[o], 1e-06)
     }
+    
     signal.min <- min(signal, na.rm = TRUE)
     signal <- signal - signal.min
     offset + signal
@@ -254,15 +274,23 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
 
 ## train model using linear model with log transformed response
 train.model.lm <- function(input, output) {
+
     fitdata <- data.frame(IB=as.vector(input)+1, LOB=log(as.vector(output)+1))
     m <- lm(LOB~IB, data=fitdata)
     ## m <- MASS::rlm(LOB~IB, data=fitdata)
+
     function(d) {
         force(m)
-        pp <- predict(m, newdata=data.frame(IB=as.vector(d)), interval='prediction', level=0.8)
+        pp <- predict(
+            m, newdata=data.frame(IB=as.vector(d)),
+            interval='prediction', level=0.8)
+        
         list(mu=exp(pp[,'fit']), sigma=(exp(pp[,'upr'])-exp(pp[,'lwr']))/10.13)
-        ## use upper bound for mu since true signal is often much higher than noise
-        ## list(mu=exp(pp[,'upr']), sigma=(exp(pp[,'upr'])-exp(pp[,'lwr']))/10.13)
-        ## list(mu=exp(pp[,'upr']), sigma=log(exp(pp[,'upr'])-exp(pp[,'lwr'])))
+        ## use upper bound for mu since true signal
+        ## is often much higher than noise
+        ## list(mu=exp(pp[,'upr']),
+        ## sigma=(exp(pp[,'upr'])-exp(pp[,'lwr']))/10.13)
+        ## list(mu=exp(pp[,'upr']),
+        ## sigma=log(exp(pp[,'upr'])-exp(pp[,'lwr'])))
     }
 }

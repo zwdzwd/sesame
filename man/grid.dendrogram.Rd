@@ -3,9 +3,6 @@
 \name{grid.dendrogram}
 \alias{grid.dendrogram}
 \title{Draw dendrogram under grid system}
-\source{
-adapted from the ComplexHeatmap package authored by Zuguang Gu <z.gu@dkfz.de>
-}
 \usage{
 grid.dendrogram(dend, facing = c("bottom", "top", "left", "right"),
   max_height = NULL, order = c("normal", "reverse"), ...)
@@ -21,13 +18,19 @@ grid.dendrogram(dend, facing = c("bottom", "top", "left", "right"),
 
 \item{...}{additional options}
 }
+\value{
+view port that contains dendrogram
+}
 \description{
-The dendrogram can be renderred. A viewport is created which contains the dendrogram.
+The dendrogram can be renderred. A viewport is created which
+contains the dendrogram.
 }
 \details{
--order should leaves of dendrogram be put in the normal order (1, ..., n) or reverse order (n, ..., 1)?
+-order should leaves of dendrogram be put in the normal order
+(1, ..., n) or reverse order (n, ..., 1)?
 -... pass to `grid::viewport` which contains the dendrogram.
 
-This function only plots the dendrogram without adding labels. The leaves of the dendrogram
+This function only plots the dendrogram without adding labels.
+The leaves of the dendrogram
 locates at unit(c(0.5, 1.5, ...(n-0.5))/n, "npc").
 }

@@ -2,7 +2,8 @@
 % Please edit documentation in R/detectionP.R
 \name{detectionPnegNormTotal}
 \alias{detectionPnegNormTotal}
-\title{detection P-value based on normal fitting the negative controls, channels are first summed}
+\title{detection P-value based on normal fitting the negative controls,
+channels are first summed}
 \usage{
 detectionPnegNormTotal(sset)
 }
@@ -13,7 +14,8 @@ detectionPnegNormTotal(sset)
 detection p-value
 }
 \description{
-detection P-value based on normal fitting the negative controls, channels are first summed
+detection P-value based on normal fitting the negative controls,
+channels are first summed
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()

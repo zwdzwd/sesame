@@ -11,6 +11,9 @@ Resolve(x, ...)
 
 \item{...}{extra options}
 }
+\value{
+resolved grid object
+}
 \description{
 Resolve name to object
 }

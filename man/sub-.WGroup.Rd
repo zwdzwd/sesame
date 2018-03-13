@@ -11,6 +11,9 @@
 
 \item{i}{integer indexing element}
 }
+\value{
+a subset of WGroup or NULL
+}
 \description{
 subset WGroup
 }
