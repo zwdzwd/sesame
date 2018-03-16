@@ -481,17 +481,6 @@ chipAddressToSignal <- function(dm) {
     sset
 }
 
-subsetBeta <- function(sset, max=1.1, min=-0.1) {
-    sset <- sset$clone()
-    lapply(c('IG','IR','II'), function(nm.cat) {
-        s <- sset[[nm.cat]]
-        b <- s[,'M']/(s[,'M']+s[,'U'])
-        sset[[nm.cat]] <<- s[(b>min & b<max),]
-        invisible()
-    })
-    sset
-}
-
 #' compute internal bisulfite conversion control
 #'
 #' compute GCT score for internal bisulfite conversion control
