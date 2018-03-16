@@ -32,6 +32,7 @@ betas <- do.call(cbind, mclapply(ssets, getBetas))
 Useful links:
 \itemize{
   \item \url{https://github.com/zwdzwd/sesame}
+  \item Report bugs at \url{https://github.com/zwdzwd/sesame/issues}
 }
 
 }
