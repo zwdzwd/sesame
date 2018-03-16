@@ -59,6 +59,7 @@ visualizeGene <- function(
 #' @param dwstream distance to extend downstream
 #' @param ... additional options, see visualizeRegion
 #' @return None
+#' @import wheatmap
 #' @examples
 #' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
 #' visualizeProbes(c('cg22316575', 'cg16084772', 'cg20622019'), betas, 'HM450')
@@ -278,6 +279,7 @@ visualizeRegion <- function(
         betas <- column.cluster(betas[names(probes),,drop=FALSE])$mat
     }
 
+    pkgTest('wheatmap')
     if (draw) {
         w <- WGrob(plt.txns, name='txn') +
             WGrob(plt.mapLines, Beneath(pad=0, height=0.15)) +

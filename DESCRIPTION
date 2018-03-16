@@ -1,18 +1,40 @@
 Package: sesame
 Type: Package
-Title: Analysis Suite For Illumina Infinium DNA Methylation Array
-URL: https://github.com/zwdzwd/sesame
+Title: Tools For Analyzing Illumina Infinium DNA Methylation Arrays
+Description: Tools for analyzing Illumina Infinium DNA methylation arrays.
 Version: 0.99.0
 Date: 2018-02-26
-Author: Wanding Zhou, Hui Shen
+Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
+             email = "zhouwanding@gmail.com"),
+             person("Hui", "Shen", role = c("aut")))
 Depends:
     R (>= 3.4)
-Maintainer: Wanding Zhou <zhouwanding@gmail.com>
-Description: This R package for array-based DNA methylation data.
 License: Artistic-2.0
 LazyData: TRUE
 RoxygenNote: 6.0.1
-Imports: R6, grDevices, utils, illuminaio, MASS, GenomicRanges, IRanges, grid, parallel, preprocessCore, stats, randomForest, XML, colorspace, RColorBrewer, methods
-Suggests: ggplot2, DNAcopy, scales, knitr, rmarkdown
+Imports:  R6,
+          grDevices,
+          utils,
+          illuminaio,
+          MASS,
+          GenomicRanges,
+          IRanges,
+          grid,
+          parallel,
+          preprocessCore,
+          stats,
+          randomForest,
+          XML,
+          colorspace,
+          RColorBrewer,
+          methods,
+          wheatmap
+Suggests: ggplot2,
+          DNAcopy,
+          scales,
+          knitr,
+          rmarkdown
 VignetteBuilder: knitr
+URL: https://github.com/zwdzwd/sesame
+BugReports: https://github.com/zwdzwd/sesame/issues
 biocViews: DNAMethylation, MethylationArray, Preprocessing, QualityControl

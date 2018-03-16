@@ -13,6 +13,7 @@
 #' @param cf.test factors to test (default to all factors in formula except
 #' intercept). Use "all" for all factors.
 #' @return cf - a list of coefficient tables for each factor
+#' @import stats
 #' @examples
 #' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
 #' sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
