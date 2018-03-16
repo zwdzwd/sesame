@@ -230,9 +230,8 @@ DMR <- function(
     message(sprintf('Generated %d segments.', seg.ids[length(seg.ids)]))
 
     ## combine p-value
-    message("Combine p-values ... ", appendLF=FALSE)
+    message("Combine p-values ... ")
     cfnames <- names(cf)
-    cfmsg <- NULL
     cf <- lapply(seq_along(cf), function(i) {
         cf1 <- cf[[i]]
         ## Stouffer's Z-score method
@@ -249,18 +248,16 @@ DMR <- function(
         cf1$Seg.end <- seg.end[cf1$Seg.ID]
         cf1$Seg.Pval <- seg.pval[cf1$Seg.ID]
         cf1$Seg.Pval.adj <- seg.pval.adj[cf1$Seg.ID]
-        cfmsg <<- c(cfmsg, sprintf(
-            ' - %s: %d significant segments.', cfnames[i],
-            sum(seg.pval<0.05, na.rm=TRUE)))
-        cfmsg <<- c(cfmsg, sprintf(
+        message(sprintf(
+            ' - %s: %d significant segments.',
+            cfnames[i], sum(seg.pval<0.05, na.rm=TRUE)))
+        message(sprintf(
             ' - %s: %d significant segments (after BH).',
             cfnames[i], sum(seg.pval.adj<0.05, na.rm=TRUE)))
         cf1
     })
     names(cf) <- cfnames
     message("Done.")
-    message(paste0(cfmsg, collapse='\n'))
-    message("All done.")
 
     cf
 }
