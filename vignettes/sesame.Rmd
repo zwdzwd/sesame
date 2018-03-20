@@ -4,6 +4,8 @@ shorttitle: "sesame guide"
 author: "Wanding Zhou"
 package: sesame
 output: rmarkdown::html_vignette
+fig_width: 6
+fig_height: 4
 vignette: >
   %\VignetteIndexEntry{SeSAMe User Guide}
   %\VignetteEngine{knitr::rmarkdown}
@@ -49,6 +51,7 @@ quantile interpolation with Type-I probes
 ```{r}
 sset <- makeExampleTinyEPICDataSet()
 sset.db <- dyeBiasCorrTypeINorm(sset)
+sset.db
 ```
       
 ### Get betas
@@ -56,6 +59,7 @@ sset.db <- dyeBiasCorrTypeINorm(sset)
 ```{r}
 sset <- makeExampleTinyEPICDataSet()
 betas <- getBetas(sset)
+head(betas)
 ```
 use option quality.mask = TRUE/FALSE to mask probes with mapping issues, SNPs 	and non-uniqueness, described in Zhou 2016 NAR.
 use option nondetection.mask = TRUE/FALSE to mask nondetection calls.
@@ -75,53 +79,55 @@ inferEthnicity(sset)
 ```
 
 #### age
-```R
+```{r}
 betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
 predictAgeHorvath353(betas)
 ```
 
 #### mean intensity
-```R
+```{r}
+sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
 meanIntensity(sset)
 ```
 
 #### bisulfite conversion control using [GCT score](https://academic.oup.com/nar/article/45/4/e22/2290930)
-```R
+```{r}
+
 bisConversionControl(sset)
 ```
 
 ### visualize probes
 
-```R
-betas <- sesameGetExample('hm450.betas.TCGAnormalPAAD')
+```{r}
+betas <- SeSAMeGetExample('HM450.betas.10TCGAnormalPAAD')
 ```
 
 visualize probes from a gene
-```R
-visualizeGene('DNMT1', betas, platform='hm450')
+```{r}
+visualizeGene('DNMT1', betas, platform='HM450')
 ```
 
 visualize probes from arbitrary region
 ```R
-visualizeRegion('chr19',10260000,10380000, betas, platform='hm450')
+visualizeRegion('chr19',10260000,10380000, betas, platform='HM450')
 ```
 
 visualize by probe names
 ```R
-visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='hm450')
+visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 ```
 
 ### Differential methylation
 
 test differential methylation on each locus
-```R
-betas <- sesameGetExample('HM450.betas.76matchedTCGAchr20')
-sample.info <- sesameGetExample('HM450.sampleinfo.76matchedTCGAchr20')
-cf <- DMR(betas, sample.info, ~patient+type, platform='hm450')
+```{r}
+betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+cf <- DMR(betas, sample.info, ~patient+type, platform='HM450')
 ```
 
 top differentially methylated probes on factor "type"
-```R
+```{r}
 cf1 <- cf$typeTumour
 head(topLoci(cf1))
 ```
@@ -133,20 +139,20 @@ head(topSegments(cf1))
       
 visualize top DMR
 ```R
-visualizeProbes(rownames(cf1[cf1[,'Seg.ID']==topSegments(cf1)$Seg.ID[1],]), betas, upstream=5000, dwstream=5000, platform='hm450',heat.height=3.5)
+visualizeProbes(rownames(cf1[cf1[,'Seg.ID']==topSegments(cf1)$Seg.ID[1],]), betas, upstream=5000, dwstream=5000, platform='HM450',heat.height=3.5)
 ```
 
 
 ### CNV
     
 uses LNCaP EPIC data from GSE86833
-```R
+```{r}
 example.sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
 segs <- cnSegmentation(example.sset)
 ```
 
 To visualize segments,
-```R
+```{r}
 visualizeSegments(segs)
 ```
 
@@ -154,8 +160,8 @@ visualizeSegments(segs)
 
 Use blood set as example,
 
-```R
-g <- diffRefSet(getRefSet(c('CD4T','CD19B','CD14Monocytes','CD56NK', 'granulocytes'), platform='hm450'))
+```{r}
+g <- diffRefSet(getRefSet(c('CD4T','CD19B','CD14Monocytes','CD56NK', 'granulocytes'), platform='HM450'))
 betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
 estimateCellComposition(g, betas[rownames(g)])$frac
 ```
