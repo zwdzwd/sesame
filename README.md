@@ -87,6 +87,12 @@ inferSex(sset)
 inferEthnicity(sset)
 ```
 
+#### age
+```R
+betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
+predictAgeHorvath353(betas)
+```
+
 #### mean intensity
 ```R
 meanIntensity(sset)
