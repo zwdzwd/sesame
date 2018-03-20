@@ -6,7 +6,8 @@ Version: 0.99.0
 Date: 2018-02-26
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "zhouwanding@gmail.com"),
-             person("Hui", "Shen", role = c("aut")))
+             person("Hui", "Shen", role = c("aut"),
+             email = "Hui.Shen@vai.org"))
 Depends:
     R (>= 3.4)
 License: Artistic-2.0
