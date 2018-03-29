@@ -279,8 +279,10 @@ getBetasTypeIbySumChannels <- function(
 #' @param nondetection.mask whether to mask nondetection
 #' @param pval.threshold p-value threshold for nondetection mask
 #' @return beta values
-#' sset <- makeExampleSeSAMeDataSet()
-#' betas <- getBetasTypeIbySumAlleles(sset)
+#' @examples
+#' sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
+#' betas <- getAFTypeIbySumAlleles(sset)
+#' @export
 getAFTypeIbySumAlleles <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
     
@@ -298,6 +300,7 @@ getAFTypeIbySumAlleles <- function(
         mask <- getBuiltInData('mask', sset$platform)
         betas[names(betas) %in% mask] <- NA
     }
+    betas <- betas[intersect(names(betas), getBuiltInData('ethnicity.ccs.probes'))]
     betas[order(names(betas))]
 }
 

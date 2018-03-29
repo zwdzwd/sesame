@@ -37,7 +37,7 @@ noob <- function(sset, in.place=FALSE, offset=15) {
     ## type IG
     if (length(sset$IG)>0)
         sset$IG <- matrix(
-            ibG.nl$i[1:length(sset$IG)],
+            ibG.nl$i[seq_along(sset$IG)],
             nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
     else
         sset$IG <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
@@ -45,7 +45,7 @@ noob <- function(sset, in.place=FALSE, offset=15) {
     ## type IR
     if (length(sset$IR)>0)
         sset$IR <- matrix(
-            ibR.nl$i[1:length(sset$IR)],
+            ibR.nl$i[seq_along(sset$IR)],
             nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
     else
         sset$IR <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
@@ -197,7 +197,7 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
     ## type IG
     if (length(sset$IG)>0)
         sset$IG <- matrix(
-            ibG[1:length(sset$IG)],
+            ibG[seq_along(sset$IG)],
             nrow=nrow(sset$IG), dimnames=dimnames(sset$IG))
     else
         sset$IG <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
@@ -205,7 +205,7 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
     ## type IR
     if (length(sset$IR)>0)
         sset$IR <- matrix(
-            ibR[1:length(sset$IR)],
+            ibR[seq_along(sset$IR)],
             nrow=nrow(sset$IR), dimnames=dimnames(sset$IR))
     else
         sset$IR <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
@@ -241,7 +241,7 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
 ## offset padding for normalized signal
 ## return normalized in-band signal
 .backgroundCorrCh1 <- function(x, pp, alpha, offset=15) {
-    
+
     mu.bg <- pp$mu
     sigma <- pp$sigma
     sigma2 <- sigma * sigma
@@ -261,8 +261,8 @@ noobsb <- function(sset, in.place=FALSE, offset=15, detailed=FALSE) {
     o <- !is.na(signal)
     if (any(signal[o] < 0)) {
         warning("Limit of numerical accuracy reached with
-very low intensity or very high background:\nsetting adjusted
-intensities to small value")
+very low intensity or very high background:
+setting adjusted intensities to small value")
         signal[o] <- pmax(signal[o], 1e-06)
     }
     
@@ -270,7 +270,6 @@ intensities to small value")
     signal <- signal - signal.min
     offset + signal
 }
-
 
 ## train model using linear model with log transformed response
 train.model.lm <- function(input, output) {

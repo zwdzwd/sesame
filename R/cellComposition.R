@@ -22,7 +22,7 @@ cleanRefSet <- function(g, platform) {
 diffRefSet <- function(g) {
     g <- g[apply(g, 1, function(x) min(x) != max(x)),]
     message(
-        'Reference set is based on ', dim(g)[1], ' probes from ',
+        'Reference set is based on ', dim(g)[1], ' differential probes from ',
         dim(g)[2], ' cell types.')
     g
 }
@@ -40,8 +40,10 @@ getRefSet <- function(cells=NULL, platform='EPIC') {
         cells <- c('CD4T', 'CD19B','CD56NK','CD14Monocytes', 'granulocytes');
     }
 
-    g <- sapply(
-        cells, function(cell) getBuiltInData(cell, platform, 'cellref'));
+    nprobes <- nrow(getBuiltInData('ordering', platform))
+    g <- vapply(cells, function(cell) getBuiltInData(
+        cell, platform, 'cellref'), numeric(nprobes));
+
     g <- cleanRefSet(g, platform);
     message(
         'Reference set is based on ', dim(g)[1], ' probes from ',
@@ -97,7 +99,7 @@ getg0 <- function(f, g, q) {
 
     ## initialize
     repeat {
-        nu <- sample(1:(M+1), 2)
+        nu <- sample(seq_len(M+1), 2)
         step.size <- runif(1) * step.max
         frac.test <- double.transform.f(frac, nu[1], nu[2], step.size);
         if (!is.null(frac.test)) {

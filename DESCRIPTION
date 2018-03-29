@@ -9,7 +9,7 @@ Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              person("Hui", "Shen", role = c("aut"),
              email = "Hui.Shen@vai.org"))
 Depends:
-    R (>= 3.4)
+    R (>= 3.5)
 License: Artistic-2.0
 LazyData: TRUE
 RoxygenNote: 6.0.1
@@ -33,7 +33,7 @@ Suggests: ggplot2,
           scales,
           knitr,
           rmarkdown,
-    testthat
+          testthat
 VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame
 BugReports: https://github.com/zwdzwd/sesame/issues

@@ -49,7 +49,7 @@ DML <- function(
     names(cf) <- cf.test
 
     message('Testing differential methylation on each locus:')
-    for (i in 1:n.cpg) {
+    for (i in seq_len(n.cpg)) {
 
         if (i%%ceiling(n.cpg/80)==0) message('.', appendLF=FALSE);
         
@@ -86,7 +86,7 @@ DML <- function(
         ## QR-solve weighted least square
         z <- .lm.fit(design1*wts, betas1*wts)
         names(z$coefficients) <- colnames(design1)
-        p1 <- 1:z$rank
+        p1 <- seq_len(z$rank)
         coefs <- z$coefficients[z$pivot[p1]]
         residuals <- z$residuals / wts
 
@@ -191,11 +191,11 @@ DMR <- function(
     n.cpg <- length(cpg.ids)
 
     ## euclidean distance suffcies
-    beta.dist <- sapply(1:(n.cpg-1), function(i) sum(
-        (betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE))
+    beta.dist <- vapply(seq_len(n.cpg-1), function(i) sum(
+        (betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE), 1)
 
     ## 1-correlation coefficient
-    ## beta.dist <- sapply(1:(n.cpg-1), function(i) {
+    ## beta.dist <- sapply(seq_len(n.cpg-1), function(i) {
     ##   x <- cor(betas.coord.srt[i,],betas.coord.srt[i+1,],
     ## use='na.or.complete',method='spearman')
     ##   if (is.na(x)) x <- 0
