@@ -1,7 +1,7 @@
 ---
 title: "SeSAMe User Guide"
 shorttitle: "sesame guide"
-author: "Wanding Zhou, Timothy J Triche, Hui Shen"
+author: "Wanding Zhou, Timothy J Triche Jr, Hui Shen"
 package: sesame
 output: rmarkdown::html_vignette
 fig_width: 8
@@ -152,69 +152,68 @@ Infinium platforms are intrinsically robust to incomplete bisulfite conversion a
 bisConversionControl(sset)
 ```
 
-### Visualize probes
+### Probe retrieval and $\beta$-value visualization
 
-visualize probes from a gene
+To visualize all probes from a gene
 ```{r, message=FALSE}
 betas <- SeSAMeGetExample('HM450.betas.10TCGAnormalPAAD')
 visualizeGene('DNMT1', betas, platform='HM450')
 ```
 
-visualize probes from arbitrary region
+To visualize probes from arbitrary region
 ```{r, message=FALSE}
 visualizeRegion('chr19',10260000,10380000, betas, platform='HM450')
 ```
 
-visualize by probe names
-```R
+To visualize by probe names
+```{r, message=FALSE}
 visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 ```
 
 ### Differential methylation
 
-test differential methylation on each locus
+SeSAMe tests differential methylation on each locus and groups adjacent significantly differentially methylated loci into segments.
 ```{r, message=FALSE}
 betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
 sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
-cf <- DMR(betas, sample.info, ~patient+type, platform='HM450')
+cf <- DMR(betas, sample.info, ~type, platform='HM450')
 ```
 
-top differentially methylated probes on factor "type"
+The result is a list of differentially methylated CpG locus grouped into segments. Each row is a CpG site and `Seg.ID` column specifies which segment the CpG falls into. A segment can have one or more CpG sites. The start and end coordinates for each segment is labeled in `Seg.start` and `Seg.end` column. The significance of the segment is shown in `Seg.Pval` and `Seg.Pval.adj` (after multiple comparison adjustment). The significance of each CpG locus is shown in `Pr(>|t|)`. `topLoci` function essentially pulls the rows by `Pr(>|t|)`.
 ```{r}
 cf1 <- cf$typeTumour
 head(topLoci(cf1))
 ```
 
-top segments
+`topSegments` function essentially pulls the rows by `Seg.Pval`.
 ```{r}
 head(topSegments(cf1))
 ```
       
-visualize top DMR
+To visualize top DMR,
 ```{r, message=FALSE}
 visualizeProbes(
     rownames(cf1[cf1[,'Seg.ID']==topSegments(cf1)$Seg.ID[1],]), betas,
     upstream=5000, dwstream=5000, platform='HM450',heat.height=3.5)
 ```
 
-
 ### CNV
-    
-uses LNCaP EPIC data from GSE86833
-```{r}
+
+SeSAMe performs copy number variation in three steps: 1) normalizes the signal intensity using a copy-number-normal data set; 2) groups adjacent probes into bins; 3) runs DNAcopy internally to group bins into segments.
+```{r, message=FALSE}
 segs <- cnSegmentation(sset)
 ```
 
-To visualize segments,
-```{r}
+To visualize segmentation in SeSAMe,
+```{r, message=FALSE}
 visualizeSegments(segs)
 ```
 
-### cell composition deconvolution
+### Cell Composition Deconvolution
 
 Use blood set as example,
 
-```{r}
+```{r, message=FALSE}
 g <- diffRefSet(getRefSet(
     c('CD4T','CD19B','CD14Monocytes','CD56NK', 'granulocytes'), platform='HM450'))
 betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
