@@ -1,114 +1,167 @@
 ---
 title: "SeSAMe User Guide"
 shorttitle: "sesame guide"
-author: "Wanding Zhou"
+author: "Wanding Zhou, Timothy J Triche, Hui Shen"
 package: sesame
 output: rmarkdown::html_vignette
-fig_width: 6
-fig_height: 4
+fig_width: 8
+fig_height: 6
 vignette: >
   %\VignetteIndexEntry{SeSAMe User Guide}
   %\VignetteEngine{knitr::rmarkdown}
   \usepage[utf8]{inputenc}
 ---
 
-# Introduction
+# Data Structure for Signal Intensities
 
-SeSAMe is an R package for processing Infinium DNA methylation data. SeSAMe currently supports EPIC, HM450 and HM27 platforms.
+SeSAMe is designed to process Infinium DNA methylation data. It currently supports EPIC, HM450 and HM27 platforms. The design includes a light-weight full exposure of internal signal intensities, an essential information for users of the Infinium Platform. Central to the SeSAMe platform is the data structure named SignalSet, a R6 reference class with slots containing the signals for six different classes of probes:
 
-## To read IDATs from directory
+1) `II` - Type-II probes; 
+2) `IR` - Type-I Red channel probes;
+3) `IG` - Type-I Grn channel probes; 
+4) `oobG` - Out-of-band Grn channel probes (matching Type-I Red channel probes in number); 
+5) `oobR` - Out-of-band Red channel probes (matching Type-I Grn channel probes in number);
+6) `ctl` - control probes. 
+
+For everything besides the control probes, signal intensities are stored as an `Nx2` numeric matrix with `N` representing the number of probes in the class. Two columns representing the methylated allele and the unmethylated allele.
+
+```{r}
+library(sesame)
+sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
+```
+
+For example, printing the SignalSet directly shows its content
+```{r}
+sset
+```
+
+Type-II probe signal can be browsed in
+```{r}
+head(sset$II)
+```
+
+Similarly, signals for Type-I probes (`sset$IR` and `sset$IG`) and out-of-band probes (`sset$oobG` and `sset$oobR`) can be found in
+```{r}
+head(sset$IR)
+head(sset$oobG)
+```
+as one can see the probe names (row names) of `IR` always coincide with the probe names (row names) of `oobG` (and vice versa). This is because the out-of-band probe signal for red channel probes is in green channel (and vice versa). Lastly, Control probes are represented in a data frame with the last column holding the type of the control. 
+```{r}
+head(sset$ctl)
+```
+
+# To read IDATs from directory
 ```R
 library(sesame)
 ssets <- readIDATsFromDir('IDATs/')
 ```
-        
+
 A simple list of "SignalSet"s are returned.
         
 Other options of data import include
 
-+ readIDATs - from path
++ readIDATs - from a vector of file paths (excluding `_Red.idat` and `_Grn.idat`)
 + readIDATsFromSheet - from data.frame "barcode" column
         
 ### Background subtraction
-    
-noob:
+
+Like many other Infinium Methylation-targeted software, SeSAMe implements the background subtraction based on normal-exponential deconvolution using out-of-band probes `noob` ([Triche et al. 2013](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3627582/)) and optionally with extra bleed-through subtraction. Signal bleed-through happens when measurement from one channel affects the measurement in the other channel. SeSAMe's `noobsb` further removes residual background by regressing out the green-to-red and red-to-green relationship using Type-I probes.
 ```R
-library(sesame)
-sset <- makeExampleTinyEPICDataSet()
 sset.nb <- noob(sset)
+sset.nb <- noobsb(sset)
 ```
       
 ### Dye bias correction
 
-linear scaling
+Dye bias refers to the difference in signal intensity between the two color channel. SeSAMe offers two flavors of dye bias correction: linear scaling (`dyeBiasCorr`) and nonlinear scaling (`dyeBiasCorrTypeINorm`). Linear scaling equalize the mean of all probes from the two color channel.
 ```{r}
 library(sesame)
-sset <- makeExampleTinyEPICDataSet()
-sset.db <- dyeBiasCorr(sset)
+sset.dbLinear <- dyeBiasCorr(sset)
+qqplot(sset.dbLinear$IR, sset.dbLinear$IG, xlab='Type-I Red Signal', ylab='Type-I Grn Signal', main='Linear Correction', cex=0.5)
+abline(0,1,lty='dashed')
 ```
-      
-quantile interpolation with Type-I probes
+
+Residual dye bias can be corrected using nonlinear quantile interpolation with Type-I probes.
 ```{r}
-sset <- makeExampleTinyEPICDataSet()
-sset.db <- dyeBiasCorrTypeINorm(sset)
-sset.db
+sset.dbNonlinear <- dyeBiasCorrTypeINorm(sset)
 ```
-      
+
+Under this correction, Type-I Red probes and Type-I Grn probes have the same distribution of signal.
+```{r}
+qqplot(sset.dbNonlinear$IR, sset.dbNonlinear$IG, xlab='Type-I Red Signal', ylab='Type-I Grn Signal', main='Nonlinear Correction', cex=0.5)
+abline(0,1,lty='dashed')
+```
+
+Note that linear scaling does not shift beta values of Type-I probes while nonlinear scaling does shift beta values of Type-I probes.
+
 ### Get betas
 
+Beta values are defined as `methylated signal`/(`methylated signal` + `unmethylated signal`). It can be computed using `getBetas` function. The output is a named vector with probe ID as name.  There are two options for `getBetas` that affects probe masking. The first is `quality.mask=TRUE/FALSE` which switches probe quality masking. The quality masking includes mapping issues, SNPs and non-uniqueness, and is described in [Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930). `nondetection.mask = TRUE/FALSE` is used to switch masking of nondetection based on detection P-value. Both masks are recommended to ensure data quality and defaulted to TRUE.
 ```{r}
-sset <- makeExampleTinyEPICDataSet()
 betas <- getBetas(sset)
 head(betas)
 ```
-use option quality.mask = TRUE/FALSE to mask probes with mapping issues, SNPs 	and non-uniqueness, described in Zhou 2016 NAR.
-use option nondetection.mask = TRUE/FALSE to mask nondetection calls.
 
-Both masks are recommended to ensure data quality and defaulted to TRUE.
-        
+Beta values for Type-I probes can also be obtained by summing up the two in-band channel and out-of-band channel. This rescues probes with SNP hitting the extension base and hence switching color channel. More details can be found in [Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
+```{r}
+betas <- getBetasTypeIbySumChannels(sset)
+```
+
+For such probes, extra SNP allele frequencies can be derived by summing up methylated and umethylated alleles.
+```{r}
+extraSNPAFs <- getAFTypeIbySumAlleles(sset)
+```
+
 ### Sample/experiment QC
 
-#### sex
-```R
+SeSAMe implements inference of sex, age, ethnicity. These are valuable information for checking the integrity of the experiment and detecting sample swaps.
+
+#### Sex
+
+Sex is inferred based on our curated X-linked probes and Y chromosome probes excluding pseudo-autosomal regions.
+```{r}
 inferSex(sset)
 ```
 
-#### ethnicity
-```R
+#### Ethnicity
+
+Ethnicity is inferred using a random forest model trained based on both the built-in SNPs (`rs` probes) and channel-switching Type-I probes.
+```{r}
 inferEthnicity(sset)
 ```
 
-#### age
+#### Age
+
+SeSAMe provides age regression a la the Horvath 353 model.
 ```{r}
 betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
 predictAgeHorvath353(betas)
 ```
 
-#### mean intensity
+#### Mean intensity
+
+The mean intensity of all the probes characterize the quantity of input DNA and efficiency of probe hybridization.
 ```{r}
-sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
 meanIntensity(sset)
 ```
 
-#### bisulfite conversion control using [GCT score](https://academic.oup.com/nar/article/45/4/e22/2290930)
-```{r}
+#### Bisulfite conversion control using GCT scores
 
+Infinium platforms are intrinsically robust to incomplete bisulfite conversion as non-converted probes would fail to hybridize to the target. Residual incomplete bisulfite conversion can be quantified using GCT score based on C/T-extension probes. Details of this method can be found in [Zhou et al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930). The closer the score to 1.0, the more complete the bisulfite conversion.
+```{r}
 bisConversionControl(sset)
 ```
 
-### visualize probes
-
-```{r}
-betas <- SeSAMeGetExample('HM450.betas.10TCGAnormalPAAD')
-```
+### Visualize probes
 
 visualize probes from a gene
-```{r}
+```{r, message=FALSE}
+betas <- SeSAMeGetExample('HM450.betas.10TCGAnormalPAAD')
 visualizeGene('DNMT1', betas, platform='HM450')
 ```
 
 visualize probes from arbitrary region
-```R
+```{r, message=FALSE}
 visualizeRegion('chr19',10260000,10380000, betas, platform='HM450')
 ```
 
@@ -120,7 +173,7 @@ visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 ### Differential methylation
 
 test differential methylation on each locus
-```{r}
+```{r, message=FALSE}
 betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
 sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
 cf <- DMR(betas, sample.info, ~patient+type, platform='HM450')
@@ -133,13 +186,15 @@ head(topLoci(cf1))
 ```
 
 top segments
-```R
+```{r}
 head(topSegments(cf1))
 ```
       
 visualize top DMR
-```R
-visualizeProbes(rownames(cf1[cf1[,'Seg.ID']==topSegments(cf1)$Seg.ID[1],]), betas, upstream=5000, dwstream=5000, platform='HM450',heat.height=3.5)
+```{r, message=FALSE}
+visualizeProbes(
+    rownames(cf1[cf1[,'Seg.ID']==topSegments(cf1)$Seg.ID[1],]), betas,
+    upstream=5000, dwstream=5000, platform='HM450',heat.height=3.5)
 ```
 
 
@@ -147,8 +202,7 @@ visualizeProbes(rownames(cf1[cf1[,'Seg.ID']==topSegments(cf1)$Seg.ID[1],]), beta
     
 uses LNCaP EPIC data from GSE86833
 ```{r}
-example.sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
-segs <- cnSegmentation(example.sset)
+segs <- cnSegmentation(sset)
 ```
 
 To visualize segments,
@@ -161,7 +215,8 @@ visualizeSegments(segs)
 Use blood set as example,
 
 ```{r}
-g <- diffRefSet(getRefSet(c('CD4T','CD19B','CD14Monocytes','CD56NK', 'granulocytes'), platform='HM450'))
+g <- diffRefSet(getRefSet(
+    c('CD4T','CD19B','CD14Monocytes','CD56NK', 'granulocytes'), platform='HM450'))
 betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
 estimateCellComposition(g, betas[rownames(g)])$frac
 ```

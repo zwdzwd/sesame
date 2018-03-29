@@ -24,9 +24,9 @@ cnSegmentation <- function(sset, ssets.normal=NULL, refversion='hg19') {
     if (is.null(ssets.normal)) {
         ssets.normal <- getBuiltInData('cn.normals', sset$platform);
     }
-    normal.intens <- sapply(ssets.normal, function(sset) {
-        sset$totalIntensities()
-    })
+
+    normal.intens <- do.call(cbind, lapply(ssets.normal, function(sset) {
+        sset$totalIntensities() }))
 
     ## find overlapping probes
     pb <- intersect(rownames(normal.intens), names(target.intens))
@@ -174,7 +174,7 @@ binSignals <- function(probe.signals, bin.coords, probe.coords) {
         .probe.signals <- probe.signals[names(probe.coords)[ov@from]]
     }
 
-    bin.signals <- sapply(split(.probe.signals, .bins), median, na.rm=TRUE)
+    bin.signals <- vapply(split(.probe.signals, .bins), median, 1, na.rm=TRUE)
     bin.signals
 }
 

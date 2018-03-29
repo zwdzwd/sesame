@@ -197,7 +197,7 @@ visualizeRegion <- function(
 
     ## plot transcripts
     if (length(target.txns) > 0) {
-        plt.txns <- do.call(gList, lapply(1:length(target.txns), function(i) {
+        plt.txns <- do.call(gList, lapply(seq_along(target.txns), function(i) {
             txn <- target.txns[[i]]
             txn.name <- names(target.txns)[i]
 
@@ -271,7 +271,7 @@ visualizeRegion <- function(
     plt.chromLine <- grid.lines(x=c(0, 1), y=c(1,1), draw=FALSE)
     plt.mapLines <- grid.segments(
         (GenomicRanges::start(probes)-plt.beg) / plt.width, 1,
-        ((1:nprobes-0.5)/nprobes), 0, draw=FALSE)
+        ((seq_len(nprobes)-0.5)/nprobes), 0, draw=FALSE)
 
     ## clustering
     betas <- betas[names(probes),,drop=FALSE]
@@ -330,9 +330,9 @@ plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg38') {
             sprintf("%s:%d-%d", chrom, plt.beg, plt.end), 0, 0.9,
             just = c('left','bottom'), draw = FALSE),
         grid.rect(
-            sapply(
+            vapply(
                 cytoBand.target$chromStart,
-                function(x) (x-chromBeg)/chromWid),
+                function(x) (x-chromBeg)/chromWid, 1),
             0.35,
             (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid,
             0.5, gp = gpar(fill = bandColor, col = bandColor),
