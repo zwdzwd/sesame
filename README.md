@@ -18,7 +18,7 @@ You need devtools from install.packages('devtools'). Then,
 
 ```R
 library(devtools)
-install_github(' https://github.com/zwdzwd/sesame ')
+install_github("zwdzwd/sesame")
 ```
 
 optional: download data for offline processing. Otherwise, sesame needs to access internet for data needed
