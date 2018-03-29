@@ -18,9 +18,11 @@ getAFTypeIbySumAlleles(sset, quality.mask = TRUE, nondetection.mask = TRUE,
 }
 \value{
 beta values
-sset <- makeExampleSeSAMeDataSet()
-betas <- getBetasTypeIbySumAlleles(sset)
 }
 \description{
 used for extra allele frequency on Color-Channel-Switching CCS probes
+}
+\examples{
+sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
+betas <- getAFTypeIbySumAlleles(sset)
 }

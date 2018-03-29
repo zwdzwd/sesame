@@ -24,7 +24,7 @@ buildControlMatrix450k <- function(sset) {
         cm,
         bisulfite1=mean(
         ctls[['BISULFITE CONVERSION I']][sprintf(
-            'BS.Conversion.I.C%s', 1:3),'G'] +
+            'BS.Conversion.I.C%s', seq_len(3)),'G'] +
                 ctls[['BISULFITE CONVERSION I']][sprintf(
                     'BS.Conversion.I.C%s', 4:6),'R'],
         na.rm=TRUE))
@@ -44,11 +44,11 @@ buildControlMatrix450k <- function(sset) {
 
     ## hybridization
     d <- ctls[['HYBRIDIZATION']]$G
-    cm <- c(cm, setNames(d, paste0('hybe',1:length(d))))
+    cm <- c(cm, setNames(d, paste0('hybe',seq_along(d))))
 
     ## target removal
     d <- ctls[['TARGET REMOVAL']]$G
-    cm <- c(cm, setNames(d, paste0('targetrem',1:length(d))))
+    cm <- c(cm, setNames(d, paste0('targetrem',seq_along(d))))
 
     ## non-polymorphic
     cm <- c(
@@ -62,18 +62,18 @@ buildControlMatrix450k <- function(sset) {
     d <- ctls[['SPECIFICITY II']]
     cm <- c(
         cm,
-        structure(d$G, names=paste0('spec2Grn', 1:dim(d)[1])),
-        structure(d$R, names=paste0('spec2Red', 1:dim(d)[1])))
+        structure(d$G, names=paste0('spec2Grn', seq_len(dim(d)[1]))),
+        structure(d$R, names=paste0('spec2Red', seq_len(dim(d)[1]))))
     cm <- c(cm, spec2.ratio = mean(d$G,na.rm=TRUE) / mean(d$R,na.rm=TRUE))
 
     ## specificity type I green
-    d <- ctls[['SPECIFICITY I']][sprintf('GT.Mismatch.%s..PM.',1:3),]
-    cm <- c(cm, structure(d$G, names=paste0('spec1Grn',1:dim(d)[1])))
+    d <- ctls[['SPECIFICITY I']][sprintf('GT.Mismatch.%s..PM.',seq_len(3)),]
+    cm <- c(cm, structure(d$G, names=paste0('spec1Grn',seq_len(dim(d)[1]))))
     cm <- c(cm, spec1.ratio1 = mean(d$R, na.rm=TRUE)/mean(d$G, na.rm=TRUE))
 
     ## specificity type I red
     d <- ctls[['SPECIFICITY I']][sprintf('GT.Mismatch.%s..PM.',4:6),]
-    cm <- c(cm, structure(d$R, names=paste0('spec1Red',1:dim(d)[1])))
+    cm <- c(cm, structure(d$R, names=paste0('spec1Red',seq_len(dim(d)[1]))))
     cm <- c(cm, spec1.ratio2 = mean(d$G, na.rm=TRUE)/mean(d$R, na.rm=TRUE))
 
     ## average specificity ratio
