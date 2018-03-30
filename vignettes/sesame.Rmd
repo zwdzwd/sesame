@@ -211,8 +211,13 @@ visualizeSegments(segs)
 
 ### Cell Composition Deconvolution
 
-Use blood set as example,
+SeSAMe estimates leukocyte fraction using a two-component model.
+```{r, message=FALSE}
+betas.tissue <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
+estimateLeukocyte(betas.tissue)
+```
 
+Further decomposition can be achieved through factorization.
 ```{r, message=FALSE}
 g <- diffRefSet(getRefSet(
     c('CD4T','CD19B','CD14Monocytes','CD56NK', 'granulocytes'), platform='HM450'))

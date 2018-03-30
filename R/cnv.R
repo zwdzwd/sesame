@@ -244,6 +244,7 @@ visualizeSegments <- function(seg, to.plot=NULL) {
 
     bin.coords <- bin.coords[as.vector(
         GenomicRanges::seqnames(bin.coords)) %in% seq.names]
+    bin.signals <- bin.signals[names(bin.coords)]
 
     GenomicRanges::values(bin.coords)$bin.mids <-
         (GenomicRanges::start(bin.coords) + GenomicRanges::end(bin.coords))/2

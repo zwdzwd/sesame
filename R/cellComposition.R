@@ -185,3 +185,89 @@ estimateCellComposition <- function(
         err = res$errmin,
         g0 = getg0(res$frac.min, g, q))
 }
+
+
+#' Estimate leukocyte fraction using a two-component model
+#'
+#' @param betas.tissue tissue beta value matrix (#probes X #samples)
+#' @param betas.leuko leukocyte beta value matrix,
+#' if missing, use the SeSAMe default by infinium platform
+#' @param betas.tumor optional, tumor beta value matrix
+#' @param platform "HM450", "HM27" or "EPIC"
+#' @return leukocyte estimate, a numeric vector
+#' @importFrom utils head
+#' @importFrom utils tail
+#' @examples
+#'
+#' betas.tissue <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
+#' estimateLeukocyte(betas.tissue)
+#' 
+#' @export
+estimateLeukocyte<-function(
+    betas.tissue, betas.leuko=NULL, betas.tumor=NULL, platform='HM450'){
+
+    if (!is.matrix(betas.tissue))
+        betas.tissue <- as.matrix(betas.tissue)
+
+    if (is.null(betas.leuko))
+        betas.leuko <- getBuiltInData('betas.leuko.whole', platform=platform)
+
+    if (!is.matrix(betas.leuko))
+        betas.leuko <- as.matrix(betas.leuko)
+
+    ## choose the probes to work with
+    ave.leuko <- rowMeans(betas.leuko, na.rm=TRUE)
+    ave.tissue <- rowMeans(betas.tissue, na.rm=TRUE)
+
+    probes <- intersect(names(ave.leuko), names(ave.tissue))
+    ave.leuko <- ave.leuko[probes]
+    ave.tissue <- ave.tissue[probes]
+
+    if (toupper(platform) %in% c("HM450", "EPIC"))
+        nprobes <- 1000
+    else if (toupper(platform) == "HM27")
+        nprobes <- 100
+    else
+        stop("Platform not supported.")
+    
+    tt <- sort(ave.leuko - ave.tissue)
+    ## leukocyte-specific hypo-methylation
+    probes.leuko.low <- names(head(tt, n=nprobes))
+    ## leukocyte-specific hyper-methylation
+    probes.leuko.high <- names(tail(tt, n=nprobes))
+
+    ## test tumor if specified
+    if (!is.null(betas.tumor)) {
+        if (!is.matrix(betas.tumor))
+            betas.tumor <- as.matrix(betas.tumor)
+        betas.tissue <- betas.tumor
+    }
+        
+    ## more refined range if dataset is big
+    if (dim(betas.tissue)[2] >= 10) {
+        ## the old code doesn't exclude NAs, this should be better
+        t.high <- apply(betas.tissue[probes.leuko.high,],1,min, na.rm=TRUE)
+        t.low <- apply(betas.tissue[probes.leuko.low,],1,max, na.rm=TRUE)
+    } else {
+        t.high <- rep(0.0, length(probes.leuko.high))
+        t.low <- rep(1.0, length(probes.leuko.low))
+    }
+    l.high <- as.numeric(as.matrix(ave.leuko[probes.leuko.high]))
+    l.low <- as.numeric(as.matrix(ave.leuko[probes.leuko.low]))
+
+    ## calculating Leukocyte Percentage
+    leuko.estimate <- vapply(seq_len(ncol(betas.tissue)), function(i) {
+        s.high <- betas.tissue[probes.leuko.high, i]
+        s.low <- betas.tissue[probes.leuko.low, i]
+        p <- c(
+            (s.high - t.high) / (l.high - t.high),
+            (s.low - t.low) / (l.low - t.low))
+
+        if (sum(!is.na(p)) < 10) return(NA); # not enough data
+        dd <- density(na.omit(p))
+        dd$x[which.max(dd$y)]
+    }, numeric(1))
+    
+    names(leuko.estimate) <- colnames(betas.tissue)
+    leuko.estimate
+}
