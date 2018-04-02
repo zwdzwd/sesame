@@ -1,9 +1,4 @@
-
-#' jet color stops
-"jet.stops"
-
-#' darker jet color stops
-"darkjet.stops"
+## content in this file is obsolete
 
 ## chromosome information (deprecated)
 ## HM27.hg19.probe2chr
@@ -94,22 +89,23 @@ getBuiltInData <- function(nm, platform='', subdir='') {
     
 }
 
-#' Cache all the built in data from remote
-#'
-#' need environment SESAMEHOME be set
-#'
-#' @importFrom XML htmlTreeParse
-#' @importFrom utils download.file
-#' @return the object NULL
-#' @examples
-#' \dontrun{
-#' cacheBuiltInData() # download annotation data to $SESAMEHOME
-#' }
-#'
-#' cat("Data will be deposited to", Sys.getenv('SESAMEHOME'), "\n")
-#' @export
+## Cache all the built in data from remote
+##
+## need environment SESAMEHOME be set
+##
+## @importFrom XML htmlTreeParse
+## @importFrom utils download.file
+## @return the object NULL
+## @examples
+## \dontrun{
+## cacheBuiltInData() # download annotation data to $SESAMEHOME
+## }
+##
+## cat("Data will be deposited to", Sys.getenv('SESAMEHOME'), "\n")
 cacheBuiltInData <- function() {
 
+    pkgTest('XML')
+    pkgTest('utils')
     seshome <- Sys.getenv('SESAMEHOME')
     if (seshome == '') {
         stop("SESAMEHOME is not set. Abort caching.")
@@ -118,7 +114,7 @@ cacheBuiltInData <- function() {
     base.dir <- 'http://zwdzwd.io/sesame/current/'
 
     dwfiles <- unname(
-        unlist(htmlTreeParse(base.dir, useInternalNodes=TRUE)["//a/@href"]))
+        unlist(XML::htmlTreeParse(base.dir, useInternalNodes=TRUE)["//a/@href"]))
 
     for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
         download.file(
@@ -129,7 +125,7 @@ cacheBuiltInData <- function() {
     subname <- 'cellref'
     subdir <- paste0(base.dir, '/', subname, '/')
     dwfiles <- unname(
-        unlist(htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
+        unlist(XML::htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
     
     dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
     for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
@@ -141,7 +137,7 @@ cacheBuiltInData <- function() {
     subname <- 'examples'
     subdir <- paste0(base.dir, '/', subname, '/')
     dwfiles <- unname(
-        unlist(htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
+        unlist(XML::htmlTreeParse(subdir, useInternalNodes=TRUE)["//a/@href"]))
     
     dir.create(paste0(seshome, '/', subname), showWarnings = FALSE)
     for (dwfile in dwfiles[grep('*.rds$', dwfiles)]) {
@@ -152,14 +148,7 @@ cacheBuiltInData <- function() {
     NULL
 }
 
-#' Retrieve SeSAMe examples
-#'
-#' @param nm name
-#' @param platform optional, HM450, EPIC or HM27
-#' @return example object
-#' @examples
-#' betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
-#' @export
+## betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
 SeSAMeGetExample <- function(nm, platform='') {
     getBuiltInData(nm, platform, 'examples');
 }

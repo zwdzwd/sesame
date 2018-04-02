@@ -15,8 +15,10 @@
 #' @return cf - a list of coefficient tables for each factor
 #' @import stats
 #' @examples
-#' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-#' sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+#' betas <- readRDS(system.file(
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#' sample.info <- readRDS(system.file(
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 #' cf <- DML(betas, sample.info, ~type)
 #' @export
 DML <- function(
@@ -155,8 +157,10 @@ DML <- function(
 #' @param ... additional parameters to DML
 #' @return coefficient table with segment ID and segment P-value
 #' @examples
-#' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-#' sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+#' betas <- readRDS(system.file(
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#' sample.info <- readRDS(system.file(
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 #' cf <- DMR(betas, sample.info, ~type)
 #' @export
 DMR <- function(
@@ -164,7 +168,8 @@ DMR <- function(
     seg.per.locus=0.5, platform='EPIC', refversion='hg38', ...) {
 
     pkgTest('GenomicRanges')
-
+    pkgTest('sesameData')
+    
     if (is.null(cf)) {
         if (is.null(sample.data) || is.null(formula))
             stop('Need either cf or sample data and formula to run DML.')
@@ -175,8 +180,7 @@ DMR <- function(
     betas.noNA <- betas[!apply(betas, 1, function(x) all(is.na(x))),]
 
     ## sort by coordinates
-    probe.coords <- getBuiltInData(
-        paste0(platform,'.mapped.probes.',refversion))
+    probe.coords <- get(paste0(platform,'.mapped.probes.',refversion))
     cpg.ids <- intersect(rownames(betas.noNA), names(probe.coords))
     probe.coords <- GenomicRanges::sort(probe.coords[cpg.ids])
     betas.coord.srt <- betas.noNA[names(probe.coords),]
@@ -269,8 +273,10 @@ DMR <- function(
 #' @param cf1 coefficient table of one factor from DMR
 #' @return coefficient table ordered by adjusted p-value of segments
 #' @examples
-#' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-#' sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+#' betas <- readRDS(system.file(
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#' sample.info <- readRDS(system.file(
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 #' cf <- DMR(betas, sample.info, ~type)
 #' topSegments(cf[[1]])
 #' @export
@@ -288,8 +294,10 @@ topSegments <- function(cf1) {
 #' @param cf1 coefficient table of one factor from diffMeth
 #' @return coefficient table ordered by p-value of each locus
 #' @examples
-#' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-#' sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+#' betas <- readRDS(system.file(
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#' sample.info <- readRDS(system.file(
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 #' cf <- DMR(betas, sample.info, ~type)
 #' topLoci(cf[[1]])
 #' @export
@@ -303,8 +311,10 @@ topLoci <- function(cf1) {
 #' @param seg.id segment ID
 #' @return coefficient table from given segment
 #' @examples
-#' betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-#' sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+#' betas <- readRDS(system.file(
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#' sample.info <- readRDS(system.file(
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 #' cf <- DMR(betas, sample.info, ~type)
 #' getSegment(cf[[1]], cf[[1]][['Seg.ID']][1])
 #' @export

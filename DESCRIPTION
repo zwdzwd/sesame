@@ -3,18 +3,17 @@ Type: Package
 Title: Tools For Analyzing Illumina Infinium DNA Methylation Arrays
 Description: Tools For analyzing Illumina Infinium DNA methylation arrays.
 Version: 0.99.1
-Date: 2018-02-26
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "zhouwanding@gmail.com"),
              person("Hui", "Shen", role = c("aut"),
              email = "Hui.Shen@vai.org"),
              person("Timothy", "Triche", role = "ctb"))
-Depends:
-    R (>= 3.5)
+Depends:  R (>= 3.5),
+          sesameData
 License: Artistic-2.0
 LazyData: TRUE
 RoxygenNote: 6.0.1
-Imports: R6,
+Imports:  R6,
           grDevices,
           utils,
           illuminaio,
@@ -22,19 +21,20 @@ Imports: R6,
           GenomicRanges,
           IRanges,
           grid,
-          parallel,
+          BiocParallel,
           preprocessCore,
           stats,
           randomForest,
           XML,
           methods,
-          wheatmap
+          wheatmap,
 Suggests: ggplot2,
           DNAcopy,
           scales,
           knitr,
           rmarkdown,
           testthat
+Remotes:  zwdzwd/sesameData
 VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame
 BugReports: https://github.com/zwdzwd/sesame/issues

@@ -4,27 +4,27 @@
 #' @param ssets.normal \code{SignalSet} for normalization
 #' @param refversion hg19 or hg38
 #' @return an object of \code{CNSegment}
+#' @import sesameData
 #' @examples
-#' sset <- SeSAMeGetExample("EPIC.sset.LNCaP.Rep1.chr4")
-#' ssets.normal <- SeSAMeGetExample("EPIC.sset.5normal.chr4")
+#' sset <- readRDS(system.file(
+#'     "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
+#' ssets.normal <- readRDS(system.file(
+#'     "extdata", "EPIC.sset.5normal.chr4.rds", package = "sesameData"))
 #' seg <- cnSegmentation(sset, ssets.normal)
 #' 
 #' @export
-cnSegmentation <- function(sset, ssets.normal=NULL, refversion='hg19') {
+cnSegmentation <- function(sset, ssets.normal, refversion='hg19') {
 
     pkgTest('GenomicRanges')
-
+    pkgTest('sesameData')
+    
     ## retrieve chromosome info and probe coordinates
-    chrominfo <- getBuiltInData(paste0(refversion, '.chrominfo'))
-    probe.coords <- getBuiltInData(paste0(
-        sset$platform, '.mapped.probes.', refversion))
+    chrominfo <- get(paste0(refversion,'.chrominfo'))
+    probe.coords <- get(paste0(
+        sset$platform,'.mapped.probes.', refversion))
 
     ## extract intensities
     target.intens <- sset$totalIntensities()
-    if (is.null(ssets.normal)) {
-        ssets.normal <- getBuiltInData('cn.normals', sset$platform);
-    }
-
     normal.intens <- do.call(cbind, lapply(ssets.normal, function(sset) {
         sset$totalIntensities() }))
 
@@ -187,6 +187,8 @@ binSignals <- function(probe.signals, bin.coords, probe.coords) {
 segmentBins <- function(bin.signals, bin.coords) {
 
     pkgTest('DNAcopy')
+    bin.coords <- bin.coords[names(bin.signals)]
+    
     ## make input data frame
     maplocs <- as.integer((
         GenomicRanges::start(bin.coords) + GenomicRanges::end(bin.coords))/2)
@@ -216,7 +218,8 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
 #' @return plot graphics
 #' @examples
-#' seg <- SeSAMeGetExample('EPIC.seg.LNCaP.Rep1')
+#' seg <- readRDS(system.file(
+#'     'extdata','EPIC.seg.LNCaP.Rep1.rds',package='sesameData'))
 #' visualizeSegments(seg)
 #' 
 #' @export
@@ -224,19 +227,21 @@ visualizeSegments <- function(seg, to.plot=NULL) {
 
     pkgTest('ggplot2')
     pkgTest('scales')
+    pkgTest('GenomicRanges')
     
-    chrominfo <- seg$chrominfo
+    ## chrominfo <- seg$chrominfo
     bin.coords <- seg$bin.coords
+    bin.seqinfo <- GenomicRanges::seqinfo(bin.coords)
     bin.signals <- seg$bin.signals
     seg.signals <- seg$seg.signals
-    total.length <- sum(as.numeric(chrominfo$seqinfo@seqlengths), na.rm=TRUE)
+    total.length <- sum(as.numeric(bin.seqinfo@seqlengths), na.rm=TRUE)
     
     ## skip chromosome too small (e.g, chrM)
     if (is.null(to.plot))
-        to.plot <- (chrominfo$seqinfo@seqlengths > total.length*0.01)
-    
-    seqlen <- as.numeric(chrominfo$seqinfo@seqlengths[to.plot])
-    seq.names <- chrominfo$seqinfo@seqnames[to.plot]
+        to.plot <- (bin.seqinfo@seqlengths > total.length*0.01)
+
+    seqlen <- as.numeric(bin.seqinfo@seqlengths[to.plot])
+    seq.names <- bin.seqinfo@seqnames[to.plot]
     total.length <- sum(seqlen, na.rm=TRUE)
     seqcumlen <- cumsum(seqlen)
     seqcumlen <- seqcumlen[-length(seqcumlen)]

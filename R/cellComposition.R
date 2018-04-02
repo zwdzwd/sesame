@@ -2,7 +2,9 @@
 cleanRefSet <- function(g, platform) {
 
     pkgTest('GenomicRanges')
-    mapinfo <- getBuiltInData('mapped.probes.hg19', platform)
+    pkgTest('sesameData')
+    mapinfo <- get(paste0(platform,'.mapped.probes.hg19'))
+    g <- g[intersect(rownames(g), names(mapinfo)),,drop=FALSE]
     g.clean <- g[apply(g, 1, function(x) !any(is.na(x))),,drop=FALSE]
     g.clean <- g.clean[rownames(g.clean) %in% names(mapinfo),,drop=FALSE]
     g.clean <- g.clean[!(as.vector(GenomicRanges::seqnames(
@@ -17,7 +19,7 @@ cleanRefSet <- function(g, platform) {
 #' @param g reference set
 #' @return g
 #' @examples
-#' g <- diffRefSet(getRefSet(platform='hm450'))
+#' g <- diffRefSet(getRefSet(platform='HM450'))
 #' @export
 diffRefSet <- function(g) {
     g <- g[apply(g, 1, function(x) min(x) != max(x)),]
@@ -31,6 +33,7 @@ diffRefSet <- function(g) {
 #'
 #' @param cells reference cell types
 #' @param platform EPIC or HM450
+#' @import sesameData
 #' @return g
 #' @examples
 #' betas <- getRefSet('CD4T', platform='HM450')
@@ -40,10 +43,10 @@ getRefSet <- function(cells=NULL, platform='EPIC') {
         cells <- c('CD4T', 'CD19B','CD56NK','CD14Monocytes', 'granulocytes');
     }
 
-    nprobes <- nrow(getBuiltInData('ordering', platform))
-    g <- vapply(cells, function(cell) getBuiltInData(
-        cell, platform, 'cellref'), numeric(nprobes));
-
+    pkgTest('sesameData')
+    refdata <- mget(paste0('cellref.', cells), inherits=TRUE)
+    probes <- Reduce(intersect, lapply(refdata, names))
+    g <- do.call(cbind, lapply(refdata, function(x) x[probes]))
     g <- cleanRefSet(g, platform);
     message(
         'Reference set is based on ', dim(g)[1], ' probes from ',
@@ -157,7 +160,7 @@ getg0 <- function(f, g, q) {
 #' verbose - output debug info (FALSE)
 #' @return a list of fraction, min error and unknown component methylation state
 #' @examples
-#' g <- diffRefSet(getRefSet(platform='hm450'))
+#' g <- diffRefSet(getRefSet(platform='HM450'))
 #' M <- ncol(g)
 #' trueFrac <- runif(M+1)
 #' trueFrac <- trueFrac / sum(trueFrac)
@@ -199,7 +202,9 @@ estimateCellComposition <- function(
 #' @importFrom utils tail
 #' @examples
 #'
-#' betas.tissue <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
+#' betas.tissue <- readRDS(system.file(
+#'     'extdata','HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05.rds',
+#'     package='sesameData'))
 #' estimateLeukocyte(betas.tissue)
 #' 
 #' @export
@@ -209,8 +214,10 @@ estimateLeukocyte<-function(
     if (!is.matrix(betas.tissue))
         betas.tissue <- as.matrix(betas.tissue)
 
-    if (is.null(betas.leuko))
-        betas.leuko <- getBuiltInData('betas.leuko.whole', platform=platform)
+    if (is.null(betas.leuko)) {
+        pkgTest('sesameData')
+        betas.leuko <- get(paste0(platform,'.betas.leuko.whole'))
+    }
 
     if (!is.matrix(betas.leuko))
         betas.leuko <- as.matrix(betas.leuko)

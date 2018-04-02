@@ -18,5 +18,5 @@ restrict refset to differentially methylated probes
 use with care, might introduce bias
 }
 \examples{
-g <- diffRefSet(getRefSet(platform='hm450'))
+g <- diffRefSet(getRefSet(platform='HM450'))
 }

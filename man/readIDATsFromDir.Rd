@@ -18,9 +18,10 @@ a list of \code{SignalSet}s
 Each element of the returned list contains a matrix
 having signal intensity addressed by chip address
 }
-\examples{
-\dontrun{
-ssets <- readIDATsFromDir('.')
+\details{
+dir.name is the folder containing the IDAT files.
 }
-cat('dir.name is the folder containing the IDAT files\\n')
+\examples{
+ssets <- readIDATsFromDir(
+  system.file("extdata", "", package = "sesameData"))
 }

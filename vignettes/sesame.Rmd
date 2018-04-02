@@ -26,8 +26,10 @@ SeSAMe is designed to process Infinium DNA methylation data. It currently suppor
 For everything besides the control probes, signal intensities are stored as an `Nx2` numeric matrix with `N` representing the number of probes in the class. Two columns representing the methylated allele and the unmethylated allele.
 
 ```{r}
+library(sesameData)
 library(sesame)
-sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
+sset <- readRDS(system.file(
+    'extdata', 'EPIC.sset.LNCaP.Rep1.rds', package='sesameData'))
 ```
 
 For example, printing the SignalSet directly shows its content
@@ -51,9 +53,8 @@ head(sset$ctl)
 ```
 
 # To read IDATs from directory
-```R
-library(sesame)
-ssets <- readIDATsFromDir('IDATs/')
+```{r}
+ssets <- readIDATsFromDir(system.file("extdata/", package = "sesameData"))
 ```
 
 A simple list of "SignalSet"s are returned.
@@ -134,7 +135,9 @@ inferEthnicity(sset)
 
 SeSAMe provides age regression a la the Horvath 353 model.
 ```{r}
-betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05.rds',
+    package='sesameData'))
 predictAgeHorvath353(betas)
 ```
 
@@ -156,7 +159,8 @@ bisConversionControl(sset)
 
 To visualize all probes from a gene
 ```{r, message=FALSE}
-betas <- SeSAMeGetExample('HM450.betas.10TCGAnormalPAAD')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.10TCGAnormalPAAD.rds', package='sesameData'))
 visualizeGene('DNMT1', betas, platform='HM450')
 ```
 
@@ -174,8 +178,10 @@ visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 
 SeSAMe tests differential methylation on each locus and groups adjacent significantly differentially methylated loci into segments.
 ```{r, message=FALSE}
-betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+sample.info <- readRDS(system.file(
+    'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 cf <- DMR(betas, sample.info, ~type, platform='HM450')
 ```
 
@@ -201,7 +207,9 @@ visualizeProbes(
 
 SeSAMe performs copy number variation in three steps: 1) normalizes the signal intensity using a copy-number-normal data set; 2) groups adjacent probes into bins; 3) runs DNAcopy internally to group bins into segments.
 ```{r, message=FALSE}
-segs <- cnSegmentation(sset)
+ssets.normal <- readRDS(system.file(
+    "extdata", "EPIC.sset.5normal.chr4.rds", package = "sesameData"))
+segs <- cnSegmentation(sset, ssets.normal)
 ```
 
 To visualize segmentation in SeSAMe,
@@ -213,7 +221,9 @@ visualizeSegments(segs)
 
 SeSAMe estimates leukocyte fraction using a two-component model.
 ```{r, message=FALSE}
-betas.tissue <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
+betas.tissue <- readRDS(system.file(
+    'extdata','HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05.rds', 
+    package='sesameData'))
 estimateLeukocyte(betas.tissue)
 ```
 
@@ -221,6 +231,8 @@ Further decomposition can be achieved through factorization.
 ```{r, message=FALSE}
 g <- diffRefSet(getRefSet(
     c('CD4T','CD19B','CD14Monocytes','CD56NK', 'granulocytes'), platform='HM450'))
-betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05.rds', 
+    package='sesameData'))
 estimateCellComposition(g, betas[rownames(g)])$frac
 ```

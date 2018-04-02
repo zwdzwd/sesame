@@ -18,8 +18,10 @@ coefficient table from given segment
 select segment from coefficient table
 }
 \examples{
-betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+sample.info <- readRDS(system.file(
+    'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 cf <- DMR(betas, sample.info, ~type)
 getSegment(cf[[1]], cf[[1]][['Seg.ID']][1])
 }

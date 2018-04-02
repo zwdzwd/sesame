@@ -23,6 +23,7 @@ beta values
 used for extra allele frequency on Color-Channel-Switching CCS probes
 }
 \examples{
-sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
+sset <- readRDS(system.file(
+    'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
 betas <- getAFTypeIbySumAlleles(sset)
 }

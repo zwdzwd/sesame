@@ -4,7 +4,7 @@
 \alias{cnSegmentation}
 \title{perform copy number segmentation}
 \usage{
-cnSegmentation(sset, ssets.normal = NULL, refversion = "hg19")
+cnSegmentation(sset, ssets.normal, refversion = "hg19")
 }
 \arguments{
 \item{sset}{\code{SignalSet}}
@@ -20,8 +20,10 @@ an object of \code{CNSegment}
 perform copy number segmentation
 }
 \examples{
-sset <- SeSAMeGetExample("EPIC.sset.LNCaP.Rep1.chr4")
-ssets.normal <- SeSAMeGetExample("EPIC.sset.5normal.chr4")
+sset <- readRDS(system.file(
+    "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
+ssets.normal <- readRDS(system.file(
+    "extdata", "EPIC.sset.5normal.chr4.rds", package = "sesameData"))
 seg <- cnSegmentation(sset, ssets.normal)
 
 }

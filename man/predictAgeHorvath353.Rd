@@ -16,6 +16,8 @@ age in years
 Horvath 353 age predictor
 }
 \examples{
-betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05.rds',
+    package='sesameData'))
 predictAgeHorvath353(betas)
 }

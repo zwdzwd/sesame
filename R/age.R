@@ -16,13 +16,16 @@ Hv.response2age <- function(x, adult.age=20) {
 #'
 #' @param betas a probeID-named vector of beta values
 #' @return age in years
+#' @import sesameData
 #' @export
 #' @examples
-#' betas <- SeSAMeGetExample('HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05')
+#' betas <- readRDS(system.file(
+#'     'extdata','HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05.rds',
+#'     package='sesameData'))
 #' predictAgeHorvath353(betas)
 predictAgeHorvath353 <- function(betas) {
 
-    Hv <- getBuiltInData('Horvath353', subdir='age')
+    Hv <- sesameData::agePredHorvath353
     probes <- intersect(names(na.omit(betas)), Hv$CpGmarker[-1])
 
     if (length(probes) < 10) {

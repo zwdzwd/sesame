@@ -51,12 +51,11 @@ getProbesByRegion <- function(
     chrm, beg=1, end=-1, platform='EPIC', refversion='hg38') {
     
     if (end < 0) {
-        end <- getBuiltInData(paste0(refversion, '.chrominfo'))
+        end <- get(paste0(refversion, '.chrominfo'))
     }
 
     pkgTest('GenomicRanges')
-    probes <- getBuiltInData(paste0(
-        'mapped.probes.', refversion), platform=platform)
+    probes <- get(paste0(platform, '.mapped.probes.', refversion))
     
     if (!(chrm %in% GenomicRanges::seqinfo(probes)@seqnames)) {
         stop('No probes found in this reference');

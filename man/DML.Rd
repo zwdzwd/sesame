@@ -33,7 +33,9 @@ cf - a list of coefficient tables for each factor
 test differential methylation on each locus
 }
 \examples{
-betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+sample.info <- readRDS(system.file(
+    'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 cf <- DML(betas, sample.info, ~type)
 }

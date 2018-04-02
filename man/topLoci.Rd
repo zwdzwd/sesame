@@ -16,8 +16,10 @@ coefficient table ordered by p-value of each locus
 This is a convenience function to show top differential methylated segments.
 }
 \examples{
-betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+sample.info <- readRDS(system.file(
+    'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 cf <- DMR(betas, sample.info, ~type)
 topLoci(cf[[1]])
 }

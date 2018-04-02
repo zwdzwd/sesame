@@ -180,5 +180,5 @@ Bug reports are appreciated. Register issues at the sesame [issue tracker](http:
     
 ## About
 
-W Zhou, PW Laird, H Shen, in submission
+W Zhou, TJ Triche Jr, PW Laird, H Shen, in submission
     

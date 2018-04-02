@@ -18,7 +18,8 @@ plot graphics
 require ggplot2, scales
 }
 \examples{
-seg <- SeSAMeGetExample('EPIC.seg.LNCaP.Rep1')
+seg <- readRDS(system.file(
+    'extdata','EPIC.seg.LNCaP.Rep1.rds',package='sesameData'))
 visualizeSegments(seg)
 
 }

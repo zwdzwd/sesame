@@ -11,7 +11,7 @@
 #' @export
 makeExampleSeSAMeDataSet <- function(n=1000, platform='HM450') {
 
-    dm.ordering <- getBuiltInData('ordering', platform)
+    dm.ordering <- get(paste0(platform, '.ordering'))
     sset <- SignalSet$new(platform)
     probes <- rownames(
         dm.ordering[dm.ordering$DESIGN=='I' &
@@ -42,7 +42,7 @@ makeExampleSeSAMeDataSet <- function(n=1000, platform='HM450') {
     colnames(mt) <- c('M','U')
     sset$II <- mt
 
-    dm.controls <- getBuiltInData('controls', platform)
+    dm.controls <- get(paste0(platform, '.controls'))
     ctl <- as.data.frame(matrix(pmax(rnorm(
         2*nrow(dm.controls), 400, 300),0), ncol=2))
     rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
@@ -102,7 +102,7 @@ makeExampleTinyEPICDataSet <- function() {
     colnames(mt) <- c('M','U')
     sset$II <- mt
     
-    dm.controls <- getBuiltInData('controls', platform)
+    dm.controls <- get(paste0(platform, '.controls'))
     ctl <- as.data.frame(matrix(as.integer(
         pmax(rnorm(2*nrow(dm.controls), 400, 300),0)), ncol=2))
     rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)

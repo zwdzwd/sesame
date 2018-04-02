@@ -21,11 +21,11 @@ library(sesame)
 ssets <- readIDATsFromDir(sample.dir, mc=T, mc.cores=4)
 
 ## normalization
-ssets <- mclapply(ssets, noob, mc.preschedule=F)
-ssets <- mclapply(ssets, dyeBiasCorrTypeINorm, mc.preschedule=F)
+ssets <- bplapply(ssets, noob, mc.preschedule=F)
+ssets <- bplapply(ssets, dyeBiasCorrTypeINorm)
 
 ## convert signal to beta values
-betas <- do.call(cbind, mclapply(ssets, getBetas))
+betas <- do.call(cbind, bplapply(ssets, getBetas))
 }
 }
 \seealso{

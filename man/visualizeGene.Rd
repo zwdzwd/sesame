@@ -29,6 +29,8 @@ None
 visualize gene
 }
 \examples{
-betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.76matchedTCGAchr20.rds',
+    package='sesameData'))
 visualizeGene('ADA', betas, 'HM450')
 }

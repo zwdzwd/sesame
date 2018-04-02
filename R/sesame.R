@@ -22,11 +22,11 @@
 #' ssets <- readIDATsFromDir(sample.dir, mc=T, mc.cores=4)
 #'
 #' ## normalization
-#' ssets <- mclapply(ssets, noob, mc.preschedule=F)
-#' ssets <- mclapply(ssets, dyeBiasCorrTypeINorm, mc.preschedule=F)
+#' ssets <- bplapply(ssets, noob, mc.preschedule=F)
+#' ssets <- bplapply(ssets, dyeBiasCorrTypeINorm)
 #' 
 #' ## convert signal to beta values
-#' betas <- do.call(cbind, mclapply(ssets, getBetas))
+#' betas <- do.call(cbind, bplapply(ssets, getBetas))
 #' }
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
@@ -37,6 +37,8 @@
 #' @docType class
 #' @importFrom R6 R6Class
 #' @importFrom stats ecdf
+#' @importFrom utils data
+#' @importFrom utils download.file
 #' @export
 #' @return Object of class \code{SignalSet}
 #' @format An \code{\link{R6Class}} object.
@@ -119,8 +121,9 @@ meanIntensity <- function(sset) {
 #' getSexInfo(sset)
 #' @export
 getSexInfo <- function(sset) {
-    cleanY <- getBuiltInData('female.clean.chrY.probes', sset$platform)
-    xLinked <- getBuiltInData('female.xlinked.chrX.probes', sset$platform)
+    pkgTest('sesameData')
+    cleanY <- get(paste0(sset$platform, '.female.clean.chrY.probes'))
+    xLinked <- get(paste0(sset$platform, '.female.xlinked.chrX.probes'))
     xLinkedBeta <- getBetas(sset[xLinked], quality.mask=FALSE)
     c(
         medianY=median(sset[cleanY]$totalIntensities()),
@@ -148,13 +151,14 @@ getSexInfo <- function(sset) {
 #' model sometimes.
 #' Our function works on a single sample.
 #' @importFrom randomForest randomForest
+#' @import sesameData
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' sex <- inferSex(sset)
 #' @export
 inferSex <- function(sset) {
     sex.info <- getSexInfo(sset)
-    as.character(predict(getBuiltInData('sex.inference.model'), sex.info))
+    as.character(predict(sesameData::sex.inference.model, sex.info))
 }
 
 #' infer ethnicity
@@ -168,14 +172,15 @@ inferSex <- function(sset) {
 #' @param sset a \code{SignalSet}
 #' @return string of ethnicity
 #' @importFrom randomForest randomForest
+#' @import sesameData
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet("HM450")
 #' inferEthnicity(sset)
 #' @export
 inferEthnicity <- function(sset) {
-    ccsprobes <- getBuiltInData('ethnicity.ccs.probes')
-    rsprobes <- getBuiltInData('ethnicity.rs.probes')
-    ethnicity.model <- getBuiltInData('ethnicity.model')
+    ccsprobes <- sesameData::ethnicity.ccs.probes
+    rsprobes <- sesameData::ethnicity.rs.probes
+    ethnicity.model <- sesameData::ethnicity.model
     af <- c(
         getBetas(
             sset[rsprobes], quality.mask = FALSE,
@@ -227,10 +232,11 @@ getBetas <- function(
     if (nondetection.mask)
         betas[sset$pval[names(betas)] > pval.threshold] <- NA
     if (quality.mask) {
+        pkgTest('sesameData')
         if (mask.use.tcga) {
-            mask <- getBuiltInData('mask.tcga', sset$platform)
+            mask <- get(paste0(sset$platform, '.mask.tcga'))
         } else {
-            mask <- getBuiltInData('mask', sset$platform)
+            mask <- get(paste0(sset$platform, '.mask'))
         }
         betas[names(betas) %in% mask] <- NA
     }
@@ -264,7 +270,8 @@ getBetasTypeIbySumChannels <- function(
     if (nondetection.mask)
         betas[sset$pval[names(betas)]>pval.threshold] <- NA
     if (quality.mask) {
-        mask <- getBuiltInData('mask', sset$platform)
+        pkgTest('sesameData')
+        mask <- get(paste0(sset$platform, '.mask'))
         betas[names(betas) %in% mask] <- NA
     }
     betas[order(names(betas))]
@@ -280,12 +287,13 @@ getBetasTypeIbySumChannels <- function(
 #' @param pval.threshold p-value threshold for nondetection mask
 #' @return beta values
 #' @examples
-#' sset <- SeSAMeGetExample('EPIC.sset.LNCaP.Rep1')
+#' sset <- readRDS(system.file(
+#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
 #' betas <- getAFTypeIbySumAlleles(sset)
 #' @export
 getAFTypeIbySumAlleles <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
-    
+
     ## .oobR <- oobR[rownames(IG),]
     ## .oobG <- oobG[rownames(IR),]
     betas1 <- pmax(rowSums(sset$oobR),1) /
@@ -297,10 +305,12 @@ getAFTypeIbySumAlleles <- function(
     if (nondetection.mask)
         betas[sset$pval[names(betas)]>pval.threshold] <- NA
     if (quality.mask) {
-        mask <- getBuiltInData('mask', sset$platform)
+        pkgTest('sesameData')
+        mask <- get(paste0(sset$platform, '.mask'))
         betas[names(betas) %in% mask] <- NA
     }
-    betas <- betas[intersect(names(betas), getBuiltInData('ethnicity.ccs.probes'))]
+    betas <- betas[
+        intersect(names(betas), sesameData::ethnicity.ccs.probes)]
     betas[order(names(betas))]
 }
 
@@ -325,21 +335,21 @@ readIDAT1 <- function(idat.name) {
 #'
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
+#'
+#' sample.names is a vector of common prefixes between
+#' the _Grn.idat and _Red.idat.
 #' 
 #' @param sample.names a sample list
 #' @param base.dir base directory
 #' @param raw to return raw data without mapping to signal
 #' @param mc use multiple cores
 #' @param mc.cores number of cores to use
-#' @import parallel
 #' @return a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
+#' @importFrom BiocParallel bplapply
+#' @importFrom BiocParallel MulticoreParam
 #' @examples
-#' \dontrun{
-#' ssets <- readIDATs(c('data/5775041003_R02C01', 'data/5775041003_R03C01'))
-#' }
-#'
-#' cat('sample.names is a vector of common prefixes
-#' between the _Grn.idat and _Red.idat\n')
+#' ssets <- readIDATs(sub('_Grn.idat','',system.file(
+#'  "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
 readIDATs <- function(
     sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
@@ -355,16 +365,18 @@ readIDATs <- function(
         sample.paths <- paste0(base.dir,'/',sample.names)
     else
         sample.paths <- sample.names
-
-    if (mc)
-        dms <- mclapply(sample.paths, readIDAT1, mc.cores=mc.cores)
+    
+    if (mc || !is.null(mc.cores))
+        dms <- bplapply(
+            sample.paths, readIDAT1,
+            BPPARAM = MulticoreParam(workers=mc.cores))
     else
         dms <- lapply(sample.paths, readIDAT1)
 
     names(dms) <- basename(sample.names)
     if (!raw) {
         if (mc) {
-            mclapply(dms, chipAddressToSignal, mc.cores=mc.cores)
+            bplapply(dms, chipAddressToSignal, mc.cores=mc.cores)
         } else {
             lapply(dms, chipAddressToSignal)
         }
@@ -377,15 +389,15 @@ readIDATs <- function(
 #' 
 #' Each element of the returned list contains a matrix
 #' having signal intensity addressed by chip address
+#'
+#' dir.name is the folder containing the IDAT files.
 #' 
 #' @param dir.name directory name.
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
 #' @return a list of \code{SignalSet}s
 #' @examples
-#' \dontrun{
-#' ssets <- readIDATsFromDir('.')
-#' }
-#' cat('dir.name is the folder containing the IDAT files\n')
+#' ssets <- readIDATsFromDir(
+#'   system.file("extdata", "", package = "sesameData"))
 #' @export
 readIDATsFromDir <- function(dir.name, ...) {
     fns <- list.files(dir.name)
@@ -437,7 +449,8 @@ readIDATsFromSheet <- function(
 chipAddressToSignal <- function(dm) {
 
     platform <- attr(dm, 'platform')
-    dm.ordering <- getBuiltInData('ordering', platform)
+    pkgTest('sesameData')
+    dm.ordering <- get(paste0(platform, '.ordering'))
 
     sset <- SignalSet$new(platform)
 
@@ -473,7 +486,8 @@ chipAddressToSignal <- function(dm) {
     sset$II <- signal.II
 
     ## control probes
-    dm.controls <- getBuiltInData('controls', platform)
+    pkgTest('sesameData')
+    dm.controls <- get(paste0(platform, '.controls'))
     ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
     rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
     ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
@@ -500,8 +514,9 @@ chipAddressToSignal <- function(dm) {
 #' 
 #' @export
 bisConversionControl <- function(sset, use.median=FALSE) {
-    extC <- getBuiltInData('typeI.extC', sset$platform)
-    extT <- getBuiltInData('typeI.extT', sset$platform)
+    pkgTest('sesameData')
+    extC <- get(paste0(sset$platform, '.typeI.extC'))
+    extT <- get(paste0(sset$platform, '.typeI.extT'))
     if (use.median) {
         median(sset$oobG[extC,], na.rm=TRUE) /
             median(sset$oobG[extT,], na.rm=TRUE)

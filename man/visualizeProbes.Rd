@@ -29,6 +29,8 @@ None
 Visualize region that contains the specified probes
 }
 \examples{
-betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.76matchedTCGAchr20.rds',
+    package='sesameData'))
 visualizeProbes(c('cg22316575', 'cg16084772', 'cg20622019'), betas, 'HM450')
 }

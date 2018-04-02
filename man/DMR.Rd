@@ -39,7 +39,9 @@ This subroutine uses Euclidean distance to group CpGs and
 then combine p-values for each segment.
 }
 \examples{
-betas <- SeSAMeGetExample('HM450.betas.76matchedTCGAchr20')
-sample.info <- SeSAMeGetExample('HM450.sampleinfo.76matchedTCGAchr20')
+betas <- readRDS(system.file(
+    'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+sample.info <- readRDS(system.file(
+    'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
 cf <- DMR(betas, sample.info, ~type)
 }
