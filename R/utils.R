@@ -45,7 +45,7 @@ Please install before continue.")
 #' @importMethodsFrom IRanges subsetByOverlaps
 #' @examples
 #' getProbesByRegion('chr5', 135413937, 135419936,
-#' refversion='hg19', platform='hm450')
+#'     refversion='hg19', platform='HM450')
 #' @export
 getProbesByRegion <- function(
     chrm, beg=1, end=-1, platform='EPIC', refversion='hg38') {
@@ -54,7 +54,6 @@ getProbesByRegion <- function(
         end <- get(paste0(refversion, '.chrominfo'))
     }
 
-    pkgTest('GenomicRanges')
     probes <- get(paste0(platform, '.mapped.probes.', refversion))
     
     if (!(chrm %in% GenomicRanges::seqinfo(probes)@seqnames)) {

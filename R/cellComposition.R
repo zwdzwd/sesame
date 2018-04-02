@@ -2,7 +2,6 @@
 cleanRefSet <- function(g, platform) {
 
     pkgTest('GenomicRanges')
-    pkgTest('sesameData')
     mapinfo <- get(paste0(platform,'.mapped.probes.hg19'))
     g <- g[intersect(rownames(g), names(mapinfo)),,drop=FALSE]
     g.clean <- g[apply(g, 1, function(x) !any(is.na(x))),,drop=FALSE]
@@ -33,7 +32,6 @@ diffRefSet <- function(g) {
 #'
 #' @param cells reference cell types
 #' @param platform EPIC or HM450
-#' @import sesameData
 #' @return g
 #' @examples
 #' betas <- getRefSet('CD4T', platform='HM450')
@@ -43,7 +41,6 @@ getRefSet <- function(cells=NULL, platform='EPIC') {
         cells <- c('CD4T', 'CD19B','CD56NK','CD14Monocytes', 'granulocytes');
     }
 
-    pkgTest('sesameData')
     refdata <- mget(paste0('cellref.', cells), inherits=TRUE)
     probes <- Reduce(intersect, lapply(refdata, names))
     g <- do.call(cbind, lapply(refdata, function(x) x[probes]))
@@ -215,7 +212,6 @@ estimateLeukocyte<-function(
         betas.tissue <- as.matrix(betas.tissue)
 
     if (is.null(betas.leuko)) {
-        pkgTest('sesameData')
         betas.leuko <- get(paste0(platform,'.betas.leuko.whole'))
     }
 

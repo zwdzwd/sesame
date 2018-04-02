@@ -4,7 +4,6 @@
 #' @param ssets.normal \code{SignalSet} for normalization
 #' @param refversion hg19 or hg38
 #' @return an object of \code{CNSegment}
-#' @import sesameData
 #' @examples
 #' sset <- readRDS(system.file(
 #'     "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
@@ -16,7 +15,6 @@
 cnSegmentation <- function(sset, ssets.normal, refversion='hg19') {
 
     pkgTest('GenomicRanges')
-    pkgTest('sesameData')
     
     ## retrieve chromosome info and probe coordinates
     chrominfo <- get(paste0(refversion,'.chrominfo'))

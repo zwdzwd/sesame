@@ -168,7 +168,6 @@ DMR <- function(
     seg.per.locus=0.5, platform='EPIC', refversion='hg38', ...) {
 
     pkgTest('GenomicRanges')
-    pkgTest('sesameData')
     
     if (is.null(cf)) {
         if (is.null(sample.data) || is.null(formula))

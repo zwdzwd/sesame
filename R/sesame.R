@@ -121,7 +121,6 @@ meanIntensity <- function(sset) {
 #' getSexInfo(sset)
 #' @export
 getSexInfo <- function(sset) {
-    pkgTest('sesameData')
     cleanY <- get(paste0(sset$platform, '.female.clean.chrY.probes'))
     xLinked <- get(paste0(sset$platform, '.female.xlinked.chrX.probes'))
     xLinkedBeta <- getBetas(sset[xLinked], quality.mask=FALSE)
@@ -232,7 +231,6 @@ getBetas <- function(
     if (nondetection.mask)
         betas[sset$pval[names(betas)] > pval.threshold] <- NA
     if (quality.mask) {
-        pkgTest('sesameData')
         if (mask.use.tcga) {
             mask <- get(paste0(sset$platform, '.mask.tcga'))
         } else {
@@ -270,7 +268,6 @@ getBetasTypeIbySumChannels <- function(
     if (nondetection.mask)
         betas[sset$pval[names(betas)]>pval.threshold] <- NA
     if (quality.mask) {
-        pkgTest('sesameData')
         mask <- get(paste0(sset$platform, '.mask'))
         betas[names(betas) %in% mask] <- NA
     }
@@ -305,7 +302,6 @@ getAFTypeIbySumAlleles <- function(
     if (nondetection.mask)
         betas[sset$pval[names(betas)]>pval.threshold] <- NA
     if (quality.mask) {
-        pkgTest('sesameData')
         mask <- get(paste0(sset$platform, '.mask'))
         betas[names(betas) %in% mask] <- NA
     }
@@ -449,7 +445,6 @@ readIDATsFromSheet <- function(
 chipAddressToSignal <- function(dm) {
 
     platform <- attr(dm, 'platform')
-    pkgTest('sesameData')
     dm.ordering <- get(paste0(platform, '.ordering'))
 
     sset <- SignalSet$new(platform)
@@ -486,7 +481,6 @@ chipAddressToSignal <- function(dm) {
     sset$II <- signal.II
 
     ## control probes
-    pkgTest('sesameData')
     dm.controls <- get(paste0(platform, '.controls'))
     ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
     rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
@@ -514,7 +508,6 @@ chipAddressToSignal <- function(dm) {
 #' 
 #' @export
 bisConversionControl <- function(sset, use.median=FALSE) {
-    pkgTest('sesameData')
     extC <- get(paste0(sset$platform, '.typeI.extC'))
     extT <- get(paste0(sset$platform, '.typeI.extT'))
     if (use.median) {

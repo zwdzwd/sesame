@@ -16,7 +16,6 @@ Hv.response2age <- function(x, adult.age=20) {
 #'
 #' @param betas a probeID-named vector of beta values
 #' @return age in years
-#' @import sesameData
 #' @export
 #' @examples
 #' betas <- readRDS(system.file(
