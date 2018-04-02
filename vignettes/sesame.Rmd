@@ -7,9 +7,9 @@ output: rmarkdown::html_vignette
 fig_width: 8
 fig_height: 6
 vignette: >
-  %\VignetteIndexEntry{SeSAMe User Guide}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepage[utf8]{inputenc}
+  %\VignetteIndexEntry{SeSAMe User Guide}
+  %\VignetteEncoding{UTF-8}
 ---
 
 # Data Structure for Signal Intensities
@@ -57,12 +57,7 @@ head(sset$ctl)
 ssets <- readIDATsFromDir(system.file("extdata/", package = "sesameData"))
 ```
 
-A simple list of "SignalSet"s are returned.
-        
-Other options of data import include
-
-+ readIDATs - from a vector of file paths (excluding `_Red.idat` and `_Grn.idat`)
-+ readIDATsFromSheet - from data.frame "barcode" column
+A simple list of "SignalSet"s are returned. One can also just provide a vector of file paths prefixes (excluding `_Red.idat` and `_Grn.idat`, one prefix for a pair of IDATs) and call `readIDATs` directly.
         
 ### Background subtraction
 

@@ -8,11 +8,11 @@ library(devtools)
 install_github("zwdzwd/sesame")
 ```
 
-See the [package vignettes](https://github.com/zwdzwd/sesame/blob/master/vignettes/sesame.Rmd) for usage and examples. See [data package](https://github.com/zwdzwd/sesameData) for annotation and example data.
+See the [package vignettes](https://github.com/zwdzwd/sesame/blob/master/vignettes/sesame.Rmd) for usage and examples. It also has a depended [data package](https://github.com/zwdzwd/sesameData) for annotation and example data.
 
 ## Bugs
     
-Bug reports are appreciated. Register issues at the sesame [issue tracker](http://github.com/zwdzwd/sesame/issues)
+Bug reports are appreciated. Register issues at the SeSAMe [issue tracker](http://github.com/zwdzwd/sesame/issues)
     
     
 ## About

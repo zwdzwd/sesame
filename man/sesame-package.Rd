@@ -14,19 +14,20 @@ This package complements array functionalities that allow
 processing >10,000 samples in parallel on clusters.
 }
 \examples{
-\dontrun{
+
 library(sesame)
+library(BiocParallel)
 
 ## read IDATs
-ssets <- readIDATsFromDir(sample.dir, mc=T, mc.cores=4)
+ssets <- readIDATsFromDir(system.file('extdata', '', package='sesameData'))
 
 ## normalization
-ssets <- bplapply(ssets, noob, mc.preschedule=F)
+ssets <- bplapply(ssets, noob)
 ssets <- bplapply(ssets, dyeBiasCorrTypeINorm)
 
 ## convert signal to beta values
 betas <- do.call(cbind, bplapply(ssets, getBetas))
-}
+
 }
 \seealso{
 Useful links:
@@ -39,6 +40,7 @@ Useful links:
 \author{
 Wanding Zhou \email{Wanding.Zhou@vai.org},
 Hui Shen \email{Hui.Shen@vai.org}
+Timothy J Triche Jr \email{Tim.Triche@vai.org}
 }
 \keyword{DNAMethylation}
 \keyword{Microarray}

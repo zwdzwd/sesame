@@ -11,23 +11,25 @@
 #' @author
 #' Wanding Zhou \email{Wanding.Zhou@vai.org},
 #' Hui Shen \email{Hui.Shen@vai.org}
+#' Timothy J Triche Jr \email{Tim.Triche@vai.org}
 #' 
 ## @references To appear
 ## @seealso To appear
 #' @examples
-#' \dontrun{
+#' 
 #' library(sesame)
+#' library(BiocParallel)
 #' 
 #' ## read IDATs
-#' ssets <- readIDATsFromDir(sample.dir, mc=T, mc.cores=4)
+#' ssets <- readIDATsFromDir(system.file('extdata', '', package='sesameData'))
 #'
 #' ## normalization
-#' ssets <- bplapply(ssets, noob, mc.preschedule=F)
+#' ssets <- bplapply(ssets, noob)
 #' ssets <- bplapply(ssets, dyeBiasCorrTypeINorm)
 #' 
 #' ## convert signal to beta values
 #' betas <- do.call(cbind, bplapply(ssets, getBetas))
-#' }
+#' 
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
 "_PACKAGE"
@@ -400,32 +402,6 @@ readIDATsFromDir <- function(dir.name, ...) {
     sample.names <- unique(sub(
         "_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
     readIDATs(paste0(dir.name,'/',sample.names), ...)
-}
-
-#' Import IDATs from a sample sheet
-#' 
-#' Each element of the returned list contains a matrix
-#' having signal intensity addressed by chip address
-#' 
-#' @param sample.sheet path to sample sheet
-#' @param column.name name of the column to use in the samplesheet
-#' @param base.dir directory on which the \code{sample.sheet.path} is based
-#' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
-#' @importFrom utils read.csv
-#' @return a list of \code{SignalSet}s
-#' @examples
-#' \dontrun{
-#' readIDATsFromSheet(data.frame(barcode=c('data/5775041003_R02C01',
-#' 'data/5775041003_R03C01')))
-#' }
-#' cat('sample.sheet is a data.frame with a column called
-#' barcode that contains sample prefixes (excluding _Grn.idat and _Red.idat)')
-#' @export
-readIDATsFromSheet <- function(
-    sample.sheet, column.name='barcode', base.dir=NULL, ...) {
-
-    sample.names <- read.csv(sample.sheet, stringsAsFactors=FALSE)
-    readIDATs(sample.names[[column.name]], base.dir=base.dir, ...)
 }
 
 #' Lookup address in one sample
