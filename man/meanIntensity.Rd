@@ -13,7 +13,7 @@ meanIntensity(sset)
 mean of all intensities
 }
 \description{
-mean intensity
+mean intensity of all the in-band measurements
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()

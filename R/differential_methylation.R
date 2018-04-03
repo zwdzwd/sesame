@@ -16,9 +16,11 @@
 #' @import stats
 #' @examples
 #' betas <- readRDS(system.file(
-#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' sample.info <- readRDS(system.file(
-#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' cf <- DML(betas, sample.info, ~type)
 #' @export
 DML <- function(
@@ -158,9 +160,11 @@ DML <- function(
 #' @return coefficient table with segment ID and segment P-value
 #' @examples
 #' betas <- readRDS(system.file(
-#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' sample.info <- readRDS(system.file(
-#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' cf <- DMR(betas, sample.info, ~type)
 #' @export
 DMR <- function(
@@ -273,9 +277,11 @@ DMR <- function(
 #' @return coefficient table ordered by adjusted p-value of segments
 #' @examples
 #' betas <- readRDS(system.file(
-#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' sample.info <- readRDS(system.file(
-#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' cf <- DMR(betas, sample.info, ~type)
 #' topSegments(cf[[1]])
 #' @export
@@ -294,9 +300,11 @@ topSegments <- function(cf1) {
 #' @return coefficient table ordered by p-value of each locus
 #' @examples
 #' betas <- readRDS(system.file(
-#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' sample.info <- readRDS(system.file(
-#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' cf <- DMR(betas, sample.info, ~type)
 #' topLoci(cf[[1]])
 #' @export
@@ -311,9 +319,11 @@ topLoci <- function(cf1) {
 #' @return coefficient table from given segment
 #' @examples
 #' betas <- readRDS(system.file(
-#'     'extdata','HM450.betas.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.betas.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' sample.info <- readRDS(system.file(
-#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds', package='sesameData'))
+#'     'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds',
+#'     package='sesameData'))
 #' cf <- DMR(betas, sample.info, ~type)
 #' getSegment(cf[[1]], cf[[1]][['Seg.ID']][1])
 #' @export

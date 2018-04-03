@@ -1,15 +1,18 @@
 #' Make a simulated SeSAMe data set
 #'
-#' Constructs a simulated dataset.
+#' Constructs a simulated \code{SignalSet} dataset. For the given platform,
+#' randomly simulate methylated and unmethylated allele signals. In-band signals
+#' were simulated using a N(4000, 200) normal distribution. Out-of-band signals
+#' were simulated using a N(400, 200) normal distribution. Control signals were
+#' simulated using a N(400, 300) normal distribution.
 #'
 #' @param platform optional, HM450, EPIC or HM27
-#' @param n optional, 
 #' @return Object of class \code{SignalSet}
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #'
 #' @export
-makeExampleSeSAMeDataSet <- function(n=1000, platform='HM450') {
+makeExampleSeSAMeDataSet <- function(platform='HM450') {
 
     dm.ordering <- get(paste0(platform, '.ordering'))
     sset <- SignalSet$new(platform)
@@ -55,6 +58,11 @@ makeExampleSeSAMeDataSet <- function(n=1000, platform='HM450') {
 
 
 #' Make a tiny toy simulated EPIC data set
+#'
+#' Construct a tiny EPIC \code{SignalSet} of only 6 probes. In-band signals
+#' were simulated using a N(4000, 200) normal distribution. Out-of-band signals
+#' were simulated using a N(400, 200) normal distribution. Control signals were
+#' simulated using a N(400, 300) normal distribution.
 #'
 #' @return Object of class \code{SignalSet}
 #' @examples

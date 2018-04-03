@@ -17,7 +17,6 @@
 ## @seealso To appear
 #' @examples
 #' 
-#' library(sesame)
 #' library(BiocParallel)
 #' 
 #' ## read IDATs
@@ -100,15 +99,19 @@ negControls <- function(sset) {
     negctls
 }
 
-#' mean intensity
+#' Mean Intensity
 #'
-#' mean intensity
+#' The function takes one single \code{SignalSet} and computes mean
+#' intensity of all the in-band measurements. This includes all Type-I
+#' in-band measurements and all Type-II probe measurements. Both methylated
+#' and unmethylated alleles are considered. This function outputs a single
+#' numeric for the mean.
 #'
 #' @param sset a \code{SignalSet}
 #' @return mean of all intensities
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
-#' intensities <- meanIntensity(sset)
+#' meanIntensity(sset)
 #' @export
 meanIntensity <- function(sset) {
     mean(c(sset$IG, sset$IR, sset$II), na.rm=TRUE)
@@ -243,7 +246,7 @@ getBetas <- function(
     betas[order(names(betas))]
 }
 
-#' get beta values treating type I by summing channels
+#' Get beta values treating type I by summing channels
 #'
 #' used for rescuing beta values on Color-Channel-Switching CCS probes
 #'
@@ -276,40 +279,36 @@ getBetasTypeIbySumChannels <- function(
     betas[order(names(betas))]
 }
 
-#' get allele frequency treating type I by summing alleles
+#' Get allele frequency treating type I by summing alleles
 #'
-#' used for extra allele frequency on Color-Channel-Switching CCS probes
+#' Takes a \code{SignalSet} as input and returns a numeric vector containing
+#' extra allele frequencies based on Color-Channel-Switching (CCS) probes.
+#' If no CCS probes exist in the \code{SignalSet}, then an numeric(0) is
+#' returned.
 #'
 #' @param sset \code{SignalSet}
 #' @param quality.mask whether to mask low quality probes
 #' @param nondetection.mask whether to mask nondetection
-#' @param pval.threshold p-value threshold for nondetection mask
 #' @return beta values
 #' @examples
 #' sset <- readRDS(system.file(
 #'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
 #' betas <- getAFTypeIbySumAlleles(sset)
 #' @export
-getAFTypeIbySumAlleles <- function(
-    sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+getAFTypeIbySumAlleles <- function(sset, nondetection.mask=TRUE) {
 
-    ## .oobR <- oobR[rownames(IG),]
+    if (any(rownames(sset$oobR) != rownames(sset$IG)))
+        stop("oobR-IG not matched. Likely a malformed sset.");
+    if (any(rownames(sset$oobG) != rownames(sset$IR)))
+        stop("oobG-IR not matched. Likely a malformed sset.");
+    
     ## .oobG <- oobG[rownames(IR),]
-    betas1 <- pmax(rowSums(sset$oobR),1) /
-        pmax(rowSums(sset$oobR) + rowSums(sset$IG), 2)
-    betas2 <- pmax(rowSums(sset$oobG),1) /
-        pmax(rowSums(sset$oobG) + rowSums(sset$IR), 2)
-    betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
-    betas <- c(betas1, betas2, betas3)
-    if (nondetection.mask)
-        betas[sset$pval[names(betas)]>pval.threshold] <- NA
-    if (quality.mask) {
-        mask <- get(paste0(sset$platform, '.mask'))
-        betas[names(betas) %in% mask] <- NA
-    }
-    betas <- betas[
-        intersect(names(betas), sesameData::ethnicity.ccs.probes)]
-    betas[order(names(betas))]
+    af <- c(
+        pmax(rowSums(sset$oobR),1)/pmax(rowSums(sset$oobR)+rowSums(sset$IG),2),
+        pmax(rowSums(sset$oobG),1)/pmax(rowSums(sset$oobG)+rowSums(sset$IR),2))
+    af <- af[
+        intersect(names(af), sesameData::ethnicity.ccs.probes)]
+    af[order(names(af))]
 }
 
 ## Import one IDAT file
@@ -331,11 +330,14 @@ readIDAT1 <- function(idat.name) {
 
 #' Import IDATs from a list of samples
 #'
-#' Each element of the returned list contains a matrix
-#' having signal intensity addressed by chip address
+#' If `raw = FALSE` (default), a list of \code{SignalSet}s are returned. Each
+#' \code{SignalSet} contains all the signal measurement on the platform. If
+#' `raw = TRUE`, a list is returned with each element of the returned list
+#' containing a matrix having signal intensity indexed by chip address.
 #'
-#' sample.names is a vector of common prefixes between
-#' the _Grn.idat and _Red.idat.
+#' Sample.names is a vector of common prefixes between the *_Grn.idat and
+#' *_Red.idat. `mc = TRUE/FALSE` controls whether to process samples in
+#' parallel.`mc.cores` specifies the number of parallel workers
 #' 
 #' @param sample.names a sample list
 #' @param base.dir base directory
@@ -374,7 +376,9 @@ readIDATs <- function(
     names(dms) <- basename(sample.names)
     if (!raw) {
         if (mc) {
-            bplapply(dms, chipAddressToSignal, mc.cores=mc.cores)
+            bplapply(
+                dms, chipAddressToSignal,
+                BPPARAM = MulticoreParam(workers = mc.cores))
         } else {
             lapply(dms, chipAddressToSignal)
         }

@@ -15,7 +15,6 @@ processing >10,000 samples in parallel on clusters.
 }
 \examples{
 
-library(sesame)
 library(BiocParallel)
 
 ## read IDATs
