@@ -4,18 +4,20 @@
 \alias{makeExampleSeSAMeDataSet}
 \title{Make a simulated SeSAMe data set}
 \usage{
-makeExampleSeSAMeDataSet(n = 1000, platform = "HM450")
+makeExampleSeSAMeDataSet(platform = "HM450")
 }
 \arguments{
-\item{n}{optional,}
-
 \item{platform}{optional, HM450, EPIC or HM27}
 }
 \value{
 Object of class \code{SignalSet}
 }
 \description{
-Constructs a simulated dataset.
+Constructs a simulated \code{SignalSet} dataset. For the given platform,
+randomly simulate methylated and unmethylated allele signals. In-band signals
+were simulated using a N(4000, 200) normal distribution. Out-of-band signals
+were simulated using a N(400, 200) normal distribution. Control signals were
+simulated using a N(400, 300) normal distribution.
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()

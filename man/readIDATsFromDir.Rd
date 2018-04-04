@@ -4,10 +4,12 @@
 \alias{readIDATsFromDir}
 \title{Import IDATs from a directory}
 \usage{
-readIDATsFromDir(dir.name, ...)
+readIDATsFromDir(dir.name, recursive = FALSE, ...)
 }
 \arguments{
-\item{dir.name}{directory name.}
+\item{dir.name}{the directory containing the IDAT files.}
+
+\item{recursive}{search IDAT files recursively}
 
 \item{...}{multiple core parameters: mc and mc.cores see \code{readIDATs}}
 }
@@ -15,13 +17,17 @@ readIDATsFromDir(dir.name, ...)
 a list of \code{SignalSet}s
 }
 \description{
-Each element of the returned list contains a matrix
-having signal intensity addressed by chip address
-}
-\details{
-dir.name is the folder containing the IDAT files.
+The input is the directory name as a string. The function identifies all
+the IDAT files under the directory. The function returns a list of
+\code{SignalSet}s each processed from a pair of IDAT files under the
+directory.
 }
 \examples{
+## only search what are directly under
 ssets <- readIDATsFromDir(
-  system.file("extdata", "", package = "sesameData"))
+    system.file("extdata", "", package = "sesameData"))
+
+## search files recursively
+ssets <- readIDATsFromDir(
+    system.file(package = "sesameData"), recursive=TRUE)
 }

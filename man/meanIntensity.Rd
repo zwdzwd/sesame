@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesame.R
 \name{meanIntensity}
 \alias{meanIntensity}
-\title{mean intensity}
+\title{Mean Intensity}
 \usage{
 meanIntensity(sset)
 }
@@ -13,9 +13,13 @@ meanIntensity(sset)
 mean of all intensities
 }
 \description{
-mean intensity of all the in-band measurements
+The function takes one single \code{SignalSet} and computes mean
+intensity of all the in-band measurements. This includes all Type-I
+in-band measurements and all Type-II probe measurements. Both methylated
+and unmethylated alleles are considered. This function outputs a single
+numeric for the mean.
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()
-intensities <- meanIntensity(sset)
+meanIntensity(sset)
 }

@@ -2,24 +2,23 @@
 % Please edit documentation in R/sesame.R
 \name{bisConversionControl}
 \alias{bisConversionControl}
-\title{compute internal bisulfite conversion control}
+\title{Compute internal bisulfite conversion control}
 \usage{
 bisConversionControl(sset, use.median = FALSE)
 }
 \arguments{
 \item{sset}{signal set}
 
-\item{use.median}{use median to compute GCT}
+\item{use.median}{use median to compute GCT instead of mean}
 }
 \value{
 GCT score (the higher, the more incomplete conversion)
 }
 \description{
-compute GCT score for internal bisulfite conversion control
-}
-\details{
-The higher the GCT score, the more likely the incomplete conversion.
-The lower the GCT score, the more likely over-conversion.
+Compute GCT score for internal bisulfite conversion control. The function
+takes a \code{SignalSet} as input. The higher the GCT score, the more likely
+the incomplete conversion. The lower the GCT score, the more likely
+over-conversion.
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet('HM450')

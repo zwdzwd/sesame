@@ -2,25 +2,21 @@
 % Please edit documentation in R/sesame.R
 \name{getAFTypeIbySumAlleles}
 \alias{getAFTypeIbySumAlleles}
-\title{get allele frequency treating type I by summing alleles}
+\title{Get allele frequency treating type I by summing alleles}
 \usage{
-getAFTypeIbySumAlleles(sset, quality.mask = TRUE, nondetection.mask = TRUE,
-  pval.threshold = 0.05)
+getAFTypeIbySumAlleles(sset)
 }
 \arguments{
 \item{sset}{\code{SignalSet}}
-
-\item{quality.mask}{whether to mask low quality probes}
-
-\item{nondetection.mask}{whether to mask nondetection}
-
-\item{pval.threshold}{p-value threshold for nondetection mask}
 }
 \value{
 beta values
 }
 \description{
-used for extra allele frequency on Color-Channel-Switching CCS probes
+Takes a \code{SignalSet} as input and returns a numeric vector containing
+extra allele frequencies based on Color-Channel-Switching (CCS) probes.
+If no CCS probes exist in the \code{SignalSet}, then an numeric(0) is
+returned.
 }
 \examples{
 sset <- readRDS(system.file(

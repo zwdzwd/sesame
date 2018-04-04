@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesame.R
 \name{getBetasTypeIbySumChannels}
 \alias{getBetasTypeIbySumChannels}
-\title{get beta values treating type I by summing channels}
+\title{Get beta values treating type I by summing channels}
 \usage{
 getBetasTypeIbySumChannels(sset, quality.mask = TRUE,
   nondetection.mask = TRUE, pval.threshold = 0.05)

@@ -117,7 +117,12 @@ meanIntensity <- function(sset) {
     mean(c(sset$IG, sset$IR, sset$II), na.rm=TRUE)
 }
 
-#' get sex information
+#' Get sex-related information
+#'
+#' The function takes a \code{SignalSet} and returns a vector of three
+#' numerics: the median intensity of chrY probes; the median intensity of
+#' chrX probes; and fraction of intermediate chrX probes. chrX and chrY
+#' probes excludes pseudo-autosomal probes.
 #'
 #' @param sset a \code{SignalSet}
 #' @return medianY and fracXlinked
@@ -167,8 +172,8 @@ inferSex <- function(sset) {
 
 #' infer ethnicity
 #'
-#' this uses both the built-in rsprobes as well as the type I
-#' Color-Channel-Switching probes
+#' This function uses both the built-in rsprobes as well as the type I
+#' Color-Channel-Switching probes to infer ethnicity.
 #'
 #' sset better be background subtracted and dyebias corrected for
 #' best accuracy
@@ -190,9 +195,7 @@ inferEthnicity <- function(sset) {
             sset[rsprobes], quality.mask = FALSE,
             nondetection.mask=FALSE),
         getAFTypeIbySumAlleles(
-            sset[ccsprobes],
-            quality.mask = FALSE,
-            nondetection.mask = FALSE))
+            sset[ccsprobes]))
     
     as.character(predict(ethnicity.model, af))
 }
@@ -287,15 +290,13 @@ getBetasTypeIbySumChannels <- function(
 #' returned.
 #'
 #' @param sset \code{SignalSet}
-#' @param quality.mask whether to mask low quality probes
-#' @param nondetection.mask whether to mask nondetection
 #' @return beta values
 #' @examples
 #' sset <- readRDS(system.file(
 #'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
 #' betas <- getAFTypeIbySumAlleles(sset)
 #' @export
-getAFTypeIbySumAlleles <- function(sset, nondetection.mask=TRUE) {
+getAFTypeIbySumAlleles <- function(sset) {
 
     if (any(rownames(sset$oobR) != rownames(sset$IG)))
         stop("oobR-IG not matched. Likely a malformed sset.");
@@ -343,13 +344,14 @@ readIDAT1 <- function(idat.name) {
 #' @param base.dir base directory
 #' @param raw to return raw data without mapping to signal
 #' @param mc use multiple cores
-#' @param mc.cores number of cores to use
+#' @param mc.cores number of cores to use, default to getOption('mc.cores'),
+#' then to 4.
 #' @return a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
 #' @importFrom BiocParallel bplapply
 #' @importFrom BiocParallel MulticoreParam
 #' @examples
 #' ssets <- readIDATs(sub('_Grn.idat','',system.file(
-#'  "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
+#'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
 readIDATs <- function(
     sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
@@ -373,7 +375,7 @@ readIDATs <- function(
     else
         dms <- lapply(sample.paths, readIDAT1)
 
-    names(dms) <- basename(sample.names)
+    names(dms) <- make.names(basename(sample.names), unique=TRUE)
     if (!raw) {
         if (mc) {
             bplapply(
@@ -389,23 +391,38 @@ readIDATs <- function(
 
 #' Import IDATs from a directory
 #' 
-#' Each element of the returned list contains a matrix
-#' having signal intensity addressed by chip address
-#'
-#' dir.name is the folder containing the IDAT files.
+#' The input is the directory name as a string. The function identifies all
+#' the IDAT files under the directory. The function returns a list of
+#' \code{SignalSet}s each processed from a pair of IDAT files under the
+#' directory.
 #' 
-#' @param dir.name directory name.
+#' @param dir.name the directory containing the IDAT files.
+#' @param recursive search IDAT files recursively
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
 #' @return a list of \code{SignalSet}s
 #' @examples
+#' ## only search what are directly under
 #' ssets <- readIDATsFromDir(
-#'   system.file("extdata", "", package = "sesameData"))
+#'     system.file("extdata", "", package = "sesameData"))
+#' 
+#' ## search files recursively
+#' ssets <- readIDATsFromDir(
+#'     system.file(package = "sesameData"), recursive=TRUE)
 #' @export
-readIDATsFromDir <- function(dir.name, ...) {
-    fns <- list.files(dir.name)
-    sample.names <- unique(sub(
-        "_(Grn|Red).idat", "", fns[grep(".idat$", fns)]))
-    readIDATs(paste0(dir.name,'/',sample.names), ...)
+readIDATsFromDir <- function(dir.name, recursive = FALSE, ...) {
+
+    prefixes <- unique(sub(
+        '_(Grn|Red).idat$', '',
+        list.files(dir.name, '\\.idat$', recursive = recursive)))
+
+    if (length(prefixes) == 0)
+        stop("No IDAT file found.")
+    if (!all(file.exists(file.path(dir.name, paste0(prefixes, '_Grn.idat')))))
+        stop("IDAT names unmatched.")
+    if (!all(file.exists(file.path(dir.name, paste0(prefixes, '_Red.idat')))))
+        stop("IDAT names unmatched.")
+    
+    readIDATs(file.path(dir.name, prefixes), ...)
 }
 
 #' Lookup address in one sample
@@ -463,7 +480,7 @@ chipAddressToSignal <- function(dm) {
     ## control probes
     dm.controls <- get(paste0(platform, '.controls'))
     ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
-    rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
+    rownames(ctl) <- make.names(dm.controls$Name, unique=TRUE)
     ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
     colnames(ctl) <- c('G','R','col','type')
     sset$ctl <- ctl
@@ -472,15 +489,15 @@ chipAddressToSignal <- function(dm) {
     sset
 }
 
-#' compute internal bisulfite conversion control
+#' Compute internal bisulfite conversion control
 #'
-#' compute GCT score for internal bisulfite conversion control
-#'
-#' The higher the GCT score, the more likely the incomplete conversion.
-#' The lower the GCT score, the more likely over-conversion.
+#' Compute GCT score for internal bisulfite conversion control. The function
+#' takes a \code{SignalSet} as input. The higher the GCT score, the more likely
+#' the incomplete conversion. The lower the GCT score, the more likely
+#' over-conversion.
 #' 
 #' @param sset signal set
-#' @param use.median use median to compute GCT
+#' @param use.median use median to compute GCT instead of mean
 #' @return GCT score (the higher, the more incomplete conversion)
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet('HM450')

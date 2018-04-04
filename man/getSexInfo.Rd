@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesame.R
 \name{getSexInfo}
 \alias{getSexInfo}
-\title{get sex information}
+\title{Get sex-related information}
 \usage{
 getSexInfo(sset)
 }
@@ -13,7 +13,10 @@ getSexInfo(sset)
 medianY and fracXlinked
 }
 \description{
-get sex information
+The function takes a \code{SignalSet} and returns a vector of three
+numerics: the median intensity of chrY probes; the median intensity of
+chrX probes; and fraction of intermediate chrX probes. chrX and chrY
+probes excludes pseudo-autosomal probes.
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()
