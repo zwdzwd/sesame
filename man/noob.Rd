@@ -4,12 +4,10 @@
 \alias{noob}
 \title{Noob background correction}
 \usage{
-noob(sset, in.place = FALSE, offset = 15)
+noob(sset, offset = 15)
 }
 \arguments{
 \item{sset}{a \code{SignalSet}}
-
-\item{in.place}{modify \code{SignalSet} in place, faster}
 
 \item{offset}{offset}
 }

@@ -33,6 +33,88 @@
 #' 
 "_PACKAGE"
 
+#' SignalSet2 class
+#'
+#' @slot IG intensity table for type I probes in green channel
+#' @slot IR intensity table for type I probes in red channel
+#' @slot II intensity table for type II probes
+#' @slot oobG out-of-band probes in green channel
+#' @slot oobR out-of-band probes in red channel
+#' @slot ctl all the control probe intensities
+#' @slot pval named numeric vector of p-values
+#'
+#' @name SignalSet2-class
+#' @rdname SignalSet2-class
+#' @exportClass SignalSet2
+setClass(
+  "SignalSet2",
+  representation(
+    IG = 'matrix',
+    IR = 'matrix',
+    II = 'matrix',
+    oobG = 'matrix',
+    oobR = 'matrix',
+    ctl = 'data.frame',
+    pval = 'numeric',
+    platform = 'character'))
+
+#' Wrapper function
+#'
+#' @param ... additional arguments
+#' @name SignalSet2
+#' @rdname SignalSet2-class
+#' @export
+SignalSet2 <- function(...) new("SignalSet2", ...)
+
+#' The display method for SignalSet2
+#'
+#' @param object displayed object
+#' @rdname show-methods
+#' @aliases show,SignalSet2-method
+setMethod(
+    "show", "SignalSet2",
+    function(object) {
+        cat("SignalSet -", object@platform, "\n")
+        cat("    IG probes:", nrow(object@IG), "\n")
+        cat("    IR probes:", nrow(object@IR), "\n")
+        cat("    II probes:", nrow(object@II), "\n")
+        cat("    oobG probes:", nrow(object@oobG), "\n")
+        cat("    oobR probes:", nrow(object@oobR), "\n")
+        cat("    ctl probes:", nrow(object@ctl), "\n")
+})
+
+#' Select a subset of probes
+#'
+#' @param sset a \code{SignalSet}
+#' @param probes target probes
+#' @return another sset with probes specified
+#' @examples
+#' sset <- readRDS(system.file(
+#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+#' subsetSignal(sset, rownames(sset@IR))
+#' @export
+subsetSignal <- function(sset, probes) {
+    sset@IR <- sset@IR[rownames(sset@IR) %in% probes,]
+    sset@IG <- sset@IG[rownames(sset@IG) %in% probes,]
+    sset@II <- sset@II[rownames(sset@II) %in% probes,]
+    sset@oobR <- sset@oobR[rownames(sset@oobR) %in% probes,]
+    sset@oobG <- sset@oobG[rownames(sset@oobG) %in% probes,]
+    sset
+}
+
+#' sesame R6 to S4
+#'
+#' conversion
+#'
+#' @param sset signalset in R6
+#' @return signalset in S4
+#' @import methods
+#' @export
+sesameR6toS4 <- function(sset) {
+    new('SignalSet2', IG=sset$IG, IR=sset$IR, II=sset$II,
+        oobG=sset$oobG, oobR=sset$oobR, ctl=sset$ctl, pval=sset$pval, platform=sset$platform)
+}
+
 #' SignalSet class
 #' 
 #' @docType class
@@ -93,8 +175,7 @@ SignalSet <- R6Class(
 
 ## get negative control probes
 negControls <- function(sset) {
-    
-    negctls <- sset$ctl[grep('negative', tolower(rownames(sset$ctl))),]
+    negctls <- sset@ctl[grep('negative', tolower(rownames(sset@ctl))),]
     negctls <- subset(negctls, col!=-99)
     negctls
 }
@@ -114,7 +195,22 @@ negControls <- function(sset) {
 #' meanIntensity(sset)
 #' @export
 meanIntensity <- function(sset) {
-    mean(c(sset$IG, sset$IR, sset$II), na.rm=TRUE)
+    mean(c(sset@IG, sset@IR, sset@II), na.rm=TRUE)
+}
+
+#' M+U Intensities for All Probes
+#'
+#' The function takes one single \code{SignalSet} and computes total
+#' intensity of all the in-band measurements by summing methylated and
+#' unmethylated alleles. This function outputs a single numeric for the mean.
+#' @param sset a \code{SignalSet}
+#' @return a vector of M+U signal for each probe
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' totalIntensities(sset)
+#' @export
+totalIntensities <- function(sset) {
+    rowSums(rbind(sset@IG, sset@IR, sset@II))
 }
 
 #' Get sex-related information
@@ -131,12 +227,12 @@ meanIntensity <- function(sset) {
 #' getSexInfo(sset)
 #' @export
 getSexInfo <- function(sset) {
-    cleanY <- get(paste0(sset$platform, '.female.clean.chrY.probes'))
-    xLinked <- get(paste0(sset$platform, '.female.xlinked.chrX.probes'))
-    xLinkedBeta <- getBetas(sset[xLinked], quality.mask=FALSE)
+    cleanY <- get(paste0(sset@platform, '.female.clean.chrY.probes'))
+    xLinked <- get(paste0(sset@platform, '.female.xlinked.chrX.probes'))
+    xLinkedBeta <- getBetas(subsetSignal(sset, xLinked), quality.mask=FALSE)
     c(
-        medianY=median(sset[cleanY]$totalIntensities()),
-        medianX=median(sset[xLinked]$totalIntensities()),
+        medianY=median(totalIntensities(subsetSignal(sset, cleanY))),
+        medianX=median(totalIntensities(subsetSignal(sset, xLinked))),
         fracXlinked=(sum(
             xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) /
                 sum(!(is.na(xLinkedBeta)))))
@@ -192,10 +288,10 @@ inferEthnicity <- function(sset) {
     ethnicity.model <- sesameData::ethnicity.model
     af <- c(
         getBetas(
-            sset[rsprobes], quality.mask = FALSE,
+            subsetSignal(sset, rsprobes), quality.mask = FALSE,
             nondetection.mask=FALSE),
         getAFTypeIbySumAlleles(
-            sset[ccsprobes]))
+            subsetSignal(sset, ccsprobes)))
     
     as.character(predict(ethnicity.model, af))
 }
@@ -207,12 +303,11 @@ inferEthnicity <- function(sset) {
 #' @return a \code{SignalSet} with only probes
 #' @export
 `[.SignalSet` <- function(sset, probes) {
-    sset <- sset$clone()
-    sset$IR <- sset$IR[rownames(sset$IR) %in% probes,]
-    sset$IG <- sset$IG[rownames(sset$IG) %in% probes,]
-    sset$II <- sset$II[rownames(sset$II) %in% probes,]
-    sset$oobR <- sset$oobR[rownames(sset$oobR) %in% probes,]
-    sset$oobG <- sset$oobG[rownames(sset$oobG) %in% probes,]
+    sset@IR <- sset@IR[rownames(sset@IR) %in% probes,]
+    sset@IG <- sset@IG[rownames(sset@IG) %in% probes,]
+    sset@II <- sset@II[rownames(sset@II) %in% probes,]
+    sset@oobR <- sset@oobR[rownames(sset@oobR) %in% probes,]
+    sset@oobG <- sset@oobG[rownames(sset@oobG) %in% probes,]
     sset
 }
 
@@ -232,17 +327,17 @@ getBetas <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE,
     mask.use.tcga=FALSE, pval.threshold=0.05) {
     
-    betas1 <- pmax(sset$IG[,'M'],1) / pmax(sset$IG[,'M']+sset$IG[,'U'],2)
-    betas2 <- pmax(sset$IR[,'M'],1) / pmax(sset$IR[,'M']+sset$IR[,'U'],2)
-    betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
+    betas1 <- pmax(sset@IG[,'M'],1) / pmax(sset@IG[,'M']+sset@IG[,'U'],2)
+    betas2 <- pmax(sset@IR[,'M'],1) / pmax(sset@IR[,'M']+sset@IR[,'U'],2)
+    betas3 <- pmax(sset@II[,'M'],1) / pmax(sset@II[,'M']+sset@II[,'U'],2)
     betas <- c(betas1, betas2, betas3)
     if (nondetection.mask)
-        betas[sset$pval[names(betas)] > pval.threshold] <- NA
+        betas[sset@pval[names(betas)] > pval.threshold] <- NA
     if (quality.mask) {
         if (mask.use.tcga) {
-            mask <- get(paste0(sset$platform, '.mask.tcga'))
+            mask <- get(paste0(sset@platform, '.mask.tcga'))
         } else {
-            mask <- get(paste0(sset$platform, '.mask'))
+            mask <- get(paste0(sset@platform, '.mask'))
         }
         betas[names(betas) %in% mask] <- NA
     }
@@ -267,16 +362,16 @@ getBetasTypeIbySumChannels <- function(
     
     ## .oobR <- oobR[rownames(IG),]
     ## .oobG <- oobG[rownames(IR),]
-    betas1 <- pmax(sset$IG[,'M']+sset$oobR[,'M'],1) /
-        pmax(sset$IG[,'M']+sset$oobR[,'M']+sset$IG[,'U']+sset$oobR[,'U'],2)
-    betas2 <- pmax(sset$IR[,'M']+sset$oobG[,'M'],1) /
-        pmax(sset$IR[,'M']+sset$oobG[,'M']+sset$IR[,'U']+sset$oobG[,'U'],2)
-    betas3 <- pmax(sset$II[,'M'],1) / pmax(sset$II[,'M']+sset$II[,'U'],2)
+    betas1 <- pmax(sset@IG[,'M']+sset@oobR[,'M'],1) /
+        pmax(sset@IG[,'M']+sset@oobR[,'M']+sset@IG[,'U']+sset@oobR[,'U'],2)
+    betas2 <- pmax(sset@IR[,'M']+sset@oobG[,'M'],1) /
+        pmax(sset@IR[,'M']+sset@oobG[,'M']+sset@IR[,'U']+sset@oobG[,'U'],2)
+    betas3 <- pmax(sset@II[,'M'],1) / pmax(sset@II[,'M']+sset@II[,'U'],2)
     betas <- c(betas1, betas2, betas3)
     if (nondetection.mask)
-        betas[sset$pval[names(betas)]>pval.threshold] <- NA
+        betas[sset@pval[names(betas)]>pval.threshold] <- NA
     if (quality.mask) {
-        mask <- get(paste0(sset$platform, '.mask'))
+        mask <- get(paste0(sset@platform, '.mask'))
         betas[names(betas) %in% mask] <- NA
     }
     betas[order(names(betas))]
@@ -298,15 +393,15 @@ getBetasTypeIbySumChannels <- function(
 #' @export
 getAFTypeIbySumAlleles <- function(sset) {
 
-    if (any(rownames(sset$oobR) != rownames(sset$IG)))
+    if (any(rownames(sset@oobR) != rownames(sset@IG)))
         stop("oobR-IG not matched. Likely a malformed sset.");
-    if (any(rownames(sset$oobG) != rownames(sset$IR)))
+    if (any(rownames(sset@oobG) != rownames(sset@IR)))
         stop("oobG-IR not matched. Likely a malformed sset.");
     
     ## .oobG <- oobG[rownames(IR),]
     af <- c(
-        pmax(rowSums(sset$oobR),1)/pmax(rowSums(sset$oobR)+rowSums(sset$IG),2),
-        pmax(rowSums(sset$oobG),1)/pmax(rowSums(sset$oobG)+rowSums(sset$IR),2))
+        pmax(rowSums(sset@oobR),1)/pmax(rowSums(sset@oobR)+rowSums(sset@IG),2),
+        pmax(rowSums(sset@oobG),1)/pmax(rowSums(sset@oobG)+rowSums(sset@IR),2))
     af <- af[
         intersect(names(af), sesameData::ethnicity.ccs.probes)]
     af[order(names(af))]
@@ -337,15 +432,13 @@ readIDAT1 <- function(idat.name) {
 #' containing a matrix having signal intensity indexed by chip address.
 #'
 #' Sample.names is a vector of common prefixes between the *_Grn.idat and
-#' *_Red.idat. `mc = TRUE/FALSE` controls whether to process samples in
-#' parallel.`mc.cores` specifies the number of parallel workers
+#' *_Red.idat. `num.processes` controls the number of parallel workers. It
+#' is default to 1 which means serial.
 #' 
 #' @param sample.names a sample list
 #' @param base.dir base directory
 #' @param raw to return raw data without mapping to signal
-#' @param mc use multiple cores
-#' @param mc.cores number of cores to use, default to getOption('mc.cores'),
-#' then to 4.
+#' @param num.processes number of parallele processes, serial if 1
 #' @return a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
 #' @importFrom BiocParallel bplapply
 #' @importFrom BiocParallel MulticoreParam
@@ -354,35 +447,26 @@ readIDAT1 <- function(idat.name) {
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
 readIDATs <- function(
-    sample.names, base.dir=NULL, raw=FALSE, mc=FALSE, mc.cores=NULL) {
+    sample.names, base.dir=NULL, raw=FALSE, num.processes=1) {
 
-    if (is.null(mc.cores)) {
-        if (is.null(getOption('mc.cores')))
-            mc.cores <- 4
-        else
-            mc.cores <- getOption('mc.cores')
-    } else {
-        mc <- TRUE
-    }
-    
     if (!is.null(base.dir))
         sample.paths <- paste0(base.dir,'/',sample.names)
     else
         sample.paths <- sample.names
     
-    if (mc)
+    if (num.processes > 1)
         dms <- bplapply(
             sample.paths, readIDAT1,
-            BPPARAM = MulticoreParam(workers=mc.cores))
+            BPPARAM = MulticoreParam(workers = num.processes))
     else
         dms <- lapply(sample.paths, readIDAT1)
 
     names(dms) <- make.names(basename(sample.names), unique=TRUE)
     if (!raw) {
-        if (mc) {
+        if (num.processes > 1) {
             bplapply(
                 dms, chipAddressToSignal,
-                BPPARAM = MulticoreParam(workers = mc.cores))
+                BPPARAM = MulticoreParam(workers = num.processes))
         } else {
             lapply(dms, chipAddressToSignal)
         }
@@ -402,7 +486,7 @@ readIDATs <- function(
 #' @param max.num.samples maximum number of samples to process, to protect
 #' from memory crash.
 #' @param recursive search IDAT files recursively
-#' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
+#' @param ... see \code{readIDATs}
 #' @return a list of \code{SignalSet}s, if more than `max.num.samples` samples
 #' found, then only return the prefixes (a vector of character strings).
 #' Consider using `readIDATs` to process each chunk separately.
@@ -459,7 +543,7 @@ chipAddressToSignal <- function(dm) {
     platform <- attr(dm, 'platform')
     dm.ordering <- get(paste0(platform, '.ordering'))
 
-    sset <- SignalSet$new(platform)
+    sset <- SignalSet(platform)
 
     ## type I green channel / oob red channel
     IordG <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='G')),]
@@ -469,9 +553,9 @@ chipAddressToSignal <- function(dm) {
     ## 2-channel for green probes' U allele
     ImG2ch <- dm[match(IordG$M, rownames(dm)),]
     ImG <- ImG2ch[,1]
-    sset$oobR <- as.matrix(
+    sset@oobR <- as.matrix(
         data.frame(M=ImG2ch[,2], U=IuG2ch[,2], row.names=IordG$Probe_ID))
-    sset$IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
+    sset@IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
     ## type I red channel / oob green channel
     IordR <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='R')),]
@@ -481,16 +565,16 @@ chipAddressToSignal <- function(dm) {
     ## 2-channel for red probes' u allele
     ImR2ch <- dm[match(IordR$M, rownames(dm)),]
     ImR <- ImR2ch[,2]
-    sset$oobG <- as.matrix(
+    sset@oobG <- as.matrix(
         data.frame(M=ImR2ch[,1], U=IuR2ch[,1], row.names=IordR$Probe_ID))
-    sset$IR <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
+    sset@IR <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
 
     ## type II
     IIord <- dm.ordering[dm.ordering$DESIGN=="II",]
     signal.II <- dm[match(IIord$U, rownames(dm)),]
     colnames(signal.II) <- c('M', 'U')
     rownames(signal.II) <- IIord$Probe_ID
-    sset$II <- signal.II
+    sset@II <- signal.II
 
     ## control probes
     dm.controls <- get(paste0(platform, '.controls'))
@@ -498,9 +582,9 @@ chipAddressToSignal <- function(dm) {
     rownames(ctl) <- make.names(dm.controls$Name, unique=TRUE)
     ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
     colnames(ctl) <- c('G','R','col','type')
-    sset$ctl <- ctl
+    sset@ctl <- ctl
 
-    sset$pval <- detectionPoobEcdf(sset)
+    sset@pval <- detectionPoobEcdf(sset)
     sset
 }
 
@@ -520,13 +604,13 @@ chipAddressToSignal <- function(dm) {
 #' 
 #' @export
 bisConversionControl <- function(sset, use.median=FALSE) {
-    extC <- get(paste0(sset$platform, '.typeI.extC'))
-    extT <- get(paste0(sset$platform, '.typeI.extT'))
+    extC <- get(paste0(sset@platform, '.typeI.extC'))
+    extT <- get(paste0(sset@platform, '.typeI.extT'))
     if (use.median) {
-        median(sset$oobG[extC,], na.rm=TRUE) /
-            median(sset$oobG[extT,], na.rm=TRUE)
+        median(sset@oobG[extC,], na.rm=TRUE) /
+            median(sset@oobG[extT,], na.rm=TRUE)
     } else {
-        mean(sset$oobG[extC,], na.rm=TRUE) /
-            mean(sset$oobG[extT,], na.rm=TRUE)
+        mean(sset@oobG[extC,], na.rm=TRUE) /
+            mean(sset@oobG[extT,], na.rm=TRUE)
     }
 }

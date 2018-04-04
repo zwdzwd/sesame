@@ -9,7 +9,8 @@ Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "Hui.Shen@vai.org"),
              person("Timothy", "Triche", role = "ctb"))
 Depends:  R (>= 3.5),
-          sesameData
+          sesameData,
+          methods
 License: Artistic-2.0
 LazyData: TRUE
 RoxygenNote: 6.0.1
@@ -25,7 +26,6 @@ Imports:  R6,
           preprocessCore,
           stats,
           randomForest,
-          methods,
           wheatmap,
 Suggests: ggplot2,
           DNAcopy,

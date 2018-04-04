@@ -14,7 +14,7 @@ from memory crash.}
 
 \item{recursive}{search IDAT files recursively}
 
-\item{...}{multiple core parameters: mc and mc.cores see \code{readIDATs}}
+\item{...}{see \code{readIDATs}}
 }
 \value{
 a list of \code{SignalSet}s, if more than `max.num.samples` samples

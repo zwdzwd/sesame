@@ -4,12 +4,10 @@
 \alias{noobsb}
 \title{background subtraction with bleeding-through subtraction}
 \usage{
-noobsb(sset, in.place = FALSE, offset = 15, detailed = FALSE)
+noobsb(sset, offset = 15, detailed = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SignalSet}}
-
-\item{in.place}{modify in place}
 
 \item{offset}{offset}
 
