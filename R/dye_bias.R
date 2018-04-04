@@ -1,11 +1,17 @@
 
-#' Correct dye bias
+#' Correct dye bias in by linear scaling.
 #'
-#' @param sset a \code{SignalSet}
+#' The function takes a \code{SigSet} as input and scale both the Grn and Red
+#' signal to a reference (ref) level. If the reference level is not given, it
+#' is set to the mean intensity of all the in-band signals. The function
+#' returns a \code{SigSet} with dye bias corrected.
+#' 
+#' @param sset a \code{SigSet}
 #' @param ref reference signal level
-#' @return a normalized \code{SignalSet}
+#' @return a normalized \code{SigSet}
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
+#' sset <- readRDS(system.file(
+#'     "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
 #' sset.db <- dyeBiasCorr(sset)
 #' @export
 dyeBiasCorr <- function(sset, ref=NULL) {
@@ -37,15 +43,20 @@ dyeBiasCorr <- function(sset, ref=NULL) {
     sset
 }
 
-#' Correct dye bias using most balanced sample
+#' Correct dye bias using most balanced sample as the reference
 #'
-#' In practice, it doesn't matter as long as the
-#' reference level does not deviate much.
+#' The function chose the reference signal level from a list of \code{SigSet}.
+#' The chosen sample has the smallest difference in Grn and Red signal
+#' intensity as measured using the normalization control probes. In practice,
+#' it doesn't matter which sample is chosen as long as the reference level
+#' does not deviate much. The function returns a list of \code{SigSet}s with
+#' dye bias corrected.
 #' 
-#' @param ssets a list of normalized \code{SignalSet}s
-#' @return a list of normalized \code{SignalSet}s
+#' @param ssets a list of normalized \code{SigSet}s
+#' @return a list of normalized \code{SigSet}s
 #' @examples
-#' ssets <- list(s1=makeExampleSeSAMeDataSet(), s2=makeExampleSeSAMeDataSet())
+#' ssets <- readRDS(system.file(
+#'     "extdata", "EPIC.ssets.5normals.chr4.rds", package = "sesameData"))
 #' ssets.db <- dyeBiasCorrMostBalanced(ssets)
 #' @export
 dyeBiasCorrMostBalanced <- function(ssets) {
@@ -58,12 +69,18 @@ dyeBiasCorrMostBalanced <- function(ssets) {
 
 #' Dye bias correction by matching green and red to mid point
 #'
-#' @param sset a \code{SignalSet}
-#' @return a modified \code{SignalSet}
+#' This function compares the Type-I Red probes and Type-I Grn probes and
+#' generates and mapping to correct signal of the two channels to the middle.
+#' The function takes one single \code{SigSet} and returns a \code{SigSet}
+#' with dye bias corrected.
+#' 
+#' @param sset a \code{SigSet}
+#' @return a \code{SigSet} after dye bias correction.
 #' @importFrom preprocessCore normalize.quantiles.use.target
 #' @importFrom stats approx
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
+#' sset <- readRDS(system.file(
+#'     "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
 #' sset.db <- dyeBiasCorrTypeINorm(sset)
 #' @export
 dyeBiasCorrTypeINorm <- function(sset) {

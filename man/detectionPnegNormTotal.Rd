@@ -2,23 +2,22 @@
 % Please edit documentation in R/detection.R
 \name{detectionPnegNormTotal}
 \alias{detectionPnegNormTotal}
-\title{detection P-value based on normal fitting the negative controls,
+\title{Detection P-value based on normal fitting the negative controls,
 channels are first summed}
 \usage{
 detectionPnegNormTotal(sset)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 }
 \value{
 detection p-value
 }
 \description{
-detection P-value based on normal fitting the negative controls,
-channels are first summed
+Returns a new \code{SigSet} with updated pval slot
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()
-sset$pval <- detectionPnegNormTotal(sset)
+sset <- detectionPnegNormTotal(sset)
 
 }

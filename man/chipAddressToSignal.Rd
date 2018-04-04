@@ -10,7 +10,7 @@ chipAddressToSignal(dm)
 \item{dm}{data frame in chip address, 2 columns: cy3/Grn and cy5/Red}
 }
 \value{
-a SignalSet, indexed by probe ID address
+a SigSet, indexed by probe ID address
 }
 \description{
 Lookup address and transform address to probe

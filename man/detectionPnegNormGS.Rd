@@ -2,21 +2,21 @@
 % Please edit documentation in R/detection.R
 \name{detectionPnegNormGS}
 \alias{detectionPnegNormGS}
-\title{detection P-value emulating Genome Studio}
+\title{Detection P-value emulating Genome Studio}
 \usage{
 detectionPnegNormGS(sset)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 }
 \value{
 detection p-value
 }
 \description{
-detection P-value emulating Genome Studio
+Returns a new \code{SigSet} with updated pval slot
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()
-sset$pval <- detectionPnegNormGS(sset)
+sset <- detectionPnegNormGS(sset)
 
 }

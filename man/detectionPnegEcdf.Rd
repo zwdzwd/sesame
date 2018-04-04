@@ -2,21 +2,21 @@
 % Please edit documentation in R/detection.R
 \name{detectionPnegEcdf}
 \alias{detectionPnegEcdf}
-\title{detection P-value based on ECDF of negative control}
+\title{Detection P-value based on ECDF of negative control}
 \usage{
 detectionPnegEcdf(sset)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 }
 \value{
 detection p-value
 }
 \description{
-detection P-value based on ECDF of negative control
+Returns a new \code{SigSet} with updated pval slot
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()
-sset$pval <- detectionPnegEcdf(sset)
+sset <- detectionPnegEcdf(sset)
 
 }

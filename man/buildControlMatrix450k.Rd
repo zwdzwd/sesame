@@ -7,7 +7,7 @@
 buildControlMatrix450k(sset)
 }
 \arguments{
-\item{sset}{an object of class SignalSet}
+\item{sset}{an object of class SigSet}
 }
 \value{
 a vector with control summaries

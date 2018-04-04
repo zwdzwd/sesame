@@ -1,10 +1,13 @@
 #' Noob background correction
+#'
+#' The function takes a \code{SigSet} and returns a modified \code{SigSet}
+#' with background subtracted. Background was modelled in a normal distribution
+#' and true signal in an exponential distribution. The Norm-Exp deconvolution
+#' is parameterized using Out-Of-Band (oob) probes
 #' 
-#' Norm-Exp deconvolution using Out-Of-Band (oob) probes
-#' Note p-values are unchanged (based on the raw signal intensities).
-#' @param sset a \code{SignalSet}
+#' @param sset a \code{SigSet}
 #' @param offset offset
-#' @return a new \code{SignalSet} with noob background correction
+#' @return a new \code{SigSet} with noob background correction
 #' @examples
 #' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)
@@ -127,16 +130,18 @@ to small value")
     
 }
 
-#' background subtraction with bleeding-through subtraction
+#' Background subtraction with bleeding-through subtraction
 #'
+#' The function takes a \code{SigSet} and returns a modified \code{SigSet}
+#' with background subtracted. Signal bleed-through was modelled using a
+#' linear model with error estimated from cross-channel regression.
 #' Norm-Exp deconvolution using Out-Of-Band (oob) probes.
-#' Mean and standard deviations are estimated from cross-channel regression
 #' 
-#' @param sset a \code{SignalSet}
+#' @param sset a \code{SigSet}
 #' @param offset offset
-#' @param detailed if TRUE, return a list of \code{SignalSet}
+#' @param detailed if TRUE, return a list of \code{SigSet}
 #' and regression function
-#' @return a modified \code{SignalSet} with background correction
+#' @return a modified \code{SigSet} with background correction
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet('HM450')
 #' sset.nb <- noobsb(sset)

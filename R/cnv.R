@@ -1,14 +1,14 @@
 #' perform copy number segmentation
 #'
-#' @param sset \code{SignalSet}
-#' @param ssets.normal \code{SignalSet} for normalization
+#' @param sset \code{SigSet}
+#' @param ssets.normal \code{SigSet} for normalization
 #' @param refversion hg19 or hg38
 #' @return an object of \code{CNSegment}
 #' @examples
 #' sset <- readRDS(system.file(
 #'     "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
 #' ssets.normal <- readRDS(system.file(
-#'     "extdata", "EPIC.sset.5normal.chr4.rds", package = "sesameData"))
+#'     "extdata", "EPIC.ssets.5normals.chr4.rds", package = "sesameData"))
 #' seg <- cnSegmentation(sset, ssets.normal)
 #' 
 #' @export

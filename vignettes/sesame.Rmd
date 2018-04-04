@@ -19,8 +19,8 @@ supports EPIC, HM450 and HM27 platforms. The design includes a light-weight
 full exposure of internal signal intensities, an essential information for 
 users of the Infinium Platform. Ignoring intensities can cause substantial
 artifacts in determining epigenetic silencing. Central to the SeSAMe platform
-is the data structure named SignalSet, a R6 reference class with slots
-containing the signals for six different classes of probes:
+is the data structure named SigSet, a S4 class with slots containing the
+signals for six different classes of probes:
 
 1) `II` - Type-II probes; 
 2) `IR` - Type-I Red channel probes;
@@ -29,14 +29,15 @@ containing the signals for six different classes of probes:
 in number); 
 5) `oobR` - Out-of-band Red channel probes (matching Type-I Grn channel probes
 in number);
-6) `ctl` - control probes. 
+6) `ctl` - control probes.
 
 For everything besides the control probes, signal intensities are stored as an
 `Nx2` numeric matrix with `N` representing the number of probes in the class. 
 Two columns representing the methylated allele and the unmethylated allele. 
-Current implementation based on SignalSet R6 is more efficient and reduces
-data-copy overhead. Most functions include an option `in.place` which speeds 
-up execution by avoiding additional data copy.
+Previous implmentation is based on R6 Reference class SignalSet. Current 
+implementation based on SigSet S4 is more standardized. For backward 
+compatibility, a function `signalR6toS4` is provided to transform the old
+`SignalSet` to `SigSet`. 
 
 ```{r}
 library(sesameData)
@@ -45,21 +46,21 @@ sset <- readRDS(system.file(
     'extdata', 'EPIC.sset.LNCaP.Rep1.rds', package='sesameData'))
 ```
 
-For example, printing the SignalSet directly shows its content
+For example, printing the SigSet directly shows its content
 ```{r}
 sset
 ```
 
 Type-II probe signal can be browsed in
 ```{r}
-head(sset$II)
+head(slot(sset, 'II'))
 ```
 
-Similarly, signals for Type-I probes (`sset$IR` and `sset$IG`) and out-of-band
-probes (`sset$oobG` and `sset$oobR`) can be found in
+Similarly, signals for Type-I probes (`sset@IR` and `sset@IG`) and out-of-band
+probes (`sset@oobG` and `sset@oobR`) can be found in
 ```{r}
-head(sset$IR)
-head(sset$oobG)
+head(slot(sset, 'IR'))
+head(slot(sset, 'oobG'))
 ```
 as one can see the probe names (row names) of `IR` always coincide with the
 probe names (row names) of `oobG` (and vice versa). This is because the
@@ -67,7 +68,7 @@ out-of-band probe signal for red channel probes is in green channel
 (and vice versa). Lastly, Control probes are represented in a data frame with
 the last column holding the type of the control. 
 ```{r}
-head(sset$ctl)
+head(slot(sset, 'ctl'))
 ```
 
 # Functionalities
@@ -88,7 +89,7 @@ functionalities for calling differential methylation and copy number.
 ssets <- readIDATsFromDir(system.file("extdata/", package = "sesameData"))
 ```
 
-A simple list of "SignalSet"s are returned. One can also just provide a vector
+A simple list of "SigSet"s are returned. One can also just provide a vector
 of file paths prefixes (excluding `_Red.idat` and `_Grn.idat`, one prefix for
 a pair of IDATs) and call `readIDATs` directly.
         
@@ -117,7 +118,7 @@ equalize the mean of all probes from the two color channel.
 library(sesame)
 sset.dbLinear <- dyeBiasCorr(sset)
 qqplot(
-    sset.dbLinear$IR, sset.dbLinear$IG,
+    slot(sset.dbLinear, 'IR'), slot(sset.dbLinear, 'IG'),
     xlab='Type-I Red Signal', ylab='Type-I Grn Signal',
     main='Linear Correction', cex=0.5)
 abline(0,1,lty='dashed')
@@ -133,7 +134,7 @@ Under this correction, Type-I Red probes and Type-I Grn probes have the same
 distribution of signal.
 ```{r}
 qqplot(
-    sset.dbNonlinear$IR, sset.dbNonlinear$IG,
+    slot(sset.dbNonlinear, 'IR'), slot(sset.dbNonlinear, 'IG'),
     xlab='Type-I Red Signal', ylab='Type-I Grn Signal',
     main='Nonlinear Correction', cex=0.5)
 abline(0,1,lty='dashed')
@@ -291,7 +292,7 @@ intensity using a copy-number-normal data set; 2) groups adjacent probes into
 bins; 3) runs DNAcopy internally to group bins into segments.
 ```{r, message=FALSE, fig.width=6}
 ssets.normal <- readRDS(system.file(
-    "extdata", "EPIC.sset.cn.normals.rds", package = "sesameData"))
+    "extdata", "EPIC.ssets.5normals.rds", package = "sesameData"))
 segs <- cnSegmentation(sset, ssets.normal)
 ```
 

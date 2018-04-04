@@ -7,7 +7,7 @@
 inferEthnicity(sset)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 }
 \value{
 string of ethnicity

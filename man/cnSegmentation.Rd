@@ -7,9 +7,9 @@
 cnSegmentation(sset, ssets.normal, refversion = "hg19")
 }
 \arguments{
-\item{sset}{\code{SignalSet}}
+\item{sset}{\code{SigSet}}
 
-\item{ssets.normal}{\code{SignalSet} for normalization}
+\item{ssets.normal}{\code{SigSet} for normalization}
 
 \item{refversion}{hg19 or hg38}
 }
@@ -23,7 +23,7 @@ perform copy number segmentation
 sset <- readRDS(system.file(
     "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
 ssets.normal <- readRDS(system.file(
-    "extdata", "EPIC.sset.5normal.chr4.rds", package = "sesameData"))
+    "extdata", "EPIC.ssets.5normals.chr4.rds", package = "sesameData"))
 seg <- cnSegmentation(sset, ssets.normal)
 
 }

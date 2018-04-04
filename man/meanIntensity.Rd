@@ -7,13 +7,13 @@
 meanIntensity(sset)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 }
 \value{
 mean of all intensities
 }
 \description{
-The function takes one single \code{SignalSet} and computes mean
+The function takes one single \code{SigSet} and computes mean
 intensity of all the in-band measurements. This includes all Type-I
 in-band measurements and all Type-II probe measurements. Both methylated
 and unmethylated alleles are considered. This function outputs a single

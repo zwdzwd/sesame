@@ -1,5 +1,11 @@
-
-#' visualize gene
+#' Visualize Gene
+#'
+#' Visualize the beta value in heatmaps for a given gene. The function takes
+#' a gene name which is taken from the UCSC refGene. It searches all the
+#' transcripts for the given gene and optionally extend the span by certain
+#' number of base pairs. The function also takes a beta value matrix with
+#' sample names on the columns and probe names on the rows. The function can
+#' also work on different genome builds (default to hg38, can be hg19).
 #'
 #' @param geneName gene name
 #' @param betas beta value matrix (row: probes, column: samples)
@@ -51,8 +57,16 @@ visualizeGene <- function(
         betas, platform=platform, refversion=refversion, ...)
 }
 
-#' Visualize region that contains the specified probes
+#' Visualize Region that Contains the Specified Probes
 #'
+#' Visualize the beta value in heatmaps for the genomic region containing
+#' specified probes. The function works only if specified probes can be
+#' spanned by a single genomic region. The region can cover more probes
+#' than specified. Hence the plotting heatmap may encompass more probes.
+#' The function takes as input a string vector of probe IDs (cg/ch/rs-numbers).
+#' if draw is FALSE, the function returns the subset beta value matrix
+#' otherwise it returns the grid graphics object.
+#' 
 #' @param probeNames probe names
 #' @param betas beta value matrix (row: probes, column: samples)
 #' @param platform HM450 (default) or EPIC
@@ -94,7 +108,13 @@ visualizeProbes <- function(
         betas, platform=platform, refversion=refversion, ...)
 }
 
-#' Get probes by gene
+#' Get Probes by Gene
+#'
+#' Get probes mapped to a gene. All transcripts for the gene are considered.
+#' The function takes a gene name as appears in UCSC RefGene database. The
+#' platform and reference genome build can be changed with `platform` and
+#' `refversion` options. The function returns a vector of probes that falls
+#' into the given gene.
 #'
 #' @param geneName gene name
 #' @param platform EPIC or HM450
@@ -104,8 +124,8 @@ visualizeProbes <- function(
 #' probes <- getProbesByGene('CDKN2A')
 #' @export
 getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
-    pkgTest('GenomicRanges')
 
+    requireNamespace("GenomicRanges", quietly = TRUE)
     gene2txn <- get(paste0('UCSC.refGene.gene2txn.', refversion))
     if (!(geneName %in% names(gene2txn))) {
         stop('Gene ', geneName, ' not found in this reference.');
@@ -124,7 +144,67 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
         platform=platform, refversion=refversion)
 }
 
-#' visualize region
+#' Get Probes by Gene Transcription Start Site (TSS)
+#'
+#' Get probes mapped to a TSS. All transcripts for the gene are considered.
+#' The function takes a gene name as appears in UCSC RefGene database. The
+#' platform and reference genome build can be changed with `platform` and
+#' `refversion` options. The function returns a vector of probes that falls
+#' into the TSS region of the gene.
+#'
+#' @param geneName gene name
+#' @param upstream the number of base pairs to expand upstream the TSS
+#' @param dwstream the number of base pairs to expand dwstream the TSS
+#' @param platform EPIC or HM450
+#' @param refversion hg38 or hg19
+#' @return probes that fall into the given gene
+#' @examples
+#' probes <- getProbesByTSS('CDKN2A')
+#' @export
+getProbesByTSS <- function(
+    geneName, upstream = 1500, dwstream = 1500,
+    platform='EPIC', refversion='hg38') {
+
+    gene2txn <- get(paste0('UCSC.refGene.gene2txn.', refversion))
+    if (!(geneName %in% names(gene2txn))) {
+        stop('Gene ', geneName, ' not found in this reference.');
+    }
+    txns <- get(paste0('UCSC.refGene.txns.', refversion))
+
+    target.txns <- txns[gene2txn[[geneName]]]
+
+    tss <- GenomicRanges::reduce(unlist(GenomicRanges::GenomicRangesList(
+        lapply(target.txns, function(txn) {
+            tss1 <- ifelse(
+                as.vector(GenomicRanges::strand(txn))[1] == '-',
+                max(GenomicRanges::end(txn)), min(GenomicRanges::start(txn)))
+            up <- ifelse(as.vector(
+                GenomicRanges::strand(txn))[1] == '-', dwstream, upstream)
+            dw <- ifelse(as.vector(
+                GenomicRanges::strand(txn))[1] == '-', upstream, dwstream)
+            GenomicRanges::GRanges(
+                as.vector(GenomicRanges::seqnames(txn))[1],
+                ranges = IRanges::IRanges(start=tss1-up, end=tss1+dw))
+    }))))
+
+    probes1 <- subsetByOverlaps(get(paste0(
+        platform,'.mapped.probes.',refversion)), tss)
+    
+    if (length(probes1)>0) {
+        probes1$gene <- geneName
+    }
+    probes1
+}
+
+#' Visualize Region
+#'
+#' The function takes a genomic coordinate (chromosome, start and end) and a
+#' beta value matrix (probes on the row and samples on the column). It plots
+#' the beta values as a heatmap for all probes falling into the genomic region.
+#' If `draw=TRUE` the function returns the plotted grid graphics object.
+#' Otherwise, the selected beta value matrix is returned.
+#' `cluster.samples=TRUE/FALSE` controls whether hierarchical clustering is
+#' applied to the subset beta value matrix.
 #'
 #' @param chrm chromosome
 #' @param plt.beg begin of the region

@@ -4,20 +4,22 @@
 \alias{dyeBiasCorrTypeINorm}
 \title{Dye bias correction by matching green and red to mid point}
 \usage{
-dyeBiasCorrTypeINorm(sset, in.place = FALSE)
+dyeBiasCorrTypeINorm(sset)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
-
-\item{in.place}{to modify sset in place}
+\item{sset}{a \code{SigSet}}
 }
 \value{
-a modified \code{SignalSet}
+a \code{SigSet} after dye bias correction.
 }
 \description{
-Dye bias correction by matching green and red to mid point
+This function compares the Type-I Red probes and Type-I Grn probes and
+generates and mapping to correct signal of the two channels to the middle.
+The function takes one single \code{SigSet} and returns a \code{SigSet}
+with dye bias corrected.
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
+sset <- readRDS(system.file(
+    "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
 sset.db <- dyeBiasCorrTypeINorm(sset)
 }

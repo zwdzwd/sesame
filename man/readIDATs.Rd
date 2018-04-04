@@ -16,11 +16,11 @@ readIDATs(sample.names, base.dir = NULL, raw = FALSE, num.processes = 1)
 \item{num.processes}{number of parallele processes, serial if 1}
 }
 \value{
-a list of \code{SignalSet}s or a list of matrices if `raw=TRUE`
+a list of \code{SigSet}s or a list of matrices if `raw=TRUE`
 }
 \description{
-If `raw = FALSE` (default), a list of \code{SignalSet}s are returned. Each
-\code{SignalSet} contains all the signal measurement on the platform. If
+If `raw = FALSE` (default), a list of \code{SigSet}s are returned. Each
+\code{SigSet} contains all the signal measurement on the platform. If
 `raw = TRUE`, a list is returned with each element of the returned list
 containing a matrix having signal intensity indexed by chip address.
 }

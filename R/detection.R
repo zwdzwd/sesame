@@ -1,10 +1,12 @@
-#' detection P-value based on ECDF of negative control
+#' Detection P-value based on ECDF of negative control
 #'
-#' @param sset a \code{SignalSet}
+#' Returns a new \code{SigSet} with updated pval slot
+#'
+#' @param sset a \code{SigSet}
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
-#' sset@pval <- detectionPnegEcdf(sset)
+#' sset <- detectionPnegEcdf(sset)
 #' 
 #' @export
 detectionPnegEcdf <- function(sset) {
@@ -23,17 +25,20 @@ detectionPnegEcdf <- function(sset) {
     names(pII) <- rownames(sset@II)
 
     pval <- c(pIR,pIG,pII)
-    pval[order(names(pval))]
+    sset@pval <- pval[order(names(pval))]
+    sset
     
 }
 
-#' detection P-value based on normal fitting the negative controls
+#' Detection P-value based on normal fitting the negative controls
 #'
-#' @param sset a \code{SignalSet}
+#' Returns a new \code{SigSet} with updated pval slot
+#'
+#' @param sset a \code{SigSet}
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
-#' sset@pval <- detectionPnegNorm(sset)
+#' sset <- detectionPnegNorm(sset)
 #' 
 #' @export
 detectionPnegNorm <- function(sset) {
@@ -54,17 +59,20 @@ detectionPnegNorm <- function(sset) {
     names(pII) <- rownames(sset@II)
 
     pval <- c(pIR,pIG,pII)
-    pval[order(names(pval))]
+    sset@pval <- pval[order(names(pval))]
+    sset
     
 }
 
-#' detection P-value emulating Genome Studio
+#' Detection P-value emulating Genome Studio
 #'
-#' @param sset a \code{SignalSet}
+#' Returns a new \code{SigSet} with updated pval slot
+#'
+#' @param sset a \code{SigSet}
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
-#' sset@pval <- detectionPnegNormGS(sset)
+#' sset <- detectionPnegNormGS(sset)
 #' 
 #' @export
 detectionPnegNormGS <- function(sset) {
@@ -79,18 +87,21 @@ detectionPnegNormGS <- function(sset) {
     names(pIG) <- rownames(sset@IG)
     names(pII) <- rownames(sset@II)
     pval <- c(pIR,pIG,pII)
-    pval[order(names(pval))]
+    sset@pval <- pval[order(names(pval))]
+    sset
     
 }
 
-#' detection P-value based on normal fitting the negative controls,
+#' Detection P-value based on normal fitting the negative controls,
 #' channels are first summed
 #'
-#' @param sset a \code{SignalSet}
+#' Returns a new \code{SigSet} with updated pval slot
+#'
+#' @param sset a \code{SigSet}
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
-#' sset@pval <- detectionPnegNormTotal(sset)
+#' sset <- detectionPnegNormTotal(sset)
 #' 
 #' @export
 detectionPnegNormTotal <- function(sset) {
@@ -109,17 +120,19 @@ detectionPnegNormTotal <- function(sset) {
     names(pII) <- rownames(sset@II)
 
     pval <- c(pIR,pIG,pII)
-    pval[order(names(pval))]
-    
+    sset@pval <- pval[order(names(pval))]
+    sset
 }
 
-#' detection P-value based on ECDF of out-of-band signal
+#' Detection P-value based on ECDF of out-of-band signal
 #'
-#' @param sset a \code{SignalSet}
+#' Returns a new \code{SigSet} with updated pval slot
+#'
+#' @param sset a \code{SigSet}
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
-#' sset@pval <- detectionPoobEcdf(sset)
+#' sset <- detectionPoobEcdf(sset)
 #' 
 #' @export
 detectionPoobEcdf <- function(sset) {
@@ -137,7 +150,7 @@ detectionPoobEcdf <- function(sset) {
     names(pII) <- rownames(sset@II)
 
     pval <- c(pIR,pIG,pII)
-    pval[order(names(pval))]
-    
+    sset@pval <- pval[order(names(pval))]
+    sset
 }
 

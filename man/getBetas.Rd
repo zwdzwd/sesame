@@ -8,7 +8,7 @@ getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
   mask.use.tcga = FALSE, pval.threshold = 0.05)
 }
 \arguments{
-\item{sset}{\code{SignalSet}}
+\item{sset}{\code{SigSet}}
 
 \item{quality.mask}{whether to mask low quality probes}
 

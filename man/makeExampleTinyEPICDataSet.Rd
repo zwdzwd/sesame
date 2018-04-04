@@ -7,10 +7,10 @@
 makeExampleTinyEPICDataSet()
 }
 \value{
-Object of class \code{SignalSet}
+Object of class \code{SigSet}
 }
 \description{
-Construct a tiny EPIC \code{SignalSet} of only 6 probes. In-band signals
+Construct a tiny EPIC \code{SigSet} of only 6 probes. In-band signals
 were simulated using a N(4000, 200) normal distribution. Out-of-band signals
 were simulated using a N(400, 200) normal distribution. Control signals were
 simulated using a N(400, 300) normal distribution.

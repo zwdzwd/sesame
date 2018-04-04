@@ -10,10 +10,10 @@ makeExampleSeSAMeDataSet(platform = "HM450")
 \item{platform}{optional, HM450, EPIC or HM27}
 }
 \value{
-Object of class \code{SignalSet}
+Object of class \code{SigSet}
 }
 \description{
-Constructs a simulated \code{SignalSet} dataset. For the given platform,
+Constructs a simulated \code{SigSet} dataset. For the given platform,
 randomly simulate methylated and unmethylated allele signals. In-band signals
 were simulated using a N(4000, 200) normal distribution. Out-of-band signals
 were simulated using a N(400, 200) normal distribution. Control signals were

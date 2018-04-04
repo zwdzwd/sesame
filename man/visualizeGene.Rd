@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualize.R
 \name{visualizeGene}
 \alias{visualizeGene}
-\title{visualize gene}
+\title{Visualize Gene}
 \usage{
 visualizeGene(geneName, betas, platform = "EPIC", upstream = 2000,
   dwstream = 2000, refversion = "hg38", ...)
@@ -26,7 +26,12 @@ visualizeGene(geneName, betas, platform = "EPIC", upstream = 2000,
 None
 }
 \description{
-visualize gene
+Visualize the beta value in heatmaps for a given gene. The function takes
+a gene name which is taken from the UCSC refGene. It searches all the
+transcripts for the given gene and optionally extend the span by certain
+number of base pairs. The function also takes a beta value matrix with
+sample names on the columns and probe names on the rows. The function can
+also work on different genome builds (default to hg38, can be hg19).
 }
 \examples{
 betas <- readRDS(system.file(

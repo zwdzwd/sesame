@@ -7,7 +7,7 @@
 inferSex(sset)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 }
 \value{
 'F' or 'M'
@@ -30,5 +30,5 @@ infer sex
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()
-sex <- inferSex(sset)
+inferSex(sset)
 }

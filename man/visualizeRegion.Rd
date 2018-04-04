@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualize.R
 \name{visualizeRegion}
 \alias{visualizeRegion}
-\title{visualize region}
+\title{Visualize Region}
 \usage{
 visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
   refversion = "hg38", sample.name.fontsize = 10, heat.height = NULL,
@@ -47,7 +47,13 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
 graphics or a matrix containing the captured beta values
 }
 \description{
-visualize region
+The function takes a genomic coordinate (chromosome, start and end) and a
+beta value matrix (probes on the row and samples on the column). It plots
+the beta values as a heatmap for all probes falling into the genomic region.
+If `draw=TRUE` the function returns the plotted grid graphics object.
+Otherwise, the selected beta value matrix is returned.
+`cluster.samples=TRUE/FALSE` controls whether hierarchical clustering is
+applied to the subset beta value matrix.
 }
 \examples{
 betas <- readRDS(system.file(

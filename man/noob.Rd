@@ -7,16 +7,18 @@
 noob(sset, offset = 15)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 
 \item{offset}{offset}
 }
 \value{
-a new \code{SignalSet} with noob background correction
+a new \code{SigSet} with noob background correction
 }
 \description{
-Norm-Exp deconvolution using Out-Of-Band (oob) probes
-Note p-values are unchanged (based on the raw signal intensities).
+The function takes a \code{SigSet} and returns a modified \code{SigSet}
+with background subtracted. Background was modelled in a normal distribution
+and true signal in an exponential distribution. The Norm-Exp deconvolution
+is parameterized using Out-Of-Band (oob) probes
 }
 \examples{
 sset <- makeExampleTinyEPICDataSet()

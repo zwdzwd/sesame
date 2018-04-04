@@ -2,21 +2,21 @@
 % Please edit documentation in R/detection.R
 \name{detectionPoobEcdf}
 \alias{detectionPoobEcdf}
-\title{detection P-value based on ECDF of out-of-band signal}
+\title{Detection P-value based on ECDF of out-of-band signal}
 \usage{
 detectionPoobEcdf(sset)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 }
 \value{
 detection p-value
 }
 \description{
-detection P-value based on ECDF of out-of-band signal
+Returns a new \code{SigSet} with updated pval slot
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()
-sset$pval <- detectionPoobEcdf(sset)
+sset <- detectionPoobEcdf(sset)
 
 }

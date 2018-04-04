@@ -7,15 +7,15 @@
 getAFTypeIbySumAlleles(sset)
 }
 \arguments{
-\item{sset}{\code{SignalSet}}
+\item{sset}{\code{SigSet}}
 }
 \value{
 beta values
 }
 \description{
-Takes a \code{SignalSet} as input and returns a numeric vector containing
+Takes a \code{SigSet} as input and returns a numeric vector containing
 extra allele frequencies based on Color-Channel-Switching (CCS) probes.
-If no CCS probes exist in the \code{SignalSet}, then an numeric(0) is
+If no CCS probes exist in the \code{SigSet}, then an numeric(0) is
 returned.
 }
 \examples{

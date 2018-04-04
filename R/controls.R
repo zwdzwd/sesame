@@ -2,7 +2,7 @@
 
 #' Build control summary matrix
 #' 
-#' @param sset an object of class SignalSet
+#' @param sset an object of class SigSet
 #' @return a vector with control summaries
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()

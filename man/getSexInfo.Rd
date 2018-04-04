@@ -7,13 +7,13 @@
 getSexInfo(sset)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 }
 \value{
 medianY and fracXlinked
 }
 \description{
-The function takes a \code{SignalSet} and returns a vector of three
+The function takes a \code{SigSet} and returns a vector of three
 numerics: the median intensity of chrY probes; the median intensity of
 chrX probes; and fraction of intermediate chrX probes. chrX and chrY
 probes excludes pseudo-autosomal probes.

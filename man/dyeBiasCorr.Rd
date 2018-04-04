@@ -2,24 +2,26 @@
 % Please edit documentation in R/dye_bias.R
 \name{dyeBiasCorr}
 \alias{dyeBiasCorr}
-\title{Correct dye bias}
+\title{Correct dye bias in by linear scaling.}
 \usage{
-dyeBiasCorr(sset, ref = NULL, in.place = FALSE)
+dyeBiasCorr(sset, ref = NULL)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 
 \item{ref}{reference signal level}
-
-\item{in.place}{modify \code{SignalSet} in place, faster}
 }
 \value{
-a normalized \code{SignalSet}
+a normalized \code{SigSet}
 }
 \description{
-Correct dye bias
+The function takes a \code{SigSet} as input and scale both the Grn and Red
+signal to a reference (ref) level. If the reference level is not given, it
+is set to the mean intensity of all the in-band signals. The function
+returns a \code{SigSet} with dye bias corrected.
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
+sset <- readRDS(system.file(
+    "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
 sset.db <- dyeBiasCorr(sset)
 }

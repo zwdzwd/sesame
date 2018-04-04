@@ -2,24 +2,26 @@
 % Please edit documentation in R/background_correction.R
 \name{noobsb}
 \alias{noobsb}
-\title{background subtraction with bleeding-through subtraction}
+\title{Background subtraction with bleeding-through subtraction}
 \usage{
 noobsb(sset, offset = 15, detailed = FALSE)
 }
 \arguments{
-\item{sset}{a \code{SignalSet}}
+\item{sset}{a \code{SigSet}}
 
 \item{offset}{offset}
 
-\item{detailed}{if TRUE, return a list of \code{SignalSet}
+\item{detailed}{if TRUE, return a list of \code{SigSet}
 and regression function}
 }
 \value{
-a modified \code{SignalSet} with background correction
+a modified \code{SigSet} with background correction
 }
 \description{
+The function takes a \code{SigSet} and returns a modified \code{SigSet}
+with background subtracted. Signal bleed-through was modelled using a
+linear model with error estimated from cross-channel regression.
 Norm-Exp deconvolution using Out-Of-Band (oob) probes.
-Mean and standard deviations are estimated from cross-channel regression
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet('HM450')

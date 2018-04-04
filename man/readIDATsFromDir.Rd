@@ -17,14 +17,14 @@ from memory crash.}
 \item{...}{see \code{readIDATs}}
 }
 \value{
-a list of \code{SignalSet}s, if more than `max.num.samples` samples
+a list of \code{SigSet}s, if more than `max.num.samples` samples
 found, then only return the prefixes (a vector of character strings).
 Consider using `readIDATs` to process each chunk separately.
 }
 \description{
 The input is the directory name as a string. The function identifies all
 the IDAT files under the directory. The function returns a list of
-\code{SignalSet}s each processed from a pair of IDAT files under the
+\code{SigSet}s each processed from a pair of IDAT files under the
 directory.
 }
 \examples{

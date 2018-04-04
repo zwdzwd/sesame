@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualize.R
 \name{visualizeProbes}
 \alias{visualizeProbes}
-\title{Visualize region that contains the specified probes}
+\title{Visualize Region that Contains the Specified Probes}
 \usage{
 visualizeProbes(probeNames, betas, platform = "EPIC", refversion = "hg38",
   upstream = 1000, dwstream = 1000, ...)
@@ -26,7 +26,13 @@ visualizeProbes(probeNames, betas, platform = "EPIC", refversion = "hg38",
 None
 }
 \description{
-Visualize region that contains the specified probes
+Visualize the beta value in heatmaps for the genomic region containing
+specified probes. The function works only if specified probes can be
+spanned by a single genomic region. The region can cover more probes
+than specified. Hence the plotting heatmap may encompass more probes.
+The function takes as input a string vector of probe IDs (cg/ch/rs-numbers).
+if draw is FALSE, the function returns the subset beta value matrix
+otherwise it returns the grid graphics object.
 }
 \examples{
 betas <- readRDS(system.file(
