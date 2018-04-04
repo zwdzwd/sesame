@@ -431,7 +431,9 @@ readIDATsFromDir <- function(
         stop("IDAT names unmatched.")
 
     if (length(prefixes) > max.num.samples) {
-        warning("More than 100 samples found. Returning the prefixes.")
+        warning(sprintf(
+            "%d (>%d) samples found. Returning the prefixes.",
+            length(prefixes), max.num.samples))
         prefixes
     } else {
         readIDATs(file.path(dir.name, prefixes), ...)
