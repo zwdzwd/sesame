@@ -4,17 +4,22 @@
 \alias{readIDATsFromDir}
 \title{Import IDATs from a directory}
 \usage{
-readIDATsFromDir(dir.name, recursive = FALSE, ...)
+readIDATsFromDir(dir.name, max.num.samples = 100, recursive = FALSE, ...)
 }
 \arguments{
 \item{dir.name}{the directory containing the IDAT files.}
+
+\item{max.num.samples}{maximum number of samples to process, to protect
+from memory crash.}
 
 \item{recursive}{search IDAT files recursively}
 
 \item{...}{multiple core parameters: mc and mc.cores see \code{readIDATs}}
 }
 \value{
-a list of \code{SignalSet}s
+a list of \code{SignalSet}s, if more than `max.num.samples` samples
+found, then only return the prefixes (a vector of character strings).
+Consider using `readIDATs` to process each chunk separately.
 }
 \description{
 The input is the directory name as a string. The function identifies all

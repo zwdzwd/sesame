@@ -397,9 +397,14 @@ readIDATs <- function(
 #' directory.
 #' 
 #' @param dir.name the directory containing the IDAT files.
+#' @param max.num.samples maximum number of samples to process, to protect
+#' from memory crash.
 #' @param recursive search IDAT files recursively
 #' @param ... multiple core parameters: mc and mc.cores see \code{readIDATs}
-#' @return a list of \code{SignalSet}s
+#' @return a list of \code{SignalSet}s, if more than `max.num.samples` samples
+#' found, then only return the prefixes (a vector of character strings).
+#' Consider using `readIDATs` to process each chunk separately.
+#' 
 #' @examples
 #' ## only search what are directly under
 #' ssets <- readIDATsFromDir(
@@ -409,7 +414,8 @@ readIDATs <- function(
 #' ssets <- readIDATsFromDir(
 #'     system.file(package = "sesameData"), recursive=TRUE)
 #' @export
-readIDATsFromDir <- function(dir.name, recursive = FALSE, ...) {
+readIDATsFromDir <- function(
+    dir.name, max.num.samples = 100, recursive = FALSE, ...) {
 
     prefixes <- unique(sub(
         '_(Grn|Red).idat$', '',
@@ -421,8 +427,13 @@ readIDATsFromDir <- function(dir.name, recursive = FALSE, ...) {
         stop("IDAT names unmatched.")
     if (!all(file.exists(file.path(dir.name, paste0(prefixes, '_Red.idat')))))
         stop("IDAT names unmatched.")
-    
-    readIDATs(file.path(dir.name, prefixes), ...)
+
+    if (length(prefixes) > max.num.samples) {
+        warning("More than 100 samples found. Returning the prefixes.")
+        prefixes
+    } else {
+        readIDATs(file.path(dir.name, prefixes), ...)
+    }
 }
 
 #' Lookup address in one sample
