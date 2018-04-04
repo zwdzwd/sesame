@@ -58,6 +58,20 @@ setClass(
     pval = 'numeric',
     platform = 'character'))
 
+#' Constructor method of Sensor Class.
+#'
+#' @name Sensor
+#' @rdname Sensor-class
+setMethod("initialize", "Sensor", function(.Object,
+  type = "character", num = "numeric", ...)  
+{ 
+  if(missing(type)) type <- "polymeric"
+  if(missing(num)) num <- 1  
+      
+  validObject(.Object)      
+  return(.Object)
+})
+
 #' Wrapper function
 #'
 #' @param ... additional arguments

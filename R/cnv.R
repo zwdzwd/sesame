@@ -19,12 +19,12 @@ cnSegmentation <- function(sset, ssets.normal, refversion='hg19') {
     ## retrieve chromosome info and probe coordinates
     chrominfo <- get(paste0(refversion,'.chrominfo'))
     probe.coords <- get(paste0(
-        sset$platform,'.mapped.probes.', refversion))
+        sset@platform,'.mapped.probes.', refversion))
 
     ## extract intensities
-    target.intens <- sset$totalIntensities()
+    target.intens <- totalIntensities(sset)
     normal.intens <- do.call(cbind, lapply(ssets.normal, function(sset) {
-        sset$totalIntensities() }))
+        totalIntensities(sset) }))
 
     ## find overlapping probes
     pb <- intersect(rownames(normal.intens), names(target.intens))

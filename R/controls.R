@@ -11,7 +11,7 @@
 #' @export
 buildControlMatrix450k <- function(sset) {
     
-    ctls <- split(sset$ctl, sset$ctl$type)
+    ctls <- split(sset@ctl, sset@ctl$type)
 
     cm <- NULL
 
@@ -90,15 +90,15 @@ buildControlMatrix450k <- function(sset) {
     cm <- c(cm, dyebias=(cm['normC']+cm['normG']) / (cm['normA']+cm['normT']))
 
     ## out-of-band probe quantiles
-    if (is.null(sset$oobG)) {
+    if (is.null(sset@oobG)) {
         cm <- c(
             cm,
             oob.ratio=NA,
             structure(rep(NA,3), names=paste0('oob',c(1,50,99))))
     } else {
-        cm <- c(cm, oob.ratio=median(sset$oobG) / median(sset$oobR))
+        cm <- c(cm, oob.ratio=median(sset@oobG) / median(sset@oobR))
         cm <- c(cm, structure(
-            quantile(sset$oobG, c(0.01,0.5,0.99)),
+            quantile(sset@oobG, c(0.01,0.5,0.99)),
             names=paste0('oob', c(1,50,99))))
     }
 
