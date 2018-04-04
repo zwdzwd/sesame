@@ -361,6 +361,8 @@ readIDATs <- function(
             mc.cores <- 4
         else
             mc.cores <- getOption('mc.cores')
+    } else {
+        mc <- TRUE
     }
     
     if (!is.null(base.dir))
@@ -368,7 +370,7 @@ readIDATs <- function(
     else
         sample.paths <- sample.names
     
-    if (mc || !is.null(mc.cores))
+    if (mc)
         dms <- bplapply(
             sample.paths, readIDAT1,
             BPPARAM = MulticoreParam(workers=mc.cores))
