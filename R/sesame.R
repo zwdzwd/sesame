@@ -434,7 +434,7 @@ readIDATsFromDir <- function(
         warning(sprintf(
             "%d (>%d) samples found. Returning the prefixes.",
             length(prefixes), max.num.samples))
-        prefixes
+        file.path(dir.name, prefixes)
     } else {
         readIDATs(file.path(dir.name, prefixes), ...)
     }
