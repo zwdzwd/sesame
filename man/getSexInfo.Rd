@@ -10,7 +10,8 @@ getSexInfo(sset)
 \item{sset}{a \code{SigSet}}
 }
 \value{
-medianY and fracXlinked
+medianY and medianX, fraction of XCI, methylated and unmethylated X
+probes, median intensities of auto-chromosomes.
 }
 \description{
 The function takes a \code{SigSet} and returns a vector of three

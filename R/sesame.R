@@ -220,7 +220,8 @@ totalIntensities <- function(sset) {
 #' probes excludes pseudo-autosomal probes.
 #'
 #' @param sset a \code{SigSet}
-#' @return medianY and fracXlinked
+#' @return medianY and medianX, fraction of XCI, methylated and unmethylated X
+#' probes, median intensities of auto-chromosomes.
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' getSexInfo(sset)
@@ -240,6 +241,10 @@ getSexInfo <- function(sset) {
         fracXlinked=(sum(
             xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) /
                 sum(!(is.na(xLinkedBeta)))),
+        fracXmeth=(
+            sum(xLinkedBeta > 0.7, na.rm = TRUE) / sum(!(is.na(xLinkedBeta)))),
+        fracXunmeth=(
+            sum(xLinkedBeta < 0.3, na.rm = TRUE) / sum(!(is.na(xLinkedBeta)))),
         tapply(intens, probe2chr, median))
 }
 
