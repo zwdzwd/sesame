@@ -138,12 +138,19 @@ setMethod(
     "show", "SigSet",
     function(object) {
         cat("SigSet", object@platform, "\n")
-        cat("  - IG probes:", nrow(object@IG), "\n")
-        cat("  - IR probes:", nrow(object@IR), "\n")
-        cat("  - II probes:", nrow(object@II), "\n")
-        cat("  - oobG probes:", nrow(object@oobG), "\n")
-        cat("  - oobR probes:", nrow(object@oobR), "\n")
+        cat("  - IG probes:", nrow(object@IG),
+            '-', as.numeric(head(object@IG, n=3)), "\n")
+        cat("  - IR probes:", nrow(object@IR),
+            '-', as.numeric(head(object@IR, n=3)), "\n")
+        cat("  - II probes:", nrow(object@II),
+            '-', as.numeric(head(object@II, n=3)), "\n")
+        cat("  - oobG probes:", nrow(object@oobG),
+            '-', as.numeric(head(object@oobG, n=3)), "\n")
+        cat("  - oobR probes:", nrow(object@oobR),
+            '-', as.numeric(head(object@oobR, n=3)), "\n")
         cat("  - ctl probes:", nrow(object@ctl), "\n")
+        cat("  - p value:", length(object@pval),
+            "-", as.numeric(head(object@pval, n=3)), "\n")
     })
 
 #' Select a subset of probes
@@ -221,13 +228,17 @@ totalIntensities <- function(sset) {
 getSexInfo <- function(sset) {
     cleanY <- get(paste0(sset@platform, '.female.clean.chrY.probes'))
     xLinked <- get(paste0(sset@platform, '.female.xlinked.chrX.probes'))
+    probe2chr <- get(paste0(sset@platform, '.hg19.probe2chr'))
     xLinkedBeta <- getBetas(subsetSignal(sset, xLinked), quality.mask=FALSE)
+    intens <- totalIntensities(sset)
+    intens <- intens[names(intens) %in% names(probe2chr)]
     c(
         medianY=median(totalIntensities(subsetSignal(sset, cleanY))),
         medianX=median(totalIntensities(subsetSignal(sset, xLinked))),
         fracXlinked=(sum(
             xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) /
-                sum(!(is.na(xLinkedBeta)))))
+                sum(!(is.na(xLinkedBeta)))),
+        tapply(intens, probe2chr, median))
 }
 
 #' infer sex
@@ -254,7 +265,7 @@ getSexInfo <- function(sset) {
 #' inferSex(sset)
 #' @export
 inferSex <- function(sset) {
-    sex.info <- getSexInfo(sset)
+    sex.info <- getSexInfo(sset)[1:3]
     as.character(predict(sesameData::sex.inference.model, sex.info))
 }
 
