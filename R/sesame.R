@@ -231,7 +231,9 @@ getSexInfo <- function(sset) {
     probe2chr <- get(paste0(sset@platform, '.hg19.probe2chr'))
     xLinkedBeta <- getBetas(subsetSignal(sset, xLinked), quality.mask=FALSE)
     intens <- totalIntensities(sset)
-    intens <- intens[names(intens) %in% names(probe2chr)]
+    probes <- intersect(names(intens), names(probe2chr))
+    intens <- intens[probes]
+    probe2chr <- probe2chr[probes]
     c(
         medianY=median(totalIntensities(subsetSignal(sset, cleanY))),
         medianX=median(totalIntensities(subsetSignal(sset, xLinked))),
