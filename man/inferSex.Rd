@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesame.R
 \name{inferSex}
 \alias{inferSex}
-\title{infer sex}
+\title{Infer Sex}
 \usage{
 inferSex(sset)
 }
@@ -26,7 +26,7 @@ model sometimes.
 Our function works on a single sample.
 }
 \description{
-infer sex
+Infer Sex
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()

@@ -187,6 +187,7 @@ Sex is inferred based on our curated X-linked probes and Y chromosome probes
 excluding pseudo-autosomal regions.
 ```{r}
 inferSex(sset)
+inferSexKaryotypes(sset)
 ```
 
 #### Ethnicity

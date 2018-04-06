@@ -83,43 +83,6 @@ setMethod(
         .Object
     })
 
-
-## #' Method IG
-## #' @name IG
-## #' @rdname IG-methods
-## #' @exportMethod IG
-## setGeneric("IG", function(x) standardGeneric("IG"))
-
-## #' Method IG
-## #' @name IG
-## #' @rdname IG-methods
-## #' @exportMethod IG
-## setGeneric("IG", function(x) standardGeneric("IG"))
-
-## #' @rdname IG-methods
-## #' @aliases IG,SigSet-method
-## setMethod("IG", "SigSet", function(x) x@IG)
-
-## #' @rdname IR-methods
-## #' @aliases IR,SigSet-method
-## setMethod("IR", "SigSet", function(x) x@IR)
-
-## #' @rdname II-methods
-## #' @aliases II,SigSet-method
-## setMethod("II", "SigSet", function(x) x@II)
-
-## #' @rdname oobG-methods
-## #' @aliases oobG,SigSet-method
-## setMethod("oobG", "SigSet", function(x) x@oobG)
-
-## #' @rdname oobR-methods
-## #' @aliases oobR,SigSet-method
-## setMethod("oobR", "SigSet", function(x) x@oobR)
-
-## #' @rdname pval-methods
-## #' @aliases pval,SigSet-method
-## setMethod("pval", "SigSet", function(x) x@pval)
-
 #' Wrapper function
 #'
 #' @param ... additional arguments
@@ -138,19 +101,19 @@ setMethod(
     "show", "SigSet",
     function(object) {
         cat("SigSet", object@platform, "\n")
-        cat("  - IG probes:", nrow(object@IG),
-            '-', as.numeric(head(object@IG, n=3)), "\n")
-        cat("  - IR probes:", nrow(object@IR),
-            '-', as.numeric(head(object@IR, n=3)), "\n")
-        cat("  - II probes:", nrow(object@II),
-            '-', as.numeric(head(object@II, n=3)), "\n")
-        cat("  - oobG probes:", nrow(object@oobG),
-            '-', as.numeric(head(object@oobG, n=3)), "\n")
-        cat("  - oobR probes:", nrow(object@oobR),
-            '-', as.numeric(head(object@oobR, n=3)), "\n")
-        cat("  - ctl probes:", nrow(object@ctl), "\n")
-        cat("  - p value:", length(object@pval),
-            "-", as.numeric(head(object@pval, n=3)), "\n")
+        cat("  - @IG probes:", nrow(object@IG),
+            '-', as.numeric(head(object@IG, n=3)), "...\n")
+        cat("  - @IR probes:", nrow(object@IR),
+            '-', as.numeric(head(object@IR, n=3)), "...\n")
+        cat("  - @II probes:", nrow(object@II),
+            '-', as.numeric(head(object@II, n=3)), "...\n")
+        cat("  - @oobG probes:", nrow(object@oobG),
+            '-', as.numeric(head(object@oobG, n=3)), "...\n")
+        cat("  - @oobR probes:", nrow(object@oobR),
+            '-', as.numeric(head(object@oobR, n=3)), "...\n")
+        cat("  - @ctl probes:", nrow(object@ctl), "...\n")
+        cat("  - @pval:", length(object@pval),
+            "-", as.numeric(head(object@pval, n=3)), "...\n")
     })
 
 #' Select a subset of probes
@@ -248,7 +211,55 @@ getSexInfo <- function(sset) {
         tapply(intens, probe2chr, median))
 }
 
-#' infer sex
+
+#' Infer Sex Karyotype
+#'
+#' The function takes a \code{SigSet} and infers the sex chromosome Karyotype
+#' and presence/absence of X-chromosome inactivation (XCI). chrX, chrY and XCI
+#' are inferred relatively independently. This function gives a more detailed
+#' look of potential sex chromosome aberrations.
+#'
+#' @param sset a \code{SigSet}
+#' @return Karyotype string, with XCI
+#' @examples
+#' sset <- readRDS(system.file(
+#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+#' inferSexKaryotypes(sset)
+#' @export
+inferSexKaryotypes <- function(sset) {
+    sex.info <- getSexInfo(sset)
+    auto.median <- median(sex.info[paste0('chr',1:22)], na.rm=TRUE)
+    XdivAuto <- sex.info['medianX'] / auto.median
+    YdivAuto <- sex.info['medianY'] / auto.median
+    if (XdivAuto > 1.2) {
+        if (sex.info['fracXlinked'] >= 0.5) 
+            sexX <- 'XaXi'
+        else if (sex.info['fracXmeth'] > sex.info['fracXunmeth'])
+            sexX <- 'XiXi'
+        else
+            sexX <- 'XaXa'
+    } else {
+        if (sex.info['fracXmeth'] > sex.info['fracXunmeth'])
+            sexX <- 'Xi'
+        else
+            sexX <- 'Xa'
+    }
+
+    ## adjust X copy number by fraction of XCI
+    if ((sexX == 'Xi' || sexX == 'Xa') && XdivAuto >= 1.0 &&
+        sex.info['fracXlinked'] >= 0.5)
+        sexX <- 'XaXi'
+    
+    if (YdivAuto > 0.3 || sex.info['medianY'] > 2000)
+        sexY <- 'Y'
+    else
+        sexY <- ''
+
+    karyotype <- paste0(sexX, sexY)
+    karyotype
+}
+
+#' Infer Sex
 #'
 #' @param sset a \code{SigSet}
 #' @return 'F' or 'M'
