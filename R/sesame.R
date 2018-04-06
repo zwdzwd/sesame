@@ -97,6 +97,10 @@ SigSet <- function(...) new("SigSet", ...)
 #' @return message of number of probes in each category.
 #' @rdname show-methods
 #' @aliases show,SigSet-method
+#' @examples
+#' sset <- readRDS(system.file(
+#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+#' print(sset)
 setMethod(
     "show", "SigSet",
     function(object) {
@@ -279,7 +283,8 @@ inferSexKaryotypes <- function(sset) {
 #' @importFrom randomForest randomForest
 #' @import sesameData
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
+#' sset <- readRDS(system.file(
+#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
 #' inferSex(sset)
 #' @export
 inferSex <- function(sset) {
