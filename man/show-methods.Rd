@@ -16,3 +16,8 @@ message of number of probes in each category.
 \description{
 The display method for SigSet
 }
+\examples{
+sset <- readRDS(system.file(
+    'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+print(sset)
+}

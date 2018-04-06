@@ -122,6 +122,9 @@ setMethod(
 
 #' Select a subset of probes
 #'
+#' The function takes a \code{SigSet} as input and output another
+#' \code{SigSet} with probes from the given probe selection.
+#'
 #' @param sset a \code{SigSet}
 #' @param probes target probes
 #' @return another sset with probes specified
