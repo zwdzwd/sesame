@@ -16,18 +16,12 @@
 ## @references To appear
 ## @seealso To appear
 #' @examples
-#' 
-#' library(BiocParallel)
-#' 
-#' ## read IDATs
-#' ssets <- readIDATsFromDir(system.file('extdata', '', package='sesameData'))
 #'
-#' ## normalization
-#' ssets <- bplapply(ssets, noob)
-#' ssets <- bplapply(ssets, dyeBiasCorrTypeINorm)
+#' sset <- readIDATs(sub('_Grn.idat','',system.file(
+#'     'extdata','4207113116_A_Grn.idat',package='sesameData')))[[1]]
 #' 
-#' ## convert signal to beta values
-#' betas <- do.call(cbind, bplapply(ssets, getBetas))
+#' ## The TCGA standard pipeline
+#' betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
 #' 
 #' @keywords DNAMethylation Microarray QualityControl
 #' 
