@@ -15,17 +15,11 @@ processing >10,000 samples in parallel on clusters.
 }
 \examples{
 
-library(BiocParallel)
+sset <- readIDATs(sub('_Grn.idat','',system.file(
+    'extdata','4207113116_A_Grn.idat',package='sesameData')))[[1]]
 
-## read IDATs
-ssets <- readIDATsFromDir(system.file('extdata', '', package='sesameData'))
-
-## normalization
-ssets <- bplapply(ssets, noob)
-ssets <- bplapply(ssets, dyeBiasCorrTypeINorm)
-
-## convert signal to beta values
-betas <- do.call(cbind, bplapply(ssets, getBetas))
+## The TCGA standard pipeline
+betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
 
 }
 \seealso{
