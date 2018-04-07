@@ -2,7 +2,7 @@ Package: sesame
 Type: Package
 Title: Tools For Analyzing Illumina Infinium DNA Methylation Arrays
 Description: Tools For analyzing Illumina Infinium DNA methylation arrays.
-Version: 0.99.1
+Version: 0.99.0
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "zhouwanding@gmail.com"),
              person("Hui", "Shen", role = c("aut"),
@@ -27,13 +27,12 @@ Imports:  R6,
           stats,
           randomForest,
           wheatmap,
-Suggests: ggplot2,
-          DNAcopy,
-          scales,
+          ggplot2,
+          DNAcopy
+Suggests: scales,
           knitr,
           rmarkdown,
           testthat
-Remotes:  zwdzwd/sesameData
 VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame
 BugReports: https://github.com/zwdzwd/sesame/issues

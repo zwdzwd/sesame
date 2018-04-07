@@ -15,7 +15,8 @@ subsetSignal(sset, probes)
 another sset with probes specified
 }
 \description{
-Select a subset of probes
+The function takes a \code{SigSet} as input and output another
+\code{SigSet} with probes from the given probe selection.
 }
 \examples{
 sset <- readRDS(system.file(

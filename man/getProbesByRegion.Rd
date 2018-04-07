@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{getProbesByRegion}
 \alias{getProbesByRegion}
-\title{get probes by genomic region}
+\title{Get probes by genomic region}
 \usage{
 getProbesByRegion(chrm, beg = 1, end = -1, platform = "EPIC",
   refversion = "hg38")
@@ -22,7 +22,8 @@ getProbesByRegion(chrm, beg = 1, end = -1, platform = "EPIC",
 probes that fall into the given region
 }
 \description{
-get probes by genomic region
+The function takes a genomic coordinate and output the a vector of probes
+on the specified platform that falls in the given genomic region.
 }
 \examples{
 getProbesByRegion('chr5', 135413937, 135419936,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/differential_methylation.R
 \name{getSegment}
 \alias{getSegment}
-\title{select segment from coefficient table}
+\title{Select segment from coefficient table}
 \usage{
 getSegment(cf1, seg.id)
 }
@@ -15,7 +15,8 @@ getSegment(cf1, seg.id)
 coefficient table from given segment
 }
 \description{
-select segment from coefficient table
+This function takes a coefficient table and returns a subset of the table
+targeting only the specified segment using segment ID.
 }
 \examples{
 betas <- readRDS(system.file(

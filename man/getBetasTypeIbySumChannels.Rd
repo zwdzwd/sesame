@@ -20,7 +20,10 @@ getBetasTypeIbySumChannels(sset, quality.mask = TRUE,
 beta values
 }
 \description{
-used for rescuing beta values on Color-Channel-Switching CCS probes
+This function is used for rescuing beta values on
+Color-Channel-Switching CCS probes. The function takes a \code{SigSet}
+and returns beta value except that Type-I in-band signal and out-of-band
+signal are combined. This prevents color-channel switching due to SNPs.
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()

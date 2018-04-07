@@ -12,11 +12,15 @@ cleanRefSet <- function(g, platform) {
     g.clean
 }
 
-#' restrict refset to differentially methylated probes
+#' Restrict refset to differentially methylated probes
 #' use with care, might introduce bias
+#'
+#' The function takes a matrix with probes on the rows and cell types on
+#' the columns and output a subset matrix and only probes that show
+#' discordant methylation levels among the cell types.
 #' 
-#' @param g reference set
-#' @return g
+#' @param g a matrix with probes on the rows and cell types on the columns
+#' @return g a matrix with a subset of input probes (rows)
 #' @examples
 #' g <- diffRefSet(getRefSet(platform='HM450'))
 #' @export
@@ -28,11 +32,20 @@ diffRefSet <- function(g) {
     g
 }
 
-#' retrieve reference set
+#' Retrieve reference set
+#'
+#' The function retrieves the curated reference DNA methylation status for
+#' a set of cell type names under the Infinium platform. Supported cell types
+#' include "CD4T", "CD19B", "CD56NK", "CD14Monocytes", "granulocytes", "scFat",
+#' "skin" etc. See package sesameData for more details. The function output a
+#' matrix with probes on the rows and specified cell types on the columns.
+#' 0 suggests unmethylation and 1 suggests methylation. Intermediate
+#' methylation and nonclusive calls are left with NA. 
 #'
 #' @param cells reference cell types
 #' @param platform EPIC or HM450
-#' @return g
+#' @return g, a 0/1 matrix with probes on the rows and specified cell types
+#' on the columns.
 #' @examples
 #' betas <- getRefSet('CD4T', platform='HM450')
 #' @export
@@ -145,6 +158,14 @@ getg0 <- function(f, g, q) {
 
 #' Estimate cell composition using reference
 #'
+#' This is a reference-based cell composition estimation. The function takes a
+#' reference methylation status matrix (rows for probes and columns for cell
+#' types, can be obtained by getRefSet function) and a query beta value
+#' measurement. The length of the target beta values should be the same as
+#' the number of rows of the reference matrix. The method assumes one unknown
+#' component. It outputs a list containing the estimated cell fraction, the
+#' error of optimization and methylation status of the unknown component.
+#'
 #' @param g reference methylation
 #' @param q target measurement: length(q) == nrow(g)
 #' @param dichotomize to dichotomize query beta value before estimate,
@@ -188,6 +209,13 @@ estimateCellComposition <- function(
 
 
 #' Estimate leukocyte fraction using a two-component model
+#'
+#' The method assumes only two components in the mixture: the leukocyte
+#' component and the target tissue component. The function takes the beta
+#' values matrix of the target tissue and the beta value matrix of the
+#' leukocyte. Both matrices have probes on the row and samples on the column.
+#' Row names should have probe IDs from the platform. The function outputs
+#' a single numeric describing the fraction of leukocyte.
 #'
 #' @param betas.tissue tissue beta value matrix (#probes X #samples)
 #' @param betas.leuko leukocyte beta value matrix,

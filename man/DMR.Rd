@@ -2,7 +2,7 @@
 % Please edit documentation in R/differential_methylation.R
 \name{DMR}
 \alias{DMR}
-\title{find Differentially Methylated Region (DMR)}
+\title{Find Differentially Methylated Region (DMR)}
 \usage{
 DMR(betas, sample.data = NULL, formula = NULL, cf = NULL,
   dist.cutoff = NULL, seg.per.locus = 0.5, platform = "EPIC",
@@ -36,7 +36,11 @@ coefficient table with segment ID and segment P-value
 }
 \description{
 This subroutine uses Euclidean distance to group CpGs and
-then combine p-values for each segment.
+then combine p-values for each segment. The function performs DML test first
+if cf is NULL. It groups the probe testing results into differential
+methylated regions in a coefficient table with additional columns
+designating the segment ID and statistical significance (P-value) testing
+the segment.
 }
 \examples{
 betas <- readRDS(system.file(

@@ -2,7 +2,7 @@
 % Please edit documentation in R/cnv.R
 \name{cnSegmentation}
 \alias{cnSegmentation}
-\title{perform copy number segmentation}
+\title{Perform copy number segmentation}
 \usage{
 cnSegmentation(sset, ssets.normal, refversion = "hg19")
 }
@@ -17,7 +17,13 @@ cnSegmentation(sset, ssets.normal, refversion = "hg19")
 an object of \code{CNSegment}
 }
 \description{
-perform copy number segmentation
+Perform copy number segmentation using the signals in the signal set.
+The function takes a \code{SigSet} for the target sample and a set of
+normal \code{SigSet} for the normal samples. An optional arguments specifies
+the version of genome build that the inference will operate on. The function
+outputs an object of class \code{CNSegment} with signals for the segments (
+seg.signals), chromosome information (chrominfo), the bin coordinates (
+bin.coords) and bin signals (bin.signals).
 }
 \examples{
 sset <- readRDS(system.file(

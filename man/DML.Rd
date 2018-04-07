@@ -2,7 +2,7 @@
 % Please edit documentation in R/differential_methylation.R
 \name{DML}
 \alias{DML}
-\title{test differential methylation on each locus}
+\title{Test differential methylation on each locus}
 \usage{
 DML(betas, sample.data, formula, se.lb = 0.06, balanced = FALSE,
   cf.test = NULL)
@@ -30,7 +30,10 @@ intercept). Use "all" for all factors.}
 cf - a list of coefficient tables for each factor
 }
 \description{
-test differential methylation on each locus
+The function takes a beta value matrix with probes on the rows and
+samples on the columns. It also takes a sample information data frame
+(sample.data) and formula for testing. The function outputs a list of
+coefficient tables for each factor tested.
 }
 \examples{
 betas <- readRDS(system.file(

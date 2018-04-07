@@ -1,5 +1,7 @@
 #' Convert beta-value to M-value
 #'
+#' Logit transform a beta value vector to M-value vector.
+#'
 #' Convert beta-value to M-value (aka logit transform)
 #' @param b vector of beta values
 #' @return a vector of M values
@@ -13,6 +15,7 @@ BetaValueToMValue <- function(b) {
 #' Convert M-value to beta-value
 #'
 #' Convert M-value to beta-value (aka inverse logit transform)
+#' 
 #' @param m a vector of M values
 #' @return a vector of beta values
 #' @examples
@@ -34,7 +37,10 @@ Please install before continue.")
     }
 }
 
-#' get probes by genomic region
+#' Get probes by genomic region
+#'
+#' The function takes a genomic coordinate and output the a vector of probes
+#' on the specified platform that falls in the given genomic region.
 #'
 #' @param chrm chromosome
 #' @param beg begin, 1 if omitted

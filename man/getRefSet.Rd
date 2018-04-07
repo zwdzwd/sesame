@@ -2,7 +2,7 @@
 % Please edit documentation in R/cell_composition.R
 \name{getRefSet}
 \alias{getRefSet}
-\title{retrieve reference set}
+\title{Retrieve reference set}
 \usage{
 getRefSet(cells = NULL, platform = "EPIC")
 }
@@ -12,10 +12,17 @@ getRefSet(cells = NULL, platform = "EPIC")
 \item{platform}{EPIC or HM450}
 }
 \value{
-g
+g, a 0/1 matrix with probes on the rows and specified cell types
+on the columns.
 }
 \description{
-retrieve reference set
+The function retrieves the curated reference DNA methylation status for
+a set of cell type names under the Infinium platform. Supported cell types
+include "CD4T", "CD19B", "CD56NK", "CD14Monocytes", "granulocytes", "scFat",
+"skin" etc. See package sesameData for more details. The function output a
+matrix with probes on the rows and specified cell types on the columns.
+0 suggests unmethylation and 1 suggests methylation. Intermediate
+methylation and nonclusive calls are left with NA.
 }
 \examples{
 betas <- getRefSet('CD4T', platform='HM450')

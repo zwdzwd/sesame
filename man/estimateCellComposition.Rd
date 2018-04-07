@@ -26,7 +26,13 @@ verbose - output debug info (FALSE)}
 a list of fraction, min error and unknown component methylation state
 }
 \description{
-Estimate cell composition using reference
+This is a reference-based cell composition estimation. The function takes a
+reference methylation status matrix (rows for probes and columns for cell
+types, can be obtained by getRefSet function) and a query beta value
+measurement. The length of the target beta values should be the same as
+the number of rows of the reference matrix. The method assumes one unknown
+component. It outputs a list containing the estimated cell fraction, the
+error of optimization and methylation status of the unknown component.
 }
 \examples{
 g <- diffRefSet(getRefSet(platform='HM450'))

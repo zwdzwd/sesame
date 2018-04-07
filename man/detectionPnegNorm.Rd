@@ -13,7 +13,9 @@ detectionPnegNorm(sset)
 detection p-value
 }
 \description{
-Returns a new \code{SigSet} with updated pval slot
+The function takes a \code{SigSet} as input, computes detection p-value
+using negative control probes parametrized in a normal distribution and
+returns a new \code{SigSet} with an updated pval slot.
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()

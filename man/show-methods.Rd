@@ -14,7 +14,8 @@
 message of number of probes in each category.
 }
 \description{
-The display method for SigSet
+The function outputs the number of probes in each category and the first
+few signal measurements.
 }
 \examples{
 sset <- readRDS(system.file(

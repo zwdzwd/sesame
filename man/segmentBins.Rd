@@ -2,7 +2,7 @@
 % Please edit documentation in R/cnv.R
 \name{segmentBins}
 \alias{segmentBins}
-\title{Segment bins}
+\title{Segment bins using DNAcopy}
 \usage{
 segmentBins(bin.signals, bin.coords)
 }
@@ -15,5 +15,5 @@ segmentBins(bin.signals, bin.coords)
 segment signal data frame
 }
 \description{
-require DNAcopy
+Segment bins using DNAcopy
 }

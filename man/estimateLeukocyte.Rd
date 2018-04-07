@@ -21,7 +21,12 @@ if missing, use the SeSAMe default by infinium platform}
 leukocyte estimate, a numeric vector
 }
 \description{
-Estimate leukocyte fraction using a two-component model
+The method assumes only two components in the mixture: the leukocyte
+component and the target tissue component. The function takes the beta
+values matrix of the target tissue and the beta value matrix of the
+leukocyte. Both matrices have probes on the row and samples on the column.
+Row names should have probe IDs from the platform. The function outputs
+a single numeric describing the fraction of leukocyte.
 }
 \examples{
 

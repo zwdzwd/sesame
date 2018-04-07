@@ -13,6 +13,9 @@ BetaValueToMValue(b)
 a vector of M values
 }
 \description{
+Logit transform a beta value vector to M-value vector.
+}
+\details{
 Convert beta-value to M-value (aka logit transform)
 }
 \examples{

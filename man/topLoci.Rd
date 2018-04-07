@@ -2,7 +2,7 @@
 % Please edit documentation in R/differential_methylation.R
 \name{topLoci}
 \alias{topLoci}
-\title{top loci in differential methylation}
+\title{Top loci in differential methylation}
 \usage{
 topLoci(cf1)
 }
@@ -14,6 +14,8 @@ coefficient table ordered by p-value of each locus
 }
 \description{
 This is a convenience function to show top differential methylated segments.
+The function takes a coefficient table as input and output the same
+table ordered by the sigificance of the locus.
 }
 \examples{
 betas <- readRDS(system.file(

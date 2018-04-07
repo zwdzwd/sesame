@@ -15,6 +15,10 @@ visualizeSegments(seg, to.plot = NULL)
 plot graphics
 }
 \description{
+The function takes a \code{CNSegment} object obtained from cnSegmentation
+and plot the bin signals and segments (as horizontal lines).
+}
+\details{
 require ggplot2, scales
 }
 \examples{

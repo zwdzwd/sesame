@@ -13,7 +13,10 @@ predictAgeHorvath353(betas)
 age in years
 }
 \description{
-Horvath 353 age predictor
+The function takes a named numeric vector of beta values. The name attribute
+contains the probe ID (cg, ch or rs IDs). The function looks for overlapping
+probes and estimate age using Horvath aging model (Horvath 2013
+Genome Biology). The function outputs a single numeric of age in years.
 }
 \examples{
 betas <- readRDS(system.file(

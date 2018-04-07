@@ -2,7 +2,7 @@
 % Please edit documentation in R/differential_methylation.R
 \name{topSegments}
 \alias{topSegments}
-\title{top segments in differential methylation}
+\title{Top segments in differential methylation}
 \usage{
 topSegments(cf1)
 }
@@ -14,6 +14,8 @@ coefficient table ordered by adjusted p-value of segments
 }
 \description{
 This is a utility function to show top differential methylated segments.
+The function takes a coefficient table as input and output the same
+table ordered by the sigificance of the segments.
 }
 \examples{
 betas <- readRDS(system.file(

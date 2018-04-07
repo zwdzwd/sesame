@@ -1,6 +1,9 @@
-
-
 #' Build control summary matrix
+#'
+#' The function takes a \code{SigSet} as input and outputs the control matrix
+#' summary vector. This vector summarizes one single QC metric for the array
+#' control. This includes bisulfite control, stain signal extension efficiency
+#' and more.
 #' 
 #' @param sset an object of class SigSet
 #' @return a vector with control summaries

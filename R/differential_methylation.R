@@ -1,4 +1,9 @@
-#' test differential methylation on each locus
+#' Test differential methylation on each locus
+#'
+#' The function takes a beta value matrix with probes on the rows and
+#' samples on the columns. It also takes a sample information data frame
+#' (sample.data) and formula for testing. The function outputs a list of
+#' coefficient tables for each factor tested.
 #'
 #' @param betas beta values
 #' @param sample.data data frame for sample information, column names
@@ -139,10 +144,14 @@ DML <- function(
     cf
 }
 
-#' find Differentially Methylated Region (DMR)
+#' Find Differentially Methylated Region (DMR)
 #'
 #' This subroutine uses Euclidean distance to group CpGs and
-#' then combine p-values for each segment.
+#' then combine p-values for each segment. The function performs DML test first
+#' if cf is NULL. It groups the probe testing results into differential
+#' methylated regions in a coefficient table with additional columns
+#' designating the segment ID and statistical significance (P-value) testing
+#' the segment.
 #' 
 #' @param betas beta values for distance calculation
 #' @param sample.data data frame for sample information, column names
@@ -269,9 +278,11 @@ DMR <- function(
     cf
 }
 
-#' top segments in differential methylation
+#' Top segments in differential methylation
 #' 
 #' This is a utility function to show top differential methylated segments.
+#' The function takes a coefficient table as input and output the same
+#' table ordered by the sigificance of the segments.
 #' 
 #' @param cf1 coefficient table of one factor from DMR
 #' @return coefficient table ordered by adjusted p-value of segments
@@ -292,9 +303,11 @@ topSegments <- function(cf1) {
     x
 }
 
-#' top loci in differential methylation
+#' Top loci in differential methylation
 #' 
 #' This is a convenience function to show top differential methylated segments.
+#' The function takes a coefficient table as input and output the same
+#' table ordered by the sigificance of the locus.
 #' 
 #' @param cf1 coefficient table of one factor from diffMeth
 #' @return coefficient table ordered by p-value of each locus
@@ -312,7 +325,10 @@ topLoci <- function(cf1) {
     cf1[order(cf1[,'Pr(>|t|)']),]
 }
 
-#' select segment from coefficient table
+#' Select segment from coefficient table
+#'
+#' This function takes a coefficient table and returns a subset of the table
+#' targeting only the specified segment using segment ID.
 #'
 #' @param cf1 coefficient table of one factor from DMR
 #' @param seg.id segment ID

@@ -1,4 +1,12 @@
-#' perform copy number segmentation
+#' Perform copy number segmentation
+#'
+#' Perform copy number segmentation using the signals in the signal set.
+#' The function takes a \code{SigSet} for the target sample and a set of
+#' normal \code{SigSet} for the normal samples. An optional arguments specifies
+#' the version of genome build that the inference will operate on. The function
+#' outputs an object of class \code{CNSegment} with signals for the segments (
+#' seg.signals), chromosome information (chrominfo), the bin coordinates (
+#' bin.coords) and bin signals (bin.signals).
 #'
 #' @param sset \code{SigSet}
 #' @param ssets.normal \code{SigSet} for normalization
@@ -176,9 +184,9 @@ binSignals <- function(probe.signals, bin.coords, probe.coords) {
     bin.signals
 }
 
-#' Segment bins
+#' Segment bins using DNAcopy
 #'
-#' require DNAcopy
+#' @import DNAcopy
 #' @param bin.signals bin signals (input)
 #' @param bin.coords bin coordinates
 #' @return segment signal data frame
@@ -210,6 +218,9 @@ segmentBins <- function(bin.signals, bin.coords) {
 }
 
 #' Visualize segments
+#'
+#' The function takes a \code{CNSegment} object obtained from cnSegmentation
+#' and plot the bin signals and segments (as horizontal lines).
 #'
 #' require ggplot2, scales
 #' @param seg a \code{CNSegment} object

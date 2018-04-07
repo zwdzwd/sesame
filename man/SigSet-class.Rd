@@ -25,11 +25,14 @@ a \code{SigSet} object
 a \code{SigSet} object
 }
 \description{
-SigSet class
+This is the main data class for SeSAMe. The class holds different
+classes of signal intensities.
 
-Constructor method of SigSet Class.
+The function takes a string describing the platform of the data. It can be
+one of "HM27", "HM450" or "EPIC".
 
-Wrapper function
+The function takes a string describing the platform of the data. It can be
+one of "HM27", "HM450" or "EPIC".
 }
 \section{Slots}{
 
@@ -54,4 +57,5 @@ Wrapper function
 \examples{
 ## Create an empty EPIC object.
 SigSet("EPIC")
+SigSet('EPIC')
 }

@@ -2,20 +2,21 @@
 % Please edit documentation in R/cell_composition.R
 \name{diffRefSet}
 \alias{diffRefSet}
-\title{restrict refset to differentially methylated probes
+\title{Restrict refset to differentially methylated probes
 use with care, might introduce bias}
 \usage{
 diffRefSet(g)
 }
 \arguments{
-\item{g}{reference set}
+\item{g}{a matrix with probes on the rows and cell types on the columns}
 }
 \value{
-g
+g a matrix with a subset of input probes (rows)
 }
 \description{
-restrict refset to differentially methylated probes
-use with care, might introduce bias
+The function takes a matrix with probes on the rows and cell types on
+the columns and output a subset matrix and only probes that show
+discordant methylation levels among the cell types.
 }
 \examples{
 g <- diffRefSet(getRefSet(platform='HM450'))

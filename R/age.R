@@ -14,6 +14,11 @@ Hv.response2age <- function(x, adult.age=20) {
 
 #' Horvath 353 age predictor
 #'
+#' The function takes a named numeric vector of beta values. The name attribute
+#' contains the probe ID (cg, ch or rs IDs). The function looks for overlapping
+#' probes and estimate age using Horvath aging model (Horvath 2013
+#' Genome Biology). The function outputs a single numeric of age in years.
+#'
 #' @param betas a probeID-named vector of beta values
 #' @return age in years
 #' @export

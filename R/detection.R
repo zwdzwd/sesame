@@ -1,6 +1,8 @@
 #' Detection P-value based on ECDF of negative control
 #'
-#' Returns a new \code{SigSet} with updated pval slot
+#' The function takes a \code{SigSet} as input, computes detection p-value
+#' using negative control probes' empirical distribution and returns a new
+#' \code{SigSet} with an updated pval slot.
 #'
 #' @param sset a \code{SigSet}
 #' @return detection p-value
@@ -32,7 +34,9 @@ detectionPnegEcdf <- function(sset) {
 
 #' Detection P-value based on normal fitting the negative controls
 #'
-#' Returns a new \code{SigSet} with updated pval slot
+#' The function takes a \code{SigSet} as input, computes detection p-value
+#' using negative control probes parametrized in a normal distribution and
+#' returns a new \code{SigSet} with an updated pval slot.
 #'
 #' @param sset a \code{SigSet}
 #' @return detection p-value
@@ -66,7 +70,9 @@ detectionPnegNorm <- function(sset) {
 
 #' Detection P-value emulating Genome Studio
 #'
-#' Returns a new \code{SigSet} with updated pval slot
+#' The function takes a \code{SigSet} as input, computes detection p-value
+#' using negative control probes parametrized in a normal distribution a la
+#' Genome Studio and returns a new \code{SigSet} with an updated pval slot.
 #'
 #' @param sset a \code{SigSet}
 #' @return detection p-value
@@ -95,7 +101,10 @@ detectionPnegNormGS <- function(sset) {
 #' Detection P-value based on normal fitting the negative controls,
 #' channels are first summed
 #'
-#' Returns a new \code{SigSet} with updated pval slot
+#' The function takes a \code{SigSet} as input, computes detection p-value
+#' using negative control probes parametrized in a normal distribution with
+#' the two channels summed first and returns a new \code{SigSet} with an
+#' updated pval slot.
 #'
 #' @param sset a \code{SigSet}
 #' @return detection p-value
@@ -126,7 +135,9 @@ detectionPnegNormTotal <- function(sset) {
 
 #' Detection P-value based on ECDF of out-of-band signal
 #'
-#' Returns a new \code{SigSet} with updated pval slot
+#' The function takes a \code{SigSet} as input, computes detection p-value
+#' using out-of-band probes empirical distribution and returns a new
+#' \code{SigSet} with an updated pval slot.
 #'
 #' @param sset a \code{SigSet}
 #' @return detection p-value

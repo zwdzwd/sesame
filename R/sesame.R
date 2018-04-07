@@ -35,6 +35,9 @@
 
 #' SigSet class
 #'
+#' This is the main data class for SeSAMe. The class holds different
+#' classes of signal intensities.
+#'
 #' @slot IG intensity table for type I probes in green channel
 #' @slot IR intensity table for type I probes in red channel
 #' @slot II intensity table for type II probes
@@ -65,6 +68,9 @@ setClass(
 
 #' Constructor method of SigSet Class.
 #'
+#' The function takes a string describing the platform of the data. It can be
+#' one of "HM27", "HM450" or "EPIC".
+#' 
 #' @name SigSet
 #' @param .Object target object
 #' @param platform "EPIC", "HM450" or "HM27"
@@ -83,15 +89,23 @@ setMethod(
         .Object
     })
 
-#' Wrapper function
+#' Wrapper function for building a new \code{SigSet}
+#'
+#' The function takes a string describing the platform of the data. It can be
+#' one of "HM27", "HM450" or "EPIC".
 #'
 #' @param ... additional arguments
 #' @name SigSet
 #' @rdname SigSet-class
+#' @examples
+#' SigSet('EPIC')
 #' @export
 SigSet <- function(...) new("SigSet", ...)
 
 #' The display method for SigSet
+#'
+#' The function outputs the number of probes in each category and the first
+#' few signal measurements.
 #'
 #' @param object displayed object
 #' @return message of number of probes in each category.
@@ -235,7 +249,7 @@ getSexInfo <- function(sset) {
 #' @export
 inferSexKaryotypes <- function(sset) {
     sex.info <- getSexInfo(sset)
-    auto.median <- median(sex.info[paste0('chr',1:22)], na.rm=TRUE)
+    auto.median <- median(sex.info[paste0('chr',seq_len(22))], na.rm=TRUE)
     XdivAuto <- sex.info['medianX'] / auto.median
     YdivAuto <- sex.info['medianY'] / auto.median
     if (XdivAuto > 1.2) {
@@ -291,7 +305,7 @@ inferSexKaryotypes <- function(sset) {
 #' inferSex(sset)
 #' @export
 inferSex <- function(sset) {
-    sex.info <- getSexInfo(sset)[1:3]
+    sex.info <- getSexInfo(sset)[seq_len(3)]
     as.character(predict(sesameData::sex.inference.model, sex.info))
 }
 
@@ -363,7 +377,10 @@ getBetas <- function(
 
 #' Get beta values treating type I by summing channels
 #'
-#' used for rescuing beta values on Color-Channel-Switching CCS probes
+#' This function is used for rescuing beta values on
+#' Color-Channel-Switching CCS probes. The function takes a \code{SigSet}
+#' and returns beta value except that Type-I in-band signal and out-of-band
+#' signal are combined. This prevents color-channel switching due to SNPs.
 #'
 #' @param sset \code{SigSet}
 #' @param quality.mask whether to mask low quality probes

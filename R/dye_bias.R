@@ -1,4 +1,3 @@
-
 #' Correct dye bias in by linear scaling.
 #'
 #' The function takes a \code{SigSet} as input and scale both the Grn and Red
