@@ -118,7 +118,7 @@ to small value")
 
 .getNormCtls <- function(sset) {
     
-    if (sset@platform == 'hm27') {
+    if (sset@platform == 'HM27') {
         ## controversial to use, maybe mean of all signals in each channel?
         normctl.G <- sset@ctl[grep('norm.green', tolower(rownames(sset@ctl))),]
         normctl.R <- sset@ctl[grep('norm.red', tolower(rownames(sset@ctl))),]
