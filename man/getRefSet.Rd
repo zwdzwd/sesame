@@ -4,7 +4,7 @@
 \alias{getRefSet}
 \title{Retrieve reference set}
 \usage{
-getRefSet(cells = NULL, platform = "EPIC")
+getRefSet(cells = NULL, platform = c("EPIC", "HM450"))
 }
 \arguments{
 \item{cells}{reference cell types}

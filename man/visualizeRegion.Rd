@@ -4,11 +4,11 @@
 \alias{visualizeRegion}
 \title{Visualize Region}
 \usage{
-visualizeRegion(chrm, plt.beg, plt.end, betas, platform = "EPIC",
-  refversion = "hg38", sample.name.fontsize = 10, heat.height = NULL,
-  draw = TRUE, show.sampleNames = TRUE, show.samples.n = NULL,
-  show.probeNames = TRUE, cluster.samples = FALSE, na.rm = FALSE,
-  dmin = 0, dmax = 1)
+visualizeRegion(chrm, plt.beg, plt.end, betas, platform = c("EPIC", "HM450"),
+  refversion = c("hg38", "hg19"), sample.name.fontsize = 10,
+  heat.height = NULL, draw = TRUE, show.sampleNames = TRUE,
+  show.samples.n = NULL, show.probeNames = TRUE, cluster.samples = FALSE,
+  na.rm = FALSE, dmin = 0, dmax = 1)
 }
 \arguments{
 \item{chrm}{chromosome}

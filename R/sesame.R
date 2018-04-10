@@ -73,13 +73,9 @@ setClass(
 #' @aliases initialize,SigSet-method
 setMethod(
     "initialize", "SigSet",
-    function(.Object, platform = 'EPIC', ...)  {
+    function(.Object, platform = c('EPIC', 'HM450', 'HM27'), ...)  {
         .Object <- callNextMethod()
-        if (platform %in% c('EPIC','HM450','HM27')) {
-            .Object@platform <- platform
-        } else {
-            stop(sprintf("Platform %s not supported. Abort.\n", platform))
-        }
+        .Object@platform <- match.arg(platform)
         .Object
     })
 
@@ -112,19 +108,18 @@ SigSet <- function(...) new("SigSet", ...)
 setMethod(
     "show", "SigSet",
     function(object) {
-        cat("SigSet", object@platform, "\n")
-        cat("  - @IG probes:", nrow(object@IG),
-            '-', as.numeric(head(object@IG, n=3)), "...\n")
-        cat("  - @IR probes:", nrow(object@IR),
-            '-', as.numeric(head(object@IR, n=3)), "...\n")
-        cat("  - @II probes:", nrow(object@II),
-            '-', as.numeric(head(object@II, n=3)), "...\n")
-        cat("  - @oobG probes:", nrow(object@oobG),
-            '-', as.numeric(head(object@oobG, n=3)), "...\n")
-        cat("  - @oobR probes:", nrow(object@oobR),
-            '-', as.numeric(head(object@oobR, n=3)), "...\n")
-        cat("  - @ctl probes:", nrow(object@ctl), "...\n")
-        cat("  - @pval:", length(object@pval),
+        cat("SigSet", object@platform, "\n - @IG probes:",
+            nrow(object@IG), '-', as.numeric(head(object@IG, n=3)),
+            "...\n  - @IR probes:", nrow(object@IR),
+            '-', as.numeric(head(object@IR, n=3)),
+            "...\n  - @II probes:", nrow(object@II),
+            '-', as.numeric(head(object@II, n=3)),
+            "...\n  - @oobG probes:", nrow(object@oobG),
+            '-', as.numeric(head(object@oobG, n=3)),
+            "...\n  - @oobR probes:", nrow(object@oobR),
+            '-', as.numeric(head(object@oobR, n=3)),
+            "...\n  - @ctl probes:", nrow(object@ctl),
+            "...\n  - @pval:", length(object@pval),
             "-", as.numeric(head(object@pval, n=3)), "...\n")
     })
 
@@ -142,6 +137,7 @@ setMethod(
 #' subsetSignal(sset, rownames(slot(sset, 'IR')))
 #' @export
 subsetSignal <- function(sset, probes) {
+    stopifnot(is(sset, "SigSet"))
     sset@IR <- sset@IR[rownames(sset@IR) %in% probes,]
     sset@IG <- sset@IG[rownames(sset@IG) %in% probes,]
     sset@II <- sset@II[rownames(sset@II) %in% probes,]
@@ -152,6 +148,7 @@ subsetSignal <- function(sset, probes) {
 
 ## get negative control probes
 negControls <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
     negctls <- sset@ctl[grep('negative', tolower(rownames(sset@ctl))),]
     negctls <- subset(negctls, col!=-99)
     negctls
@@ -172,6 +169,7 @@ negControls <- function(sset) {
 #' meanIntensity(sset)
 #' @export
 meanIntensity <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
     mean(c(sset@IG, sset@IR, sset@II), na.rm=TRUE)
 }
 
@@ -205,6 +203,7 @@ totalIntensities <- function(sset) {
 #' getSexInfo(sset)
 #' @export
 getSexInfo <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
     cleanY <- get(paste0(sset@platform, '.female.clean.chrY.probes'))
     xLinked <- get(paste0(sset@platform, '.female.xlinked.chrX.probes'))
     probe2chr <- get(paste0(sset@platform, '.hg19.probe2chr'))
@@ -242,6 +241,7 @@ getSexInfo <- function(sset) {
 #' inferSexKaryotypes(sset)
 #' @export
 inferSexKaryotypes <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
     sex.info <- getSexInfo(sset)
     auto.median <- median(sex.info[paste0('chr',seq_len(22))], na.rm=TRUE)
     XdivAuto <- sex.info['medianX'] / auto.median
@@ -299,6 +299,7 @@ inferSexKaryotypes <- function(sset) {
 #' inferSex(sset)
 #' @export
 inferSex <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
     sex.info <- getSexInfo(sset)[seq_len(3)]
     as.character(predict(sesameData::sex.inference.model, sex.info))
 }
@@ -348,6 +349,8 @@ inferEthnicity <- function(sset) {
 getBetas <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE,
     mask.use.tcga=FALSE, pval.threshold=0.05) {
+
+    stopifnot(is(sset, "SigSet"))
     
     betas1 <- pmax(sset@IG[,'M'],1) / pmax(sset@IG[,'M']+sset@IG[,'U'],2)
     betas2 <- pmax(sset@IR[,'M'],1) / pmax(sset@IR[,'M']+sset@IR[,'U'],2)
@@ -387,6 +390,8 @@ getBetas <- function(
 #' @export
 getBetasTypeIbySumChannels <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
+
+    stopifnot(is(sset, "SigSet"))
     
     ## .oobR <- oobR[rownames(IG),]
     ## .oobG <- oobG[rownames(IR),]
@@ -423,6 +428,8 @@ getBetasTypeIbySumChannels <- function(
 #' @export
 getAFTypeIbySumAlleles <- function(sset) {
 
+    stopifnot(is(sset, "SigSet"))
+    
     if (any(rownames(sset@oobR) != rownames(sset@IG)))
         stop("oobR-IG not matched. Likely a malformed sset.");
     if (any(rownames(sset@oobG) != rownames(sset@IR)))
@@ -533,6 +540,8 @@ readIDATs <- function(
 readIDATsFromDir <- function(
     dir.name, max.num.samples = 100, recursive = FALSE, ...) {
 
+    stopifnot(file.exists(dir.name))
+    
     prefixes <- unique(sub(
         '_(Grn|Red).idat$', '',
         list.files(dir.name, '\\.idat$', recursive = recursive)))

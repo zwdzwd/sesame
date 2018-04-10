@@ -4,21 +4,21 @@
 \alias{visualizeGene}
 \title{Visualize Gene}
 \usage{
-visualizeGene(geneName, betas, platform = "EPIC", upstream = 2000,
-  dwstream = 2000, refversion = "hg38", ...)
+visualizeGene(geneName, betas, platform = c("EPIC", "HM450"),
+  upstream = 2000, dwstream = 2000, refversion = c("hg38", "hg19"), ...)
 }
 \arguments{
 \item{geneName}{gene name}
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 
-\item{platform}{HM450 (default) or EPIC}
+\item{platform}{HM450 or EPIC (default)}
 
 \item{upstream}{distance to extend upstream}
 
 \item{dwstream}{distance to extend downstream}
 
-\item{refversion}{hg19 or hg38}
+\item{refversion}{hg19 or hg38 (default)}
 
 \item{...}{additional options, see visualizeRegion}
 }

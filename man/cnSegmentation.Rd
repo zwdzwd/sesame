@@ -4,7 +4,7 @@
 \alias{cnSegmentation}
 \title{Perform copy number segmentation}
 \usage{
-cnSegmentation(sset, ssets.normal, refversion = "hg19")
+cnSegmentation(sset, ssets.normal, refversion = c("hg19", "hg38"))
 }
 \arguments{
 \item{sset}{\code{SigSet}}

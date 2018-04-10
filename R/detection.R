@@ -12,7 +12,8 @@
 #' 
 #' @export
 detectionPnegEcdf <- function(sset) {
-    
+
+    stopifnot(is(sset, "SigSet"))
     negctls <- negControls(sset)
     funcG <- ecdf(negctls$G)
     funcR <- ecdf(negctls$R)
@@ -46,7 +47,8 @@ detectionPnegEcdf <- function(sset) {
 #' 
 #' @export
 detectionPnegNorm <- function(sset) {
-    
+
+    stopifnot(is(sset, "SigSet"))
     negctls <- negControls(sset)
     sdG <- sd(negctls$G)
     muG <- median(negctls$G)
@@ -82,7 +84,8 @@ detectionPnegNorm <- function(sset) {
 #' 
 #' @export
 detectionPnegNormGS <- function(sset) {
-    
+
+    stopifnot(is(sset, "SigSet"))
     negctls <- negControls(sset)
     BGsd <- sd(c(negctls$G, negctls$R))
     BGmu <- mean(c(negctls$G, negctls$R))
@@ -114,8 +117,9 @@ detectionPnegNormGS <- function(sset) {
 #' 
 #' @export
 detectionPnegNormTotal <- function(sset) {
-    
+
     ## how minfi does it
+    stopifnot(is(sset, "SigSet"))
     negctls <- negControls(sset)
     sdG <- sd(negctls$G)
     muG <- median(negctls$G)
@@ -147,7 +151,8 @@ detectionPnegNormTotal <- function(sset) {
 #' 
 #' @export
 detectionPoobEcdf <- function(sset) {
-    
+
+    stopifnot(is(sset, "SigSet"))
     funcG <- ecdf(sset@oobG)
     funcR <- ecdf(sset@oobR)
 

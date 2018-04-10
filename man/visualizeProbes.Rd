@@ -4,17 +4,17 @@
 \alias{visualizeProbes}
 \title{Visualize Region that Contains the Specified Probes}
 \usage{
-visualizeProbes(probeNames, betas, platform = "EPIC", refversion = "hg38",
-  upstream = 1000, dwstream = 1000, ...)
+visualizeProbes(probeNames, betas, platform = c("EPIC", "HM450"),
+  refversion = c("hg38", "hg19"), upstream = 1000, dwstream = 1000, ...)
 }
 \arguments{
 \item{probeNames}{probe names}
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 
-\item{platform}{HM450 (default) or EPIC}
+\item{platform}{HM450 or EPIC (default)}
 
-\item{refversion}{hg19 or hg38}
+\item{refversion}{hg19 or hg38 (default)}
 
 \item{upstream}{distance to extend upstream}
 

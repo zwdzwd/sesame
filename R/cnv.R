@@ -20,9 +20,11 @@
 #' seg <- cnSegmentation(sset, ssets.normal)
 #' 
 #' @export
-cnSegmentation <- function(sset, ssets.normal, refversion='hg19') {
+cnSegmentation <- function(sset, ssets.normal, refversion=c('hg19','hg38')) {
 
+    stopifnot(is(sset, "SigSet"))
     pkgTest('GenomicRanges')
+    refversion <- match.arg(refversion)
     
     ## retrieve chromosome info and probe coordinates
     chrominfo <- get(paste0(refversion,'.chrominfo'))
@@ -234,6 +236,7 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @export
 visualizeSegments <- function(seg, to.plot=NULL) {
 
+    stopifnot(is(seg, "CNSegment"))
     pkgTest('ggplot2')
     pkgTest('scales')
     pkgTest('GenomicRanges')

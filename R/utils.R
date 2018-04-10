@@ -51,10 +51,15 @@ Please install before continue.")
 #' @importMethodsFrom IRanges subsetByOverlaps
 #' @examples
 #' getProbesByRegion('chr5', 135413937, 135419936,
-#'     refversion='hg19', platform='HM450')
+#'     refversion = 'hg19', platform = 'HM450')
 #' @export
 getProbesByRegion <- function(
-    chrm, beg=1, end=-1, platform='EPIC', refversion='hg38') {
+    chrm, beg = 1, end = -1,
+    platform = c('EPIC','HM450'),
+    refversion = c('hg38','hg19')) {
+
+    platform <- match.arg(platform)
+    refversion <- match.arg(refversion)
     
     if (end < 0) {
         end <- get(paste0(refversion, '.chrominfo'))

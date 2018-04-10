@@ -5,8 +5,8 @@
 \title{Find Differentially Methylated Region (DMR)}
 \usage{
 DMR(betas, sample.data = NULL, formula = NULL, cf = NULL,
-  dist.cutoff = NULL, seg.per.locus = 0.5, platform = "EPIC",
-  refversion = "hg38", ...)
+  dist.cutoff = NULL, seg.per.locus = 0.5, platform = c("EPIC", "HM450"),
+  refversion = c("hg38", "hg19"), ...)
 }
 \arguments{
 \item{betas}{beta values for distance calculation}

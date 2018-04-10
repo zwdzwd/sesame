@@ -15,6 +15,7 @@
 #' @export
 dyeBiasCorr <- function(sset, ref=NULL) {
 
+    stopifnot(is(sset, "SigSet"))
     if (is.null(ref)) {
         ref <- meanIntensity(sset)
     }
@@ -84,6 +85,7 @@ dyeBiasCorrMostBalanced <- function(ssets) {
 #' @export
 dyeBiasCorrTypeINorm <- function(sset) {
 
+    stopifnot(is(sset, "SigSet"))
     maxIG <- max(sset@IG)
     minIG <- min(sset@IG)
     maxIR <- max(sset@IR)
@@ -154,6 +156,7 @@ dyeBiasCorrTypeINorm <- function(sset) {
 ## M, U, green matched to red distribution
 dyeBiasCorrTypeINormG2R <- function(sset) {
 
+    stopifnot(is(sset, "SigSet"))
     maxIG <- max(sset@IG)
     minIG <- min(sset@IG)
     maxIR <- max(sset@IR)
@@ -209,6 +212,7 @@ dyeBiasCorrTypeINormG2R <- function(sset) {
 ## M,U red matched to green distribution
 dyeBiasCorrTypeINormR2G <- function(sset) {
 
+    stopifnot(is(sset, "SigSet"))
     maxIG <- max(sset@IG)
     minIG <- min(sset@IG)
     maxIR <- max(sset@IR)
@@ -259,6 +263,7 @@ dyeBiasCorrTypeINormR2G <- function(sset) {
 ## M + U green matched to red distribution
 dyeBiasCorrTypeINormMpU <- function(sset) {
 
+    stopifnot(is(sset, "SigSet"))
     maxIG <- max(rowSums(sset@IG))
     minIG <- min(rowSums(sset@IG))
     maxIR <- max(rowSums(sset@IR))

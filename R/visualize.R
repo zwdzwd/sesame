@@ -9,10 +9,10 @@
 #'
 #' @param geneName gene name
 #' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform HM450 (default) or EPIC
+#' @param platform HM450 or EPIC (default)
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
-#' @param refversion hg19 or hg38
+#' @param refversion hg19 or hg38 (default)
 #' @param ... additional options, see visualizeRegion
 #' @import grid
 #' @return None
@@ -23,10 +23,13 @@
 #' visualizeGene('ADA', betas, 'HM450')
 #' @export
 visualizeGene <- function(
-    geneName, betas, platform='EPIC',
-    upstream=2000, dwstream=2000,
-    refversion='hg38', ...) {
+    geneName, betas, platform = c('EPIC','HM450'),
+    upstream = 2000, dwstream = 2000,
+    refversion = c('hg38', 'hg19'), ...) {
 
+    platform <- match.arg(platform)
+    refversion <- match.arg(refversion)
+    
     if (is.null(dim(betas))) {
         betas <- as.matrix(betas);
     }
@@ -54,7 +57,7 @@ visualizeGene <- function(
         as.character(GenomicRanges::seqnames(merged.exons[1])),
         min(GenomicRanges::start(merged.exons)) - pad.start,
         max(GenomicRanges::end(merged.exons)) + pad.end,
-        betas, platform=platform, refversion=refversion, ...)
+        betas, platform = platform, refversion = refversion, ...)
 }
 
 #' Visualize Region that Contains the Specified Probes
@@ -69,8 +72,8 @@ visualizeGene <- function(
 #' 
 #' @param probeNames probe names
 #' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform HM450 (default) or EPIC
-#' @param refversion hg19 or hg38
+#' @param platform HM450 or EPIC (default)
+#' @param refversion hg19 or hg38 (default)
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
 #' @param ... additional options, see visualizeRegion
@@ -84,11 +87,12 @@ visualizeGene <- function(
 #' @export
 visualizeProbes <- function(
     probeNames, betas,
-    platform='EPIC',
-    refversion='hg38',
-    upstream=1000, dwstream=1000, ...) {
+    platform = c('EPIC', 'HM450'),
+    refversion = c('hg38','hg19'),
+    upstream = 1000, dwstream = 1000, ...) {
 
-    stopifnot(refversion %in% c('hg19','hg38'))
+    platform <- match.arg(platform)
+    refversion <- match.arg(refversion)
     
     pkgTest('GenomicRanges')
     probes <- get(paste0(platform, '.mapped.probes.', refversion))
@@ -105,7 +109,7 @@ visualizeProbes <- function(
     visualizeRegion(
         as.character(GenomicRanges::seqnames(
             target.probes[1])), regBeg, regEnd,
-        betas, platform=platform, refversion=refversion, ...)
+        betas, platform = platform, refversion = refversion, ...)
 }
 
 #' Get Probes by Gene
@@ -123,8 +127,13 @@ visualizeProbes <- function(
 #' @examples
 #' probes <- getProbesByGene('CDKN2A')
 #' @export
-getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
+getProbesByGene <- function(
+    geneName, platform = c('EPIC','HM450'),
+    refversion = c('hg38','hg19')) {
 
+    platform <- match.arg(platform)
+    refversion <- match.arg(refversion)
+    
     requireNamespace("GenomicRanges", quietly = TRUE)
     gene2txn <- get(paste0('UCSC.refGene.gene2txn.', refversion))
     if (!(geneName %in% names(gene2txn))) {
@@ -141,7 +150,7 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
         as.character(GenomicRanges::seqnames(merged.exons[1])),
         min(GenomicRanges::start(merged.exons)),
         max(GenomicRanges::end(merged.exons)),
-        platform=platform, refversion=refversion)
+        platform = platform, refversion = refversion)
 }
 
 #' Get Probes by Gene Transcription Start Site (TSS)
@@ -163,8 +172,11 @@ getProbesByGene <- function(geneName, platform='EPIC', refversion='hg38') {
 #' @export
 getProbesByTSS <- function(
     geneName, upstream = 1500, dwstream = 1500,
-    platform='EPIC', refversion='hg38') {
+    platform = c('EPIC','HM450'), refversion = c('hg38','hg19')) {
 
+    platform <- match.arg(platform)
+    refversion <- match.arg(refversion)
+    
     gene2txn <- get(paste0('UCSC.refGene.gene2txn.', refversion))
     if (!(geneName %in% names(gene2txn))) {
         stop('Gene ', geneName, ' not found in this reference.');
@@ -233,15 +245,19 @@ getProbesByTSS <- function(
 #' @export
 visualizeRegion <- function(
     chrm, plt.beg, plt.end, betas,
-    platform='EPIC', refversion='hg38',
-    sample.name.fontsize=10,
-    heat.height=NULL,
-    draw=TRUE,
-    show.sampleNames=TRUE,
-    show.samples.n=NULL,
-    show.probeNames=TRUE,
-    cluster.samples=FALSE,
-    na.rm=FALSE, dmin=0, dmax=1) {
+    platform = c('EPIC','HM450'),
+    refversion = c('hg38','hg19'),
+    sample.name.fontsize = 10,
+    heat.height = NULL,
+    draw = TRUE,
+    show.sampleNames = TRUE,
+    show.samples.n = NULL,
+    show.probeNames = TRUE,
+    cluster.samples = FALSE,
+    na.rm = FALSE, dmin = 0, dmax = 1) {
+
+    platform <- match.arg(platform)
+    refversion <- match.arg(refversion)
 
     pkgTest('GenomicRanges')
 
@@ -390,8 +406,11 @@ visualizeRegion <- function(
 
 ## plot chromosome of genomic ranges and cytobands
 #' @importFrom grDevices gray.colors
-plotCytoBand <- function(chrom, plt.beg, plt.end, refversion='hg38') {
+plotCytoBand <- function(
+    chrom, plt.beg, plt.end,
+    refversion = c('hg38', 'hg19')) {
 
+    refversion <- match.arg(refversion)
     cytoBand <- get(paste0('cytoBand.', refversion))
     
     ## set cytoband color

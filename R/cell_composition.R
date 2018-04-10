@@ -1,6 +1,7 @@
 ## clean reference set to non NA sites
-cleanRefSet <- function(g, platform) {
+cleanRefSet <- function(g, platform = c('EPIC','HM450','HM27')) {
 
+    platform <- match.arg(platform)
     pkgTest('GenomicRanges')
     mapinfo <- get(paste0(platform,'.mapped.probes.hg19'))
     g <- g[intersect(rownames(g), names(mapinfo)),,drop=FALSE]
@@ -49,7 +50,9 @@ diffRefSet <- function(g) {
 #' @examples
 #' betas <- getRefSet('CD4T', platform='HM450')
 #' @export
-getRefSet <- function(cells=NULL, platform='EPIC') {
+getRefSet <- function(cells=NULL, platform = c('EPIC','HM450')) {
+    
+    platform <- match.arg(platform)
     if (is.null(cells)) {
         cells <- c('CD4T', 'CD19B','CD56NK','CD14Monocytes', 'granulocytes');
     }
@@ -234,7 +237,11 @@ estimateCellComposition <- function(
 #' 
 #' @export
 estimateLeukocyte<-function(
-    betas.tissue, betas.leuko=NULL, betas.tumor=NULL, platform='HM450'){
+    betas.tissue, betas.leuko = NULL,
+    betas.tumor = NULL,
+    platform = c('EPIC','HM450','HM27')){
+    
+    platform <- match.arg(platform)
 
     if (!is.matrix(betas.tissue))
         betas.tissue <- as.matrix(betas.tissue)

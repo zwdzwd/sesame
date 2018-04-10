@@ -8,7 +8,8 @@
 \alias{SigSet}
 \title{SigSet class}
 \usage{
-\S4method{initialize}{SigSet}(.Object, platform = "EPIC", ...)
+\S4method{initialize}{SigSet}(.Object, platform = c("EPIC", "HM450", "HM27"),
+  ...)
 
 SigSet(...)
 }

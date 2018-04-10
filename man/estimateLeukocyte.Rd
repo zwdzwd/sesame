@@ -5,7 +5,7 @@
 \title{Estimate leukocyte fraction using a two-component model}
 \usage{
 estimateLeukocyte(betas.tissue, betas.leuko = NULL, betas.tumor = NULL,
-  platform = "HM450")
+  platform = c("EPIC", "HM450", "HM27"))
 }
 \arguments{
 \item{betas.tissue}{tissue beta value matrix (#probes X #samples)}

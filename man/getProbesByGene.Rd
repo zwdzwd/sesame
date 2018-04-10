@@ -4,7 +4,8 @@
 \alias{getProbesByGene}
 \title{Get Probes by Gene}
 \usage{
-getProbesByGene(geneName, platform = "EPIC", refversion = "hg38")
+getProbesByGene(geneName, platform = c("EPIC", "HM450"),
+  refversion = c("hg38", "hg19"))
 }
 \arguments{
 \item{geneName}{gene name}

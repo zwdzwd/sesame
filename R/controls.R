@@ -13,7 +13,8 @@
 #' 
 #' @export
 buildControlMatrix450k <- function(sset) {
-    
+
+    stopifnot(is(sset, "SigSet"))
     ctls <- split(sset@ctl, sset@ctl$type)
 
     cm <- NULL

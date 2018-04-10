@@ -177,10 +177,14 @@ DML <- function(
 #' cf <- DMR(betas, sample.info, ~type)
 #' @export
 DMR <- function(
-    betas, sample.data=NULL, formula=NULL, cf=NULL, dist.cutoff=NULL,
-    seg.per.locus=0.5, platform='EPIC', refversion='hg38', ...) {
+    betas, sample.data = NULL,
+    formula = NULL, cf = NULL, dist.cutoff = NULL,
+    seg.per.locus = 0.5, platform = c('EPIC','HM450'),
+    refversion = c('hg38','hg19'), ...) {
 
     pkgTest('GenomicRanges')
+    platform <- match.arg(platform)
+    refversion <- match.arg(refversion)
     
     if (is.null(cf)) {
         if (is.null(sample.data) || is.null(formula))

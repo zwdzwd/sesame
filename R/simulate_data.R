@@ -12,8 +12,9 @@
 #' sset <- makeExampleSeSAMeDataSet()
 #'
 #' @export
-makeExampleSeSAMeDataSet <- function(platform='HM450') {
+makeExampleSeSAMeDataSet <- function(platform = c('HM450','EPIC','HM27')) {
 
+    platform <- match.arg(platform)
     dm.ordering <- get(paste0(platform, '.ordering'))
     sset <- SigSet(platform)
     probes <- rownames(
@@ -72,8 +73,7 @@ makeExampleSeSAMeDataSet <- function(platform='HM450') {
 #' @export
 makeExampleTinyEPICDataSet <- function() {
     
-    platform <- 'EPIC'
-    sset <- SigSet(platform)
+    sset <- SigSet('EPIC')
     probes <- c(
         "cg18478105", "cg01763666", "cg25813447",
         "cg07779434", "cg13417420", "cg24133276")
@@ -111,7 +111,7 @@ makeExampleTinyEPICDataSet <- function() {
     colnames(mt) <- c('M','U')
     sset@II <- mt
     
-    dm.controls <- get(paste0(platform, '.controls'))
+    dm.controls <- get(paste0('EPIC.controls'))
     ctl <- as.data.frame(matrix(as.integer(
         pmax(rnorm(2*nrow(dm.controls), 400, 300),0)), ncol=2))
     rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
