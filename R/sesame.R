@@ -301,10 +301,11 @@ inferSexKaryotypes <- function(sset) {
 inferSex <- function(sset) {
     stopifnot(is(sset, "SigSet"))
     sex.info <- getSexInfo(sset)[seq_len(3)]
-    as.character(predict(sesameData::sex.inference.model, sex.info))
+    as.character(predict(
+        sesameDataGet('sex.inference')$model, sex.info))
 }
 
-#' infer ethnicity
+#' Infer Ethnicity
 #'
 #' This function uses both the built-in rsprobes as well as the type I
 #' Color-Channel-Switching probes to infer ethnicity.
@@ -321,9 +322,10 @@ inferSex <- function(sset) {
 #' inferEthnicity(sset)
 #' @export
 inferEthnicity <- function(sset) {
-    ccsprobes <- sesameData::ethnicity.ccs.probes
-    rsprobes <- sesameData::ethnicity.rs.probes
-    ethnicity.model <- sesameData::ethnicity.model
+    ethnicity.inference <- sesameDataGet('ethnicity.inference')
+    ccsprobes <- ethnicity.inference$ccs.probes
+    rsprobes <- ethnicity.inference$rs.probes
+    ethnicity.model <- ethnicity.inference$model
     af <- c(
         getBetas(
             subsetSignal(sset, rsprobes), quality.mask = FALSE,
@@ -334,7 +336,7 @@ inferEthnicity <- function(sset) {
     as.character(predict(ethnicity.model, af))
 }
 
-#' get beta values
+#' Get beta Values
 #'
 #' @param sset \code{SigSet}
 #' @param quality.mask whether to mask low quality probes
@@ -439,8 +441,11 @@ getAFTypeIbySumAlleles <- function(sset) {
     af <- c(
         pmax(rowSums(sset@oobR),1)/pmax(rowSums(sset@oobR)+rowSums(sset@IG),2),
         pmax(rowSums(sset@oobG),1)/pmax(rowSums(sset@oobG)+rowSums(sset@IR),2))
-    af <- af[
-        intersect(names(af), sesameData::ethnicity.ccs.probes)]
+    
+    
+    af <- af[intersect(
+        names(af),
+        sesameDataGet('ethnicity.inference')$ccs.probes)]
     af[order(names(af))]
 }
 
