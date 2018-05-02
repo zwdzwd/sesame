@@ -56,8 +56,6 @@ Otherwise, the selected beta value matrix is returned.
 applied to the subset beta value matrix.
 }
 \examples{
-betas <- readRDS(system.file(
-    'extdata','HM450.betas.76matchedTCGAchr20.rds',
-    package='sesameData'))
+betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 visualizeRegion('chr20', 44648623, 44652152, betas, 'HM450')
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesame.R
 \name{getBetas}
 \alias{getBetas}
-\title{get beta values}
+\title{Get beta Values}
 \usage{
 getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
   mask.use.tcga = FALSE, pval.threshold = 0.05)
@@ -22,9 +22,9 @@ getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
 a numeric vector, beta values
 }
 \description{
-get beta values
+Get beta Values
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet('HM450')
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 betas <- getBetas(sset)
 }

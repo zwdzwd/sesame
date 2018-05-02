@@ -36,11 +36,6 @@ samples on the columns. It also takes a sample information data frame
 coefficient tables for each factor tested.
 }
 \examples{
-betas <- readRDS(system.file(
-    'extdata','HM450.betas.76matchedTCGAchr20.rds',
-    package='sesameData'))
-sample.info <- readRDS(system.file(
-    'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds',
-    package='sesameData'))
-cf <- DML(betas, sample.info, ~type)
+data <- sesameDataGet('HM450.76.TCGA.matched')
+cf <- DML(data$betas, data$sampleInfo, ~type)
 }

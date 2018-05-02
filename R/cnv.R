@@ -5,7 +5,7 @@
 #' normal \code{SigSet} for the normal samples. An optional arguments specifies
 #' the version of genome build that the inference will operate on. The function
 #' outputs an object of class \code{CNSegment} with signals for the segments (
-#' seg.signals), chromosome information (chrominfo), the bin coordinates (
+#' seg.signals), the bin coordinates (
 #' bin.coords) and bin signals (bin.signals).
 #'
 #' @param sset \code{SigSet}
@@ -13,10 +13,8 @@
 #' @param refversion hg19 or hg38
 #' @return an object of \code{CNSegment}
 #' @examples
-#' sset <- readRDS(system.file(
-#'     "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
-#' ssets.normal <- readRDS(system.file(
-#'     "extdata", "EPIC.ssets.5normals.chr4.rds", package = "sesameData"))
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' ssets.normal <- sesameDataGet('EPIC.5.normal')
 #' seg <- cnSegmentation(sset, ssets.normal)
 #' 
 #' @export
@@ -27,10 +25,11 @@ cnSegmentation <- function(sset, ssets.normal, refversion=c('hg19','hg38')) {
     refversion <- match.arg(refversion)
     
     ## retrieve chromosome info and probe coordinates
-    chrominfo <- get(paste0(refversion,'.chrominfo'))
-    probe.coords <- get(paste0(
-        sset@platform,'.mapped.probes.', refversion))
-
+    seqInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$seqInfo
+    gapInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$gapInfo
+    probe.coords <- sesameDataGet(paste0(
+        sset@platform, '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
+    
     ## extract intensities
     target.intens <- totalIntensities(sset)
     normal.intens <- do.call(cbind, lapply(ssets.normal, function(sset) {
@@ -49,13 +48,12 @@ cnSegmentation <- function(sset, ssets.normal, refversion=c('hg19','hg38')) {
 
     ## bin signals
     ## fix bin coordinates, TODO: this is too time-consuming
-    bin.coords <- getBinCoordinates(chrominfo, probe.coords)
+    bin.coords <- getBinCoordinates(seqInfo, gapInfo, probe.coords)
     bin.signals <- binSignals(probe.signals, bin.coords, probe.coords)
 
     ## segmentation
     seg <- structure(list(
         seg.signals = segmentBins(bin.signals, bin.coords),
-        chrominfo = chrominfo,
         bin.coords = bin.coords,
         bin.signals = bin.signals), class='CNSegment')
     
@@ -118,22 +116,21 @@ leftRightMerge1 <- function(chrom.windows, min.probes.per.bin=20) {
 #'
 #' requires GenomicRanges, IRanges
 #' 
-#' @param chrominfo chromosome information object
+#' @param seqInfo chromosome information object
+#' @param gapInfo chromosome gap information
 #' @param probe.coords probe coordinates
 #' @return bin.coords
-getBinCoordinates <- function(chrominfo, probe.coords) {
+getBinCoordinates <- function(seqInfo, gapInfo, probe.coords) {
 
     pkgTest('GenomicRanges')
     pkgTest('IRanges')
 
     tiles <- sort(GenomicRanges::tileGenome(
-        chrominfo$seqinfo, tilewidth=50000, cut.last.tile.in.chrom = TRUE))
+        seqInfo, tilewidth=50000, cut.last.tile.in.chrom = TRUE))
     
     tiles <- sort(c(
-        GenomicRanges::setdiff(
-            tiles[seq(1, length(tiles), 2)], chrominfo$gap), 
-        GenomicRanges::setdiff(
-            tiles[seq(2, length(tiles), 2)], chrominfo$gap)))
+        GenomicRanges::setdiff(tiles[seq(1, length(tiles), 2)], gapInfo), 
+        GenomicRanges::setdiff(tiles[seq(2, length(tiles), 2)], gapInfo)))
     
     GenomicRanges::values(tiles)$probes <-
         GenomicRanges::countOverlaps(tiles, probe.coords)
@@ -229,8 +226,8 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
 #' @return plot graphics
 #' @examples
-#' seg <- readRDS(system.file(
-#'     'extdata','EPIC.seg.LNCaP.Rep1.rds',package='sesameData'))
+#' seg <- sesameDataGet('EPIC.1.LNCaP')$seg
+#' 
 #' visualizeSegments(seg)
 #' 
 #' @export
@@ -241,7 +238,6 @@ visualizeSegments <- function(seg, to.plot=NULL) {
     pkgTest('scales')
     pkgTest('GenomicRanges')
     
-    ## chrominfo <- seg$chrominfo
     bin.coords <- seg$bin.coords
     bin.seqinfo <- GenomicRanges::seqinfo(bin.coords)
     bin.signals <- seg$bin.signals

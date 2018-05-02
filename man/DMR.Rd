@@ -43,11 +43,7 @@ designating the segment ID and statistical significance (P-value) testing
 the segment.
 }
 \examples{
-betas <- readRDS(system.file(
-    'extdata','HM450.betas.76matchedTCGAchr20.rds',
-    package='sesameData'))
-sample.info <- readRDS(system.file(
-    'extdata','HM450.sampleinfo.76matchedTCGAchr20.rds',
-    package='sesameData'))
-cf <- DMR(betas, sample.info, ~type)
+data <- sesameDataGet('HM450.76.TCGA.matched')
+cf <- DMR(data$betas, data$sampleInfo, ~type)
+
 }

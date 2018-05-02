@@ -22,8 +22,8 @@ and plot the bin signals and segments (as horizontal lines).
 require ggplot2, scales
 }
 \examples{
-seg <- readRDS(system.file(
-    'extdata','EPIC.seg.LNCaP.Rep1.rds',package='sesameData'))
+seg <- sesameDataGet('EPIC.1.LNCaP')$seg
+
 visualizeSegments(seg)
 
 }

@@ -15,7 +15,7 @@
 makeExampleSeSAMeDataSet <- function(platform = c('HM450','EPIC','HM27')) {
 
     platform <- match.arg(platform)
-    dm.ordering <- get(paste0(platform, '.ordering'))
+    dm.ordering <- sesameDataGet(paste0(platform, '.address'))$ordering
     sset <- SigSet(platform)
     probes <- rownames(
         dm.ordering[dm.ordering$DESIGN=='I' &
@@ -46,7 +46,7 @@ makeExampleSeSAMeDataSet <- function(platform = c('HM450','EPIC','HM27')) {
     colnames(mt) <- c('M','U')
     sset@II <- mt
 
-    dm.controls <- get(paste0(platform, '.controls'))
+    dm.controls <- sesameDataGet(paste0(platform, '.address'))$controls
     ctl <- as.data.frame(matrix(pmax(rnorm(
         2*nrow(dm.controls), 400, 300),0), ncol=2))
     rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)
@@ -111,7 +111,7 @@ makeExampleTinyEPICDataSet <- function() {
     colnames(mt) <- c('M','U')
     sset@II <- mt
     
-    dm.controls <- get(paste0('EPIC.controls'))
+    dm.controls <- sesameDataGet('EPIC.address')$controls
     ctl <- as.data.frame(matrix(as.integer(
         pmax(rnorm(2*nrow(dm.controls), 400, 300),0)), ncol=2))
     rownames(ctl) <- make.names(dm.controls$Name,unique=TRUE)

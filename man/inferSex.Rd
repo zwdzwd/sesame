@@ -29,7 +29,6 @@ Our function works on a single sample.
 Infer Sex
 }
 \examples{
-sset <- readRDS(system.file(
-    'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 inferSex(sset)
 }

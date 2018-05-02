@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesame.R
 \name{inferEthnicity}
 \alias{inferEthnicity}
-\title{infer ethnicity}
+\title{Infer Ethnicity}
 \usage{
 inferEthnicity(sset)
 }

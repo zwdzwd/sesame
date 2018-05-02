@@ -19,7 +19,6 @@ The function takes one single \code{SigSet} and returns a \code{SigSet}
 with dye bias corrected.
 }
 \examples{
-sset <- readRDS(system.file(
-    "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.db <- dyeBiasCorrTypeINorm(sset)
 }

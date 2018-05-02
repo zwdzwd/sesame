@@ -34,8 +34,6 @@ sample names on the columns and probe names on the rows. The function can
 also work on different genome builds (default to hg38, can be hg19).
 }
 \examples{
-betas <- readRDS(system.file(
-    'extdata','HM450.betas.76matchedTCGAchr20.rds',
-    package='sesameData'))
+betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 visualizeGene('ADA', betas, 'HM450')
 }

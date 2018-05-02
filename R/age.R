@@ -23,13 +23,11 @@ Hv.response2age <- function(x, adult.age=20) {
 #' @return age in years
 #' @export
 #' @examples
-#' betas <- readRDS(system.file(
-#'     'extdata','HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05.rds',
-#'     package='sesameData'))
+#' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 #' predictAgeHorvath353(betas)
 predictAgeHorvath353 <- function(betas) {
 
-    Hv <- sesameData::agePredHorvath353
+    Hv <- sesameDataGet('age.inference')$Horvath353
     probes <- intersect(names(na.omit(betas)), Hv$CpGmarker[-1])
 
     if (length(probes) < 10) {

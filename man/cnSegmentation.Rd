@@ -22,14 +22,12 @@ The function takes a \code{SigSet} for the target sample and a set of
 normal \code{SigSet} for the normal samples. An optional arguments specifies
 the version of genome build that the inference will operate on. The function
 outputs an object of class \code{CNSegment} with signals for the segments (
-seg.signals), chromosome information (chrominfo), the bin coordinates (
+seg.signals), the bin coordinates (
 bin.coords) and bin signals (bin.signals).
 }
 \examples{
-sset <- readRDS(system.file(
-    "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
-ssets.normal <- readRDS(system.file(
-    "extdata", "EPIC.ssets.5normals.chr4.rds", package = "sesameData"))
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+ssets.normal <- sesameDataGet('EPIC.5.normal')
 seg <- cnSegmentation(sset, ssets.normal)
 
 }

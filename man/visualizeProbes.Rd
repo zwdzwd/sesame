@@ -35,8 +35,6 @@ if draw is FALSE, the function returns the subset beta value matrix
 otherwise it returns the grid graphics object.
 }
 \examples{
-betas <- readRDS(system.file(
-    'extdata','HM450.betas.76matchedTCGAchr20.rds',
-    package='sesameData'))
+betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 visualizeProbes(c('cg22316575', 'cg16084772', 'cg20622019'), betas, 'HM450')
 }

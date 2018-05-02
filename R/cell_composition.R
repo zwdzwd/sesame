@@ -3,7 +3,8 @@ cleanRefSet <- function(g, platform = c('EPIC','HM450','HM27')) {
 
     platform <- match.arg(platform)
     pkgTest('GenomicRanges')
-    mapinfo <- get(paste0(platform,'.mapped.probes.hg19'))
+    mapinfo <- sesameDataGet(paste0(
+        platform, '.probeInfo'))[[paste0('mapped.probes.hg19')]]
     g <- g[intersect(rownames(g), names(mapinfo)),,drop=FALSE]
     g.clean <- g[apply(g, 1, function(x) !any(is.na(x))),,drop=FALSE]
     g.clean <- g.clean[rownames(g.clean) %in% names(mapinfo),,drop=FALSE]
@@ -57,7 +58,7 @@ getRefSet <- function(cells=NULL, platform = c('EPIC','HM450')) {
         cells <- c('CD4T', 'CD19B','CD56NK','CD14Monocytes', 'granulocytes');
     }
 
-    refdata <- mget(paste0('cellref.', cells), inherits=TRUE)
+    refdata <- sesameDataGet('ref.methylation')[cells]
     probes <- Reduce(intersect, lapply(refdata, names))
     g <- do.call(cbind, lapply(refdata, function(x) x[probes]))
     g <- cleanRefSet(g, platform);
@@ -230,9 +231,7 @@ estimateCellComposition <- function(
 #' @importFrom utils tail
 #' @examples
 #'
-#' betas.tissue <- readRDS(system.file(
-#'     'extdata','HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05.rds',
-#'     package='sesameData'))
+#' betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 #' estimateLeukocyte(betas.tissue)
 #' 
 #' @export
@@ -247,7 +246,7 @@ estimateLeukocyte<-function(
         betas.tissue <- as.matrix(betas.tissue)
 
     if (is.null(betas.leuko)) {
-        betas.leuko <- get(paste0(platform,'.betas.leuko.whole'))
+        betas.leuko <- sesameDataGet('leukocyte.betas')[[platform]]
     }
 
     if (!is.matrix(betas.leuko))

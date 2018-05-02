@@ -62,10 +62,12 @@ getProbesByRegion <- function(
     refversion <- match.arg(refversion)
     
     if (end < 0) {
-        end <- get(paste0(refversion, '.chrominfo'))
+        end <- sesameDataGet(paste0(
+            'genomeInfo.', refversion))$seqInfo[chrm]@seqlengths
     }
 
-    probes <- get(paste0(platform, '.mapped.probes.', refversion))
+    probes <- sesameDataGet(paste0(
+        platform, '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
     
     if (!(chrm %in% GenomicRanges::seqinfo(probes)@seqnames)) {
         stop('No probes found in this reference');

@@ -21,7 +21,6 @@ is set to the mean intensity of all the in-band signals. The function
 returns a \code{SigSet} with dye bias corrected.
 }
 \examples{
-sset <- readRDS(system.file(
-    "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.db <- dyeBiasCorr(sset)
 }

@@ -18,7 +18,6 @@ The function outputs the number of probes in each category and the first
 few signal measurements.
 }
 \examples{
-sset <- readRDS(system.file(
-    'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 print(sset)
 }

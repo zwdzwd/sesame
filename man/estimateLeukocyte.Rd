@@ -30,9 +30,7 @@ a single numeric describing the fraction of leukocyte.
 }
 \examples{
 
-betas.tissue <- readRDS(system.file(
-    'extdata','HM450.betas.TCGA-2L-AAQA-01A-21D-A38H-05.rds',
-    package='sesameData'))
+betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 estimateLeukocyte(betas.tissue)
 
 }

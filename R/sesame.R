@@ -102,8 +102,7 @@ SigSet <- function(...) new("SigSet", ...)
 #' @rdname show-methods
 #' @aliases show,SigSet-method
 #' @examples
-#' sset <- readRDS(system.file(
-#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' print(sset)
 setMethod(
     "show", "SigSet",
@@ -132,8 +131,7 @@ setMethod(
 #' @param probes target probes
 #' @return another sset with probes specified
 #' @examples
-#' sset <- readRDS(system.file(
-#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' subsetSignal(sset, rownames(slot(sset, 'IR')))
 #' @export
 subsetSignal <- function(sset, probes) {
@@ -204,14 +202,22 @@ totalIntensities <- function(sset) {
 #' @export
 getSexInfo <- function(sset) {
     stopifnot(is(sset, "SigSet"))
-    cleanY <- get(paste0(sset@platform, '.female.clean.chrY.probes'))
-    xLinked <- get(paste0(sset@platform, '.female.xlinked.chrX.probes'))
-    probe2chr <- get(paste0(sset@platform, '.hg19.probe2chr'))
+
+    cleanY <- sesameDataGet(paste0(
+        sset@platform,'.probeInfo'))$chrY.clean
+    
+    xLinked <- sesameDataGet(paste0(
+        sset@platform,'.probeInfo'))$chrX.xlinked
+
+    probe2chr <- sesameDataGet(paste0(
+        sset@platform,'.probeInfo'))$probe2chr.hg19
+
     xLinkedBeta <- getBetas(subsetSignal(sset, xLinked), quality.mask=FALSE)
     intens <- totalIntensities(sset)
     probes <- intersect(names(intens), names(probe2chr))
     intens <- intens[probes]
     probe2chr <- probe2chr[probes]
+    
     c(
         medianY=median(totalIntensities(subsetSignal(sset, cleanY))),
         medianX=median(totalIntensities(subsetSignal(sset, xLinked))),
@@ -236,8 +242,7 @@ getSexInfo <- function(sset) {
 #' @param sset a \code{SigSet}
 #' @return Karyotype string, with XCI
 #' @examples
-#' sset <- readRDS(system.file(
-#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' inferSexKaryotypes(sset)
 #' @export
 inferSexKaryotypes <- function(sset) {
@@ -294,15 +299,14 @@ inferSexKaryotypes <- function(sset) {
 #' @importFrom randomForest randomForest
 #' @import sesameData
 #' @examples
-#' sset <- readRDS(system.file(
-#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' inferSex(sset)
 #' @export
 inferSex <- function(sset) {
     stopifnot(is(sset, "SigSet"))
     sex.info <- getSexInfo(sset)[seq_len(3)]
     as.character(predict(
-        sesameDataGet('sex.inference')$model, sex.info))
+        sesameDataGet('sex.inference'), sex.info))
 }
 
 #' Infer Ethnicity
@@ -345,13 +349,13 @@ inferEthnicity <- function(sset) {
 #' @param pval.threshold p-value threshold for nondetection mask
 #' @return a numeric vector, beta values
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet('HM450')
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getBetas(sset)
 #' @export
 getBetas <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE,
     mask.use.tcga=FALSE, pval.threshold=0.05) {
-
+    
     stopifnot(is(sset, "SigSet"))
     
     betas1 <- pmax(sset@IG[,'M'],1) / pmax(sset@IG[,'M']+sset@IG[,'U'],2)
@@ -365,9 +369,10 @@ getBetas <- function(
 
     if (quality.mask) {
         if (mask.use.tcga) {
-            mask <- get(paste0(sset@platform, '.mask.tcga'))
+            stopifnot(sset@platform == 'HM450')
+            mask <- get('HM450.mask.tcga')
         } else {
-            mask <- get(paste0(sset@platform, '.mask'))
+            mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
         }
         betas[names(betas) %in% mask] <- NA
     }
@@ -408,7 +413,7 @@ getBetasTypeIbySumChannels <- function(
         betas[sset@pval > pval.threshold] <- NA
     }
     if (quality.mask) {
-        mask <- get(paste0(sset@platform, '.mask'))
+        mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
         betas[names(betas) %in% mask] <- NA
     }
     betas[order(names(betas))]
@@ -424,8 +429,7 @@ getBetasTypeIbySumChannels <- function(
 #' @param sset \code{SigSet}
 #' @return beta values
 #' @examples
-#' sset <- readRDS(system.file(
-#'     'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getAFTypeIbySumAlleles(sset)
 #' @export
 getAFTypeIbySumAlleles <- function(sset) {
@@ -585,7 +589,7 @@ readIDATsFromDir <- function(
 chipAddressToSignal <- function(dm) {
 
     platform <- attr(dm, 'platform')
-    dm.ordering <- get(paste0(platform, '.ordering'))
+    dm.ordering <- sesameDataGet(paste0(platform, '.address'))$ordering
 
     sset <- SigSet(platform)
 
@@ -621,7 +625,7 @@ chipAddressToSignal <- function(dm) {
     sset@II <- signal.II
 
     ## control probes
-    dm.controls <- get(paste0(platform, '.controls'))
+    dm.controls <- sesameDataGet(paste0(platform, '.address'))$controls
     ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
     rownames(ctl) <- make.names(dm.controls$Name, unique=TRUE)
     ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
@@ -648,8 +652,8 @@ chipAddressToSignal <- function(dm) {
 #' 
 #' @export
 bisConversionControl <- function(sset, use.median=FALSE) {
-    extC <- get(paste0(sset@platform, '.typeI.extC'))
-    extT <- get(paste0(sset@platform, '.typeI.extT'))
+    extC <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extC
+    extT <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extT
     if (use.median) {
         median(sset@oobG[extC,], na.rm=TRUE) /
             median(sset@oobG[extT,], na.rm=TRUE)

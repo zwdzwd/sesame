@@ -21,7 +21,6 @@ does not deviate much. The function returns a list of \code{SigSet}s with
 dye bias corrected.
 }
 \examples{
-ssets <- readRDS(system.file(
-    "extdata", "EPIC.ssets.5normals.chr4.rds", package = "sesameData"))
+ssets <- sesameDataGet('HM450.10.TCGA.BLCA.normal')
 ssets.db <- dyeBiasCorrMostBalanced(ssets)
 }

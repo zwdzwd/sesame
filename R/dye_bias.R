@@ -9,8 +9,7 @@
 #' @param ref reference signal level
 #' @return a normalized \code{SigSet}
 #' @examples
-#' sset <- readRDS(system.file(
-#'     "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.db <- dyeBiasCorr(sset)
 #' @export
 dyeBiasCorr <- function(sset, ref=NULL) {
@@ -55,8 +54,7 @@ dyeBiasCorr <- function(sset, ref=NULL) {
 #' @param ssets a list of normalized \code{SigSet}s
 #' @return a list of normalized \code{SigSet}s
 #' @examples
-#' ssets <- readRDS(system.file(
-#'     "extdata", "EPIC.ssets.5normals.chr4.rds", package = "sesameData"))
+#' ssets <- sesameDataGet('HM450.10.TCGA.BLCA.normal')
 #' ssets.db <- dyeBiasCorrMostBalanced(ssets)
 #' @export
 dyeBiasCorrMostBalanced <- function(ssets) {
@@ -79,8 +77,7 @@ dyeBiasCorrMostBalanced <- function(ssets) {
 #' @importFrom preprocessCore normalize.quantiles.use.target
 #' @importFrom stats approx
 #' @examples
-#' sset <- readRDS(system.file(
-#'     "extdata", "EPIC.sset.LNCaP.Rep1.chr4.rds", package = "sesameData"))
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.db <- dyeBiasCorrTypeINorm(sset)
 #' @export
 dyeBiasCorrTypeINorm <- function(sset) {

@@ -19,7 +19,6 @@ are inferred relatively independently. This function gives a more detailed
 look of potential sex chromosome aberrations.
 }
 \examples{
-sset <- readRDS(system.file(
-    'extdata','EPIC.sset.LNCaP.Rep1.rds',package='sesameData'))
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 inferSexKaryotypes(sset)
 }

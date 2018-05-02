@@ -17,9 +17,7 @@
 #' @import grid
 #' @return None
 #' @examples
-#' betas <- readRDS(system.file(
-#'     'extdata','HM450.betas.76matchedTCGAchr20.rds',
-#'     package='sesameData'))
+#' betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 #' visualizeGene('ADA', betas, 'HM450')
 #' @export
 visualizeGene <- function(
@@ -36,11 +34,11 @@ visualizeGene <- function(
     
     pkgTest('GenomicRanges')
 
-    gene2txn <- get(paste0('UCSC.refGene.gene2txn.', refversion))
+    gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
     if (!(geneName %in% names(gene2txn))) {
         stop('Gene ', geneName, ' not found in this reference.');
     }
-    txns <- get(paste0('UCSC.refGene.txns.', refversion))
+    txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
 
     target.txns <- txns[gene2txn[[geneName]]]
     target.strand <- as.character(GenomicRanges::strand(target.txns[[1]][1]))
@@ -80,9 +78,7 @@ visualizeGene <- function(
 #' @return None
 #' @import wheatmap
 #' @examples
-#' betas <- readRDS(system.file(
-#'     'extdata','HM450.betas.76matchedTCGAchr20.rds',
-#'     package='sesameData'))
+#' betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 #' visualizeProbes(c('cg22316575', 'cg16084772', 'cg20622019'), betas, 'HM450')
 #' @export
 visualizeProbes <- function(
@@ -95,7 +91,8 @@ visualizeProbes <- function(
     refversion <- match.arg(refversion)
     
     pkgTest('GenomicRanges')
-    probes <- get(paste0(platform, '.mapped.probes.', refversion))
+    probes <- sesameDataGet(paste0(
+        platform, '.probeInfo'))[[paste0('mapped.probes.',refversion)]]
     probeNames <- probeNames[probeNames %in% names(probes)]
 
     if (length(probeNames)==0)
@@ -135,11 +132,11 @@ getProbesByGene <- function(
     refversion <- match.arg(refversion)
     
     requireNamespace("GenomicRanges", quietly = TRUE)
-    gene2txn <- get(paste0('UCSC.refGene.gene2txn.', refversion))
+    gene2txn <- sesameDataGet(paste0('genomeInfo.', refversion))$gene2txn
     if (!(geneName %in% names(gene2txn))) {
         stop('Gene ', geneName, ' not found in this reference.');
     }
-    txns <- get(paste0('UCSC.refGene.txns.', refversion))
+    txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
 
     target.txns <- txns[gene2txn[[geneName]]]
     ## target.strand <- as.character(
@@ -177,11 +174,11 @@ getProbesByTSS <- function(
     platform <- match.arg(platform)
     refversion <- match.arg(refversion)
     
-    gene2txn <- get(paste0('UCSC.refGene.gene2txn.', refversion))
+    gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
     if (!(geneName %in% names(gene2txn))) {
         stop('Gene ', geneName, ' not found in this reference.');
     }
-    txns <- get(paste0('UCSC.refGene.txns.', refversion))
+    txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
 
     target.txns <- txns[gene2txn[[geneName]]]
 
@@ -199,8 +196,8 @@ getProbesByTSS <- function(
                 ranges = IRanges::IRanges(start=tss1-up, end=tss1+dw))
     }))))
 
-    probes1 <- subsetByOverlaps(get(paste0(
-        platform,'.mapped.probes.',refversion)), tss)
+    probes1 <- subsetByOverlaps(sesameDataGet(paste0(
+        platform, '.probeInfo'))[[paste0('mapped.probes.',refversion)]], tss)
     
     if (length(probes1)>0) {
         probes1$gene <- geneName
@@ -238,9 +235,7 @@ getProbesByTSS <- function(
 #' @import grid
 #' @importMethodsFrom IRanges subsetByOverlaps
 #' @examples
-#' betas <- readRDS(system.file(
-#'     'extdata','HM450.betas.76matchedTCGAchr20.rds',
-#'     package='sesameData'))
+#' betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 #' visualizeRegion('chr20', 44648623, 44652152, betas, 'HM450')
 #' @export
 visualizeRegion <- function(
@@ -265,9 +260,10 @@ visualizeRegion <- function(
         betas <- as.matrix(betas);
     }
 
-    txns <- get(paste0('UCSC.refGene.txns.', refversion))
-    txn2gene <- get(paste0('UCSC.refGene.txn2gene.', refversion))
-    probes <- get(paste0(platform, '.mapped.probes.', refversion))
+    txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
+    txn2gene <- sesameDataGet(paste0('genomeInfo.',refversion))$txn2gene
+    probes <- sesameDataGet(paste0(
+        platform, '.probeInfo'))[[paste0('mapped.probes.',refversion)]]
 
     target.region <- GenomicRanges::GRanges(
         chrm, IRanges::IRanges(plt.beg, plt.end))
@@ -411,7 +407,7 @@ plotCytoBand <- function(
     refversion = c('hg38', 'hg19')) {
 
     refversion <- match.arg(refversion)
-    cytoBand <- get(paste0('cytoBand.', refversion))
+    cytoBand <- sesameDataGet(paste0('genomeInfo.',refversion))$cytoBand
     
     ## set cytoband color
     cytoBand2col <- setNames(
