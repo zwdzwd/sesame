@@ -186,6 +186,26 @@ totalIntensities <- function(sset) {
     rowSums(rbind(sset@IG, sset@IR, sset@II))
 }
 
+#' Calculate intensity Z-score
+#'
+#' This function compute intensity Z-score with respect to the mean.
+#' Log10 transformation is done first. Probes of each design type are
+#' grouped before Z-scores are computed.
+#'
+#' @param sset a \code{SigSet}
+#' @return a vector of Z-score for each probe
+#' @examples
+#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' head(totalIntensityZscore(sset))
+#' @export
+totalIntensityZscore <- function(sset) {
+    Zscore <- rbind(
+        scale(log10(1+rowSums(sset@IG))),
+        scale(log10(1+rowSums(sset@IR))),
+        scale(log10(1+rowSums(sset@II))))[,1]
+    Zscore[sort(names(Zscore))]
+}
+
 #' Get sex-related information
 #'
 #' The function takes a \code{SigSet} and returns a vector of three
@@ -427,12 +447,13 @@ getBetasTypeIbySumChannels <- function(
 #' returned.
 #'
 #' @param sset \code{SigSet}
+#' @param known.ccs.only consider only known CCS probes
 #' @return beta values
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getAFTypeIbySumAlleles(sset)
 #' @export
-getAFTypeIbySumAlleles <- function(sset) {
+getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
 
     stopifnot(is(sset, "SigSet"))
     
@@ -445,11 +466,12 @@ getAFTypeIbySumAlleles <- function(sset) {
     af <- c(
         pmax(rowSums(sset@oobR),1)/pmax(rowSums(sset@oobR)+rowSums(sset@IG),2),
         pmax(rowSums(sset@oobG),1)/pmax(rowSums(sset@oobG)+rowSums(sset@IR),2))
+
+    if (known.ccs.only)
+        af <- af[intersect(
+            names(af),
+            sesameDataGet('ethnicity.inference')$ccs.probes)]
     
-    
-    af <- af[intersect(
-        names(af),
-        sesameDataGet('ethnicity.inference')$ccs.probes)]
     af[order(names(af))]
 }
 

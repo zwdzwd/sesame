@@ -4,10 +4,12 @@
 \alias{getAFTypeIbySumAlleles}
 \title{Get allele frequency treating type I by summing alleles}
 \usage{
-getAFTypeIbySumAlleles(sset)
+getAFTypeIbySumAlleles(sset, known.ccs.only = TRUE)
 }
 \arguments{
 \item{sset}{\code{SigSet}}
+
+\item{known.ccs.only}{consider only known CCS probes}
 }
 \value{
 beta values
