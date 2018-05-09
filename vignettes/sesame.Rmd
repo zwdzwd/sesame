@@ -85,12 +85,14 @@ functionalities for calling differential methylation and copy number.
 
 ### To read IDATs from directory
 ```{r}
-ssets <- readIDATsFromDir(system.file("extdata/", package = "sesameData"))
+ssets <- lapply(
+    searchIDATprefixes(system.file("extdata/", package = "sesameData")),
+    readIDATpair)
 ```
 
 A simple list of "SigSet"s are returned. One can also just provide a vector
 of file paths prefixes (excluding `_Red.idat` and `_Grn.idat`, one prefix for
-a pair of IDATs) and call `readIDATs` directly.
+a pair of IDATs) and call `readIDATpair` directly.
         
 ### Background subtraction
 

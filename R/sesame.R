@@ -17,8 +17,8 @@
 ## @seealso To appear
 #' @examples
 #'
-#' sset <- readIDATs(sub('_Grn.idat','',system.file(
-#'     'extdata','4207113116_A_Grn.idat',package='sesameData')))[[1]]
+#' sset <- readIDATpair(sub('_Grn.idat','',system.file(
+#'     'extdata','4207113116_A_Grn.idat',package='sesameData')))
 #' 
 #' ## The TCGA standard pipeline
 #' betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
@@ -492,87 +492,98 @@ readIDAT1 <- function(idat.name) {
     d
 }
 
-#' Import IDATs from a list of samples
+#' Import a pair of IDATs from one sample
 #'
-#' If `raw = FALSE` (default), a list of \code{SigSet}s are returned. Each
-#' \code{SigSet} contains all the signal measurement on the platform. If
-#' `raw = TRUE`, a list is returned with each element of the returned list
-#' containing a matrix having signal intensity indexed by chip address.
+#' The function takes a prefix string that are shared with _Grn.idat
+#' and _Red.idat. The function returns a \code{SigSet}.
 #'
-#' Sample.names is a vector of common prefixes between the *_Grn.idat and
-#' *_Red.idat. `num.processes` controls the number of parallel workers. It
-#' is default to 1 which means serial.
-#' 
-#' @param sample.names a sample list
-#' @param base.dir base directory
-#' @param raw to return raw data without mapping to signal
-#' @param num.processes number of parallele processes, serial if 1
-#' @return a list of \code{SigSet}s or a list of matrices if `raw=TRUE`
-#' @importFrom BiocParallel bplapply
-#' @importFrom BiocParallel MulticoreParam
+#' @param prefix.path sample prefix without _Grn.idat and _Red.idat
+#' @return a \code{SigSet}
 #' @examples
-#' ssets <- readIDATs(sub('_Grn.idat','',system.file(
+#' sset <- readIDATpair(sub('_Grn.idat','',system.file(
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
-readIDATs <- function(
-    sample.names, base.dir=NULL, raw=FALSE, num.processes=1) {
-
-    if (!is.null(base.dir))
-        sample.paths <- paste0(base.dir,'/',sample.names)
-    else
-        sample.paths <- sample.names
-    
-    if (num.processes > 1)
-        dms <- bplapply(
-            sample.paths, readIDAT1,
-            BPPARAM = MulticoreParam(workers = num.processes))
-    else
-        dms <- lapply(sample.paths, readIDAT1)
-
-    names(dms) <- make.names(basename(sample.names), unique=TRUE)
-    if (!raw) {
-        if (num.processes > 1) {
-            bplapply(
-                dms, chipAddressToSignal,
-                BPPARAM = MulticoreParam(workers = num.processes))
-        } else {
-            lapply(dms, chipAddressToSignal)
-        }
-    } else {
-        dms
-    }
+readIDATpair <- function(prefix.path) {
+    stopifnot(file.exists(paste0(prefix.path, '_Grn.idat')));
+    stopifnot(file.exists(paste0(prefix.path, '_Red.idat')));
+    dm <- readIDAT1(prefix.path)
+    chipAddressToSignal(dm)
 }
 
-#' Import IDATs from a directory
+## #' Import IDATs from a list of samples
+## #'
+## #' If `raw = FALSE` (default), a list of \code{SigSet}s are returned. Each
+## #' \code{SigSet} contains all the signal measurement on the platform. If
+## #' `raw = TRUE`, a list is returned with each element of the returned list
+## #' containing a matrix having signal intensity indexed by chip address.
+## #'
+## #' Sample.names is a vector of common prefixes between the *_Grn.idat and
+## #' *_Red.idat. `num.processes` controls the number of parallel workers. It
+## #' is default to 1 which means serial.
+## #' 
+## #' @param sample.names a sample list
+## #' @param base.dir base directory
+## #' @param raw to return raw data without mapping to signal
+## #' @param num.processes number of parallele processes, serial if 1
+## #' @return a list of \code{SigSet}s or a list of matrices if `raw=TRUE`
+## #' @importFrom BiocParallel bplapply
+## #' @importFrom BiocParallel MulticoreParam
+## #' @examples
+## #' ssets <- readIDATs(sub('_Grn.idat','',system.file(
+## #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
+## #' @export
+## readIDATs <- function(
+##     sample.names, base.dir=NULL, raw=FALSE, num.processes=1) {
+
+##     if (!is.null(base.dir))
+##         sample.paths <- paste0(base.dir,'/',sample.names)
+##     else
+##         sample.paths <- sample.names
+    
+##     if (num.processes > 1)
+##         dms <- bplapply(
+##             sample.paths, readIDAT1,
+##             BPPARAM = MulticoreParam(workers = num.processes))
+##     else
+##         dms <- lapply(sample.paths, readIDAT1)
+
+##     names(dms) <- make.names(basename(sample.names), unique=TRUE)
+##     if (!raw) {
+##         if (num.processes > 1) {
+##             bplapply(
+##                 dms, chipAddressToSignal,
+##                 BPPARAM = MulticoreParam(workers = num.processes))
+##         } else {
+##             lapply(dms, chipAddressToSignal)
+##         }
+##     } else {
+##         dms
+##     }
+## }
+
+#' Identify IDATs from a directory
 #' 
 #' The input is the directory name as a string. The function identifies all
-#' the IDAT files under the directory. The function returns a list of
-#' \code{SigSet}s each processed from a pair of IDAT files under the
-#' directory.
+#' the IDAT files under the directory. The function returns a vector of such
+#' IDAT prefixes under the directory.
 #' 
 #' @param dir.name the directory containing the IDAT files.
-#' @param max.num.samples maximum number of samples to process, to protect
-#' from memory crash.
 #' @param recursive search IDAT files recursively
-#' @param ... see \code{readIDATs}
-#' @return a list of \code{SigSet}s, if more than `max.num.samples` samples
-#' found, then only return the prefixes (a vector of character strings).
-#' Consider using `readIDATs` to process each chunk separately.
+#' @return the IDAT prefixes (a vector of character strings).
 #' 
 #' @examples
 #' ## only search what are directly under
-#' ssets <- readIDATsFromDir(
+#' IDATprefixes <- searchIDATprefixes(
 #'     system.file("extdata", "", package = "sesameData"))
 #' 
 #' ## search files recursively
-#' ssets <- readIDATsFromDir(
+#' IDATprefixes <- searchIDATprefixes(
 #'     system.file(package = "sesameData"), recursive=TRUE)
 #' @export
-readIDATsFromDir <- function(
-    dir.name, max.num.samples = 100, recursive = FALSE, ...) {
+searchIDATprefixes <- function(dir.name, recursive = FALSE) {
 
     stopifnot(file.exists(dir.name))
-    
+
     prefixes <- unique(sub(
         '_(Grn|Red).idat$', '',
         list.files(dir.name, '\\.idat$', recursive = recursive)))
@@ -584,14 +595,7 @@ readIDATsFromDir <- function(
     if (!all(file.exists(file.path(dir.name, paste0(prefixes, '_Red.idat')))))
         stop("IDAT names unmatched.")
 
-    if (length(prefixes) > max.num.samples) {
-        warning(sprintf(
-            "%d (>%d) samples found. Returning the prefixes.",
-            length(prefixes), max.num.samples))
-        file.path(dir.name, prefixes)
-    } else {
-        readIDATs(file.path(dir.name, prefixes), ...)
-    }
+    file.path(dir.name, prefixes)
 }
 
 #' Lookup address in one sample

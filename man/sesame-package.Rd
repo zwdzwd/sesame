@@ -15,8 +15,8 @@ processing >10,000 samples in parallel on clusters.
 }
 \examples{
 
-sset <- readIDATs(sub('_Grn.idat','',system.file(
-    'extdata','4207113116_A_Grn.idat',package='sesameData')))[[1]]
+sset <- readIDATpair(sub('_Grn.idat','',system.file(
+    'extdata','4207113116_A_Grn.idat',package='sesameData')))
 
 ## The TCGA standard pipeline
 betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
