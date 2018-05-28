@@ -8,12 +8,12 @@ Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              person("Hui", "Shen", role = c("aut"),
              email = "Hui.Shen@vai.org"),
              person("Timothy", "Triche", role = "ctb"))
-Depends:  R (>= 3.5),
+Depends: R (>= 3.5),
           sesameData,
           methods
 License: Artistic-2.0
 RoxygenNote: 6.0.1
-Imports:  R6,
+Imports: R6,
           grDevices,
           utils,
           illuminaio,
@@ -35,3 +35,17 @@ VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame
 BugReports: https://github.com/zwdzwd/sesame/issues
 biocViews: DNAMethylation, MethylationArray, Preprocessing, QualityControl
+Collate: 
+    'sesame.R'
+    'SigSetMethods.R'
+    'age.R'
+    'background_correction.R'
+    'cell_composition.R'
+    'cnv.R'
+    'controls.R'
+    'detection.R'
+    'differential_methylation.R'
+    'dye_bias.R'
+    'simulate_data.R'
+    'utils.R'
+    'visualize.R'
