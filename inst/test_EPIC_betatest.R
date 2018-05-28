@@ -4,7 +4,7 @@ library(sesame)
 library(parallel)
 options(mc.cores=4)
 
-ssets <- readIDATsFromDir('../../test/data/EPIC.beta.test/', mc=T)
+ssets <- readIDATsFromDir('../../test/data/EPIC.beta.test/', mc=TRUE)
 ssets <- mclapply(ssets, noob)
 ssets <- mclapply(ssets, dyeBiasCorr)
 

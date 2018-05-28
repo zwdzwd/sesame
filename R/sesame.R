@@ -1,9 +1,9 @@
 #' @title
 #' Analyze DNA methylation data
-#' 
+#'
 #' @description
 #' SEnsible and step-wise analysis of DNA methylation data
-#' 
+#'
 #' @details
 #' This package complements array functionalities that allow
 #' processing >10,000 samples in parallel on clusters.
@@ -12,19 +12,19 @@
 #' Wanding Zhou \email{Wanding.Zhou@vai.org},
 #' Hui Shen \email{Hui.Shen@vai.org}
 #' Timothy J Triche Jr \email{Tim.Triche@vai.org}
-#' 
+#'
 ## @references To appear
 ## @seealso To appear
 #' @examples
 #'
 #' sset <- readIDATpair(sub('_Grn.idat','',system.file(
 #'     'extdata','4207113116_A_Grn.idat',package='sesameData')))
-#' 
+#'
 #' ## The TCGA standard pipeline
 #' betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
-#' 
+#'
 #' @keywords DNAMethylation Microarray QualityControl
-#' 
+#'
 "_PACKAGE"
 
 #' SigSet class
@@ -60,11 +60,11 @@ setClass(
         pval = 'numeric',
         platform = 'character'))
 
-#' Constructor method of SigSet Class.
+#' Constructor method of SigSet class.
 #'
 #' The function takes a string describing the platform of the data. It can be
 #' one of "HM27", "HM450" or "EPIC".
-#' 
+#'
 #' @name SigSet
 #' @param .Object target object
 #' @param platform "EPIC", "HM450" or "HM27"
@@ -78,6 +78,29 @@ setMethod(
         .Object@platform <- match.arg(platform)
         .Object
     })
+
+#' IG getter generic
+#' 
+#' @param x object of \code{SigSet}
+#' 
+#' @rdname IG-methods
+#' @docType methods
+#' @return The IG slot of \code{SigSet}
+#' @export
+setGeneric("IG", function(x) {
+    standardGeneric("IG")
+    x@IG
+})
+
+#' Getter function of SigSet class.
+#' 
+#' @rdname IG-methods
+#' @aliases IG,SigSet-method
+setMethod("IG", "SigSet", function(x){ x@IG })
+
+# setReplacementMethod("IG", "sigSet", function(x, value){ x@IG <- value})
+
+
 
 #' Wrapper function for building a new \code{SigSet}
 #'
@@ -225,7 +248,7 @@ getSexInfo <- function(sset) {
 
     cleanY <- sesameDataGet(paste0(
         sset@platform,'.probeInfo'))$chrY.clean
-    
+
     xLinked <- sesameDataGet(paste0(
         sset@platform,'.probeInfo'))$chrX.xlinked
 
@@ -237,7 +260,7 @@ getSexInfo <- function(sset) {
     probes <- intersect(names(intens), names(probe2chr))
     intens <- intens[probes]
     probe2chr <- probe2chr[probes]
-    
+
     c(
         medianY=median(totalIntensities(subsetSignal(sset, cleanY))),
         medianX=median(totalIntensities(subsetSignal(sset, xLinked))),
@@ -272,7 +295,7 @@ inferSexKaryotypes <- function(sset) {
     XdivAuto <- sex.info['medianX'] / auto.median
     YdivAuto <- sex.info['medianY'] / auto.median
     if (XdivAuto > 1.2) {
-        if (sex.info['fracXlinked'] >= 0.5) 
+        if (sex.info['fracXlinked'] >= 0.5)
             sexX <- 'XaXi'
         else if (sex.info['fracXmeth'] > sex.info['fracXunmeth'])
             sexX <- 'XiXi'
@@ -289,7 +312,7 @@ inferSexKaryotypes <- function(sset) {
     if ((sexX == 'Xi' || sexX == 'Xa') && XdivAuto >= 1.0 &&
         sex.info['fracXlinked'] >= 0.5)
         sexX <- 'XaXi'
-    
+
     if (YdivAuto > 0.3 || sex.info['medianY'] > 2000)
         sexY <- 'Y'
     else
@@ -356,7 +379,7 @@ inferEthnicity <- function(sset) {
             nondetection.mask=FALSE),
         getAFTypeIbySumAlleles(
             subsetSignal(sset, ccsprobes)))
-    
+
     as.character(predict(ethnicity.model, af))
 }
 
@@ -375,9 +398,9 @@ inferEthnicity <- function(sset) {
 getBetas <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE,
     mask.use.tcga=FALSE, pval.threshold=0.05) {
-    
+
     stopifnot(is(sset, "SigSet"))
-    
+
     betas1 <- pmax(sset@IG[,'M'],1) / pmax(sset@IG[,'M']+sset@IG[,'U'],2)
     betas2 <- pmax(sset@IR[,'M'],1) / pmax(sset@IR[,'M']+sset@IR[,'U'],2)
     betas3 <- pmax(sset@II[,'M'],1) / pmax(sset@II[,'M']+sset@II[,'U'],2)
@@ -419,7 +442,7 @@ getBetasTypeIbySumChannels <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
 
     stopifnot(is(sset, "SigSet"))
-    
+
     ## .oobR <- oobR[rownames(IG),]
     ## .oobG <- oobG[rownames(IR),]
     betas1 <- pmax(sset@IG[,'M']+sset@oobR[,'M'],1) /
@@ -456,12 +479,12 @@ getBetasTypeIbySumChannels <- function(
 getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
 
     stopifnot(is(sset, "SigSet"))
-    
+
     if (any(rownames(sset@oobR) != rownames(sset@IG)))
         stop("oobR-IG not matched. Likely a malformed sset.");
     if (any(rownames(sset@oobG) != rownames(sset@IR)))
         stop("oobG-IR not matched. Likely a malformed sset.");
-    
+
     ## .oobG <- oobG[rownames(IR),]
     af <- c(
         pmax(rowSums(sset@oobR),1)/pmax(rowSums(sset@oobR)+rowSums(sset@IG),2),
@@ -471,7 +494,7 @@ getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
         af <- af[intersect(
             names(af),
             sesameDataGet('ethnicity.inference')$ccs.probes)]
-    
+
     af[order(names(af))]
 }
 
@@ -520,7 +543,7 @@ readIDATpair <- function(prefix.path) {
 ## #' Sample.names is a vector of common prefixes between the *_Grn.idat and
 ## #' *_Red.idat. `num.processes` controls the number of parallel workers. It
 ## #' is default to 1 which means serial.
-## #' 
+## #'
 ## #' @param sample.names a sample list
 ## #' @param base.dir base directory
 ## #' @param raw to return raw data without mapping to signal
@@ -539,7 +562,7 @@ readIDATpair <- function(prefix.path) {
 ##         sample.paths <- paste0(base.dir,'/',sample.names)
 ##     else
 ##         sample.paths <- sample.names
-    
+
 ##     if (num.processes > 1)
 ##         dms <- bplapply(
 ##             sample.paths, readIDAT1,
@@ -562,20 +585,20 @@ readIDATpair <- function(prefix.path) {
 ## }
 
 #' Identify IDATs from a directory
-#' 
+#'
 #' The input is the directory name as a string. The function identifies all
 #' the IDAT files under the directory. The function returns a vector of such
 #' IDAT prefixes under the directory.
-#' 
+#'
 #' @param dir.name the directory containing the IDAT files.
 #' @param recursive search IDAT files recursively
 #' @return the IDAT prefixes (a vector of character strings).
-#' 
+#'
 #' @examples
 #' ## only search what are directly under
 #' IDATprefixes <- searchIDATprefixes(
 #'     system.file("extdata", "", package = "sesameData"))
-#' 
+#'
 #' ## search files recursively
 #' IDATprefixes <- searchIDATprefixes(
 #'     system.file(package = "sesameData"), recursive=TRUE)
@@ -668,14 +691,14 @@ chipAddressToSignal <- function(dm) {
 #' takes a \code{SigSet} as input. The higher the GCT score, the more likely
 #' the incomplete conversion. The lower the GCT score, the more likely
 #' over-conversion.
-#' 
+#'
 #' @param sset signal set
 #' @param use.median use median to compute GCT instead of mean
 #' @return GCT score (the higher, the more incomplete conversion)
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet('HM450')
 #' bisConversionControl(sset)
-#' 
+#'
 #' @export
 bisConversionControl <- function(sset, use.median=FALSE) {
     extC <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extC
@@ -692,7 +715,7 @@ bisConversionControl <- function(sset, use.median=FALSE) {
 #### Following are obsolete and exist for backward-compatibility #####
 
 #' SignalSet class
-#' 
+#'
 #' @docType class
 #' @importFrom R6 R6Class
 #' @importFrom stats ecdf
@@ -731,9 +754,9 @@ SignalSet <- R6Class(
         oobR = NULL,
         ctl = NULL,
         pval = NULL,
-    
+
         initialize = function(x) self$platform <- x,
-    
+
         toM = function() {
             m1 <- log2(pmax(IG[,'M'],1) / pmax(IG[,'U']))
             m2 <- log2(pmax(IR[,'M'],1) / pmax(IR[,'U']))
@@ -742,7 +765,7 @@ SignalSet <- R6Class(
             m[pval[names(m)]>0.05] <- NA
             m[order(names(m))]
         },
-    
+
         totalIntensities = function() {
             rowSums(rbind(IG, IR, II))
         }
@@ -757,7 +780,7 @@ SignalSet <- R6Class(
 #' @return signalset in S4
 #' @import methods
 #' @examples
-#' 
+#'
 #' sset <- SignalSet$new('EPIC')
 #' sset$IG <- matrix(1:4, nrow=2)
 #' sset$IR <- matrix(1:4, nrow=2)

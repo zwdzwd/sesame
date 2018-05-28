@@ -12,32 +12,47 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+# Installation
+
+From Bioconductor
+```{r, eval=FALSE}
+source("https://bioconductor.org/biocLite.R")
+biocLite("sesame")
+```
+
+Development version can be installed from github
+```{r, eval=FALSE}
+library(devtools)
+install_github('zwdzwd/sesameData')
+install_github('zwdzwd/sesame')
+```
+
 # Data Structure for Signal Intensities
 
-SeSAMe is designed to process Infinium DNA methylation data. It currently 
-supports EPIC, HM450 and HM27 platforms. The design includes a light-weight 
-full exposure of internal signal intensities, an essential information for 
+SeSAMe is designed to process Infinium DNA methylation data. It currently
+supports EPIC, HM450 and HM27 platforms. The design includes a light-weight
+full exposure of internal signal intensities, an essential information for
 users of the Infinium Platform. Ignoring intensities can cause substantial
 artifacts in determining epigenetic silencing. Central to the SeSAMe platform
 is the data structure named SigSet, a S4 class with slots containing the
 signals for six different classes of probes:
 
-1) `II` - Type-II probes; 
+1) `II` - Type-II probes;
 2) `IR` - Type-I Red channel probes;
-3) `IG` - Type-I Grn channel probes; 
+3) `IG` - Type-I Grn channel probes;
 4) `oobG` - Out-of-band Grn channel probes (matching Type-I Red channel probes
-in number); 
+in number);
 5) `oobR` - Out-of-band Red channel probes (matching Type-I Grn channel probes
 in number);
 6) `ctl` - control probes.
 
 For everything besides the control probes, signal intensities are stored as an
-`Nx2` numeric matrix with `N` representing the number of probes in the class. 
-Two columns representing the methylated allele and the unmethylated allele. 
-Previous implmentation is based on R6 Reference class SignalSet. Current 
-implementation based on SigSet S4 is more standardized. For backward 
+`Nx2` numeric matrix with `N` representing the number of probes in the class.
+Two columns representing the methylated allele and the unmethylated allele.
+Previous implmentation is based on R6 Reference class SignalSet. Current
+implementation based on SigSet S4 is more standardized. For backward
 compatibility, a function `signalR6toS4` is provided to transform the old
-`SignalSet` to `SigSet`. 
+`SignalSet` to `SigSet`.
 
 ```{r}
 library(sesameData)
@@ -65,7 +80,7 @@ as one can see the probe names (row names) of `IR` always coincide with the
 probe names (row names) of `oobG` (and vice versa). This is because the
 out-of-band probe signal for red channel probes is in green channel
 (and vice versa). Lastly, Control probes are represented in a data frame with
-the last column holding the type of the control. 
+the last column holding the type of the control.
 ```{r}
 head(slot(sset, 'ctl'))
 ```
@@ -73,7 +88,7 @@ head(slot(sset, 'ctl'))
 # Functionalities
 
 SeSAMe implement stricter QC and proper preprocessing including comprehensive
-probe quality masking, bleed-through correction in background subtraction, 
+probe quality masking, bleed-through correction in background subtraction,
 nonlinear dye bias correction, stricter nondetection calling and control for
 bisulfite conversion based on C/T-extension probes. The package also provides
 functionalities convenient for people using this platform, such as the
@@ -93,13 +108,13 @@ ssets <- lapply(
 A simple list of "SigSet"s are returned. One can also just provide a vector
 of file paths prefixes (excluding `_Red.idat` and `_Grn.idat`, one prefix for
 a pair of IDATs) and call `readIDATpair` directly.
-        
+
 ### Background subtraction
 
 Like many other Infinium Methylation-targeted software, SeSAMe implements the
-background subtraction based on normal-exponential deconvolution using 
-out-of-band probes `noob` 
-([Triche et al. 2013](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3627582/)) 
+background subtraction based on normal-exponential deconvolution using
+out-of-band probes `noob`
+([Triche et al. 2013](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3627582/))
 and optionally with extra bleed-through subtraction. Signal bleed-through
 happens when measurement from one channel affects the measurement in the other
 channel. SeSAMe's `noobsb` further removes residual background by regressing
@@ -111,7 +126,7 @@ sset.nb <- noobsb(sset)
 
 ### Dye bias correction
 
-Dye bias refers to the difference in signal intensity between the two color 
+Dye bias refers to the difference in signal intensity between the two color
 channel. SeSAMe offers two flavors of dye bias correction: linear scaling
 (`dyeBiasCorr`) and nonlinear scaling (`dyeBiasCorrTypeINorm`). Linear scaling
 equalize the mean of all probes from the two color channel.
@@ -141,19 +156,19 @@ qqplot(
 abline(0,1,lty='dashed')
 ```
 
-Note that linear scaling does not shift beta values of Type-I probes while 
+Note that linear scaling does not shift beta values of Type-I probes while
 nonlinear scaling does shift beta values of Type-I probes.
 
 ### Get betas
 
 Beta values are defined as `methylated signal`/(`methylated signal`
-+ `unmethylated signal`). It can be computed using `getBetas` function. 
++ `unmethylated signal`). It can be computed using `getBetas` function.
 The output is a named vector with probe ID as name.  There are two options
 for `getBetas` that affects probe masking. The first is
-`quality.mask=TRUE/FALSE` which switches probe quality masking. The quality 
+`quality.mask=TRUE/FALSE` which switches probe quality masking. The quality
 masking includes mapping issues, SNPs and non-uniqueness, and is described
 in [Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
-`nondetection.mask = TRUE/FALSE` is used to switch masking of nondetection 
+`nondetection.mask = TRUE/FALSE` is used to switch masking of nondetection
 based on detection P-value. Both masks are recommended to ensure data quality
 and defaulted to TRUE.
 ```{r}
@@ -161,7 +176,7 @@ betas <- getBetas(sset)
 head(betas)
 ```
 
-Beta values for Type-I probes can also be obtained by summing up the two 
+Beta values for Type-I probes can also be obtained by summing up the two
 in-band channel and out-of-band channel. This rescues probes with SNP hitting
 the extension base and hence switching color channel. More details can be
 found in
@@ -178,7 +193,7 @@ extraSNPAFs <- getAFTypeIbySumAlleles(sset)
 
 ### Sample/experiment QC
 
-SeSAMe implements inference of sex, age, ethnicity. These are valuable 
+SeSAMe implements inference of sex, age, ethnicity. These are valuable
 information for checking the integrity of the experiment and detecting sample
 swaps.
 
@@ -209,7 +224,7 @@ predictAgeHorvath353(betas)
 
 #### Mean intensity
 
-The mean intensity of all the probes characterize the quantity of input DNA 
+The mean intensity of all the probes characterize the quantity of input DNA
 and efficiency of probe hybridization.
 ```{r}
 meanIntensity(sset)
@@ -218,10 +233,10 @@ meanIntensity(sset)
 #### Bisulfite conversion control using GCT scores
 
 Infinium platforms are intrinsically robust to incomplete bisulfite conversion
-as non-converted probes would fail to hybridize to the target. Residual 
-incomplete bisulfite conversion can be quantified using GCT score based on 
-C/T-extension probes. Details of this method can be found in 
-[Zhou et al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930). 
+as non-converted probes would fail to hybridize to the target. Residual
+incomplete bisulfite conversion can be quantified using GCT score based on
+C/T-extension probes. Details of this method can be found in
+[Zhou et al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
 The closer the score to 1.0, the more complete the bisulfite conversion.
 ```{r}
 bisConversionControl(sset)
@@ -249,19 +264,19 @@ visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 
 ### Differential methylation
 
-SeSAMe tests differential methylation on each locus and groups adjacent 
+SeSAMe tests differential methylation on each locus and groups adjacent
 significantly differentially methylated loci into segments.
 ```{r, message=FALSE}
 data <- sesameDataGet('HM450.76.TCGA.matched')
 cf <- DMR(data$betas, data$sampleInfo, ~type, platform='HM450')
 ```
 
-The result is a list of differentially methylated CpG locus grouped into 
-segments. Each row is a CpG site and `Seg.ID` column specifies which segment 
-the CpG falls into. A segment can have one or more CpG sites. The start and 
-end coordinates for each segment is labeled in `Seg.start` and `Seg.end` 
-column. The significance of the segment is shown in `Seg.Pval` and 
-`Seg.Pval.adj` (after multiple comparison adjustment). The significance of 
+The result is a list of differentially methylated CpG locus grouped into
+segments. Each row is a CpG site and `Seg.ID` column specifies which segment
+the CpG falls into. A segment can have one or more CpG sites. The start and
+end coordinates for each segment is labeled in `Seg.start` and `Seg.end`
+column. The significance of the segment is shown in `Seg.Pval` and
+`Seg.Pval.adj` (after multiple comparison adjustment). The significance of
 each CpG locus is shown in `Pr(>|t|)`. `topLoci` function essentially pulls
 the rows by `Pr(>|t|)`.
 ```{r}
@@ -273,7 +288,7 @@ head(topLoci(cf1))
 ```{r}
 head(topSegments(cf1))
 ```
-      
+
 To visualize top DMR,
 ```{r, message=FALSE, fig.width=6}
 visualizeProbes(
@@ -298,8 +313,8 @@ visualizeSegments(segs)
 
 ### Cell Composition Deconvolution
 
-SeSAMe estimates leukocyte fraction using a two-component model.This function 
-works for samples whose targeted cell-of-origin is not related to white blood 
+SeSAMe estimates leukocyte fraction using a two-component model.This function
+works for samples whose targeted cell-of-origin is not related to white blood
 cells.
 ```{r, message=FALSE}
 betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas

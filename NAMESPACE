@@ -3,6 +3,7 @@
 export(BetaValueToMValue)
 export(DML)
 export(DMR)
+export(IG)
 export(MValueToBetaValue)
 export(SigSet)
 export(SignalSet)
