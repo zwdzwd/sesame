@@ -79,29 +79,6 @@ setMethod(
         .Object
     })
 
-#' IG getter generic
-#' 
-#' @param x object of \code{SigSet}
-#' 
-#' @rdname IG-methods
-#' @docType methods
-#' @return The IG slot of \code{SigSet}
-#' @export
-setGeneric("IG", function(x) {
-    standardGeneric("IG")
-    x@IG
-})
-
-#' Getter function of SigSet class.
-#' 
-#' @rdname IG-methods
-#' @aliases IG,SigSet-method
-setMethod("IG", "SigSet", function(x){ x@IG })
-
-# setReplacementMethod("IG", "sigSet", function(x, value){ x@IG <- value})
-
-
-
 #' Wrapper function for building a new \code{SigSet}
 #'
 #' The function takes a string describing the platform of the data. It can be
