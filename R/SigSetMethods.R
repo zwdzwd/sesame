@@ -27,7 +27,7 @@ setGeneric("pval<-", function(x, value) {
 #' df <- pval(sset)
 #' df[1] <- 0.01
 #' pval(sset) <- df 
-setReplaceMethod("pval", "SigSet", function(x, value){ x@pval <- value})
+setReplaceMethod("pval", "SigSet", function(x, value){ x@pval <- value; x})
 
 #' pval getter generic
 #' 
@@ -76,7 +76,7 @@ setGeneric("IG<-", function(x, value) {
 #' df <- IG(sset)
 #' df[1,1] <- 10
 #' IG(sset) <- df 
-setReplaceMethod("IG", "SigSet", function(x, value){ x@IG <- value})
+setReplaceMethod("IG", "SigSet", function(x, value){ x@IG <- value; x})
 
 #' IG getter generic
 #' 
@@ -125,7 +125,7 @@ setGeneric("IR<-", function(x, value) {
 #' df <- IR(sset)
 #' df[1,1] <- 10
 #' IR(sset) <- df 
-setReplaceMethod("IR", "SigSet", function(x, value){ x@IR <- value})
+setReplaceMethod("IR", "SigSet", function(x, value){ x@IR <- value; x})
 
 #' IR getter generic
 #' 
@@ -174,7 +174,7 @@ setGeneric("II<-", function(x, value) {
 #' df <- II(sset)
 #' df[1,1] <- 10
 #' II(sset) <- df 
-setReplaceMethod("II", "SigSet", function(x, value){ x@II <- value})
+setReplaceMethod("II", "SigSet", function(x, value){ x@II <- value; x})
 
 #' II getter generic
 #' 
@@ -223,7 +223,7 @@ setGeneric("oobG<-", function(x, value) {
 #' df <- oobG(sset)
 #' df[1,1] <- 10
 #' oobG(sset) <- df 
-setReplaceMethod("oobG", "SigSet", function(x, value){ x@oobG <- value})
+setReplaceMethod("oobG", "SigSet", function(x, value){ x@oobG <- value; x})
 
 #' oobG getter generic
 #' 
@@ -272,7 +272,7 @@ setGeneric("oobR<-", function(x, value) {
 #' df <- oobR(sset)
 #' df[1,1] <- 10
 #' oobR(sset) <- df 
-setReplaceMethod("oobR", "SigSet", function(x, value){ x@oobR <- value})
+setReplaceMethod("oobR", "SigSet", function(x, value){ x@oobR <- value; x})
 
 #' oobR getter generic
 #' 
@@ -294,3 +294,52 @@ setGeneric("oobR", function(x) {
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(oobR(sset))
 setMethod("oobR", "SigSet", function(x){ x@oobR })
+
+############
+#### ctl ###
+############
+#' ctl replacement generic
+#' 
+#' @param x object of \code{SigSet}
+#' @param value new value
+#' 
+#' @rdname ctl-replace-methods
+#' @docType methods
+#' @export
+setGeneric("ctl<-", function(x, value) {
+    standardGeneric("ctl<-")
+})
+
+#' Replace ctl slot of SigSet class
+#' 
+#' @rdname ctl-replace-methods
+#' @return a new \code{SigSet}
+#' @docType methods
+#' @aliases ctl<-,SigSet-method
+#' @examples 
+#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' df <- ctl(sset)
+#' df[1,1] <- 10
+#' ctl(sset) <- df 
+setReplaceMethod("ctl", "SigSet", function(x, value){ x@ctl <- value; x})
+
+#' ctl getter generic
+#' 
+#' @param x object of \code{SigSet}
+#' 
+#' @rdname ctl-methods
+#' @docType methods
+#' @export
+setGeneric("ctl", function(x) {
+    standardGeneric("ctl")
+})
+
+#' Get ctl slot of SigSet class
+#' 
+#' @rdname ctl-methods
+#' @return The ctl slot of \code{SigSet}
+#' @aliases ctl,SigSet-method
+#' @examples 
+#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' head(ctl(sset))
+setMethod("ctl", "SigSet", function(x){ x@ctl })
