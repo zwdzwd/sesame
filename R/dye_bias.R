@@ -23,22 +23,22 @@ dyeBiasCorr <- function(sset, ref=NULL) {
     fR <- ref/normctl['R']
     fG <- ref/normctl['G']
 
-    sset@IG <- matrix(
-        c(fG*sset@IG[,'M'], fG*sset@IG[,'U']),
-        nrow=nrow(sset@IG), ncol=ncol(sset@IG), dimnames=dimnames(sset@IG))
+    IG(sset) <- matrix(
+        c(fG*IG(sset)[,'M'], fG*IG(sset)[,'U']),
+        nrow=nrow(IG(sset)), ncol=ncol(IG(sset)), dimnames=dimnames(IG(sset)))
     
-    sset@IR <- matrix(
-        c(fR*sset@IR[,'M'], fR*sset@IR[,'U']),
-        nrow=nrow(sset@IR), ncol=ncol(sset@IR), dimnames=dimnames(sset@IR))
+    IR(sset) <- matrix(
+        c(fR*IR(sset)[,'M'], fR*IR(sset)[,'U']),
+        nrow=nrow(IR(sset)), ncol=ncol(IR(sset)), dimnames=dimnames(IR(sset)))
     
-    sset@II <- matrix(
-        c(fG*sset@II[,'M'], fR*sset@II[,'U']),
-        nrow=nrow(sset@II), ncol=ncol(sset@II), dimnames=dimnames(sset@II))
+    II(sset) <- matrix(
+        c(fG*II(sset)[,'M'], fR*II(sset)[,'U']),
+        nrow=nrow(II(sset)), ncol=ncol(II(sset)), dimnames=dimnames(II(sset)))
     
-    sset@ctl$G <- fG*sset@ctl$G
-    sset@ctl$R <- fR*sset@ctl$R
-    sset@oobG <- fG*sset@oobG
-    sset@oobR <- fR*sset@oobR
+    ctl(sset)$G <- fG*ctl(sset)$G
+    ctl(sset)$R <- fR*ctl(sset)$R
+    oobG(sset) <- fG*oobG(sset)
+    oobR(sset) <- fR*oobR(sset)
     sset
 }
 
@@ -83,69 +83,69 @@ dyeBiasCorrMostBalanced <- function(ssets) {
 dyeBiasCorrTypeINorm <- function(sset) {
 
     stopifnot(is(sset, "SigSet"))
-    maxIG <- max(sset@IG)
-    minIG <- min(sset@IG)
-    maxIR <- max(sset@IR)
-    minIR <- min(sset@IR)
+    maxIG <- max(IG(sset))
+    minIG <- min(IG(sset))
+    maxIR <- max(IR(sset))
+    minIR <- min(IR(sset))
 
-    IR1 <- sort(as.numeric(sset@IR))
+    IR1 <- sort(as.numeric(IR(sset)))
     IR2 <- sort(as.vector(normalize.quantiles.use.target(
-        matrix(IR1), as.vector(sset@IG))))
+        matrix(IR1), as.vector(IG(sset)))))
     
     IRmid <- (IR1 + IR2) / 2.0
     maxIRmid <- max(IRmid)
     minIRmid <- min(IRmid)
 
     fitfunRed <- function(data) {
-        insupport    <- data <= maxIR & data >= minIR & (!is.na(data))
-        oversupport  <- data > maxIR & (!is.na(data))
-        undersupport <- data < minIR & (!is.na(data))
-        data[insupport]    <- approx(x=IR1, y=IRmid, xout=data[insupport])$y
-        data[oversupport]  <- data[oversupport] - maxIR + maxIRmid
-        data[undersupport] <- minIRmid/ minIR * data[undersupport]
+        insupp    <- data <= maxIR & data >= minIR & (!is.na(data))
+        oversupp  <- data > maxIR & (!is.na(data))
+        undersupp <- data < minIR & (!is.na(data))
+        data[insupp]    <- approx(x=IR1, y=IRmid, xout=data[insupp])$y
+        data[oversupp]  <- data[oversupp] - maxIR + maxIRmid
+        data[undersupp] <- minIRmid/ minIR * data[undersupp]
         data
     }
 
-    IG1 <- sort(as.numeric(sset@IG))
+    IG1 <- sort(as.numeric(IG(sset)))
     IG2 <- sort(as.vector(normalize.quantiles.use.target(
-        matrix(IG1), as.vector(sset@IR))))
+        matrix(IG1), as.vector(IR(sset)))))
     
     IGmid <- (IG1 + IG2) / 2.0
     maxIGmid <- max(IGmid)
     minIGmid <- min(IGmid)
 
     fitfunGrn <- function(data) {
-        insupport    <- data <= maxIG & data >= minIG & (!is.na(data))
-        oversupport  <- data > maxIG & (!is.na(data))
-        undersupport <- data < minIG & (!is.na(data))
-        data[insupport]    <- approx(x=IG1, y=IGmid, xout=data[insupport])$y
-        data[oversupport]  <- data[oversupport] - maxIG + maxIGmid
-        data[undersupport] <- minIGmid/ minIG * data[undersupport]
+        insupp    <- data <= maxIG & data >= minIG & (!is.na(data))
+        oversupp  <- data > maxIG & (!is.na(data))
+        undersupp <- data < minIG & (!is.na(data))
+        data[insupp]    <- approx(x=IG1, y=IGmid, xout=data[insupp])$y
+        data[oversupp]  <- data[oversupp] - maxIG + maxIGmid
+        data[undersupp] <- minIGmid/ minIG * data[undersupp]
         data
     }
 
     ## fit type II
-    sset@II[,'U'] <- fitfunRed(sset@II[,'U'])
-    sset@II[,'M'] <- fitfunGrn(sset@II[,'M'])
+    II(sset)[,'U'] <- fitfunRed(II(sset)[,'U'])
+    II(sset)[,'M'] <- fitfunGrn(II(sset)[,'M'])
 
     ## IR
-    IR <- fitfunRed(sset@IR)
-    ## dim(IRmid) <- dim(sset@IR)
-    ## dimnames(IRmid) <- dimnames(sset@IR)
-    sset@IR <- IR
+    IR <- fitfunRed(IR(sset))
+    ## dim(IRmid) <- dim(IR(sset))
+    ## dimnames(IRmid) <- dimnames(IR(sset))
+    IR(sset) <- IR
     ## IG
-    IG <- fitfunGrn(sset@IG)
-    ## dim(IGmid) <- dim(sset@IG)
-    ## dimnames(IGmid) <- dimnames(sset@IG)
-    sset@IG <- IG
+    IG <- fitfunGrn(IG(sset))
+    ## dim(IGmid) <- dim(IG(sset))
+    ## dimnames(IGmid) <- dimnames(IG(sset))
+    IG(sset) <- IG
 
     ## fit control
-    sset@ctl[,'R'] <- fitfunRed(sset@ctl[,'R'])
-    sset@ctl[,'G'] <- fitfunGrn(sset@ctl[,'G'])
+    ctl(sset)[,'R'] <- fitfunRed(ctl(sset)[,'R'])
+    ctl(sset)[,'G'] <- fitfunGrn(ctl(sset)[,'G'])
 
     ## fit oob
-    sset@oobR <- fitfunRed(sset@oobR)
-    sset@oobG <- fitfunGrn(sset@oobG)
+    oobR(sset) <- fitfunRed(oobR(sset))
+    oobG(sset) <- fitfunGrn(oobG(sset))
 
     sset
 }
@@ -154,53 +154,53 @@ dyeBiasCorrTypeINorm <- function(sset) {
 dyeBiasCorrTypeINormG2R <- function(sset) {
 
     stopifnot(is(sset, "SigSet"))
-    maxIG <- max(sset@IG)
-    minIG <- min(sset@IG)
-    maxIR <- max(sset@IR)
-    minIR <- min(sset@IR)
+    maxIG <- max(IG(sset))
+    minIG <- min(IG(sset))
+    maxIR <- max(IR(sset))
+    minIR <- min(IR(sset))
 
-    IG1 <- sort(as.numeric(sset@IG))
+    IG1 <- sort(as.numeric(IG(sset)))
     IG2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(
-        matrix(IG1), as.vector(sset@IR))))
+        matrix(IG1), as.vector(IR(sset)))))
     
     fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx)$y
 
     ## fit type II
-    insupport <- sset@II[,'M'] <= maxIG & sset@II[,'M'] >= minIG
-    oversupport <- sset@II[,'M'] > maxIG
-    undersupport <- sset@II[,'M'] < minIG
+    insupp <- II(sset)[,'M'] <= maxIG & II(sset)[,'M'] >= minIG
+    oversupp <- II(sset)[,'M'] > maxIG
+    undersupp <- II(sset)[,'M'] < minIG
 
-    sset@II[insupport,'M'] <- fitfun(sset@II[insupport,'M'])
+    II(sset)[insupp,'M'] <- fitfun(II(sset)[insupp,'M'])
 
-    sset@II[oversupport,'M'] <- maxIR +
-        (sset@II[oversupport,'M'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
+    II(sset)[oversupp,'M'] <- maxIR +
+        (II(sset)[oversupp,'M'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
 
-    sset@II[undersupport,'M'] <- minIR / minIG * sset@II[undersupport,'M']
+    II(sset)[undersupp,'M'] <- minIR / minIG * II(sset)[undersupp,'M']
 
     ## fit IG
-    IG.fit <- fitfun(sset@IG)
-    dim(IG.fit) <- dim(sset@IG)
-    dimnames(IG.fit) <- dimnames(sset@IG)
-    sset@IG <- IG.fit
+    IG.fit <- fitfun(IG(sset))
+    dim(IG.fit) <- dim(IG(sset))
+    dimnames(IG.fit) <- dimnames(IG(sset))
+    IG(sset) <- IG.fit
 
     ## fit control
-    insupport <- sset@ctl[,'G'] <= maxIG &
-        sset@ctl[,'G'] >= minIG & (!is.na(sset@ctl[,'G']))
-    oversupport <- sset@ctl[,'G'] > maxIG & (!is.na(sset@ctl[,'G']))
-    undersupport <- sset@ctl[,'G'] < minIG & (!is.na(sset@ctl[,'G']))
-    sset@ctl[insupport,'G'] <- fitfun(sset@ctl[insupport,'G'])
-    sset@ctl[oversupport,'G'] <- maxIR +
-        (sset@ctl[oversupport,'G'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    sset@ctl[undersupport,'G'] <- minIR / minIG * sset@ctl[undersupport,'G']
+    insupp <- ctl(sset)[,'G'] <= maxIG &
+        ctl(sset)[,'G'] >= minIG & (!is.na(ctl(sset)[,'G']))
+    oversupp <- ctl(sset)[,'G'] > maxIG & (!is.na(ctl(sset)[,'G']))
+    undersupp <- ctl(sset)[,'G'] < minIG & (!is.na(ctl(sset)[,'G']))
+    ctl(sset)[insupp,'G'] <- fitfun(ctl(sset)[insupp,'G'])
+    ctl(sset)[oversupp,'G'] <- maxIR +
+        (ctl(sset)[oversupp,'G'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
+    ctl(sset)[undersupp,'G'] <- minIR / minIG * ctl(sset)[undersupp,'G']
 
     ## fit oob
-    insupport <- sset@oobG <= maxIG & sset@oobG >= minIG & (!is.na(sset@oobG))
-    oversupport <- sset@oobG > maxIG & (!is.na(sset@oobG))
-    undersupport <- sset@oobG < minIG & (!is.na(sset@oobG))
-    sset@oobG[insupport] <- fitfun(sset@oobG[insupport])
-    sset@oobG[oversupport] <- maxIR +
-        (sset@oobG[oversupport] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    sset@oobG[undersupport] <- minIR / minIG * sset@oobG[undersupport]
+    insupp <- oobG(sset) <= maxIG & oobG(sset) >= minIG & (!is.na(oobG(sset)))
+    oversupp <- oobG(sset) > maxIG & (!is.na(oobG(sset)))
+    undersupp <- oobG(sset) < minIG & (!is.na(oobG(sset)))
+    oobG(sset)[insupp] <- fitfun(oobG(sset)[insupp])
+    oobG(sset)[oversupp] <- maxIR +
+        (oobG(sset)[oversupp] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
+    oobG(sset)[undersupp] <- minIR / minIG * oobG(sset)[undersupp]
 
     sset
 }
@@ -210,49 +210,49 @@ dyeBiasCorrTypeINormG2R <- function(sset) {
 dyeBiasCorrTypeINormR2G <- function(sset) {
 
     stopifnot(is(sset, "SigSet"))
-    maxIG <- max(sset@IG)
-    minIG <- min(sset@IG)
-    maxIR <- max(sset@IR)
-    minIR <- min(sset@IR)
+    maxIG <- max(IG(sset))
+    minIG <- min(IG(sset))
+    maxIR <- max(IR(sset))
+    minIR <- min(IR(sset))
 
-    IR1 <- sort(as.numeric(sset@IR))
+    IR1 <- sort(as.numeric(IR(sset)))
     IR2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(
-        matrix(IR1), as.vector(sset@IG))))
+        matrix(IR1), as.vector(IG(sset)))))
     fitfun <- function(xx) approx(x=IR1, y=IR2, xout=xx)$y
 
     ## fit type II
-    insupport <- sset@II[,'U'] <= maxIR & sset@II[,'U'] >= minIR
-    oversupport <- sset@II[,'U'] > maxIR
-    undersupport <- sset@II[,'U'] < minIR
-    sset@II[insupport,'U'] <- fitfun(sset@II[insupport,'U'])
-    sset@II[oversupport,'U'] <- maxIG +
-        (sset@II[oversupport,'U'] - maxIR) * (maxIG-minIG) / (maxIR-minIR)
-    sset@II[undersupport,'U'] <- minIG / minIR * sset@II[undersupport,'U']
+    insupp <- II(sset)[,'U'] <= maxIR & II(sset)[,'U'] >= minIR
+    oversupp <- II(sset)[,'U'] > maxIR
+    undersupp <- II(sset)[,'U'] < minIR
+    II(sset)[insupp,'U'] <- fitfun(II(sset)[insupp,'U'])
+    II(sset)[oversupp,'U'] <- maxIG +
+        (II(sset)[oversupp,'U'] - maxIR) * (maxIG-minIG) / (maxIR-minIR)
+    II(sset)[undersupp,'U'] <- minIG / minIR * II(sset)[undersupp,'U']
 
     ## fit IR
-    IR.fit <- fitfun(sset@IR)
-    dim(IR.fit) <- dim(sset@IR)
-    dimnames(IR.fit) <- dimnames(sset@IR)
-    sset@IR <- IR.fit
+    IR.fit <- fitfun(IR(sset))
+    dim(IR.fit) <- dim(IR(sset))
+    dimnames(IR.fit) <- dimnames(IR(sset))
+    IR(sset) <- IR.fit
 
     ## fit control
-    insupport <- sset@ctl[,'R'] <= maxIR & sset@ctl[,'R'] >= minIR &
-        (!is.na(sset@ctl[,'R']))
-    oversupport <- sset@ctl[,'R'] > maxIR & (!is.na(sset@ctl[,'R']))
-    undersupport <- sset@ctl[,'R'] < minIR & (!is.na(sset@ctl[,'R']))
-    sset@ctl[insupport,'R'] <- fitfun(sset@ctl[insupport,'R'])
-    sset@ctl[oversupport,'R'] <- maxIG +
-        (sset@ctl[oversupport,'R'] - maxIR) * (maxIG-minIG) / (maxIR-minIR)
-    sset@ctl[undersupport,'R'] <- minIG / minIR * sset@ctl[undersupport,'R']
+    insupp <- ctl(sset)[,'R'] <= maxIR & ctl(sset)[,'R'] >= minIR &
+        (!is.na(ctl(sset)[,'R']))
+    oversupp <- ctl(sset)[,'R'] > maxIR & (!is.na(ctl(sset)[,'R']))
+    undersupp <- ctl(sset)[,'R'] < minIR & (!is.na(ctl(sset)[,'R']))
+    ctl(sset)[insupp,'R'] <- fitfun(ctl(sset)[insupp,'R'])
+    ctl(sset)[oversupp,'R'] <- maxIG +
+        (ctl(sset)[oversupp,'R'] - maxIR) * (maxIG-minIG) / (maxIR-minIR)
+    ctl(sset)[undersupp,'R'] <- minIG / minIR * ctl(sset)[undersupp,'R']
 
     ## fit oob
-    insupport <- sset@oobR <= maxIR & sset@oobR >= minIR & (!is.na(sset@oobR))
-    oversupport <- sset@oobR > maxIR & (!is.na(sset@oobR))
-    undersupport <- sset@oobR < minIR & (!is.na(sset@oobR))
-    sset@oobR[insupport] <- fitfun(sset@oobR[insupport])
-    sset@oobR[oversupport] <- maxIG +
-        (sset@oobR[oversupport] - maxIR) * (maxIG-minIG) / (maxIR-minIR)
-    sset@oobR[undersupport] <- minIG / minIR * sset@oobR[undersupport]
+    insupp <- oobR(sset) <= maxIR & oobR(sset) >= minIR & (!is.na(oobR(sset)))
+    oversupp <- oobR(sset) > maxIR & (!is.na(oobR(sset)))
+    undersupp <- oobR(sset) < minIR & (!is.na(oobR(sset)))
+    oobR(sset)[insupp] <- fitfun(oobR(sset)[insupp])
+    oobR(sset)[oversupp] <- maxIG +
+        (oobR(sset)[oversupp] - maxIR) * (maxIG-minIG) / (maxIR-minIR)
+    oobR(sset)[undersupp] <- minIG / minIR * oobR(sset)[undersupp]
 
     sset
 }
@@ -261,49 +261,49 @@ dyeBiasCorrTypeINormR2G <- function(sset) {
 dyeBiasCorrTypeINormMpU <- function(sset) {
 
     stopifnot(is(sset, "SigSet"))
-    maxIG <- max(rowSums(sset@IG))
-    minIG <- min(rowSums(sset@IG))
-    maxIR <- max(rowSums(sset@IR))
-    minIR <- min(rowSums(sset@IR))
+    maxIG <- max(rowSums(IG(sset)))
+    minIG <- min(rowSums(IG(sset)))
+    maxIR <- max(rowSums(IR(sset)))
+    minIR <- min(rowSums(IR(sset)))
 
-    IG1 <- sort(as.numeric(rowSums(sset@IG)))
+    IG1 <- sort(as.numeric(rowSums(IG(sset))))
     IG2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(
-        matrix(IG1), as.vector(rowSums(sset@IR)))))
+        matrix(IG1), as.vector(rowSums(IR(sset))))))
     fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx)$y
 
     ## fit type II
-    insupport <- sset@II[,'M'] <= maxIG & sset@II[,'M'] >= minIG
-    oversupport <- sset@II[,'M'] > maxIG
-    undersupport <- sset@II[,'M'] < minIG
-    sset@II[insupport,'M'] <- fitfun(sset@II[insupport,'M'])
-    sset@II[oversupport,'M'] <- maxIR +
-        (sset@II[oversupport,'M'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    sset@II[undersupport,'M'] <- minIR / minIG * sset@II[undersupport,'M']
+    insupp <- II(sset)[,'M'] <= maxIG & II(sset)[,'M'] >= minIG
+    oversupp <- II(sset)[,'M'] > maxIG
+    undersupp <- II(sset)[,'M'] < minIG
+    II(sset)[insupp,'M'] <- fitfun(II(sset)[insupp,'M'])
+    II(sset)[oversupp,'M'] <- maxIR +
+        (II(sset)[oversupp,'M'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
+    II(sset)[undersupp,'M'] <- minIR / minIG * II(sset)[undersupp,'M']
 
     ## fit IG
-    IG.fit <- fitfun(sset@IG)
-    dim(IG.fit) <- dim(sset@IG)
-    dimnames(IG.fit) <- dimnames(sset@IG)
-    sset@IG <- IG.fit
+    IG.fit <- fitfun(IG(sset))
+    dim(IG.fit) <- dim(IG(sset))
+    dimnames(IG.fit) <- dimnames(IG(sset))
+    IG(sset) <- IG.fit
 
     ## fit control
-    insupport <- sset@ctl[,'G'] <= maxIG &
-        sset@ctl[,'G'] >= minIG & (!is.na(sset@ctl[,'G']))
-    oversupport <- sset@ctl[,'G'] > maxIG & (!is.na(sset@ctl[,'G']))
-    undersupport <- sset@ctl[,'G'] < minIG & (!is.na(sset@ctl[,'G']))
-    sset@ctl[insupport,'G'] <- fitfun(sset@ctl[insupport,'G'])
-    sset@ctl[oversupport,'G'] <- maxIR +
-        (sset@ctl[oversupport,'G'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    sset@ctl[undersupport,'G'] <- minIR / minIG * sset@ctl[undersupport,'G']
+    insupp <- ctl(sset)[,'G'] <= maxIG &
+        ctl(sset)[,'G'] >= minIG & (!is.na(ctl(sset)[,'G']))
+    oversupp <- ctl(sset)[,'G'] > maxIG & (!is.na(ctl(sset)[,'G']))
+    undersupp <- ctl(sset)[,'G'] < minIG & (!is.na(ctl(sset)[,'G']))
+    ctl(sset)[insupp,'G'] <- fitfun(ctl(sset)[insupp,'G'])
+    ctl(sset)[oversupp,'G'] <- maxIR +
+        (ctl(sset)[oversupp,'G'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
+    ctl(sset)[undersupp,'G'] <- minIR / minIG * ctl(sset)[undersupp,'G']
 
     ## fit oob
-    insupport <- sset@oobG <= maxIG & sset@oobG >= minIG & (!is.na(sset@oobG))
-    oversupport <- sset@oobG > maxIG & (!is.na(sset@oobG))
-    undersupport <- sset@oobG < minIG & (!is.na(sset@oobG))
-    sset@oobG[insupport] <- fitfun(sset@oobG[insupport])
-    sset@oobG[oversupport] <- maxIR +
-        (sset@oobG[oversupport] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    sset@oobG[undersupport] <- minIR / minIG * sset@oobG[undersupport]
+    insupp <- oobG(sset) <= maxIG & oobG(sset) >= minIG & (!is.na(oobG(sset)))
+    oversupp <- oobG(sset) > maxIG & (!is.na(oobG(sset)))
+    undersupp <- oobG(sset) < minIG & (!is.na(oobG(sset)))
+    oobG(sset)[insupp] <- fitfun(oobG(sset)[insupp])
+    oobG(sset)[oversupp] <- maxIR +
+        (oobG(sset)[oversupp] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
+    oobG(sset)[undersupp] <- minIR / minIG * oobG(sset)[undersupp]
 
     sset
 }

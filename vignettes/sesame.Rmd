@@ -78,8 +78,8 @@ head(II(sset))
 Similarly, signals for Type-I probes (`sset@IR` and `sset@IG`) and out-of-band
 probes (`sset@oobG` and `sset@oobR`) can be found in
 ```{r}
-head(slot(sset, 'IR'))
-head(slot(sset, 'oobG'))
+head(IR(sset))
+head(oobG(sset))
 ```
 as one can see the probe names (row names) of `IR` always coincide with the
 probe names (row names) of `oobG` (and vice versa). This is because the
@@ -87,7 +87,15 @@ out-of-band probe signal for red channel probes is in green channel
 (and vice versa). Lastly, Control probes are represented in a data frame with
 the last column holding the type of the control.
 ```{r}
-head(slot(sset, 'ctl'))
+head(ctl(sset))
+```
+
+# Best practices of data preprocessing
+
+Our recommended best practice is noob plus nonlinear dye bias correction
+achieved through:
+```{r}
+betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
 ```
 
 # Functionalities

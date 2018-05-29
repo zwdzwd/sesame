@@ -136,18 +136,18 @@ setMethod(
 #' @export
 subsetSignal <- function(sset, probes) {
     stopifnot(is(sset, "SigSet"))
-    sset@IR <- sset@IR[rownames(sset@IR) %in% probes,]
-    sset@IG <- sset@IG[rownames(sset@IG) %in% probes,]
-    sset@II <- sset@II[rownames(sset@II) %in% probes,]
-    sset@oobR <- sset@oobR[rownames(sset@oobR) %in% probes,]
-    sset@oobG <- sset@oobG[rownames(sset@oobG) %in% probes,]
+    IR(sset) <- IR(sset)[rownames(IR(sset)) %in% probes,]
+    IG(sset) <- IG(sset)[rownames(IG(sset)) %in% probes,]
+    II(sset) <- II(sset)[rownames(II(sset)) %in% probes,]
+    oobR(sset) <- oobR(sset)[rownames(oobR(sset)) %in% probes,]
+    oobG(sset) <- oobG(sset)[rownames(oobG(sset)) %in% probes,]
     sset
 }
 
 ## get negative control probes
 negControls <- function(sset) {
     stopifnot(is(sset, "SigSet"))
-    negctls <- sset@ctl[grep('negative', tolower(rownames(sset@ctl))),]
+    negctls <- ctl(sset)[grep('negative', tolower(rownames(ctl(sset)))),]
     negctls <- subset(negctls, col!=-99)
     negctls
 }
@@ -168,7 +168,7 @@ negControls <- function(sset) {
 #' @export
 meanIntensity <- function(sset) {
     stopifnot(is(sset, "SigSet"))
-    mean(c(sset@IG, sset@IR, sset@II), na.rm=TRUE)
+    mean(c(IG(sset), IR(sset), II(sset)), na.rm=TRUE)
 }
 
 #' M+U Intensities for All Probes
@@ -183,7 +183,7 @@ meanIntensity <- function(sset) {
 #' totalIntensities(sset)
 #' @export
 totalIntensities <- function(sset) {
-    rowSums(rbind(sset@IG, sset@IR, sset@II))
+    rowSums(rbind(IG(sset), IR(sset), II(sset)))
 }
 
 #' Calculate intensity Z-score
@@ -200,9 +200,9 @@ totalIntensities <- function(sset) {
 #' @export
 totalIntensityZscore <- function(sset) {
     Zscore <- rbind(
-        scale(log10(1+rowSums(sset@IG))),
-        scale(log10(1+rowSums(sset@IR))),
-        scale(log10(1+rowSums(sset@II))))[,1]
+        scale(log10(1+rowSums(IG(sset)))),
+        scale(log10(1+rowSums(IR(sset)))),
+        scale(log10(1+rowSums(II(sset)))))[,1]
     Zscore[sort(names(Zscore))]
 }
 
@@ -378,13 +378,13 @@ getBetas <- function(
 
     stopifnot(is(sset, "SigSet"))
 
-    betas1 <- pmax(sset@IG[,'M'],1) / pmax(sset@IG[,'M']+sset@IG[,'U'],2)
-    betas2 <- pmax(sset@IR[,'M'],1) / pmax(sset@IR[,'M']+sset@IR[,'U'],2)
-    betas3 <- pmax(sset@II[,'M'],1) / pmax(sset@II[,'M']+sset@II[,'U'],2)
+    betas1 <- pmax(IG(sset)[,'M'],1) / pmax(IG(sset)[,'M']+IG(sset)[,'U'],2)
+    betas2 <- pmax(IR(sset)[,'M'],1) / pmax(IR(sset)[,'M']+IR(sset)[,'U'],2)
+    betas3 <- pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2)
     betas <- c(betas1, betas2, betas3)
     if (nondetection.mask) {
-        sset@pval <- sset@pval[match(names(betas), names(sset@pval))]
-        betas[sset@pval > pval.threshold] <- NA
+        pval(sset) <- pval(sset)[match(names(betas), names(pval(sset)))]
+        betas[pval(sset) > pval.threshold] <- NA
     }
 
     if (quality.mask) {
@@ -422,15 +422,15 @@ getBetasTypeIbySumChannels <- function(
 
     ## .oobR <- oobR[rownames(IG),]
     ## .oobG <- oobG[rownames(IR),]
-    betas1 <- pmax(sset@IG[,'M']+sset@oobR[,'M'],1) /
-        pmax(sset@IG[,'M']+sset@oobR[,'M']+sset@IG[,'U']+sset@oobR[,'U'],2)
-    betas2 <- pmax(sset@IR[,'M']+sset@oobG[,'M'],1) /
-        pmax(sset@IR[,'M']+sset@oobG[,'M']+sset@IR[,'U']+sset@oobG[,'U'],2)
-    betas3 <- pmax(sset@II[,'M'],1) / pmax(sset@II[,'M']+sset@II[,'U'],2)
+    betas1 <- pmax(IG(sset)[,'M']+oobR(sset)[,'M'],1) /
+        pmax(IG(sset)[,'M']+oobR(sset)[,'M']+IG(sset)[,'U']+oobR(sset)[,'U'],2)
+    betas2 <- pmax(IR(sset)[,'M']+oobG(sset)[,'M'],1) /
+        pmax(IR(sset)[,'M']+oobG(sset)[,'M']+IR(sset)[,'U']+oobG(sset)[,'U'],2)
+    betas3 <- pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2)
     betas <- c(betas1, betas2, betas3)
     if (nondetection.mask) {
-        sset@pval <- sset@pval[match(names(betas), names(sset@pval))]
-        betas[sset@pval > pval.threshold] <- NA
+        pval(sset) <- pval(sset)[match(names(betas), names(pval(sset)))]
+        betas[pval(sset) > pval.threshold] <- NA
     }
     if (quality.mask) {
         mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
@@ -457,15 +457,17 @@ getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
 
     stopifnot(is(sset, "SigSet"))
 
-    if (any(rownames(sset@oobR) != rownames(sset@IG)))
+    if (any(rownames(oobR(sset)) != rownames(IG(sset))))
         stop("oobR-IG not matched. Likely a malformed sset.");
-    if (any(rownames(sset@oobG) != rownames(sset@IR)))
+    if (any(rownames(oobG(sset)) != rownames(IR(sset))))
         stop("oobG-IR not matched. Likely a malformed sset.");
 
     ## .oobG <- oobG[rownames(IR),]
     af <- c(
-        pmax(rowSums(sset@oobR),1)/pmax(rowSums(sset@oobR)+rowSums(sset@IG),2),
-        pmax(rowSums(sset@oobG),1)/pmax(rowSums(sset@oobG)+rowSums(sset@IR),2))
+        pmax(rowSums(oobR(sset)),1)/(
+            pmax(rowSums(oobR(sset))+rowSums(IG(sset)),2)),
+        pmax(rowSums(oobG(sset)),1)/(
+            pmax(rowSums(oobG(sset))+rowSums(IR(sset)),2)))
 
     if (known.ccs.only)
         af <- af[intersect(
@@ -627,9 +629,9 @@ chipAddressToSignal <- function(dm) {
     ## 2-channel for green probes' U allele
     ImG2ch <- dm[match(IordG$M, rownames(dm)),]
     ImG <- ImG2ch[,1]
-    sset@oobR <- as.matrix(
+    oobR(sset) <- as.matrix(
         data.frame(M=ImG2ch[,2], U=IuG2ch[,2], row.names=IordG$Probe_ID))
-    sset@IG <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
+    IG(sset) <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
     ## type I red channel / oob green channel
     IordR <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='R')),]
@@ -639,16 +641,16 @@ chipAddressToSignal <- function(dm) {
     ## 2-channel for red probes' u allele
     ImR2ch <- dm[match(IordR$M, rownames(dm)),]
     ImR <- ImR2ch[,2]
-    sset@oobG <- as.matrix(
+    oobG(sset) <- as.matrix(
         data.frame(M=ImR2ch[,1], U=IuR2ch[,1], row.names=IordR$Probe_ID))
-    sset@IR <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
+    IR(sset) <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
 
     ## type II
     IIord <- dm.ordering[dm.ordering$DESIGN=="II",]
     signal.II <- dm[match(IIord$U, rownames(dm)),]
     colnames(signal.II) <- c('M', 'U')
     rownames(signal.II) <- IIord$Probe_ID
-    sset@II <- signal.II
+    II(sset) <- signal.II
 
     ## control probes
     dm.controls <- sesameDataGet(paste0(platform, '.address'))$controls
@@ -656,7 +658,7 @@ chipAddressToSignal <- function(dm) {
     rownames(ctl) <- make.names(dm.controls$Name, unique=TRUE)
     ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
     colnames(ctl) <- c('G','R','col','type')
-    sset@ctl <- ctl
+    ctl(sset) <- ctl
 
     sset <- detectionPoobEcdf(sset)
     sset
@@ -681,11 +683,11 @@ bisConversionControl <- function(sset, use.median=FALSE) {
     extC <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extC
     extT <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extT
     if (use.median) {
-        median(sset@oobG[extC,], na.rm=TRUE) /
-            median(sset@oobG[extT,], na.rm=TRUE)
+        median(oobG(sset)[extC,], na.rm=TRUE) /
+            median(oobG(sset)[extT,], na.rm=TRUE)
     } else {
-        mean(sset@oobG[extC,], na.rm=TRUE) /
-            mean(sset@oobG[extT,], na.rm=TRUE)
+        mean(oobG(sset)[extC,], na.rm=TRUE) /
+            mean(oobG(sset)[extT,], na.rm=TRUE)
     }
 }
 

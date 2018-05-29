@@ -19,16 +19,16 @@ detectionPnegEcdf <- function(sset) {
     funcR <- ecdf(negctls$R)
 
     ## p-value is the minimium detection p-value of the 2 alleles
-    pIR <- 1-apply(cbind(funcR(sset@IR[,'M']), funcR(sset@IR[,'U'])),1,max)
-    pIG <- 1-apply(cbind(funcG(sset@IG[,'M']), funcG(sset@IG[,'U'])),1,max)
-    pII <- 1-apply(cbind(funcG(sset@II[,'M']), funcR(sset@II[,'U'])),1,max)
+    pIR <- 1-apply(cbind(funcR(IR(sset)[,'M']), funcR(IR(sset)[,'U'])),1,max)
+    pIG <- 1-apply(cbind(funcG(IG(sset)[,'M']), funcG(IG(sset)[,'U'])),1,max)
+    pII <- 1-apply(cbind(funcG(II(sset)[,'M']), funcR(II(sset)[,'U'])),1,max)
 
-    names(pIR) <- rownames(sset@IR)
-    names(pIG) <- rownames(sset@IG)
-    names(pII) <- rownames(sset@II)
+    names(pIR) <- rownames(IR(sset))
+    names(pIG) <- rownames(IG(sset))
+    names(pII) <- rownames(II(sset))
 
     pval <- c(pIR,pIG,pII)
-    sset@pval <- pval[order(names(pval))]
+    pval(sset) <- pval[order(names(pval))]
     sset
     
 }
@@ -54,18 +54,18 @@ detectionPnegNorm <- function(sset) {
     muG <- median(negctls$G)
     sdR <- sd(negctls$R)
     muR <- median(negctls$R)
-    pIR <- 1 - pnorm(pmax(sset@IR[,'M'], sset@IR[,'U']), mean=muR, sd=sdR)
-    pIG <- 1 - pnorm(pmax(sset@IG[,'M'], sset@IG[,'U']), mean=muG, sd=sdG)
+    pIR <- 1 - pnorm(pmax(IR(sset)[,'M'], IR(sset)[,'U']), mean=muR, sd=sdR)
+    pIG <- 1 - pnorm(pmax(IG(sset)[,'M'], IG(sset)[,'U']), mean=muG, sd=sdG)
     pII <- pmin(
-        1 - pnorm(sset@II[,'M'], mean=muG, sd=sdG),
-        1 - pnorm(sset@II[,'U'], mean=muR, sd=sdR))
+        1 - pnorm(II(sset)[,'M'], mean=muG, sd=sdG),
+        1 - pnorm(II(sset)[,'U'], mean=muR, sd=sdR))
 
-    names(pIR) <- rownames(sset@IR)
-    names(pIG) <- rownames(sset@IG)
-    names(pII) <- rownames(sset@II)
+    names(pIR) <- rownames(IR(sset))
+    names(pIG) <- rownames(IG(sset))
+    names(pII) <- rownames(II(sset))
 
     pval <- c(pIR,pIG,pII)
-    sset@pval <- pval[order(names(pval))]
+    pval(sset) <- pval[order(names(pval))]
     sset
     
 }
@@ -89,14 +89,14 @@ detectionPnegNormGS <- function(sset) {
     negctls <- negControls(sset)
     BGsd <- sd(c(negctls$G, negctls$R))
     BGmu <- mean(c(negctls$G, negctls$R))
-    pIR <- 1 - pnorm(rowSums(sset@IR), mean=BGmu, sd=BGsd)
-    pIG <- 1 - pnorm(rowSums(sset@IG), mean=BGmu, sd=BGsd)
-    pII <- 1 - pnorm(rowSums(sset@II), mean=BGmu, sd=BGsd)
-    names(pIR) <- rownames(sset@IR)
-    names(pIG) <- rownames(sset@IG)
-    names(pII) <- rownames(sset@II)
+    pIR <- 1 - pnorm(rowSums(IR(sset)), mean=BGmu, sd=BGsd)
+    pIG <- 1 - pnorm(rowSums(IG(sset)), mean=BGmu, sd=BGsd)
+    pII <- 1 - pnorm(rowSums(II(sset)), mean=BGmu, sd=BGsd)
+    names(pIR) <- rownames(IR(sset))
+    names(pIG) <- rownames(IG(sset))
+    names(pII) <- rownames(II(sset))
     pval <- c(pIR,pIG,pII)
-    sset@pval <- pval[order(names(pval))]
+    pval(sset) <- pval[order(names(pval))]
     sset
     
 }
@@ -125,15 +125,15 @@ detectionPnegNormTotal <- function(sset) {
     muG <- median(negctls$G)
     sdR <- sd(negctls$R)
     muR <- median(negctls$R)
-    pIR <- 1 - pnorm(rowSums(sset@IR), mean=2*muR, sd=2*sdR)
-    pIG <- 1 - pnorm(rowSums(sset@IG), mean=2*muG, sd=2*sdG)
-    pII <- 1 - pnorm(rowSums(sset@II), mean=muR+muG, sd=sdR+sdG)
-    names(pIR) <- rownames(sset@IR)
-    names(pIG) <- rownames(sset@IG)
-    names(pII) <- rownames(sset@II)
+    pIR <- 1 - pnorm(rowSums(IR(sset)), mean=2*muR, sd=2*sdR)
+    pIG <- 1 - pnorm(rowSums(IG(sset)), mean=2*muG, sd=2*sdG)
+    pII <- 1 - pnorm(rowSums(II(sset)), mean=muR+muG, sd=sdR+sdG)
+    names(pIR) <- rownames(IR(sset))
+    names(pIG) <- rownames(IG(sset))
+    names(pII) <- rownames(II(sset))
 
     pval <- c(pIR,pIG,pII)
-    sset@pval <- pval[order(names(pval))]
+    pval(sset) <- pval[order(names(pval))]
     sset
 }
 
@@ -153,20 +153,20 @@ detectionPnegNormTotal <- function(sset) {
 detectionPoobEcdf <- function(sset) {
 
     stopifnot(is(sset, "SigSet"))
-    funcG <- ecdf(sset@oobG)
-    funcR <- ecdf(sset@oobR)
+    funcG <- ecdf(oobG(sset))
+    funcR <- ecdf(oobR(sset))
 
     ## p-value is the minimium detection p-value of the 2 alleles
-    pIR <- 1-apply(cbind(funcR(sset@IR[,'M']), funcR(sset@IR[,'U'])),1,max)
-    pIG <- 1-apply(cbind(funcG(sset@IG[,'M']), funcG(sset@IG[,'U'])),1,max)
-    pII <- 1-apply(cbind(funcG(sset@II[,'M']), funcR(sset@II[,'U'])),1,max)
+    pIR <- 1-apply(cbind(funcR(IR(sset)[,'M']), funcR(IR(sset)[,'U'])),1,max)
+    pIG <- 1-apply(cbind(funcG(IG(sset)[,'M']), funcG(IG(sset)[,'U'])),1,max)
+    pII <- 1-apply(cbind(funcG(II(sset)[,'M']), funcR(II(sset)[,'U'])),1,max)
 
-    names(pIR) <- rownames(sset@IR)
-    names(pIG) <- rownames(sset@IG)
-    names(pII) <- rownames(sset@II)
+    names(pIR) <- rownames(IR(sset))
+    names(pIG) <- rownames(IG(sset))
+    names(pII) <- rownames(II(sset))
 
     pval <- c(pIR,pIG,pII)
-    sset@pval <- pval[order(names(pval))]
+    pval(sset) <- pval[order(names(pval))]
     sset
 }
 
