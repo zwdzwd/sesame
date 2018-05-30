@@ -202,7 +202,7 @@ DMR <- function(
 
     n.cpg <- length(cpg.ids)
 
-    ## euclidean distance suffcies
+    ## euclidean distance suffices
     beta.dist <- vapply(seq_len(n.cpg-1), function(i) sum(
         (betas.coord.srt[i,] - betas.coord.srt[i+1,])^2, na.rm=TRUE), 1)
 
