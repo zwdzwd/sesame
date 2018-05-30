@@ -47,5 +47,6 @@ Collate:
     'differential_methylation.R'
     'dye_bias.R'
     'simulate_data.R'
+    'snp.R'
     'utils.R'
     'visualize.R'
