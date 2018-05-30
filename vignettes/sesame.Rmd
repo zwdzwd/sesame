@@ -333,13 +333,3 @@ cells.
 betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 estimateLeukocyte(betas.tissue)
 ```
-
-Further decomposition can be achieved through factorization implemented in
-`estimateCellComposition`. This function works for blood/PBMC/buffy coat.
-```{r, message=FALSE}
-g <- diffRefSet(getRefSet(
-    c('CD4T','CD19B','CD14Monocytes','CD56NK', 'granulocytes'),
-    platform='HM450'))
-betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-estimateCellComposition(g, betas[rownames(g)])$frac
-```

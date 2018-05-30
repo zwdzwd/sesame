@@ -191,7 +191,7 @@ getg0 <- function(f, g, q) {
 #' q[q<0] <- 0
 #' q[q>1] <- 1
 #' est <- estimateCellComposition(g, q)
-#' @export
+## @export - TODO fix colinearity
 estimateCellComposition <- function(
     g, q, refine=TRUE, dichotomize=FALSE, ...) {
 
