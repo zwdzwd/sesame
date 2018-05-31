@@ -7,6 +7,7 @@
 #' 
 #' @param sset an object of class SigSet
 #' @return a vector with control summaries
+#' @import utils
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' control.summary <- buildControlMatrix450k(sset)

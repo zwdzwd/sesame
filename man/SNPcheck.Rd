@@ -9,6 +9,9 @@ SNPcheck(betas)
 \arguments{
 \item{betas}{numeric matrix (row: probes, column: samples)}
 }
+\value{
+grid object plotting SNP clustering
+}
 \description{
 Check sample identity using SNP probes
 }

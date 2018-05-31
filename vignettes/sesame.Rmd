@@ -275,40 +275,6 @@ To visualize by probe names
 visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 ```
 
-### Differential methylation
-
-SeSAMe tests differential methylation on each locus and groups adjacent
-significantly differentially methylated loci into segments.
-```{r, message=FALSE}
-data <- sesameDataGet('HM450.76.TCGA.matched')
-cf <- DMR(data$betas, data$sampleInfo, ~type, platform='HM450')
-```
-
-The result is a list of differentially methylated CpG locus grouped into
-segments. Each row is a CpG site and `Seg.ID` column specifies which segment
-the CpG falls into. A segment can have one or more CpG sites. The start and
-end coordinates for each segment is labeled in `Seg.start` and `Seg.end`
-column. The significance of the segment is shown in `Seg.Pval` and
-`Seg.Pval.adj` (after multiple comparison adjustment). The significance of
-each CpG locus is shown in `Pr(>|t|)`. `topLoci` function essentially pulls
-the rows by `Pr(>|t|)`.
-```{r}
-cf1 <- cf$typeTumour
-head(topLoci(cf1))
-```
-
-`topSegments` function essentially pulls the rows by `Seg.Pval`.
-```{r}
-head(topSegments(cf1))
-```
-
-To visualize top DMR,
-```{r, message=FALSE, fig.width=6}
-visualizeProbes(
-    rownames(cf1[cf1[,'Seg.ID']==topSegments(cf1)$Seg.ID[1],]), betas,
-    upstream=5000, dwstream=5000, platform='HM450',heat.height=3.5)
-```
-
 ### CNV
 
 SeSAMe performs copy number variation in three steps: 1) normalizes the signal

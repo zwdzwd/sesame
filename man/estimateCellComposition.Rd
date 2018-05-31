@@ -34,14 +34,3 @@ the number of rows of the reference matrix. The method assumes one unknown
 component. It outputs a list containing the estimated cell fraction, the
 error of optimization and methylation status of the unknown component.
 }
-\examples{
-g <- diffRefSet(getRefSet(platform='HM450'))
-M <- ncol(g)
-trueFrac <- runif(M+1)
-trueFrac <- trueFrac / sum(trueFrac)
-g0 <- sample(c(0,1), nrow(g), replace=TRUE)
-q <- cbind(g0, g) \%*\% trueFrac + rnorm(length(g0), mean=0, sd = 0.0)
-q[q<0] <- 0
-q[q>1] <- 1
-est <- estimateCellComposition(g, q)
-}

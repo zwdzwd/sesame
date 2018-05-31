@@ -46,6 +46,7 @@ diffRefSet <- function(g) {
 #'
 #' @param cells reference cell types
 #' @param platform EPIC or HM450
+#' @import stats
 #' @return g, a 0/1 matrix with probes on the rows and specified cell types
 #' on the columns.
 #' @examples
@@ -181,16 +182,16 @@ getg0 <- function(f, g, q) {
 #' delta - delta score to reset counter (0.0001)
 #' verbose - output debug info (FALSE)
 #' @return a list of fraction, min error and unknown component methylation state
-#' @examples
-#' g <- diffRefSet(getRefSet(platform='HM450'))
-#' M <- ncol(g)
-#' trueFrac <- runif(M+1)
-#' trueFrac <- trueFrac / sum(trueFrac)
-#' g0 <- sample(c(0,1), nrow(g), replace=TRUE)
-#' q <- cbind(g0, g) %*% trueFrac + rnorm(length(g0), mean=0, sd = 0.0)
-#' q[q<0] <- 0
-#' q[q>1] <- 1
-#' est <- estimateCellComposition(g, q)
+## @examples
+## g <- diffRefSet(getRefSet(platform='HM450'))
+## M <- ncol(g)
+## trueFrac <- runif(M+1)
+## trueFrac <- trueFrac / sum(trueFrac)
+## g0 <- sample(c(0,1), nrow(g), replace=TRUE)
+## q <- cbind(g0, g) %*% trueFrac + rnorm(length(g0), mean=0, sd = 0.0)
+## q[q<0] <- 0
+## q[q>1] <- 1
+## est <- estimateCellComposition(g, q)
 ## @export - TODO fix colinearity
 estimateCellComposition <- function(
     g, q, refine=TRUE, dichotomize=FALSE, ...) {
