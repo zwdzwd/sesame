@@ -17,7 +17,7 @@ SNPcheck <- function(betas) {
     WHeatmap(
         clus$mat, 
         cmp=CMPar(dmin=0, dmax=1, stop.points = c('blue','white','red')),
-        xticklabels=TRUE, yticklabels=TRUE, xticklabel.rotat = 45)
-    + WDendrogram(
-        clus$column.clust, TopOf(height=0.2), facing='bottom')
+        xticklabels=TRUE, yticklabels=TRUE, xticklabel.rotat = 45) + 
+        WDendrogram(
+            clus$column.clust, TopOf(height=0.2), facing='bottom')
 }
