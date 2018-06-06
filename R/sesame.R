@@ -180,7 +180,7 @@ meanIntensity <- function(sset) {
 #' @return a vector of M+U signal for each probe
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
-#' totalIntensities(sset)
+#' intensities <- totalIntensities(sset)
 #' @export
 totalIntensities <- function(sset) {
     rowSums(rbind(IG(sset), IR(sset), II(sset)))

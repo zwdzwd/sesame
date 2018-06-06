@@ -119,6 +119,8 @@ visualizeProbes <- function(
 #'
 #' @param geneName gene name
 #' @param platform EPIC or HM450
+#' @param upstream number of bases to expand upstream of target gene
+#' @param dwstream number of bases to expand downstream of target gene
 #' @param refversion hg38 or hg19
 #' @return probes that fall into the given gene
 #' @examples

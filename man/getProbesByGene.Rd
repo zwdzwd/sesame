@@ -4,13 +4,17 @@
 \alias{getProbesByGene}
 \title{Get Probes by Gene}
 \usage{
-getProbesByGene(geneName, platform = c("EPIC", "HM450"),
-  refversion = c("hg38", "hg19"))
+getProbesByGene(geneName, platform = c("EPIC", "HM450"), upstream = 0,
+  dwstream = 0, refversion = c("hg38", "hg19"))
 }
 \arguments{
 \item{geneName}{gene name}
 
 \item{platform}{EPIC or HM450}
+
+\item{upstream}{number of bases to expand upstream of target gene}
+
+\item{dwstream}{number of bases to expand downstream of target gene}
 
 \item{refversion}{hg38 or hg19}
 }
@@ -25,5 +29,5 @@ platform and reference genome build can be changed with `platform` and
 into the given gene.
 }
 \examples{
-probes <- getProbesByGene('CDKN2A')
+probes <- getProbesByGene('CDKN2A', upstream=500, dwstream=500)
 }

@@ -19,5 +19,5 @@ unmethylated alleles. This function outputs a single numeric for the mean.
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()
-totalIntensities(sset)
+intensities <- totalIntensities(sset)
 }
