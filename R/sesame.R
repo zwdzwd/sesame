@@ -390,7 +390,7 @@ getBetas <- function(
     if (quality.mask) {
         if (mask.use.tcga) {
             stopifnot(sset@platform == 'HM450')
-            mask <- get('HM450.mask.tcga')
+            mask <- sesameDataGet('HM450.probeInfo')$mask.tcga
         } else {
             mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
         }

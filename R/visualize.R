@@ -122,10 +122,11 @@ visualizeProbes <- function(
 #' @param refversion hg38 or hg19
 #' @return probes that fall into the given gene
 #' @examples
-#' probes <- getProbesByGene('CDKN2A')
+#' probes <- getProbesByGene('CDKN2A', upstream=500, dwstream=500)
 #' @export
 getProbesByGene <- function(
     geneName, platform = c('EPIC','HM450'),
+    upstream = 0, dwstream = 0,
     refversion = c('hg38','hg19')) {
 
     platform <- match.arg(platform)
@@ -143,10 +144,16 @@ getProbesByGene <- function(
     ## GenomicRanges::strand(target.txns[[1]][1]))
 
     merged.exons <- GenomicRanges::reduce(unlist(target.txns))
+    
+    up <- ifelse(as.vector(GenomicRanges::strand(
+        target.txns[[1]][1])) == '-', dwstream, upstream)
+    dw <- ifelse(as.vector(GenomicRanges::strand(
+        target.txns[[1]][1])) == '-', upstream, dwstream)
+    
     getProbesByRegion(
         as.character(GenomicRanges::seqnames(merged.exons[1])),
-        min(GenomicRanges::start(merged.exons)),
-        max(GenomicRanges::end(merged.exons)),
+        min(GenomicRanges::start(merged.exons)) - up,
+        max(GenomicRanges::end(merged.exons)) + dw,
         platform = platform, refversion = refversion)
 }
 
