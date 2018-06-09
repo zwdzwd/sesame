@@ -41,9 +41,9 @@ SigSetListFromPath <- function(path=".", parallel=FALSE) {
   stubs <- unique(sub(".gz", "", sub("_(Grn|Red).idat", "", idats)))
   names(stubs) <- stubs
   if (parallel == TRUE) {
-    SigSetList(mclapply(stubs, readIDATpair))
+    SigSetList(mclapply(stubs, readIDATpair, verbose=TRUE))
   } else { 
-    SigSetList(lapply(stubs, readIDATpair))
+    SigSetList(lapply(stubs, readIDATpair, verbose=TRUE))
   }
 }
 

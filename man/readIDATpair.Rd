@@ -4,10 +4,12 @@
 \alias{readIDATpair}
 \title{Import a pair of IDATs from one sample}
 \usage{
-readIDATpair(prefix.path)
+readIDATpair(prefix.path, verbose = FALSE)
 }
 \arguments{
 \item{prefix.path}{sample prefix without _Grn.idat and _Red.idat}
+
+\item{verbose}{be verbose?  (FALSE)}
 }
 \value{
 a \code{SigSet}

@@ -500,12 +500,15 @@ readIDAT1 <- function(grn.name, red.name) {
 #' and _Red.idat. The function returns a \code{SigSet}.
 #'
 #' @param prefix.path sample prefix without _Grn.idat and _Red.idat
+#' @param verbose     be verbose?  (FALSE) 
+#' 
 #' @return a \code{SigSet}
+#' 
 #' @examples
 #' sset <- readIDATpair(sub('_Grn.idat','',system.file(
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
-readIDATpair <- function(prefix.path) {
+readIDATpair <- function(prefix.path, verbose=FALSE) {
 
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
         grn.name <- paste0(prefix.path, '_Grn.idat')
@@ -522,7 +525,11 @@ readIDATpair <- function(prefix.path) {
     } else {
         stop('Red IDAT does not exist')
     }
-    
+
+    if (verbose == TRUE) {
+      message("Reading IDATs for ", basename(prefix.path), "...")
+    }
+
     dm <- readIDAT1(grn.name, red.name)
     chipAddressToSignal(dm)
 }
