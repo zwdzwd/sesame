@@ -29,13 +29,14 @@ install_github('zwdzwd/sesame')
 
 # Data Structure for Signal Intensities
 
-SeSAMe is designed to process Infinium DNA methylation data. It currently
+SeSAMe is designed to process Illumina Infinium DNA methylation data. It currently
 supports EPIC, HM450 and HM27 platforms. The design includes a light-weight
-full exposure of internal signal intensities, an essential information for
-users of the Infinium Platform. Ignoring intensities can cause substantial
-artifacts in determining epigenetic silencing. Central to the SeSAMe platform
-is the data structure named SigSet, a S4 class with slots containing the
-signals for six different classes of probes:
+full exposure of internal signal intensities (essential information for
+users of Illumina methylation array data, as demonstrated in Zhou et al 2018), which
+permits sensitive and specific joint inference on copy number and DNA methylation.
+
+Central to the SeSAMe platform is the `SigSet` data structure,
+an S4 class with slots containing signals for six different classes of probes:
 
 1) `II` - Type-II probes;
 2) `IR` - Type-I Red channel probes;
@@ -46,13 +47,12 @@ in number);
 in number);
 6) `ctl` - control probes.
 
-For everything besides the control probes, signal intensities are stored as an
-`Nx2` numeric matrix with `N` representing the number of probes in the class.
-Two columns representing the methylated allele and the unmethylated allele.
-Previous implmentation is based on R6 Reference class SignalSet. Current
-implementation based on SigSet S4 is more standardized. For backward
-compatibility, a function `signalR6toS4` is provided to transform the old
-`SignalSet` to `SigSet`.
+For all save control probes, signal intensities are stored as an `Nx2` numeric matrix,
+with `N` representing the number of probes in the class. The two columns of the matrix
+represent the methylated probe intensity and the unmethylated probe intensity.
+(Previously, this was implemented in an R6 Reference class, `SignalSet`. The current
+S4 implementation in `SigSet` complies with Bioconductor guidelines, and for backwards
+compatibility, the `signalR6toS4` function transforms a `SignalSet` to a `SigSet`.
 
 ```{r}
 library(sesameData)
@@ -100,16 +100,16 @@ betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
 
 # Functionalities
 
-SeSAMe implement stricter QC and proper preprocessing including comprehensive
+SeSAMe implements stricter QC and preprocessing standards: comprehensive
 probe quality masking, bleed-through correction in background subtraction,
 nonlinear dye bias correction, stricter nondetection calling and control for
 bisulfite conversion based on C/T-extension probes. The package also provides
-functionalities convenient for people using this platform, such as the
+convenient, performant implementations of typical analysis steps, such as the
 inference of gender, age, ethnicity (based on both internal SNP probes and
-channel-switching Type-I probes) directly from the data. So people can correct
-for these common covariates if such information had not been collected and
-check for potential sample swaps if otherwise. SeSAMe also provide
-functionalities for calling differential methylation and copy number.
+channel-switching Type-I probes) directly from the data. This allows users to
+infer these common covariates if such information is not provided, and to 
+check for potential sample swaps when it is provided.  SeSAMe also provides
+functionality for calling differential methylation and segmented copy number.
 
 ### To read IDATs from directory
 ```{r}
