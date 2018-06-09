@@ -294,7 +294,7 @@ visualizeRegion <- function(
             '%s:%d-%d', chrm, plt.beg, plt.end))
 
     if (nprobes > 1000) {
-        stop('Too many probes. Consider smaller region?')
+        stop(sprintf('Too many probes (%d). Consider smaller region?', nprobes))
     }
 
     isoformHeight <- 1/length(target.txns)

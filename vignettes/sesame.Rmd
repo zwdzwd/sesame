@@ -29,11 +29,12 @@ install_github('zwdzwd/sesame')
 
 # Data Structure for Signal Intensities
 
-SeSAMe is designed to process Illumina Infinium DNA methylation data. It currently
-supports EPIC, HM450 and HM27 platforms. The design includes a light-weight
-full exposure of internal signal intensities (essential information for
-users of Illumina methylation array data, as demonstrated in Zhou et al 2018), which
-permits sensitive and specific joint inference on copy number and DNA methylation.
+SeSAMe is designed to process Illumina Infinium DNA methylation data. It
+currently supports EPIC, HM450 and HM27 platforms. The design includes a
+light-weight full exposure of internal signal intensities (essential 
+information for users of Illumina methylation array data, as demonstrated
+in Zhou et al 2018), which permits sensitive and specific joint inference
+on copy number and DNA methylation.
 
 Central to the SeSAMe platform is the `SigSet` data structure,
 an S4 class with slots containing signals for six different classes of probes:
@@ -47,12 +48,13 @@ in number);
 in number);
 6) `ctl` - control probes.
 
-For all save control probes, signal intensities are stored as an `Nx2` numeric matrix,
-with `N` representing the number of probes in the class. The two columns of the matrix
-represent the methylated probe intensity and the unmethylated probe intensity.
-(Previously, this was implemented in an R6 Reference class, `SignalSet`. The current
-S4 implementation in `SigSet` complies with Bioconductor guidelines, and for backwards
-compatibility, the `signalR6toS4` function transforms a `SignalSet` to a `SigSet`.
+For all save control probes, signal intensities are stored as an `Nx2` numeric
+matrix, with `N` representing the number of probes in the class. The two
+columns of the matrix represent the methylated probe intensity and the 
+unmethylated probe intensity. (Previously, this was implemented in an R6
+Reference class, `SignalSet`. The current S4 implementation in `SigSet`
+complies with Bioconductor guidelines, and for backwards compatibility, the
+`signalR6toS4` function transforms a `SignalSet` to a `SigSet`.
 
 ```{r}
 library(sesameData)
