@@ -36,6 +36,7 @@ SigSetList <- function(...) {
 SigSetListFromPath <- function(path=".", parallel=FALSE) {
   idats <- list.files(path=path, patt="idat")
   stubs <- unique(sub(".gz", "", sub("_(Grn|Red).idat", "", idats)))
+  message("Found ", length(stubs), " IDAT files in ", path, ".")
   names(stubs) <- stubs
   if (parallel == TRUE) {
     SigSetList(mclapply(stubs, readIDATpair, verbose=TRUE))
