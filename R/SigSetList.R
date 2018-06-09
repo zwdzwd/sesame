@@ -28,6 +28,26 @@ SigSetList <- function(...) {
 }
 
 
+#' read an entire directory's worth of IDATs into a SigSetList 
+#' 
+#' @param   path      the path from which to read IDATs (default ".")
+#' @param   parallel  run in parallel? (default FALSE) 
+#' 
+#' @return            a SigSetList 
+#'
+#' @export
+SigSetListFromPath <- function(path=".", parallel=FALSE) {
+  idats <- list.files(path=path, patt="idat")
+  stubs <- unique(sub(".gz", "", sub("_(Grn|Red).idat", "", idats)))
+  names(stubs) <- stubs
+  if (parallel == TRUE) {
+    SigSetList(mclapply(stubs, readIDATpair))
+  } else { 
+    SigSetList(lapply(stubs, readIDATpair))
+  }
+}
+
+
 #' SigSetList methods (centralized).
 #'  
 #' `show`         print a summary of the SigSetList.
@@ -45,5 +65,6 @@ NULL
 setMethod("show", signature(object="SigSetList"),
           function(object) {
             callNextMethod()
+            cat("platform: ", slot(object, "platform"), "\n")
             # left open for later use
           })
