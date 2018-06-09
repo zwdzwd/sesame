@@ -45,7 +45,5 @@ NULL
 setMethod("show", signature(object="SigSetList"),
           function(object) {
             callNextMethod()
-            masked <- apply(slot(object, "mask"), 2, is.na)
-            maskedpct <- paste0(round(masked/nrow(slot(object,"mask"))), "%")
-            cat(S4Vectors:::labeledLine("masked", masked))
+            # left open for later use
           })
