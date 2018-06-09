@@ -4,12 +4,10 @@
 \alias{SigSetList}
 \title{constructor}
 \usage{
-SigSetList(..., pCutoff = NULL)
+SigSetList(...)
 }
 \arguments{
 \item{...}{the SigSet objects that will be the List elements}
-
-\item{pCutoff}{(optional) if not NULL, mask probes with poobah >= pCutoff}
 }
 \value{
 a SigSetList
