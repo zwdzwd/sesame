@@ -1,6 +1,6 @@
 #' a List of SigSets with some methods of its own
 #' 
-#' @import S4Vectors
+#' @importFrom S4Vectors List
 #' 
 #' @exportClass SigSetList
 setClass("SigSetList",
