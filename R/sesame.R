@@ -480,9 +480,9 @@ getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
 ## Import one IDAT file
 ## return a data frame with 2 columns, corresponding to
 ## cy3 (Grn) and cy5 (Red) color channel signal
-readIDAT1 <- function(idat.name) {
-    ida.grn <- illuminaio::readIDAT(paste0(idat.name,"_Grn.idat"));
-    ida.red <- illuminaio::readIDAT(paste0(idat.name,"_Red.idat"));
+readIDAT1 <- function(grn.name, red.name) {
+    ida.grn <- illuminaio::readIDAT(grn.name);
+    ida.red <- illuminaio::readIDAT(red.name);
     d <- cbind(cy3=ida.grn$Quants[,"Mean"], cy5=ida.red$Quants[,"Mean"])
     colnames(d) <- c('G', 'R')
     chip.type <- switch(
@@ -506,9 +506,24 @@ readIDAT1 <- function(idat.name) {
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
 readIDATpair <- function(prefix.path) {
-    stopifnot(file.exists(paste0(prefix.path, '_Grn.idat')));
-    stopifnot(file.exists(paste0(prefix.path, '_Red.idat')));
-    dm <- readIDAT1(prefix.path)
+
+    if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
+        grn.name <- paste0(prefix.path, '_Grn.idat')
+    } else if (file.exists(paste0(prefix.path, '_Grn.idat.gz'))) {
+        grn.name <- paste0(prefix.path, '_Grn.idat.gz')
+    } else {
+        stop('Grn IDAT does not exist')
+    }
+    
+    if (file.exists(paste0(prefix.path, '_Red.idat'))) {
+        red.name <- paste0(prefix.path, '_Red.idat')
+    } else if (file.exists(paste0(prefix.path, '_Red.idat.gz'))) {
+        red.name <- paste0(prefix.path, '_Red.idat.gz')
+    } else {
+        stop('Red IDAT does not exist')
+    }
+    
+    dm <- readIDAT1(grn.name, red.name)
     chipAddressToSignal(dm)
 }
 
@@ -586,16 +601,22 @@ searchIDATprefixes <- function(dir.name, recursive = FALSE) {
 
     stopifnot(file.exists(dir.name))
 
-    prefixes <- unique(sub(
-        '_(Grn|Red).idat$', '',
-        list.files(dir.name, '\\.idat$', recursive = recursive)))
+    paths <- list.files(dir.name, '\\.idat(.gz)?$', recursive = recursive)
+    prefixes <- unique(sub('_(Grn|Red).idat(.gz)?', '', paths))
 
+    df <- data.frame(
+        paths=paths, 
+        prefix=sub('_(Grn|Red).idat.*', '', paths),
+        channel=sub('.*_(Grn|Red).idat.*', '\\1', paths))
+    
+    byprefix <- split(df, df$prefix)
+    ## valid IDAT should has both Grn and Red
+    is.valid <- vapply(byprefix, function(x) all(
+        sort(x[,'channel']) == c('Grn','Red')), logical(1))
+    
+    prefixes <- names(is.valid)[is.valid]
     if (length(prefixes) == 0)
-        stop("No IDAT file found.")
-    if (!all(file.exists(file.path(dir.name, paste0(prefixes, '_Grn.idat')))))
-        stop("IDAT names unmatched.")
-    if (!all(file.exists(file.path(dir.name, paste0(prefixes, '_Red.idat')))))
-        stop("IDAT names unmatched.")
+        stop("No IDAT file found. %s")
 
     file.path(dir.name, prefixes)
 }
