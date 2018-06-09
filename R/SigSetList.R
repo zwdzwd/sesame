@@ -1,7 +1,6 @@
 #' a List of SigSets with some methods of its own
 #' 
 #' @import S4Vectors
-#' @import Matrix
 #' 
 #' @exportClass SigSetList
 setClass("SigSetList",
@@ -16,15 +15,13 @@ setClass("SigSetList",
 #' @return            a SigSetList 
 #'
 #' @export
-SigSetList <- function(...) { 
-  platform <- unique(sapply(list(...), slot, "platform"))
+SigSetList <- function(...) {
+  l <- List(...) 
+  platform <- unique(sapply(l, slot, "platform"))
   if (length(platform) > 1) {
     stop("All SigSet elements in a SigSetList must be from the same platform")
   }
-  new("SigSetList", 
-      List(...),
-      platform=platform,
-      elementType="SigSet")
+  new("SigSetList", l, platform=platform, elementType="SigSet")
 }
 
 
