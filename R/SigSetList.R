@@ -81,7 +81,7 @@ setMethod("show", signature(object="SigSetList"),
             callNextMethod()
             platform <- slot(object, "platform")
             probes <- .getPlatformProbes(platform) 
-            cat("platform: ", platform, " (", probes, " probes)", "\n")
+            cat("platform:", platform, paste0("(", probes, " probes)"), "\n")
           })
 
 
