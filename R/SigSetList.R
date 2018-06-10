@@ -36,8 +36,25 @@ SigSetList <- function(...) {
 SigSetListFromPath <- function(path=".", parallel=FALSE) {
   idats <- list.files(path=path, patt="idat")
   stubs <- unique(sub(".gz", "", sub("_(Grn|Red).idat", "", idats)))
-  message("Found ", length(stubs), " IDAT files in ", path, ".")
   names(stubs) <- stubs
+  message("Found ", length(stubs), " IDAT files in ", path, ".")
+  SigSetListFromIDATs(stubs=stubs, parallel=parallel)
+}
+
+
+#' read IDATs into a SigSetList 
+#' 
+#' FIXME: switch from `parallel` to BiocParallel
+#' 
+#' @param   stubs       the IDAT filename stubs
+#' @param   parallel    run in parallel? (default FALSE) 
+#' 
+#' @return              a SigSetList 
+#'
+#' @importFrom parallel mclapply
+#'
+#' @export
+SigSetListFromIDATs <- function(stubs, parallel=FALSE) {
   if (parallel == TRUE) {
     SigSetList(mclapply(stubs, readIDATpair, verbose=TRUE))
   } else { 
@@ -46,12 +63,11 @@ SigSetListFromPath <- function(path=".", parallel=FALSE) {
 }
 
 
-#' SigSetList methods (centralized).
+#' SigSetList methods (centralized). 
+#' Currently scarce...
 #'  
 #' `show`         print a summary of the SigSetList.
 #'
-#' @param x       a SigSetList 
-#' @param sset    a SigSetList 
 #' @param object  a SigSetList 
 #'
 #' @name  SigSetList-methods
@@ -63,6 +79,16 @@ NULL
 setMethod("show", signature(object="SigSetList"),
           function(object) {
             callNextMethod()
-            cat("platform: ", slot(object, "platform"), "\n")
-            # left open for later use
+            platform <- slot(object, "platform")
+            probes <- .getPlatformProbes(platform) 
+            cat("platform: ", platform, " (", probes, " probes)", "\n")
           })
+
+
+# helper fn
+.getPlatformProbes <- function(platform) {
+  switch(platform,
+         "EPIC"=865918,
+         "HM450"=485577,
+         "HM27"=27578)
+}

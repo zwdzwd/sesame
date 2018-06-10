@@ -4,7 +4,8 @@
 \name{SigSetList-methods}
 \alias{SigSetList-methods}
 \alias{show,SigSetList-method}
-\title{SigSetList methods (centralized).
+\title{SigSetList methods (centralized). 
+Currently scarce...
  
 `show`         print a summary of the SigSetList.}
 \usage{
@@ -12,13 +13,10 @@
 }
 \arguments{
 \item{object}{a SigSetList}
-
-\item{x}{a SigSetList}
-
-\item{sset}{a SigSetList}
 }
 \description{
-SigSetList methods (centralized).
+SigSetList methods (centralized). 
+Currently scarce...
  
 `show`         print a summary of the SigSetList.
 }

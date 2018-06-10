@@ -221,6 +221,8 @@ totalIntensityZscore <- function(sset) {
 #' getSexInfo(sset)
 #' @export
 getSexInfo <- function(sset) {
+
+    if (is(sset, "SigSetList")) sapply(sset, getSexInfo)
     stopifnot(is(sset, "SigSet"))
 
     cleanY <- sesameDataGet(paste0(
@@ -346,6 +348,9 @@ inferSex <- function(sset) {
 #' inferEthnicity(sset)
 #' @export
 inferEthnicity <- function(sset) {
+
+    if (is(sset, "SigSetList")) sapply(sset, inferEthnicity)
+
     ethnicity.inference <- sesameDataGet('ethnicity.inference')
     ccsprobes <- ethnicity.inference$ccs.probes
     rsprobes <- ethnicity.inference$rs.probes
@@ -375,6 +380,8 @@ inferEthnicity <- function(sset) {
 getBetas <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE,
     mask.use.tcga=FALSE, pval.threshold=0.05) {
+    
+    if (is(sset, "SigSetList")) sapply(sset, getBetas, ...)
 
     stopifnot(is(sset, "SigSet"))
 
