@@ -13,6 +13,9 @@ detectionPoobEcdf(sset)
 detection p-value
 }
 \description{
+aka Poobah (Pvals by Out-Of-Band Array Hybridization)
+}
+\details{
 The function takes a \code{SigSet} as input, computes detection p-value
 using out-of-band probes empirical distribution and returns a new
 \code{SigSet} with an updated pval slot.

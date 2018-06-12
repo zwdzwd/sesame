@@ -4,16 +4,23 @@
 \alias{SigSetListFromPath}
 \title{read an entire directory's worth of IDATs into a SigSetList}
 \usage{
-SigSetListFromPath(path = ".", parallel = FALSE)
+SigSetListFromPath(path = ".", parallel = FALSE, recursive = TRUE)
 }
 \arguments{
 \item{path}{the path from which to read IDATs (default ".")}
 
 \item{parallel}{run in parallel? (default FALSE)}
+
+\item{recursive}{whether to search recursively}
 }
 \value{
 a SigSetList
 }
 \description{
 read an entire directory's worth of IDATs into a SigSetList
+}
+\examples{
+## Load all IDATs from directory
+ssets <- SigSetListFromPath(
+    system.file("extdata", "", package = "sesameData"))
 }

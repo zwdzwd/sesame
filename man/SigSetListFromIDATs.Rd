@@ -17,3 +17,8 @@ a SigSetList
 \description{
 FIXME: switch from `parallel` to BiocParallel
 }
+\examples{
+## a SigSetList of length 1
+ssets <- SigSetListFromIDATs(file.path(
+    system.file("extdata", "", package = "sesameData"), "4207113116_A"))
+}

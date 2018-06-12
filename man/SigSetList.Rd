@@ -15,3 +15,12 @@ a SigSetList
 \description{
 constructor
 }
+\examples{
+sset1 <- readIDATpair(file.path(system.file(
+    'extdata','',package='sesameData'), '4207113116_A'))
+
+sset2 <- readIDATpair(file.path(system.file(
+    'extdata','',package='sesameData'), '4207113116_B'))
+
+SigSetList(sset1, sset2)
+}

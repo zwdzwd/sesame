@@ -13,7 +13,7 @@ Depends: R (>= 3.5),
           methods
 License: Artistic-2.0
 RoxygenNote: 6.0.1
-Imports: R6,
+Imports:  R6,
           grDevices,
           utils,
           illuminaio,
@@ -27,6 +27,7 @@ Imports: R6,
           randomForest,
           wheatmap,
           ggplot2,
+          parallel,
           DNAcopy
 Suggests: scales,
           knitr,

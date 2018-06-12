@@ -14,9 +14,15 @@ Currently scarce...
 \arguments{
 \item{object}{a SigSetList}
 }
+\value{
+Description of SigSetList
+}
 \description{
 SigSetList methods (centralized). 
 Currently scarce...
  
 `show`         print a summary of the SigSetList.
+}
+\examples{
+SigSetListFromPath(system.file("extdata", "", package = "sesameData"))
 }

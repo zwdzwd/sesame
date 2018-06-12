@@ -222,7 +222,9 @@ totalIntensityZscore <- function(sset) {
 #' @export
 getSexInfo <- function(sset) {
 
-    if (is(sset, "SigSetList")) sapply(sset, getSexInfo)
+    if (is(sset, "SigSetList"))
+        return(do.call(cbind, lapply(sset, getSexInfo)))
+    
     stopifnot(is(sset, "SigSet"))
 
     cleanY <- sesameDataGet(paste0(
@@ -349,7 +351,10 @@ inferSex <- function(sset) {
 #' @export
 inferEthnicity <- function(sset) {
 
-    if (is(sset, "SigSetList")) sapply(sset, inferEthnicity)
+    if (is(sset, "SigSetList"))
+        return(vapply(sset, inferEthnicity, character(1)))
+    
+    stopifnot(is(sset, 'SigSet'))
 
     ethnicity.inference <- sesameDataGet('ethnicity.inference')
     ccsprobes <- ethnicity.inference$ccs.probes
@@ -381,7 +386,11 @@ getBetas <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE,
     mask.use.tcga=FALSE, pval.threshold=0.05) {
     
-    if (is(sset, "SigSetList")) sapply(sset, getBetas, ...)
+    if (is(sset, "SigSetList"))
+        return(do.call(cbind, lapply(
+            sset, getBetas, quality.mask = quality.mask, 
+            nondetection.mask = nondetection.mask,
+            mask.use.tcga = mask.use.tcga, pval.threshold = pval.threshold)))
 
     stopifnot(is(sset, "SigSet"))
 
@@ -534,7 +543,7 @@ readIDATpair <- function(prefix.path, verbose=FALSE) {
     }
 
     if (verbose == TRUE) {
-      message("Reading IDATs for ", basename(prefix.path), "...")
+        message("Reading IDATs for ", basename(prefix.path), "...")
     }
 
     dm <- readIDAT1(grn.name, red.name)
@@ -632,7 +641,12 @@ searchIDATprefixes <- function(dir.name, recursive = FALSE) {
     if (length(prefixes) == 0)
         stop("No IDAT file found. %s")
 
-    file.path(dir.name, prefixes)
+    prefixes <- file.path(dir.name, prefixes)
+    
+    # set name attributes so that names are auto-assigned for
+    # lapply and mclapply
+    names(prefixes) <- prefixes
+    prefixes
 }
 
 #' Lookup address in one sample
