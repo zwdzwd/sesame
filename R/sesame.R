@@ -639,7 +639,7 @@ searchIDATprefixes <- function(dir.name, recursive = FALSE) {
     
     prefixes <- names(is.valid)[is.valid]
     if (length(prefixes) == 0)
-        stop("No IDAT file found. %s")
+        stop("No IDAT file found.")
 
     prefixes <- file.path(dir.name, prefixes)
     
