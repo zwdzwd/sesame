@@ -118,7 +118,7 @@ detectionPnegNormGS <- function(sset) {
 #' @export
 detectionPnegNormTotal <- function(sset) {
 
-    ## how minfi does it
+    ## sort of how minfi does it (sd instead of MAD)
     stopifnot(is(sset, "SigSet"))
     negctls <- negControls(sset)
     sdG <- sd(negctls$G)
@@ -138,6 +138,8 @@ detectionPnegNormTotal <- function(sset) {
 }
 
 #' Detection P-value based on ECDF of out-of-band signal
+#' 
+#' aka Poobah (Pvals by Out-Of-Band Array Hybridization)
 #'
 #' The function takes a \code{SigSet} as input, computes detection p-value
 #' using out-of-band probes empirical distribution and returns a new

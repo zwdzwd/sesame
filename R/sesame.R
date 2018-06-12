@@ -221,6 +221,10 @@ totalIntensityZscore <- function(sset) {
 #' getSexInfo(sset)
 #' @export
 getSexInfo <- function(sset) {
+
+    if (is(sset, "SigSetList"))
+        return(do.call(cbind, lapply(sset, getSexInfo)))
+    
     stopifnot(is(sset, "SigSet"))
 
     cleanY <- sesameDataGet(paste0(
@@ -346,6 +350,12 @@ inferSex <- function(sset) {
 #' inferEthnicity(sset)
 #' @export
 inferEthnicity <- function(sset) {
+
+    if (is(sset, "SigSetList"))
+        return(vapply(sset, inferEthnicity, character(1)))
+    
+    stopifnot(is(sset, 'SigSet'))
+
     ethnicity.inference <- sesameDataGet('ethnicity.inference')
     ccsprobes <- ethnicity.inference$ccs.probes
     rsprobes <- ethnicity.inference$rs.probes
@@ -375,6 +385,12 @@ inferEthnicity <- function(sset) {
 getBetas <- function(
     sset, quality.mask=TRUE, nondetection.mask=TRUE,
     mask.use.tcga=FALSE, pval.threshold=0.05) {
+    
+    if (is(sset, "SigSetList"))
+        return(do.call(cbind, lapply(
+            sset, getBetas, quality.mask = quality.mask, 
+            nondetection.mask = nondetection.mask,
+            mask.use.tcga = mask.use.tcga, pval.threshold = pval.threshold)))
 
     stopifnot(is(sset, "SigSet"))
 
@@ -500,12 +516,15 @@ readIDAT1 <- function(grn.name, red.name) {
 #' and _Red.idat. The function returns a \code{SigSet}.
 #'
 #' @param prefix.path sample prefix without _Grn.idat and _Red.idat
+#' @param verbose     be verbose?  (FALSE) 
+#' 
 #' @return a \code{SigSet}
+#' 
 #' @examples
 #' sset <- readIDATpair(sub('_Grn.idat','',system.file(
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
-readIDATpair <- function(prefix.path) {
+readIDATpair <- function(prefix.path, verbose=FALSE) {
 
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
         grn.name <- paste0(prefix.path, '_Grn.idat')
@@ -522,7 +541,11 @@ readIDATpair <- function(prefix.path) {
     } else {
         stop('Red IDAT does not exist')
     }
-    
+
+    if (verbose == TRUE) {
+        message("Reading IDATs for ", basename(prefix.path), "...")
+    }
+
     dm <- readIDAT1(grn.name, red.name)
     chipAddressToSignal(dm)
 }
@@ -616,9 +639,14 @@ searchIDATprefixes <- function(dir.name, recursive = FALSE) {
     
     prefixes <- names(is.valid)[is.valid]
     if (length(prefixes) == 0)
-        stop("No IDAT file found. %s")
+        stop("No IDAT file found.")
 
-    file.path(dir.name, prefixes)
+    prefixes <- file.path(dir.name, prefixes)
+    
+    # set name attributes so that names are auto-assigned for
+    # lapply and mclapply
+    names(prefixes) <- prefixes
+    prefixes
 }
 
 #' Lookup address in one sample
