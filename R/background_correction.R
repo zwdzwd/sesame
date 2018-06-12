@@ -116,24 +116,6 @@ to small value")
     signal
 }
 
-.getNormCtls <- function(sset) {
-    
-    if (sset@platform == 'HM27') {
-        ## controversial to use, maybe mean of all signals in each channel?
-        normctl.G <- ctl(sset)[grep(
-            'norm.green', tolower(rownames(ctl(sset)))),]
-        normctl.R <- ctl(sset)[grep(
-            'norm.red', tolower(rownames(ctl(sset)))),]
-    } else {                              # HM450 and EPIC
-        normctl.G <- ctl(sset)[grep(
-            'norm_(c|g)',tolower(rownames(ctl(sset)))),]
-        normctl.R <- ctl(sset)[grep(
-            'norm_(a|t)',tolower(rownames(ctl(sset)))),]
-    }
-    c(G=mean(normctl.G$G, na.rm=TRUE), R=mean(normctl.R$R, na.rm=TRUE))
-    
-}
-
 #' Background subtraction with bleeding-through subtraction
 #'
 #' The function takes a \code{SigSet} and returns a modified \code{SigSet}

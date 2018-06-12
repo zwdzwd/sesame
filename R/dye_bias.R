@@ -1,3 +1,38 @@
+#' get normalization control signal
+#' 
+#' get normalization control signal from SigSet. 
+#' The function optionally takes mean for each channel.
+#' 
+#' @param   sset a SigSet
+#' @param   average whether to average
+#' @return a data frame of normalization control signals
+#' @examples 
+#' sset <- readIDATpair(file.path(system.file(
+#'     'extdata','',package='sesameData'), '4207113116_B'))
+#' 
+#' df.ctl <- getNormCtls(sset)
+#' 
+#' @export
+getNormCtls <- function(sset, average = FALSE) {
+    df <- ctl(sset)
+    df <- df[grep('norm(_|\\.)', tolower(rownames(df))),]
+    if (sset@platform == 'HM27') {
+        df$channel <- ifelse(grepl(
+            'norm\\.green', tolower(rownames(df))), 'G', 'R')
+    } else {
+        df$channel <- ifelse(grepl(
+            'norm_(c|g)', tolower(rownames(df))), 'G', 'R')
+    }
+    
+    if (average) {
+        c(
+            G=mean(df[df$channel=='G','G'], na.rm=TRUE), 
+            R=mean(df[df$channel=='R','R'], na.rm=TRUE))
+    } else {
+        df
+    }
+}
+
 #' Correct dye bias in by linear scaling.
 #'
 #' The function takes a \code{SigSet} as input and scale both the Grn and Red
@@ -19,7 +54,7 @@ dyeBiasCorr <- function(sset, ref=NULL) {
         ref <- meanIntensity(sset)
     }
     
-    normctl <- .getNormCtls(sset)
+    normctl <- getNormCtls(sset, average=TRUE)
     fR <- ref/normctl['R']
     fG <- ref/normctl['G']
 
@@ -59,7 +94,7 @@ dyeBiasCorr <- function(sset, ref=NULL) {
 #' @export
 dyeBiasCorrMostBalanced <- function(ssets) {
 
-    normctls <- vapply(ssets, .getNormCtls, numeric(2))
+    normctls <- vapply(ssets, getNormCtls, numeric(2), average=TRUE)
     most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
     ref <- mean(normctls[,most.balanced], na.rm=TRUE)
     lapply(ssets, function(sset) dyeBiasCorr(sset, ref))
