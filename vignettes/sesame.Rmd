@@ -92,13 +92,20 @@ the last column holding the type of the control.
 head(ctl(sset))
 ```
 
-# Best practices of data preprocessing
+# The openSesame pipeline
 
-Our recommended best practice is noob plus nonlinear dye bias correction
-achieved through:
+The openSesame pipeline is composed of noob, nonlinear dye bias correction
+and pOOBAH, achieved through:
+```{r}
+IDATprefixes <- searchIDATprefixes(
+    system.file("extdata/", package = "sesameData"))
+betas <- openSesame(IDATprefixes)
+```
+or equivalently
 ```{r}
 betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
 ```
+behind the scene.
 
 # Functionalities
 
@@ -113,7 +120,7 @@ infer these common covariates if such information is not provided, and to
 check for potential sample swaps when it is provided.  SeSAMe also provides
 functionality for calling differential methylation and segmented copy number.
 
-### To read IDATs from directory
+### Read IDATs into SigSet list
 ```{r}
 ssets <- lapply(
     searchIDATprefixes(system.file("extdata/", package = "sesameData")),

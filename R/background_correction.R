@@ -69,22 +69,6 @@ noob <- function(sset, offset=15) {
     sset
 }
 
-#' The openSeSAMe pipeline
-#'
-#' This function takes a \code{SigSet} and output beta values.It is
-#' a simple wrapper of noob + nonlinear dye bias correction + pOOBAH masking.
-#' 
-#' @param sset a \code{SigSet}
-#' @return a numeric vector for processed beta values
-#' sset <- make
-#' @examples
-#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
-#' betas <- openSeSAMe(sset)
-#' @export
-openSeSAMe <- function(sset) {
-    getBetas(dyeBiasCorrTypeINorm(noob(sset)))
-}
-
 ## Noob background correction for one channel
 ## ib array of in-band signal
 ## oob array of out-of-band-signal

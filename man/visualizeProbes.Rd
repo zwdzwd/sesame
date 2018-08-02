@@ -5,7 +5,8 @@
 \title{Visualize Region that Contains the Specified Probes}
 \usage{
 visualizeProbes(probeNames, betas, platform = c("EPIC", "HM450"),
-  refversion = c("hg38", "hg19"), upstream = 1000, dwstream = 1000, ...)
+  refversion = c("hg38", "hg19"), upstream = 1000, dwstream = 1000,
+  ...)
 }
 \arguments{
 \item{probeNames}{probe names}

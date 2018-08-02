@@ -4,8 +4,8 @@
 \alias{getProbesByRegion}
 \title{Get probes by genomic region}
 \usage{
-getProbesByRegion(chrm, beg = 1, end = -1, platform = c("EPIC", "HM450"),
-  refversion = c("hg38", "hg19"))
+getProbesByRegion(chrm, beg = 1, end = -1, platform = c("EPIC",
+  "HM450"), refversion = c("hg38", "hg19"))
 }
 \arguments{
 \item{chrm}{chromosome}
