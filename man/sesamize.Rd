@@ -24,7 +24,7 @@ a sesamized GenomicRatioSet from the input RGChannelSet
 # Takes about two minutes to process 48 samples on my 48-core desktop
 if (require(FlowSorted.CordBloodNorway.450k)) {
     sesamized <- sesamize(
-        FlowSorted.CordBloodNorway.450k[,1:4],parallel=TRUE)
+        FlowSorted.CordBloodNorway.450k[,1:2])
 } 
 
 }
