@@ -4,11 +4,13 @@
 \alias{openSesame}
 \title{The openSesame pipeline}
 \usage{
-openSesame(x)
+openSesame(x, ...)
 }
 \arguments{
 \item{x}{SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
 or RGChannelSet(s)}
+
+\item{...}{parameters to getBetas}
 }
 \value{
 a numeric vector for processed beta values

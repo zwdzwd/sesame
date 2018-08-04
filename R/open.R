@@ -9,6 +9,7 @@
 #' 
 #' @param x SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
 #' or RGChannelSet(s)
+#' @param ... parameters to getBetas
 #' @return a numeric vector for processed beta values
 #' @examples
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
@@ -16,12 +17,12 @@
 #'     system.file("extdata", "", package = "sesameData"))
 #' betas <- openSesame(IDATprefixes)
 #' @export
-openSesame <- function(x) {
+openSesame <- function(x, ...) {
     if (length(x) == 1) {
         if (is(x, 'character')) # IDAT prefix
             x <- readIDATpair(x)
         stopifnot(is(x, 'SigSet'))
-        getBetas(dyeBiasCorrTypeINorm(noob(x)))
+        getBetas(dyeBiasCorrTypeINorm(noob(x)), ...)
     } else if (is(x, "GenomicRatioSet")) {
         reopenSesame(x)
     } else if (is(x, "RGChannelSet")) {
