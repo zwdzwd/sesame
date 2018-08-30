@@ -16,8 +16,9 @@ vignette: >
 
 From Bioconductor
 ```{r, eval=FALSE}
-source("https://bioconductor.org/biocLite.R")
-biocLite("sesame")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("sesame")
 ```
 
 Development version can be installed from github
