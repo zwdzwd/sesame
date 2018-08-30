@@ -55,9 +55,9 @@ sesamize <- function(x, naFrac=1, parallel=FALSE) {
     } else {
         message("Sesamizing ", colnames(x), "...")
         dm <- cbind(G=minfi::getGreen(x), R=minfi::getRed(x))
-        attr(dm, "platform") <- sub(
-            "IlluminaHumanMethylation", "HM", 
-            sub("k$", "", minfi::annotation(x)["array"]))
+        attr(dm, "platform") <- sub("HMEPIC", "EPIC", 
+            sub("IlluminaHumanMethylation", "HM", 
+                sub("k$", "", minfi::annotation(x)["array"])))
         sset <- chipAddressToSignal(dm) # see above for kludge
         Beta <- as.matrix(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
         CN <- as.matrix(log2(totalIntensities(sset))[rownames(Beta)])
