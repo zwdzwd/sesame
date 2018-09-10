@@ -19,10 +19,15 @@
 #' @export
 openSesame <- function(x, ...) {
     if (length(x) == 1) {
-        if (is(x, 'character')) # IDAT prefix
-            x <- readIDATpair(x)
-        stopifnot(is(x, 'SigSet'))
-        getBetas(dyeBiasCorrTypeINorm(noob(x)), ...)
+        if (is(x, 'character')) {
+            if (dir.exists(x)) {
+                do.call(cbind, mclapply(searchIDATprefixes(x), openSesame))
+            } else { # IDAT prefix
+                x <- readIDATpair(x)
+                stopifnot(is(x, 'SigSet'))
+                getBetas(dyeBiasCorrTypeINorm(noob(x)), ...)
+            }
+        }
     } else if (is(x, "GenomicRatioSet")) {
         reopenSesame(x)
     } else if (is(x, "RGChannelSet")) {
