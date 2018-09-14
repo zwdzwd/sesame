@@ -7,7 +7,7 @@ c(bibentry(bibtype = "Article",
                person(c("Peter", "W."), "Laird"), 
                person("Hui", "Shen"))
            ),
-           year = 2018,
+           year = "2018",
            journal = "Nucleic Acids Research",
            volume = "gky691",
            doi = "10.1093/nar/gky691",
