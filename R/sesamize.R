@@ -9,14 +9,14 @@
 #' @importFrom S4Vectors metadata<-
 #' 
 #' @examples
-#' 
+#' \dontrun{
 #' # Takes about two minutes to process 48 samples on my 48-core desktop
 #' if (require(FlowSorted.CordBloodNorway.450k) && 
 #'     require(IlluminaHumanMethylation450kanno.ilmn12.hg19)) {
 #'     sesamized <- sesamize(
 #'         FlowSorted.CordBloodNorway.450k[,1:2])
 #' } 
-#' 
+#' }
 #' @export 
 sesamize <- function(x, naFrac=1, parallel=FALSE) { 
     stopifnot(is(x, "RGChannelSet"))
