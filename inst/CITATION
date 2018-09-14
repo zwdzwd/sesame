@@ -5,7 +5,7 @@ c(bibentry(bibtype = "Article",
                person("Wanding", "Zhou"),
                person(c("Timothy", "J."), "Triche"), 
                person(c("Peter", "W."), "Laird"), 
-               person("Hui", "Shen"))
+               person("Hui", "Shen")
            ),
            year = "2018",
            journal = "Nucleic Acids Research",
