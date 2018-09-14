@@ -1,0 +1,33 @@
+c(bibentry(bibtype = "Article",
+           key = "sesame",
+           title = "{SeSAMe: reducing artifactual detection of DNA methylation by Infinium BeadChips in genomic deletions}",
+           author = c(
+               person("Wanding", "Zhou"),
+               person(c("Timothy", "J."), "Triche"), 
+               person(c("Peter", "W."), "Laird"), 
+               person("Hui", "Shen")
+           ),
+           year = "2018",
+           journal = "Nucleic Acids Research",
+           volume = "gky691",
+           doi = "10.1093/nar/gky691",
+           pubmed = "30085201",
+           header = "The sesame package is described in:"),
+    
+  bibentry(bibtype = "Article",
+           key = "noob",
+           author = c(person(given = c("Timothy",  "J."), family = "Triche"),
+                      person(given = c("Daniel", "J."), family = "Weisenberger"),
+                      person(given = c("David"), family = "Van Den Berg"),
+                      person(given = c("Peter", "W."), family = "Laird"),
+                      person(given = c("Kimberly", "D."), family = "Siegmund")),
+           title = "Low-level processing of {Illumina} {Infinium} {DNA} {Methylation} {BeadArrays}",
+           journal = "Nucleic Acids Research",
+           year = "2013",
+           volume = "41",
+           number = "7",
+           pages = "e90",
+           doi = "10.1093/nar/gkt090",
+           pubmed = "23476028",
+           header = "noob background correction is described in:")
+)

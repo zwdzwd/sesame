@@ -17,5 +17,4 @@ Bug reports are appreciated. Register issues at the SeSAMe [issue tracker](http:
     
 ## About
 
-W Zhou, TJ Triche Jr, PW Laird, H Shen, in submission
-    
+See [SeSAMe: reducing artifactual detection of DNA methylation by Infinium BeadChips in genomic deletions](https://doi.org/10.1093/nar/gky691) for more details.
