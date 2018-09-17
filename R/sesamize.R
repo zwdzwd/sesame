@@ -9,7 +9,7 @@
 #' @importFrom S4Vectors metadata<-
 #' 
 #' @examples
-#' \dontrun{
+#' \donttest{
 #' # Takes about two minutes to process 48 samples on my 48-core desktop
 #' if (require(FlowSorted.CordBloodNorway.450k) && 
 #'     require(IlluminaHumanMethylation450kanno.ilmn12.hg19)) {
