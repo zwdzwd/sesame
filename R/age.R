@@ -60,7 +60,7 @@ predictAgeSkinBlood <- function(betas) {
 #' @export
 #' @examples
 #' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-#' predictAgeSkinBlood(betas)
+#' predictAgePheno(betas)
 predictAgePheno <- function(betas) {
     predictAge(betas, sesameDataGet('age.inference')$PhenoAge)
 }
