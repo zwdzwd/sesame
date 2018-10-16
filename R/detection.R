@@ -139,12 +139,13 @@ detectionPnegNormTotal <- function(sset) {
 
 #' Detection P-value based on ECDF of out-of-band signal
 #' 
-#' aka Poobah (Pvals by Out-Of-Band Array Hybridization)
+#' aka pOOBAH (p-vals by Out-Of-Band Array Hybridization)
 #'
 #' The function takes a \code{SigSet} as input, computes detection p-value
 #' using out-of-band probes empirical distribution and returns a new
 #' \code{SigSet} with an updated pval slot.
 #'
+#' @name detectionPoobEcdf
 #' @param sset a \code{SigSet}
 #' @return detection p-value
 #' @examples
@@ -172,3 +173,5 @@ detectionPoobEcdf <- function(sset) {
     sset
 }
 
+#' @rdname detectionPoobEcdf
+pOOBAH <- detectionPoobEcdf

@@ -11,9 +11,8 @@ setClass(
 
 #' constructor
 #' 
-#' @param   ...       the SigSet objects that will be the List elements
-#' 
-#' @return            a SigSetList 
+#' @param ... the SigSet objects that will be the List elements
+#' @return a SigSetList 
 #' @examples
 #' sset1 <- readIDATpair(file.path(system.file(
 #'     'extdata','',package='sesameData'), '4207113116_A'))
@@ -86,7 +85,7 @@ SigSetListFromIDATs <- function(stubs, parallel=FALSE) {
 #'
 #' @param object  a SigSetList 
 #'
-#' @name  SigSetList-methods
+#' @name SigSetList-methods
 NULL
 
 #' @rdname SigSetList-methods
