@@ -2,9 +2,12 @@
 % Please edit documentation in R/detection.R
 \name{detectionPoobEcdf}
 \alias{detectionPoobEcdf}
+\alias{pOOBAH}
 \title{Detection P-value based on ECDF of out-of-band signal}
 \usage{
 detectionPoobEcdf(sset)
+
+pOOBAH(sset)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
@@ -13,7 +16,7 @@ detectionPoobEcdf(sset)
 detection p-value
 }
 \description{
-aka Poobah (Pvals by Out-Of-Band Array Hybridization)
+aka pOOBAH (p-vals by Out-Of-Band Array Hybridization)
 }
 \details{
 The function takes a \code{SigSet} as input, computes detection p-value
