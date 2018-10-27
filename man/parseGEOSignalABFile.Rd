@@ -27,6 +27,8 @@ parsing data from Signal_A and Signal_B file provided by
 GEO. In many cases, this function generates a "partial"
 SigSet due to lack of out-of-band signal and control 
 probe measurement in those Signal_A/B files.
+The detection p-value is based on a fixed normal distribution
+rather than from negative control or OOB probes.
 }
 \examples{
 path = '/secondary/projects/laird/projects/2016_12_26_TCGA_WGBS/hm450/GSE36369/GSE36369_NonEBV_SignalA_SignalB_3samples_1k.txt.gz'

@@ -17,6 +17,11 @@ The function takes a \code{SigSet} as input, computes detection p-value
 using negative control probes parametrized in a normal distribution a la
 Genome Studio and returns a new \code{SigSet} with an updated pval slot.
 }
+\details{
+P-value is calculated using negative control probes as the estimate of
+background where Grn channel and Red channel are merged. But when
+estimating p-value the Red and Grn are summed (non-ideal).
+}
 \examples{
 sset <- makeExampleSeSAMeDataSet()
 sset <- detectionPnegNormGS(sset)

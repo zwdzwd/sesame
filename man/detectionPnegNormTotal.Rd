@@ -17,7 +17,8 @@ detection p-value
 The function takes a \code{SigSet} as input, computes detection p-value
 using negative control probes parametrized in a normal distribution with
 the two channels summed first and returns a new \code{SigSet} with an
-updated pval slot.
+updated pval slot. The SD is summed to emulate the SD of the summed
+signal (not the most accurate treatment).
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet()

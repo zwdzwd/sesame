@@ -6,6 +6,8 @@
 #' GEO. In many cases, this function generates a "partial"
 #' SigSet due to lack of out-of-band signal and control 
 #' probe measurement in those Signal_A/B files.
+#' The detection p-value is based on a fixed normal distribution
+#' rather than from negative control or OOB probes.
 #' 
 #' @param path path to Signal-A/B file downlaoded from GEO. 
 #' The file can remain gzipped.
@@ -52,7 +54,7 @@ parseGEOSignalABFile <- function(
         II(sset) <- as.matrix(data.frame(
             U=df[aux, paste0(sample, '.Signal_B')],
             M=df[aux, paste0(sample, '.Signal_A')]))
-        sset <- pOOBAH(sset)
+        sset <- detectionPfixedNorm(sset)
         sset
     }
     
