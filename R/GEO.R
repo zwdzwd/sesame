@@ -23,7 +23,7 @@ parseGEOSignalABFile <- function(
     df <- read.table(gzfile(path), header=TRUE, check.names = FALSE)
     samples <- colnames(df)
     samples <- unique(sub('.Signal_[AB]','',samples[samples != 'TargetID']))
-
+    
     # make sure each sample has both Signal_A and Signal_B
     stopifnot(all(vapply(samples, function(s) exists(
         paste0(s,'.Signal_A'), df), logical(1))))
