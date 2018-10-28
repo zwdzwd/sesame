@@ -125,12 +125,15 @@ detectionPnegNorm <- function(sset) {
 #' sset <- detectionPfixedNorm(sset)
 #' 
 #' @export
-detectionPfixedNorm <- function(sset, muG = 500, sdG = 200, muR = 500, sdR = 200) {
+detectionPfixedNorm <- function(
+    sset, muG = 500, sdG = 200, muR = 500, sdR = 200) {
     
     stopifnot(is(sset, "SigSet"))
     
-    pIR <- 1 - pnorm(pmax(IR(sset)[,'M'], IR(sset)[,'U']), mean=muR, sd=sdR)
-    pIG <- 1 - pnorm(pmax(IG(sset)[,'M'], IG(sset)[,'U']), mean=muG, sd=sdG)
+    pIR <- 1 - pnorm(
+        pmax(IR(sset)[,'M'], IR(sset)[,'U']), mean=muR, sd=sdR)
+    pIG <- 1 - pnorm(
+        pmax(IG(sset)[,'M'], IG(sset)[,'U']), mean=muG, sd=sdG)
     pII <- pmin(
         1 - pnorm(II(sset)[,'M'], mean=muG, sd=sdG),
         1 - pnorm(II(sset)[,'U'], mean=muR, sd=sdR))

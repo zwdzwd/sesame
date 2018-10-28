@@ -31,5 +31,9 @@ The detection p-value is based on a fixed normal distribution
 rather than from negative control or OOB probes.
 }
 \examples{
-path = '/secondary/projects/laird/projects/2016_12_26_TCGA_WGBS/hm450/GSE36369/GSE36369_NonEBV_SignalA_SignalB_3samples_1k.txt.gz'
+path = system.file(
+    'extdata',
+    'GSE36369_NonEBV_SignalA_SignalB_3samples_1k.txt.gz',
+    package='sesame')
+ssets <- parseGEOSignalABFile(path)
 }
