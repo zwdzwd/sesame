@@ -17,7 +17,11 @@
 #' @param parallel whether to use multiple cores.
 #' @return a SigSetList or a SigSet
 #' @examples
-#' path = '/secondary/projects/laird/projects/2016_12_26_TCGA_WGBS/hm450/GSE36369/GSE36369_NonEBV_SignalA_SignalB_3samples_1k.txt.gz'
+#' path = system.file(
+#'     'extdata',
+#'     'GSE36369_NonEBV_SignalA_SignalB_3samples_1k.txt.gz',
+#'     package='sesame')
+#' ssets <- parseGEOSignalABFile(path)
 #' @export
 parseGEOSignalABFile <- function(
     path, platform='HM450', drop=TRUE, parallel=TRUE) {
@@ -41,7 +45,7 @@ parseGEOSignalABFile <- function(
         aux <- !is.na(match(df$TargetID, ord$Probe_ID))
         IG(sset) <- as.matrix(data.frame(
             U=df[aux, paste0(sample, '.Signal_B')],
-            M=df[aux, paste0(sample, '.Signal_A')], 
+            M=df[aux, paste0(sample, '.Signal_A')],
             row.names=df$TargetID[aux]))
         ## IR
         ord <- ord0[((ord0$DESIGN=='I')&(ord0$col=='R')),]
@@ -64,7 +68,7 @@ parseGEOSignalABFile <- function(
     if (drop && length(samples)==1) {
         load.sset(samples[1])
     } else if (parallel) {
-        SigSetList(mclapply(samples, load.sset, verbose=TRUE))
+        SigSetList(mclapply(samples, load.sset))
     } else {
         SigSetList(lapply(samples, load.sset))
     }
