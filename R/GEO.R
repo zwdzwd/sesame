@@ -41,19 +41,22 @@ parseGEOSignalABFile <- function(
         aux <- !is.na(match(df$TargetID, ord$Probe_ID))
         IG(sset) <- as.matrix(data.frame(
             U=df[aux, paste0(sample, '.Signal_B')],
-            M=df[aux, paste0(sample, '.Signal_A')]))
+            M=df[aux, paste0(sample, '.Signal_A')]), 
+            row.names=df$TargetID[aux])
         ## IR
         ord <- ord0[((ord0$DESIGN=='I')&(ord0$col=='R')),]
         aux <- !is.na(match(df$TargetID, ord$Probe_ID))
         IR(sset) <- as.matrix(data.frame(
             U=df[aux, paste0(sample, '.Signal_B')],
-            M=df[aux, paste0(sample, '.Signal_A')]))
+            M=df[aux, paste0(sample, '.Signal_A')]),
+            row.names=df$TargetID[aux])
         ## II
         ord <- ord0[ord0$DESIGN=='II',]
         aux <- !is.na(match(df$TargetID, ord$Probe_ID))
         II(sset) <- as.matrix(data.frame(
             U=df[aux, paste0(sample, '.Signal_B')],
-            M=df[aux, paste0(sample, '.Signal_A')]))
+            M=df[aux, paste0(sample, '.Signal_A')]),
+            row.names=df$TargetID[aux])
         sset <- detectionPfixedNorm(sset)
         sset
     }
