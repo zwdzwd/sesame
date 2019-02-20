@@ -12,7 +12,7 @@ Depends: R (>= 3.5),
           sesameData,
           methods
 License: Artistic-2.0
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
 Imports: R6,
           grDevices,
           utils,
@@ -35,7 +35,8 @@ Suggests: scales,
           testthat,
           minfi,
           SummarizedExperiment,
-          FlowSorted.CordBloodNorway.450k
+          FlowSorted.CordBloodNorway.450k,
+          FlowSorted.Blood.450k
 VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame
 BugReports: https://github.com/zwdzwd/sesame/issues

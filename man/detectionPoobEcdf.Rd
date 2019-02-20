@@ -27,4 +27,6 @@ using out-of-band probes empirical distribution and returns a new
 sset <- makeExampleSeSAMeDataSet()
 sset <- detectionPoobEcdf(sset)
 
+sset <- makeExampleSeSAMeDataSet()
+sset <- pOOBAH(sset)
 }

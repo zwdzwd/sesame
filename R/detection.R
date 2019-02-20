@@ -70,6 +70,10 @@ detectionPoobEcdf <- function(sset) {
 }
 
 #' @rdname detectionPoobEcdf
+#' @export
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' sset <- pOOBAH(sset)
 pOOBAH <- detectionPoobEcdf
 
 #################################################

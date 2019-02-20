@@ -2,7 +2,8 @@
 % Please edit documentation in R/sesamize.R
 \name{sesamize}
 \alias{sesamize}
-\title{"fix" an RGset (for which IDATs may be unavailable) with Sesame}
+\title{"fix" an RGset (for which IDATs may be unavailable) with Sesame
+The input is an RGSet and the output is a sesamized RGSet}
 \usage{
 sesamize(x, naFrac = 1, parallel = FALSE)
 }
@@ -18,13 +19,12 @@ a sesamized GenomicRatioSet from the input RGChannelSet
 }
 \description{
 "fix" an RGset (for which IDATs may be unavailable) with Sesame
+The input is an RGSet and the output is a sesamized RGSet
 }
 \examples{
-\donttest{
 # Takes about two minutes to process 48 samples on my 48-core desktop
 if (require(FlowSorted.CordBloodNorway.450k)) {
     sesamized <- sesamize(
         FlowSorted.CordBloodNorway.450k[,1:2])
 } 
-}
 }

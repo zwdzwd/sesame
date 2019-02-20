@@ -10,13 +10,11 @@
 #' @importFrom S4Vectors metadata<-
 #' 
 #' @examples
-#' \donttest{
 #' # Takes about two minutes to process 48 samples on my 48-core desktop
 #' if (require(FlowSorted.CordBloodNorway.450k)) {
 #'     sesamized <- sesamize(
 #'         FlowSorted.CordBloodNorway.450k[,1:2])
 #' } 
-#' }
 #' @export 
 sesamize <- function(x, naFrac=1, parallel=FALSE) { 
     stopifnot(is(x, "RGChannelSet"))
@@ -78,8 +76,7 @@ platformMinfiToSm <- function(platform) {
 platformSmToMinfi <- function(platform) {
     plf <- sub(
         "HM", "IlluminaHumanMethylation",
-        sub(
-            "EPIC", "HMEPIC",
+        sub("EPIC", "HMEPIC",
             sub("(450|27)$", "\\1k", platform)))
     stopifnot(plf %in% c(
         'IlluminaHumanMethylationEPIC',
@@ -90,51 +87,141 @@ platformSmToMinfi <- function(platform) {
 }
 
 
-SigSetToRGChannelSet <- function(sset) {
+.SigSetToRGChannelSet <- function(sset) {
     
+    dfAddress <- sesameDataGet(paste0(sset@platform,'.address'))
+    SSRed <- NULL
+    SSGrn <- NULL
+    
+    IIdf <- dfAddress$ordering[
+        dfAddress$ordering$COLOR_CHANNEL=='Both', c('Probe_ID','U')]
+    SSRed <- c(SSRed, setNames(sset@II[match(
+        IIdf$Probe_ID, rownames(sset@II)), 'U'],
+        as.character(IIdf$U)))
+    SSGrn <- c(SSGrn, setNames(sset@II[match(
+        IIdf$Probe_ID, rownames(sset@II)), 'M'],
+        as.character(IIdf$U)))
+    
+    IRdf <- dfAddress$ordering[
+        dfAddress$ordering$COLOR_CHANNEL=='Red', c('Probe_ID','M','U')]
+    SSRed <- c(SSRed, setNames(sset@IR[match(
+        IRdf$Probe_ID, rownames(sset@IR)), 'M'],
+        as.character(IRdf$M)))
+    SSRed <- c(SSRed, setNames(sset@IR[match(
+        IRdf$Probe_ID, rownames(sset@IR)), 'U'],
+        as.character(IRdf$U)))
+    ## OOB signals
+    SSGrn <- c(SSGrn, setNames(sset@oobG[match(
+        IRdf$Probe_ID, rownames(sset@oobG)), 'M'],
+        as.character(IRdf$M)))
+    SSGrn <- c(SSGrn, setNames(sset@oobG[match(
+        IRdf$Probe_ID, rownames(sset@oobG)), 'U'],
+        as.character(IRdf$U)))
+    
+    IGdf <- dfAddress$ordering[
+        dfAddress$ordering$COLOR_CHANNEL=='Grn', c('Probe_ID','M','U')]
+    SSGrn <- c(SSGrn, setNames(sset@IG[match(
+        IGdf$Probe_ID, rownames(sset@IG)), 'M'], 
+        as.character(IGdf$M)))
+    SSGrn <- c(SSGrn, setNames(sset@IG[match(
+        IGdf$Probe_ID, rownames(sset@IG)), 'U'], 
+        as.character(IGdf$U)))
+    ## OOB signals
+    SSRed <- c(SSRed, setNames(sset@oobR[match(
+        IGdf$Probe_ID, rownames(sset@oobR)), 'M'],
+        as.character(IGdf$M)))
+    SSRed <- c(SSRed, setNames(sset@oobR[match(
+        IGdf$Probe_ID, rownames(sset@oobR)), 'U'],
+        as.character(IGdf$U)))
+    
+    # controls
+    control.names <- make.names(dfAddress$controls$Name, unique = TRUE)
+    SSGrn <- c(SSGrn, setNames(sset@ctl[match(
+        control.names, rownames(sset@ctl)),'G'], 
+        as.character(dfAddress$controls$Address)))
+    SSRed <- c(SSRed, setNames(sset@ctl[match(
+        control.names, rownames(sset@ctl)),'R'], 
+        as.character(dfAddress$controls$Address)))
+    
+    list(grn=SSGrn, red=SSRed)
 }
 
-#' Conversion of RGChannelSet (Minfi) to SigSet (SeSAMe)
+#' Convert SigSet (SeSAMe) to RGChannelSet (minfi)
 #' 
-#' @param rgSet - a minfi::RGChannelSet
-#' @return a sesame::SigSet
+#' @param ssets a list of SigSet
+#' @return a minfi::RGChannelSet
+#' @examples
+#'
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' rgSet <- SigSetToRGChannelSet(sset)
+#'
+#' @export 
+SigSetToRGChannelSet <- function(ssets) {
+    if (is(ssets, 'SigSet')) {
+        ssets <- list(sample=sset)
+    }
+
+    platform <- ssets[[1]]@platform
+    
+    ss_all <- lapply(ssets, .SigSetToRGChannelSet)
+    rgset <- RGChannelSet(
+        Green=do.call(cbind, lapply(ss_all, function(ss) ss$grn)), 
+        Red=do.call(cbind, lapply(ss_all, function(ss) ss$red)), 
+        annotation=c(
+            array=platformSmToMinfi(platform),
+            annotation=NA)) # can be ilm10b4.hg19 or ilmn12.hg19
+}
+
+#' Convert RGChannelSet (minfi) to SigSet (SeSAMe)
+#'
+#' Notice the colData() and rowData() is lost. Most cases, rowData is empty
+#' anyway.
+#' 
+#' @param rgSet a minfi::RGChannelSet
+#' @return a list of sesame::SigSet
+#' @examples
+#'
+#' if (require(FlowSorted.Blood.450k)) {
+#'     rgSet <- FlowSorted.Blood.450k[,1:2]
+#'     ssets <- RGChannelSetToSigSet(rgSet)
+#' }
 #' @export
 RGChannelSetToSigSet <- function(rgSet) {
     
     rg_grn <- getGreen(rgSet)
     rg_red <- getRed(rgSet)
     samples <- colnames(rg_grn) # rg.red should be the same
-    probe_address_grn <- rownames(rg_grn)
-    probe_address_red <- rownames(rg_red)
+    prb_addr_grn <- rownames(rg_grn)
+    prb_addr_red <- rownames(rg_red)
     
     platform <- platformMinfiToSm(annotation(rgSet)[['array']])
     
     # Process mappings
-    dfAddress <- sesameDataGet(paste0(platform,'.address'))
-    IIdf <- dfAddress$ordering[
-        dfAddress$ordering$COLOR_CHANNEL=='Both', c('Probe_ID','U')]
-    IItoSSU <- match(IIdf$U, as.numeric(probe_address_red))
-    IItoSSM <- match(IIdf$U, as.numeric(probe_address_grn))
+    addr <- sesameDataGet(paste0(platform,'.address'))
+    IIdf <- addr$ordering[
+        addr$ordering$COLOR_CHANNEL=='Both', c('Probe_ID','U')]
+    IItoSSU <- match(IIdf$U, as.numeric(prb_addr_red))
+    IItoSSM <- match(IIdf$U, as.numeric(prb_addr_grn))
     
-    IGdf <- dfAddress$ordering[
-        dfAddress$ordering$COLOR_CHANNEL=='Grn', c('Probe_ID','M','U')]
-    IGtoSSU <- match(IGdf$U, as.numeric(probe_address_grn))
-    IGtoSSM <- match(IGdf$M, as.numeric(probe_address_grn))
-    oobRtoSSU <- match(IGdf$U, as.numeric(probe_address_red))
-    oobRtoSSM <- match(IGdf$M, as.numeric(probe_address_red))
+    IGdf <- addr$ordering[
+        addr$ordering$COLOR_CHANNEL=='Grn', c('Probe_ID','M','U')]
+    IGtoSSU <- match(IGdf$U, as.numeric(prb_addr_grn))
+    IGtoSSM <- match(IGdf$M, as.numeric(prb_addr_grn))
+    oobRtoSSU <- match(IGdf$U, as.numeric(prb_addr_red))
+    oobRtoSSM <- match(IGdf$M, as.numeric(prb_addr_red))
     
-    IRdf <- dfAddress$ordering[
-        dfAddress$ordering$COLOR_CHANNEL=='Red', c('Probe_ID','M','U')]
-    IRtoSSU <- match(IRdf$U, as.numeric(probe_address_red))
-    IRtoSSM <- match(IRdf$M, as.numeric(probe_address_red))
-    oobGtoSSU <- match(IRdf$U, as.numeric(probe_address_grn))
-    oobGtoSSM <- match(IRdf$M, as.numeric(probe_address_grn))
+    IRdf <- addr$ordering[
+        addr$ordering$COLOR_CHANNEL=='Red', c('Probe_ID','M','U')]
+    IRtoSSU <- match(IRdf$U, as.numeric(prb_addr_red))
+    IRtoSSM <- match(IRdf$M, as.numeric(prb_addr_red))
+    oobGtoSSU <- match(IRdf$U, as.numeric(prb_addr_grn))
+    oobGtoSSM <- match(IRdf$M, as.numeric(prb_addr_grn))
     
-    controlToSSG <- match(dfAddress$controls$Address, as.numeric(probe_address_red))
-    controlToSSR <- match(dfAddress$controls$Address, as.numeric(probe_address_grn))
+    controlToSSG <- match(addr$controls$Address, as.numeric(prb_addr_red))
+    controlToSSR <- match(addr$controls$Address, as.numeric(prb_addr_grn))
     
     # actually conversion
-    lapply(samples, function(sample) {
+    setNames(lapply(samples, function(sample) {
         .II <- cbind(M=rg_grn[IItoSSM, sample], U=rg_red[IItoSSU, sample])
         rownames(.II) <- IIdf$Probe_ID
         
@@ -147,22 +234,24 @@ RGChannelSetToSigSet <- function(rgSet) {
         .oobG <- cbind(
             M=rg_grn[oobGtoSSM, sample], 
             U=rg_grn[oobGtoSSU, sample])
+        rownames(.oobG) <- IRdf$Probe_ID
         
         .oobR <- cbind(
             M=rg_red[oobRtoSSM, sample], 
             U=rg_red[oobRtoSSU, sample])
+        rownames(.oobR) <- IGdf$Probe_ID
         
         .ctl <- data.frame(
             G=rg_grn[controlToSSG, sample], 
             R=rg_red[controlToSSR, sample], 
-            col=dfAddress$controls$Color_Channel, 
-            type=dfAddress$controls$Type)
-        rownames(.ctl) <- make.names(dfAddress$controls$Name, unique = TRUE)
+            col=addr$controls$Color_Channel,
+            type=addr$controls$Type, stringsAsFactors = FALSE)
+        rownames(.ctl) <- make.names(addr$controls$Name, unique = TRUE)
         
-        # TODO: pval
-        new('SigSet', IG=.IG, IR=.IR, II=.II,
+        sset <- new('SigSet', IG=.IG, IR=.IR, II=.II,
             oobG=.oobG, oobR=.oobR, ctl=.ctl,
             platform=platform)
-    })
+        detectionPoobEcdf(sset)
+    }), samples)
 }
 

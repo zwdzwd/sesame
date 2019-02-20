@@ -109,16 +109,16 @@ setMethod(
     function(object) {
         cat("SigSet", object@platform, "\n - @IG probes:",
             nrow(object@IG), '-', as.numeric(head(object@IG, n=3)),
-            "...\n  - @IR probes:", nrow(object@IR),
+            "...\n - @IR probes:", nrow(object@IR),
             '-', as.numeric(head(object@IR, n=3)),
-            "...\n  - @II probes:", nrow(object@II),
+            "...\n - @II probes:", nrow(object@II),
             '-', as.numeric(head(object@II, n=3)),
-            "...\n  - @oobG probes:", nrow(object@oobG),
+            "...\n - @oobG probes:", nrow(object@oobG),
             '-', as.numeric(head(object@oobG, n=3)),
-            "...\n  - @oobR probes:", nrow(object@oobR),
+            "...\n - @oobR probes:", nrow(object@oobR),
             '-', as.numeric(head(object@oobR, n=3)),
-            "...\n  - @ctl probes:", nrow(object@ctl),
-            "...\n  - @pval:", length(object@pval),
+            "...\n - @ctl probes:", nrow(object@ctl),
+            "...\n - @pval:", length(object@pval),
             "-", as.numeric(head(object@pval, n=3)), "...\n")
     })
 
