@@ -146,7 +146,7 @@ platformSmToMinfi <- function(platform) {
     list(grn=SSGrn, red=SSRed)
 }
 
-#' Convert SigSet (SeSAMe) to RGChannelSet (minfi)
+#' Convert SeSAMe::SigSet to minfi::RGChannelSet
 #' 
 #' @param ssets a list of SigSet
 #' @return a minfi::RGChannelSet
@@ -158,13 +158,13 @@ platformSmToMinfi <- function(platform) {
 #' @export 
 SigSetToRGChannelSet <- function(ssets) {
     if (is(ssets, 'SigSet')) {
-        ssets <- list(sample=sset)
+        ssets <- list(sample=ssets)
     }
 
     platform <- ssets[[1]]@platform
     
     ss_all <- lapply(ssets, .SigSetToRGChannelSet)
-    rgset <- RGChannelSet(
+    rgset <- minfi::RGChannelSet(
         Green=do.call(cbind, lapply(ss_all, function(ss) ss$grn)), 
         Red=do.call(cbind, lapply(ss_all, function(ss) ss$red)), 
         annotation=c(
@@ -187,14 +187,15 @@ SigSetToRGChannelSet <- function(ssets) {
 #' }
 #' @export
 RGChannelSetToSigSet <- function(rgSet) {
-    
-    rg_grn <- getGreen(rgSet)
-    rg_red <- getRed(rgSet)
+
+    pkgTest('minfi')
+    rg_grn <- minfi::getGreen(rgSet)
+    rg_red <- minfi::getRed(rgSet)
     samples <- colnames(rg_grn) # rg.red should be the same
     prb_addr_grn <- rownames(rg_grn)
     prb_addr_red <- rownames(rg_red)
     
-    platform <- platformMinfiToSm(annotation(rgSet)[['array']])
+    platform <- platformMinfiToSm(minfi::annotation(rgSet)[['array']])
     
     # Process mappings
     addr <- sesameDataGet(paste0(platform,'.address'))

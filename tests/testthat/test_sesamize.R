@@ -16,8 +16,8 @@ test_that("RGChannelSetToSigSet gives correct results", {
     mSet <- preprocessRaw(rgSet)
     mSet2 <- preprocessRaw(rgSet2)
     expect_equal(colnames(mSet), colnames(mSet2))
-    expect_equal(getMeth(mSet) == getMeth(mSet2))
-    expect_equal(getUnmeth(mSet) == getUnmeth(mSet2))
+    expect_equal(getMeth(mSet), getMeth(mSet2))
+    expect_equal(getUnmeth(mSet), getUnmeth(mSet2))
     expect_equal(getBeta(mSet), getBeta(mSet2))
 })
 
@@ -28,7 +28,13 @@ test_that("SigSetToRGChannelSet gives correct results", {
     expect_is(rgSet, "RGChannelSet")
     expect_equal(ncol(rgSet), 1)
 
-    ## when represented as sset, the two are the same.
+    ## when represented as sset, the two are the same, given
+    ## the rwo orders are the same
     sset2 <- RGChannelSetToSigSet(rgSet)[[1]]
-    expect_equal(sset, sset2)
+    expect_equal(sset@IG, sset2@IG[rownames(sset@IG),])
+    expect_equal(sset@IR, sset2@IR[rownames(sset@IR),])
+    expect_equal(sset@II, sset2@II[rownames(sset@II),])
+    expect_equal(sset@oobG, sset2@oobG[rownames(sset@oobG),])
+    expect_equal(sset@oobR, sset2@oobR[rownames(sset@oobR),])
+    expect_equal(sset@ctl, sset2@ctl[rownames(sset@ctl),])
 })
