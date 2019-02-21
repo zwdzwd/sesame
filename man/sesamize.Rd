@@ -5,17 +5,17 @@
 \title{"fix" an RGset (for which IDATs may be unavailable) with Sesame
 The input is an RGSet and the output is a sesamized RGSet}
 \usage{
-sesamize(x, naFrac = 1, BPPARAM = SerialParam())
+sesamize(rgSet, naFrac = 1, BPPARAM = SerialParam())
 }
 \arguments{
-\item{x}{an RGChannelSet, perhaps with colData of various flavors}
+\item{rgSet}{an RGChannelSet, perhaps with colData of various flavors}
 
 \item{naFrac}{maximum NA fraction for a probe before it gets dropped (1)}
 
 \item{BPPARAM}{get parallel with MulticoreParam(2)}
 }
 \value{
-a sesamized GenomicRatioSet from the input RGChannelSet
+a sesamized GenomicRatioSet
 }
 \description{
 "fix" an RGset (for which IDATs may be unavailable) with Sesame
@@ -26,5 +26,5 @@ The input is an RGSet and the output is a sesamized RGSet
 if (require(FlowSorted.CordBloodNorway.450k)) {
     sesamized <- sesamize(
         FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
-} 
+}
 }

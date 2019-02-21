@@ -1,10 +1,11 @@
+
 #' "fix" an RGset (for which IDATs may be unavailable) with Sesame
 #' The input is an RGSet and the output is a sesamized RGSet
 #' 
-#' @param x an RGChannelSet, perhaps with colData of various flavors
+#' @param rgSet an RGChannelSet, perhaps with colData of various flavors
 #' @param naFrac maximum NA fraction for a probe before it gets dropped (1)
 #' @param BPPARAM get parallel with MulticoreParam(2)
-#' @return a sesamized GenomicRatioSet from the input RGChannelSet 
+#' @return a sesamized GenomicRatioSet
 #' @import BiocParallel
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
@@ -14,49 +15,47 @@
 #' if (require(FlowSorted.CordBloodNorway.450k)) {
 #'     sesamized <- sesamize(
 #'         FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
-#' } 
+#' }
 #' @export 
-sesamize <- function(x, naFrac=1, BPPARAM=SerialParam()) { 
-    stopifnot(is(x, "RGChannelSet"))
+sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam()) { 
+    stopifnot(is(rgSet, "RGChannelSet"))
     pkgTest('minfi')
     pkgTest('SummarizedExperiment')
+
+    samples <- colnames(rgSet)
+    names(samples) <- samples
+    ratioSet <- do.call(
+        SummarizedExperiment::cbind,
+        bplapply(samples, function(sample) {
+            message("Sesamizing ", sample, "...")
+            sset <- RGChannelSet1ToSigSet(rgSet[,sample])
+            sset <- dyeBiasCorrTypeINorm(noob(sset))
+            SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
+
+    ## mapping occurs first, SNPs get separated here
+    ratioSet <- minfi::mapToGenome(ratioSet)
     
-    if (ncol(x) > 1) {
-        nameses <- colnames(x)
-        names(nameses) <- nameses
-        res <- do.call(
-            SummarizedExperiment::cbind,
-            bplapply(nameses, function(y) sesamize(x[,y]), BPPARAM=BPPARAM))
-        res <- minfi::mapToGenome(res)
-        kept <- which((rowSums(is.na(
-            minfi::getBeta(res))) / ncol(res)) <= naFrac)
-        if (length(kept) < 1) 
-            stop("No probes survived with naFrac <= ",naFrac,".")
-        mfst <- packageVersion(paste(minfi::annotation(x), collapse="anno."))
-        res@preprocessMethod <- c(
-            rg.norm="SeSAMe (type I)",
-            p.value="SeSAMe (pOOBAH)",
-            sesame=as.character(packageVersion("sesame")),
-            minfi=as.character(packageVersion("minfi")),
-            manifest=as.character(mfst))
-        
-        metadata(res)$SNPs <- minfi::getSnpBeta(x)
-        SummarizedExperiment::assays(res)[["M"]] <- NULL 
-        SummarizedExperiment::colData(res) <- SummarizedExperiment::colData(x)
-        return(res[kept, ])
-    } else {
-        message("Sesamizing ", colnames(x), "...")
-        dm <- cbind(G=as.matrix(minfi::getGreen(x)),
-                    R=as.matrix(minfi::getRed(x)))
-        colnames(dm) <- c("G", "R") # just in case...
-        attr(dm, "platform") <- sub("HMEPIC", "EPIC", 
-            sub("IlluminaHumanMethylation", "HM", 
-                sub("k$", "", minfi::annotation(x)["array"])))
-        sset <- chipAddressToSignal(dm) # see above for kludge
-        Beta <- as.matrix(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
-        CN <- as.matrix(log2(totalIntensities(sset))[rownames(Beta)])
-        minfi::RatioSet(Beta=Beta, CN=CN, annotation=minfi::annotation(x))
-    }
+    ## keep only probes surviving naFrac
+    kept <- which((rowSums(is.na(
+        minfi::getBeta(ratioSet))) / ncol(ratioSet)) <= naFrac)
+    if (length(kept) < 1) 
+        stop("No probes survived with naFrac <= ",naFrac,".")
+    
+    ## put back colData(), @processMethod, $SNPs
+    mfst <- packageVersion(paste(minfi::annotation(ratioSet), collapse="anno."))
+    ratioSet@preprocessMethod <- c(
+        rg.norm="SeSAMe (type I)",
+        p.value="SeSAMe (pOOBAH)",
+        sesame=as.character(packageVersion("sesame")),
+        minfi=as.character(packageVersion("minfi")),
+        manifest=as.character(mfst))
+
+    ## SNP not adjusted in minfi, so keep them that way
+    metadata(ratioSet)$SNPs <- minfi::getSnpBeta(rgSet)
+    SummarizedExperiment::assays(ratioSet)[["M"]] <- NULL 
+    SummarizedExperiment::colData(ratioSet) <-
+        SummarizedExperiment::colData(rgSet)
+    return(ratioSet[kept, ])
 }
 
 platformMinfiToSm <- function(platform) {
@@ -80,8 +79,8 @@ platformSmToMinfi <- function(platform) {
     plf
 }
 
-
-.SigSetToRGChannelSet <- function(sset) {
+## reverse of chipAddressToSignal
+SigSetToRGChannel <- function(sset) {
     
     dfAddress <- sesameDataGet(paste0(sset@platform,'.address'))
     SSRed <- NULL
@@ -140,39 +139,72 @@ platformSmToMinfi <- function(platform) {
     list(grn=SSGrn, red=SSRed)
 }
 
-#' Convert SeSAMe::SigSet to minfi::RGChannelSet
+## annotation, if not given is guessed
+guessMinfiAnnotation <- function(platform, annotation = NA) {
+    if (is.na(annotation)) {
+        if (platform %in% c("HM450", "HM27")) {
+            'ilmn12.hg19'
+        } else { # EPIC
+            'ilm10b4.hg19'
+        }
+    } else {
+        annotation
+    }
+}
+
+#' Convert sesame::SigSet to minfi::RGChannelSet
 #' 
-#' @param ssets a list of SigSet
+#' @param ssets a list of sesame::SigSet
 #' @param BPPARAM get parallel with MulticoreParam(2)
+#' @param annotation the minfi annotation string, guessed if not given
 #' @return a minfi::RGChannelSet
 #' @import BiocParallel
 #' @examples
 #'
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' rgSet <- SigSetToRGChannelSet(sset)
+#' rgSet <- SigSetsToRGChannelSet(sset)
 #'
 #' @export 
-SigSetToRGChannelSet <- function(ssets, BPPARAM=SerialParam()) {
+SigSetsToRGChannelSet <- function(ssets, BPPARAM=SerialParam(), annotation=NA) {
     if (is(ssets, 'SigSet')) {
         ssets <- list(sample=ssets)
     }
 
     platform <- ssets[[1]]@platform
+    annotation <- guessMinfiAnnotation(annotation)
     
-    ss_all <- bplapply(ssets, .SigSetToRGChannelSet, BPPARAM=BPPARAM)
+    ss_all <- bplapply(ssets, SigSetToRGChannel, BPPARAM=BPPARAM)
     rgset <- minfi::RGChannelSet(
         Green=do.call(cbind, lapply(ss_all, function(ss) ss$grn)), 
         Red=do.call(cbind, lapply(ss_all, function(ss) ss$red)), 
         annotation=c(
             array=platformSmToMinfi(platform),
-            annotation=NA)) # can be ilm10b4.hg19 or ilmn12.hg19
+            annotation=annotation))
 }
 
-#' Convert RGChannelSet (minfi) to SigSet (SeSAMe)
+## helper: convert RGChannelSet of one sample
+RGChannelSet1ToSigSet <- function(rgSet1) {
+
+    pkgTest('minfi')
+    stopifnot(ncol(rgSet1) == 1)
+    
+    # chipaddress/rownames are automatically the same
+    dm <- cbind(
+        G=as.matrix(minfi::getGreen(rgSet1)),
+        R=as.matrix(minfi::getRed(rgSet1)))
+    
+    colnames(dm) <- c('G','R') # just in case..
+    attr(dm, 'platform') <- platformMinfiToSm(
+        minfi::annotation(rgSet1)['array'])
+    
+    chipAddressToSignal(dm)
+}
+
+#' Convert RGChannelSet (minfi) to a list of SigSet (SeSAMe)
 #'
 #' Notice the colData() and rowData() is lost. Most cases, rowData is empty
 #' anyway.
-#' 
+#'
 #' @param rgSet a minfi::RGChannelSet
 #' @param BPPARAM get parallel with MulticoreParam(2)
 #' @return a list of sesame::SigSet
@@ -181,76 +213,36 @@ SigSetToRGChannelSet <- function(ssets, BPPARAM=SerialParam()) {
 #'
 #' if (require(FlowSorted.Blood.450k)) {
 #'     rgSet <- FlowSorted.Blood.450k[,1:2]
-#'     ssets <- RGChannelSetToSigSet(rgSet)
+#'     ssets <- RGChannelSetToSigSets(rgSet)
 #' }
 #' @export
-RGChannelSetToSigSet <- function(rgSet, BPPARAM=SerialParam()) {
+RGChannelSetToSigSets <- function(rgSet, BPPARAM=SerialParam()) {
 
     pkgTest('minfi')
-    rg_grn <- minfi::getGreen(rgSet)
-    rg_red <- minfi::getRed(rgSet)
-    samples <- colnames(rg_grn) # rg.red should be the same
-    prb_addr_grn <- rownames(rg_grn)
-    prb_addr_red <- rownames(rg_red)
-    
-    platform <- platformMinfiToSm(minfi::annotation(rgSet)[['array']])
-    
-    # Process mappings
-    addr <- sesameDataGet(paste0(platform,'.address'))
-    IIdf <- addr$ordering[
-        addr$ordering$COLOR_CHANNEL=='Both', c('Probe_ID','U')]
-    IItoSSU <- match(IIdf$U, as.numeric(prb_addr_red))
-    IItoSSM <- match(IIdf$U, as.numeric(prb_addr_grn))
-    
-    IGdf <- addr$ordering[
-        addr$ordering$COLOR_CHANNEL=='Grn', c('Probe_ID','M','U')]
-    IGtoSSU <- match(IGdf$U, as.numeric(prb_addr_grn))
-    IGtoSSM <- match(IGdf$M, as.numeric(prb_addr_grn))
-    oobRtoSSU <- match(IGdf$U, as.numeric(prb_addr_red))
-    oobRtoSSM <- match(IGdf$M, as.numeric(prb_addr_red))
-    
-    IRdf <- addr$ordering[
-        addr$ordering$COLOR_CHANNEL=='Red', c('Probe_ID','M','U')]
-    IRtoSSU <- match(IRdf$U, as.numeric(prb_addr_red))
-    IRtoSSM <- match(IRdf$M, as.numeric(prb_addr_red))
-    oobGtoSSU <- match(IRdf$U, as.numeric(prb_addr_grn))
-    oobGtoSSM <- match(IRdf$M, as.numeric(prb_addr_grn))
-    
-    controlToSSG <- match(addr$controls$Address, as.numeric(prb_addr_red))
-    controlToSSR <- match(addr$controls$Address, as.numeric(prb_addr_grn))
-    
-    # actually conversion
-    setNames(bplapply(samples, function(sample) {
-        .II <- cbind(M=rg_grn[IItoSSM, sample], U=rg_red[IItoSSU, sample])
-        rownames(.II) <- IIdf$Probe_ID
-        
-        .IG <- cbind(M=rg_grn[IGtoSSM, sample], U=rg_grn[IGtoSSU, sample])
-        rownames(.IG) <- IGdf$Probe_ID
-        
-        .IR <- cbind(M=rg_red[IRtoSSM, sample], U=rg_red[IRtoSSU, sample])
-        rownames(.IR) <- IRdf$Probe_ID
-        
-        .oobG <- cbind(
-            M=rg_grn[oobGtoSSM, sample], 
-            U=rg_grn[oobGtoSSU, sample])
-        rownames(.oobG) <- IRdf$Probe_ID
-        
-        .oobR <- cbind(
-            M=rg_red[oobRtoSSM, sample], 
-            U=rg_red[oobRtoSSU, sample])
-        rownames(.oobR) <- IGdf$Probe_ID
-        
-        .ctl <- data.frame(
-            G=rg_grn[controlToSSG, sample], 
-            R=rg_red[controlToSSR, sample], 
-            col=addr$controls$Color_Channel,
-            type=addr$controls$Type, stringsAsFactors = FALSE)
-        rownames(.ctl) <- make.names(addr$controls$Name, unique = TRUE)
-        
-        sset <- new('SigSet', IG=.IG, IR=.IR, II=.II,
-            oobG=.oobG, oobR=.oobR, ctl=.ctl,
-            platform=platform)
-        detectionPoobEcdf(sset)
+    samples <- colnames(rgSet)
+    setNames(bplapply(
+        samples, function(sample) {
+        RGChannelSet1ToSigSet(rgSet[,sample])
     }, BPPARAM=BPPARAM), samples)
+}
+
+#' Convert one sesame::SigSet to minfi::RatioSet
+#'
+#' @param sset a sesame::SigSet
+#' @param annotation minfi annotation string
+#' @return a minfi::RatioSet
+#' @examples
+#'
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' ratioSet <- SigSetToRatioSet(sset)
+#' 
+#' @export
+SigSetToRatioSet <- function(sset, annotation = NA) {
+    Beta <- as.matrix(getBetas(sset))
+    CN <- as.matrix(log2(totalIntensities(sset))[rownames(Beta)])
+    annotation <- guessMinfiAnnotation(sset@platform, annotation)
+    platform <- platformSmToMinfi(sset@platform)
+    minfi::RatioSet(Beta = Beta, CN = CN, annotation = c(
+        array = platform, annotation = annotation))
 }
 

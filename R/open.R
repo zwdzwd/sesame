@@ -27,6 +27,8 @@ openSesame <- function(x, ...) {
                 stopifnot(is(x, 'SigSet'))
                 getBetas(dyeBiasCorrTypeINorm(noob(x)), ...)
             }
+        } else if (is(x, 'SigSet')) {
+            getBetas(dyeBiasCorrTypeINorm(noob(x)), ...)
         }
     } else if (is(x, "GenomicRatioSet")) {
         reopenSesame(x)
