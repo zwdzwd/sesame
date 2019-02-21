@@ -3,9 +3,9 @@
 #' 
 #' @param x an RGChannelSet, perhaps with colData of various flavors
 #' @param naFrac maximum NA fraction for a probe before it gets dropped (1)
-#' @param parallel attempt to run in parallel? (This is a bad idea on laptops)
+#' @param BPPARAM get parallel with MulticoreParam(2)
 #' @return a sesamized GenomicRatioSet from the input RGChannelSet 
-#' @import parallel
+#' @import BiocParallel
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
 #' 
@@ -13,10 +13,10 @@
 #' # Takes about two minutes to process 48 samples on my 48-core desktop
 #' if (require(FlowSorted.CordBloodNorway.450k)) {
 #'     sesamized <- sesamize(
-#'         FlowSorted.CordBloodNorway.450k[,1:2])
+#'         FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
 #' } 
 #' @export 
-sesamize <- function(x, naFrac=1, parallel=FALSE) { 
+sesamize <- function(x, naFrac=1, BPPARAM=SerialParam()) { 
     stopifnot(is(x, "RGChannelSet"))
     pkgTest('minfi')
     pkgTest('SummarizedExperiment')
@@ -24,15 +24,9 @@ sesamize <- function(x, naFrac=1, parallel=FALSE) {
     if (ncol(x) > 1) {
         nameses <- colnames(x)
         names(nameses) <- nameses
-        if (parallel == TRUE) { 
-            res <- do.call(
-                SummarizedExperiment::cbind,
-                mclapply(nameses, function(y) sesamize(x[,y])))
-        } else { 
-            res <- do.call(
-                SummarizedExperiment::cbind, 
-                lapply(nameses, function(y) sesamize(x[,y])))
-        }
+        res <- do.call(
+            SummarizedExperiment::cbind,
+            bplapply(nameses, function(y) sesamize(x[,y]), BPPARAM=BPPARAM))
         res <- minfi::mapToGenome(res)
         kept <- which((rowSums(is.na(
             minfi::getBeta(res))) / ncol(res)) <= naFrac)
@@ -149,21 +143,23 @@ platformSmToMinfi <- function(platform) {
 #' Convert SeSAMe::SigSet to minfi::RGChannelSet
 #' 
 #' @param ssets a list of SigSet
+#' @param BPPARAM get parallel with MulticoreParam(2)
 #' @return a minfi::RGChannelSet
+#' @import BiocParallel
 #' @examples
 #'
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' rgSet <- SigSetToRGChannelSet(sset)
 #'
 #' @export 
-SigSetToRGChannelSet <- function(ssets) {
+SigSetToRGChannelSet <- function(ssets, BPPARAM=SerialParam()) {
     if (is(ssets, 'SigSet')) {
         ssets <- list(sample=ssets)
     }
 
     platform <- ssets[[1]]@platform
     
-    ss_all <- lapply(ssets, .SigSetToRGChannelSet)
+    ss_all <- bplapply(ssets, .SigSetToRGChannelSet, BPPARAM=BPPARAM)
     rgset <- minfi::RGChannelSet(
         Green=do.call(cbind, lapply(ss_all, function(ss) ss$grn)), 
         Red=do.call(cbind, lapply(ss_all, function(ss) ss$red)), 
@@ -178,7 +174,9 @@ SigSetToRGChannelSet <- function(ssets) {
 #' anyway.
 #' 
 #' @param rgSet a minfi::RGChannelSet
+#' @param BPPARAM get parallel with MulticoreParam(2)
 #' @return a list of sesame::SigSet
+#' @import BiocParallel
 #' @examples
 #'
 #' if (require(FlowSorted.Blood.450k)) {
@@ -186,7 +184,7 @@ SigSetToRGChannelSet <- function(ssets) {
 #'     ssets <- RGChannelSetToSigSet(rgSet)
 #' }
 #' @export
-RGChannelSetToSigSet <- function(rgSet) {
+RGChannelSetToSigSet <- function(rgSet, BPPARAM=SerialParam()) {
 
     pkgTest('minfi')
     rg_grn <- minfi::getGreen(rgSet)
@@ -222,7 +220,7 @@ RGChannelSetToSigSet <- function(rgSet) {
     controlToSSR <- match(addr$controls$Address, as.numeric(prb_addr_grn))
     
     # actually conversion
-    setNames(lapply(samples, function(sample) {
+    setNames(bplapply(samples, function(sample) {
         .II <- cbind(M=rg_grn[IItoSSM, sample], U=rg_red[IItoSSU, sample])
         rownames(.II) <- IIdf$Probe_ID
         
@@ -253,6 +251,6 @@ RGChannelSetToSigSet <- function(rgSet) {
             oobG=.oobG, oobR=.oobR, ctl=.ctl,
             platform=platform)
         detectionPoobEcdf(sset)
-    }), samples)
+    }, BPPARAM=BPPARAM), samples)
 }
 

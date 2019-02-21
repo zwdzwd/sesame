@@ -3,7 +3,7 @@ context('sesamize')
 test_that("RGChannelSetToSigSet gives correct results", {
     library(FlowSorted.Blood.450k)
     rgSet <- FlowSorted.Blood.450k[,1:3]
-    ssets <- RGChannelSetToSigSet(rgSet)
+    ssets <- RGChannelSetToSigSet(rgSet, BPPARAM=MulticoreParam(3))
     expect_is(rgSet, "RGChannelSet")
     expect_equal(length(ssets), 3)
 

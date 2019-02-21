@@ -5,14 +5,14 @@
 \title{"fix" an RGset (for which IDATs may be unavailable) with Sesame
 The input is an RGSet and the output is a sesamized RGSet}
 \usage{
-sesamize(x, naFrac = 1, parallel = FALSE)
+sesamize(x, naFrac = 1, BPPARAM = SerialParam())
 }
 \arguments{
 \item{x}{an RGChannelSet, perhaps with colData of various flavors}
 
 \item{naFrac}{maximum NA fraction for a probe before it gets dropped (1)}
 
-\item{parallel}{attempt to run in parallel? (This is a bad idea on laptops)}
+\item{BPPARAM}{get parallel with MulticoreParam(2)}
 }
 \value{
 a sesamized GenomicRatioSet from the input RGChannelSet
@@ -25,6 +25,6 @@ The input is an RGSet and the output is a sesamized RGSet
 # Takes about two minutes to process 48 samples on my 48-core desktop
 if (require(FlowSorted.CordBloodNorway.450k)) {
     sesamized <- sesamize(
-        FlowSorted.CordBloodNorway.450k[,1:2])
+        FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
 } 
 }
