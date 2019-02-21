@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesamize.R
 \name{SigSetToRGChannelSet}
 \alias{SigSetToRGChannelSet}
-\title{Convert SigSet (SeSAMe) to RGChannelSet (minfi)}
+\title{Convert SeSAMe::SigSet to minfi::RGChannelSet}
 \usage{
 SigSetToRGChannelSet(ssets)
 }
@@ -13,7 +13,7 @@ SigSetToRGChannelSet(ssets)
 a minfi::RGChannelSet
 }
 \description{
-Convert SigSet (SeSAMe) to RGChannelSet (minfi)
+Convert SeSAMe::SigSet to minfi::RGChannelSet
 }
 \examples{
 
