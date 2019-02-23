@@ -12,7 +12,7 @@ sesamize(rgSet, naFrac = 1, BPPARAM = SerialParam())
 
 \item{naFrac}{maximum NA fraction for a probe before it gets dropped (1)}
 
-\item{BPPARAM}{get parallel with MulticoreParam(2)}
+\item{BPPARAM}{get parallel with MulticoreParam(n)}
 }
 \value{
 a sesamized GenomicRatioSet

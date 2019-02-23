@@ -9,33 +9,52 @@
 #' 
 #' @param x SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
 #' or RGChannelSet(s)
+#' @param what either 'sigset' or 'beta'
 #' @param ... parameters to getBetas
+#' @param BPPARAM get parallel with MulticoreParam(n)
 #' @return a numeric vector for processed beta values
+#' @import BiocParallel
 #' @examples
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' IDATprefixes <- searchIDATprefixes(
 #'     system.file("extdata", "", package = "sesameData"))
 #' betas <- openSesame(IDATprefixes)
 #' @export
-openSesame <- function(x, ...) {
+openSesame <- function(x, what = 'beta', BPPARAM=SerialParam(), ...) {
+
+    ## expand if a directory
+    if (length(x) == 1 && is(x, 'character') && dir.exists(x)) {
+        x <- searchIDATprefixes(x)
+    }
+    
     if (length(x) == 1) {
-        if (is(x, 'character')) {
-            if (dir.exists(x)) {
-                do.call(cbind, mclapply(searchIDATprefixes(x), openSesame))
-            } else { # IDAT prefix
-                x <- readIDATpair(x)
-                stopifnot(is(x, 'SigSet'))
-                getBetas(dyeBiasCorrTypeINorm(noob(x)), ...)
+        if (is(x, 'character')) { # IDAT prefix
+            x <- readIDATpair(x)
+            stopifnot(is(x, 'SigSet'))
+            x <- dyeBiasCorrTypeINorm(noob(x))
+            if (what == 'beta') {
+                getBetas(x, ...)
+            } else {
+                x
             }
-        } else if (is(x, 'SigSet')) {
-            getBetas(dyeBiasCorrTypeINorm(noob(x)), ...)
+        } else if (is(x, 'SigSet')) { # SigSet input
+            x <- dyeBiasCorrTypeINorm(noob(x))
+            if (what == 'beta') {
+                getBetas(x, , ...)
+            } else {
+                x
+            }
         }
     } else if (is(x, "GenomicRatioSet")) {
         reopenSesame(x)
     } else if (is(x, "RGChannelSet")) {
         sesamize(x)
-    } else { 
-        do.call(cbind, mclapply(x, openSesame))
+    } else { # multiple IDAT prefixes / sigsets
+        if (what == 'beta') {
+            do.call(cbind, mclapply(x, openSesame))
+        } else {
+            mclapply(x, openSesame, what='sigset')
+        }
     }
 }
 

@@ -4,7 +4,7 @@
 \alias{initFileSet}
 \title{initialize a fileSet class by allocating appropriate storage}
 \usage{
-initFileSet(map_path, platform, samples, inc = 8)
+initFileSet(map_path, platform, samples, inc = 4)
 }
 \arguments{
 \item{map_path}{path of file to map}

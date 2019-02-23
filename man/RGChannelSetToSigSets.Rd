@@ -9,7 +9,7 @@ RGChannelSetToSigSets(rgSet, BPPARAM = SerialParam())
 \arguments{
 \item{rgSet}{a minfi::RGChannelSet}
 
-\item{BPPARAM}{get parallel with MulticoreParam(2)}
+\item{BPPARAM}{get parallel with MulticoreParam(n)}
 }
 \value{
 a list of sesame::SigSet

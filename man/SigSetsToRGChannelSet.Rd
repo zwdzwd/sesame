@@ -9,7 +9,7 @@ SigSetsToRGChannelSet(ssets, BPPARAM = SerialParam(), annotation = NA)
 \arguments{
 \item{ssets}{a list of sesame::SigSet}
 
-\item{BPPARAM}{get parallel with MulticoreParam(2)}
+\item{BPPARAM}{get parallel with MulticoreParam(n)}
 
 \item{annotation}{the minfi annotation string, guessed if not given}
 }

@@ -4,11 +4,15 @@
 \alias{openSesame}
 \title{The openSesame pipeline}
 \usage{
-openSesame(x, ...)
+openSesame(x, what = "beta", BPPARAM = SerialParam(), ...)
 }
 \arguments{
 \item{x}{SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
 or RGChannelSet(s)}
+
+\item{what}{either 'sigset' or 'beta'}
+
+\item{BPPARAM}{get parallel with MulticoreParam(n)}
 
 \item{...}{parameters to getBetas}
 }

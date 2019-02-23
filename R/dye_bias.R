@@ -123,6 +123,10 @@ dyeBiasCorrTypeINorm <- function(sset) {
     maxIR <- max(IR(sset))
     minIR <- min(IR(sset))
 
+    if (maxIG == 0 || maxIR == 0) {
+        return(sset)
+    }
+
     IR1 <- sort(as.numeric(IR(sset)))
     IR2 <- sort(as.vector(normalize.quantiles.use.target(
         matrix(IR1), as.vector(IG(sset)))))

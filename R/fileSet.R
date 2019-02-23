@@ -4,6 +4,8 @@
 #' @param map_path path of file to be mapped (beta values file)
 #' @param idat_dir source IDAT directory
 #' @param BPPARAM get parallel with MulticoreParam(2)
+#' @param inc bytes per item data storage. increase to 8 if precision
+#' is important. Most cases 32-bit representation is enough.
 #' @return a sesame::fileSet
 #' @import BiocParallel
 #' @examples
@@ -12,25 +14,32 @@
 #'     system.file('extdata',package='sesameData'))
 #' 
 #' @export
-openSesameToFile <- function(map_path, idat_dir, BPPARAM=SerialParam()) {
+openSesameToFile <- function(
+    map_path, idat_dir, BPPARAM=SerialParam(), inc = 4) {
     samples <- basename(searchIDATprefixes(idat_dir))
     sset <- readIDATpair(file.path(idat_dir, samples[1]))
 
+    fset <- initFileSet(map_path, sset@platform, samples, inc = inc)
+    
     message(
         'Mapping ', length(samples), ' ', sset@platform,
         ' samples to ', map_path, '.')
     
-    fset <- initFileSet(map_path, sset@platform, samples)
-    successes <- bplapply(samples, function(sample) {
+    returned <- bplapply(samples, function(sample) {
         try({
-            message('.', appendLF=FALSE)
+            ## message('.', appendLF=FALSE)
             betas <- openSesame(file.path(idat_dir, sample))
             mapFileSet(fset, sample, betas)
             TRUE
         })
     }, BPPARAM = BPPARAM)
+
+    succeeded <- !vapply(
+        returned, function(x) inherits(x, "try-error"), logical(1))
+
     message(
-        'Successfully processed ', sum(successes), ' IDATs.')
+        'Successfully processed ', sum(succeeded),
+        ' IDATs (', sum(!succeeded),' failed).')
     fset
 }
 
@@ -45,7 +54,7 @@ openSesameToFile <- function(map_path, idat_dir, BPPARAM=SerialParam()) {
 #'
 #' fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
 #' @export
-initFileSet <- function(map_path, platform, samples, inc = 8) {
+initFileSet <- function(map_path, platform, samples, inc = 4) {
     addr <- sesameDataGet(paste0(platform,'.address'))
     fset <- structure(list(
         map_path = map_path,
@@ -58,7 +67,7 @@ initFileSet <- function(map_path, platform, samples, inc = 8) {
     fset$m = length(fset$samples)
 
     message(
-        'Allocating space for ', length(samples), ' ',
+        'Allocating space for ', fset$m, ' ',
         platform, ' samples at ', map_path, '.')
     
     ## initialize to NA, this can be time-consuming
@@ -67,7 +76,7 @@ initFileSet <- function(map_path, platform, samples, inc = 8) {
     for (i in seq_along(samples)) {
         writeBin(
             as.numeric(rep(NA, times = fset$n)),
-            fh, size=8)
+            fh, size = inc)
     }
     close(fh)
     saveRDS(fset, paste0(map_path,'_idx.rds'))
@@ -194,7 +203,7 @@ sliceFileSet <- function(
         sample_indices, samples), function(s_ind) {
         vapply(probe_indices, function(p_ind) {
             binReadNumeric(
-                con, s_ind, p_ind, length(fset$probes), inc=fset$inc)
+                con, s_ind, p_ind, fset$n, inc=fset$inc)
         }, numeric(1))
     }))
     close(con)
@@ -205,6 +214,7 @@ sliceFileSet <- function(
 #' Print a fileSet
 #'
 #' @param fset a sesame::fileSet
+#' @param ... stuff for print
 #' @return string representation
 #' @examples
 #'
@@ -212,17 +222,17 @@ sliceFileSet <- function(
 #' fset
 #' 
 #' @export
-print.fileSet <- function(fset) {
-    cat('File Set for', length(fset$probes),
-        ' probes and', length(fset$samples), 'samples.\n')
+print.fileSet <- function(fset, ...) {
+    cat('File Set for', fset$n,
+        'probes and', fset$m, 'samples.\n')
 }
 
-binWriteNumeric <- function(con, num_array, inc=8, beg=0) {
+binWriteNumeric <- function(con, num_array, inc=4, beg=0) {
     seek(con, beg * inc, origin='start', rw = 'write')
     writeBin(as.numeric(num_array), con, size=inc)
 }
 
-binReadNumeric <- function(con, s_ind, p_ind, p_len, n=1, inc=8) {
+binReadNumeric <- function(con, s_ind, p_ind, p_len, n=1, inc=4) {
     seek(con, ((s_ind - 1) * p_len + p_ind - 1) * inc, origin='start')
     readBin(con, 'numeric', n, size=inc)
 }

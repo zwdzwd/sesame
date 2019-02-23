@@ -4,7 +4,7 @@
 \alias{openSesameToFile}
 \title{openSesame pipeline with file-backed storage}
 \usage{
-openSesameToFile(map_path, idat_dir, BPPARAM = SerialParam())
+openSesameToFile(map_path, idat_dir, BPPARAM = SerialParam(), inc = 4)
 }
 \arguments{
 \item{map_path}{path of file to be mapped (beta values file)}
@@ -12,6 +12,9 @@ openSesameToFile(map_path, idat_dir, BPPARAM = SerialParam())
 \item{idat_dir}{source IDAT directory}
 
 \item{BPPARAM}{get parallel with MulticoreParam(2)}
+
+\item{inc}{bytes per item data storage. increase to 8 if precision
+is important. Most cases 32-bit representation is enough.}
 }
 \value{
 a sesame::fileSet

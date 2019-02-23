@@ -4,7 +4,7 @@
 #' 
 #' @param rgSet an RGChannelSet, perhaps with colData of various flavors
 #' @param naFrac maximum NA fraction for a probe before it gets dropped (1)
-#' @param BPPARAM get parallel with MulticoreParam(2)
+#' @param BPPARAM get parallel with MulticoreParam(n)
 #' @return a sesamized GenomicRatioSet
 #' @import BiocParallel
 #' @importFrom S4Vectors metadata
@@ -155,7 +155,7 @@ guessMinfiAnnotation <- function(platform, annotation = NA) {
 #' Convert sesame::SigSet to minfi::RGChannelSet
 #' 
 #' @param ssets a list of sesame::SigSet
-#' @param BPPARAM get parallel with MulticoreParam(2)
+#' @param BPPARAM get parallel with MulticoreParam(n)
 #' @param annotation the minfi annotation string, guessed if not given
 #' @return a minfi::RGChannelSet
 #' @import BiocParallel
@@ -206,7 +206,7 @@ RGChannelSet1ToSigSet <- function(rgSet1) {
 #' anyway.
 #'
 #' @param rgSet a minfi::RGChannelSet
-#' @param BPPARAM get parallel with MulticoreParam(2)
+#' @param BPPARAM get parallel with MulticoreParam(n)
 #' @return a list of sesame::SigSet
 #' @import BiocParallel
 #' @examples
