@@ -21,14 +21,14 @@ openSesameToFile <- function(map_path, idat_dir, BPPARAM=SerialParam()) {
         ' samples to ', map_path, '.')
     
     fset <- initFileSet(map_path, sset@platform, samples)
-    successes <- mclapply(samples, function(sample) {
+    successes <- bplapply(samples, function(sample) {
         try({
-            message('.')
+            message('.', appendLF=FALSE)
             betas <- openSesame(file.path(idat_dir, sample))
             mapFileSet(fset, sample, betas)
             TRUE
         })
-    })
+    }, BPPARAM = BPPARAM)
     message(
         'Successfully processed ', sum(successes), ' IDATs.')
     fset

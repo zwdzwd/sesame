@@ -14,6 +14,12 @@
 #' @export
 noob <- function(sset, offset=15) {
 
+    ## skip if all oob signals are nil (likely the
+    ## entire chip failed)
+    if (all(oobG(sset) == 0) || all(oobR(sset) == 0)) {
+        return (sset)
+    }
+
     ## sort signal based on channel
     ibR <- c(IR(sset), II(sset)[,'U'])    # in-band red signal
     ibG <- c(IG(sset), II(sset)[,'M'])    # in-band green signal
