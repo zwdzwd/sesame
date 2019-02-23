@@ -55,6 +55,7 @@ Collate:
     'controls.R'
     'detection.R'
     'dye_bias.R'
+    'fileSet.R'
     'open.R'
     'sesamize.R'
     'simulate_data.R'
