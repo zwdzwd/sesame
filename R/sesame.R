@@ -610,9 +610,9 @@ readIDATpair <- function(
 #' IDATprefixes <- searchIDATprefixes(
 #'     system.file("extdata", "", package = "sesameData"))
 #'
-#' ## search files nonrecursively
+#' ## search files recursively is by default
 #' IDATprefixes <- searchIDATprefixes(
-#'     system.file(package = "sesameData"), recursive=FALSE)
+#'     system.file(package = "sesameData"), recursive=TRUE)
 #' @export
 searchIDATprefixes <- function(dir.name,
     recursive = TRUE, use.basename = TRUE) {

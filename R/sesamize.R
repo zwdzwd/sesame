@@ -32,6 +32,8 @@ sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam()) {
             sset <- dyeBiasCorrTypeINorm(noob(sset))
             SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
 
+    browser()
+
     ## mapping occurs first, SNPs get separated here
     ratioSet <- minfi::mapToGenome(ratioSet)
     
@@ -257,6 +259,6 @@ SigSetToRatioSet <- function(sset, annotation = NA) {
     annotation <- guessMinfiAnnotation(sset@platform, annotation)
     platform <- platformSmToMinfi(sset@platform)
     minfi::RatioSet(Beta = Beta, CN = CN, annotation = c(
-        array = platform, annotation = annotation))
+        array = unname(platform), annotation = annotation))
 }
 
