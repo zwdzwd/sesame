@@ -7,15 +7,14 @@
 \alias{initialize,SigSet-method}
 \title{SigSet class}
 \usage{
-\S4method{initialize}{SigSet}(.Object, platform = c("EPIC", "HM450",
-  "HM27"), ...)
+\S4method{initialize}{SigSet}(.Object, platform, ...)
 
 SigSet(...)
 }
 \arguments{
 \item{.Object}{target object}
 
-\item{platform}{"EPIC", "HM450" or "HM27"}
+\item{platform}{"EPIC", "HM450", "HM27" or other strings for custom arrays}
 
 \item{...}{additional arguments}
 }

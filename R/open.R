@@ -9,6 +9,8 @@
 #' 
 #' @param x SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
 #' or RGChannelSet(s)
+#' @param platform optional platform string
+#' @param manifest optional dynamic manifest
 #' @param what either 'sigset' or 'beta'
 #' @param ... parameters to getBetas
 #' @param BPPARAM get parallel with MulticoreParam(n)
@@ -20,7 +22,9 @@
 #'     system.file("extdata", "", package = "sesameData"))
 #' betas <- openSesame(IDATprefixes)
 #' @export
-openSesame <- function(x, what = 'beta', BPPARAM=SerialParam(), ...) {
+openSesame <- function(
+    x, platform = '', manifest = NULL,
+    what = 'beta', BPPARAM=SerialParam(), ...) {
 
     ## expand if a directory
     if (length(x) == 1 && is(x, 'character') && dir.exists(x)) {
@@ -29,7 +33,8 @@ openSesame <- function(x, what = 'beta', BPPARAM=SerialParam(), ...) {
     
     if (length(x) == 1) {
         if (is(x, 'character')) { # IDAT prefix
-            x <- readIDATpair(x)
+            x <- readIDATpair(
+                x, platform = platform, manifest = manifest)
             stopifnot(is(x, 'SigSet'))
             x <- dyeBiasCorrTypeINorm(noob(x))
             if (what == 'beta') {

@@ -67,15 +67,15 @@ setClass(
 #'
 #' @name SigSet
 #' @param .Object target object
-#' @param platform "EPIC", "HM450" or "HM27"
+#' @param platform "EPIC", "HM450", "HM27" or other strings for custom arrays
 #' @rdname SigSet-class
 #' @return a \code{SigSet} object
 #' @aliases initialize,SigSet-method
 setMethod(
     "initialize", "SigSet",
-    function(.Object, platform = c('EPIC', 'HM450', 'HM27'), ...)  {
+    function(.Object, platform, ...)  {
         .Object <- callNextMethod()
-        .Object@platform <- match.arg(platform)
+        .Object@platform <- platform # match.arg(platform)
         .Object
     })
 
@@ -303,6 +303,30 @@ inferSexKaryotypes <- function(sset) {
     karyotype
 }
 
+#' Infer out-of-band red instead of using what is specified in manifest
+#' @param sset a \code{SigSet}
+#' @import matrixStats
+#' @return out-of-band data frame
+inferOobG <- function(sset) {
+    oob <- oobG(sset)
+    ib <- IR(sset)
+    to_replace <- which(rowMaxs(ib) < rowMaxs(oob))
+    oob[to_replace,] <- ib[to_replace,]
+    oob
+}
+
+#' Infer out-of-band green instead of using what is specified in manifest
+#' @param sset a \code{SigSet}
+#' @import matrixStats
+#' @return out-of-band data frame
+inferOobR <- function(sset) {
+    oob <- oobR(sset)
+    ib <- IG(sset)
+    to_replace <- which(rowMaxs(ib) < rowMaxs(oob))
+    oob[to_replace,] <- ib[to_replace,]
+    oob
+}
+
 #' Infer Sex
 #'
 #' @param sset a \code{SigSet}
@@ -403,7 +427,8 @@ getBetas <- function(
         betas[pval(sset) > pval.threshold] <- NA
     }
 
-    if (quality.mask) {
+    ## currently quality masking only supports three platforms
+    if (quality.mask && sset@platform %in% c('HM27','HM450','EPIC')) {
         if (mask.use.tcga) {
             stopifnot(sset@platform == 'HM450')
             mask <- sesameDataGet('HM450.probeInfo')$mask.tcga
@@ -496,17 +521,23 @@ getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
 ## Import one IDAT file
 ## return a data frame with 2 columns, corresponding to
 ## cy3 (Grn) and cy5 (Red) color channel signal
-readIDAT1 <- function(grn.name, red.name) {
+readIDAT1 <- function(grn.name, red.name, platform='') {
     ida.grn <- illuminaio::readIDAT(grn.name);
     ida.red <- illuminaio::readIDAT(red.name);
     d <- cbind(cy3=ida.grn$Quants[,"Mean"], cy5=ida.red$Quants[,"Mean"])
     colnames(d) <- c('G', 'R')
-    chip.type <- switch(
-        ida.red$ChipType,
-        'BeadChip 8x5'='EPIC',
-        'BeadChip 12x8'='HM450',
-        'BeadChip 12x1'='HM27')
-    attr(d, 'platform') <- chip.type
+
+    if (platform != '') {
+        attr(d, 'platform') <- platform
+    } else {
+        ## this is not always accurate
+        ## TODO should identify unique tengo IDs.
+        attr(d, 'platform') <- switch(
+            ida.red$ChipType,
+            'BeadChip 8x5'='EPIC',
+            'BeadChip 12x8'='HM450',
+            'BeadChip 12x1'='HM27')
+    }
     d
 }
 
@@ -516,7 +547,9 @@ readIDAT1 <- function(grn.name, red.name) {
 #' and _Red.idat. The function returns a \code{SigSet}.
 #'
 #' @param prefix.path sample prefix without _Grn.idat and _Red.idat
-#' @param verbose     be verbose?  (FALSE) 
+#' @param manifest optional design manifest file
+#' @param verbose     be verbose?  (FALSE)
+#' @param platform EPIC, HM450 and HM27 etc.
 #' 
 #' @return a \code{SigSet}
 #' 
@@ -524,7 +557,9 @@ readIDAT1 <- function(grn.name, red.name) {
 #' sset <- readIDATpair(sub('_Grn.idat','',system.file(
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
-readIDATpair <- function(prefix.path, verbose=FALSE) {
+readIDATpair <- function(
+    prefix.path, platform = '',
+    manifest = NULL, verbose=FALSE) {
 
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
         grn.name <- paste0(prefix.path, '_Grn.idat')
@@ -546,8 +581,16 @@ readIDATpair <- function(prefix.path, verbose=FALSE) {
         message("Reading IDATs for ", basename(prefix.path), "...")
     }
 
-    dm <- readIDAT1(grn.name, red.name)
-    chipAddressToSignal(dm)
+    dm <- readIDAT1(grn.name, red.name, platform=platform)
+
+    if (is.null(manifest)) { # pre-built platforms, EPIC, HM450, HM27 etc
+        df_address <- sesameDataGet(paste0(
+            attr(dm, 'platform'), '.address'))
+        manifest <- df_address$ordering
+        controls <- df_address$controls
+    }
+
+    chipAddressToSignal(dm, manifest, controls)
 }
 
 #' Identify IDATs from a directory
@@ -558,6 +601,8 @@ readIDATpair <- function(prefix.path, verbose=FALSE) {
 #'
 #' @param dir.name the directory containing the IDAT files.
 #' @param recursive search IDAT files recursively
+#' @param use.basename basename of each IDAT path is used as sample name
+#' This won't work in rare situation where there are duplicate IDAT files.
 #' @return the IDAT prefixes (a vector of character strings).
 #'
 #' @examples
@@ -565,11 +610,12 @@ readIDATpair <- function(prefix.path, verbose=FALSE) {
 #' IDATprefixes <- searchIDATprefixes(
 #'     system.file("extdata", "", package = "sesameData"))
 #'
-#' ## search files recursively
+#' ## search files nonrecursively
 #' IDATprefixes <- searchIDATprefixes(
-#'     system.file(package = "sesameData"), recursive=TRUE)
+#'     system.file(package = "sesameData"), recursive=FALSE)
 #' @export
-searchIDATprefixes <- function(dir.name, recursive = FALSE) {
+searchIDATprefixes <- function(dir.name,
+    recursive = TRUE, use.basename = TRUE) {
 
     stopifnot(file.exists(dir.name))
 
@@ -592,9 +638,13 @@ searchIDATprefixes <- function(dir.name, recursive = FALSE) {
 
     prefixes <- file.path(dir.name, prefixes)
     
-    # set name attributes so that names are auto-assigned for
-    # lapply and mclapply
-    names(prefixes) <- prefixes
+    ## set name attributes so that names are auto-assigned for
+    ## lapply and mclapply
+    if (use.basename) {
+        names(prefixes) <- basename(prefixes)
+    } else {
+        names(prefixes) <- prefixes
+    }
     prefixes
 }
 
@@ -611,16 +661,21 @@ searchIDATprefixes <- function(dir.name, recursive = FALSE) {
 #' using the other channel.
 #'
 #' @param dm data frame in chip address, 2 columns: cy3/Grn and cy5/Red
+#' @param manifest a data frame with columns Probe_ID, M, U and col
+#' @param controls a data frame with columns Address and Name. This is optional
+#' but might be necessary for some preprocessing methods that depends on these
+#' control probes. This is left for backward compatibility. Updated version
+#' should have controls consolidated into manifest.
 #' @return a SigSet, indexed by probe ID address
-chipAddressToSignal <- function(dm) {
+chipAddressToSignal <- function(dm, manifest, controls = NULL) {
 
     platform <- attr(dm, 'platform')
-    dm.ordering <- sesameDataGet(paste0(platform, '.address'))$ordering
 
     sset <- SigSet(platform)
 
     ## type I green channel / oob red channel
-    IordG <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='G')),]
+    ## IordG <- manifest[((manifest$DESIGN=='I')&(manifest$col=='G')),]
+    IordG <- manifest[(!is.na(manifest$col))&(manifest$col=='G'),]
     ## 2-channel for green probes' M allele
     IuG2ch <- dm[match(IordG$U, rownames(dm)),]
     IuG <- IuG2ch[,1]
@@ -632,7 +687,8 @@ chipAddressToSignal <- function(dm) {
     IG(sset) <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
 
     ## type I red channel / oob green channel
-    IordR <- dm.ordering[((dm.ordering$DESIGN=='I')&(dm.ordering$col=='R')),]
+    ## IordR <- manifest[((manifest$DESIGN=='I')&(manifest$col=='R')),]
+    IordR <- manifest[(!is.na(manifest$col))&(manifest$col=='R'),]
     ## 2-channel for red probes' m allele
     IuR2ch <- dm[match(IordR$U, rownames(dm)),]
     IuR <- IuR2ch[,2]
@@ -644,21 +700,31 @@ chipAddressToSignal <- function(dm) {
     IR(sset) <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
 
     ## type II
-    IIord <- dm.ordering[dm.ordering$DESIGN=="II",]
+    ## IIord <- manifest[manifest$DESIGN=="II",]
+    IIord <- manifest[is.na(manifest$col),]
     signal.II <- dm[match(IIord$U, rownames(dm)),]
     colnames(signal.II) <- c('M', 'U')
     rownames(signal.II) <- IIord$Probe_ID
     II(sset) <- signal.II
 
     ## control probes
-    dm.controls <- sesameDataGet(paste0(platform, '.address'))$controls
-    ctl <- as.data.frame(dm[match(dm.controls$Address, rownames(dm)),])
-    rownames(ctl) <- make.names(dm.controls$Name, unique=TRUE)
-    ctl <- cbind(ctl, dm.controls[, c("Color_Channel","Type")])
-    colnames(ctl) <- c('G','R','col','type')
-    ctl(sset) <- ctl
+    ctl_idx <- grep('^ctl',manifest$Probe_ID)
+    if (length(ctl_idx) > 0) { # control probes are included in manifest
+        ctl_ord <- manifest[ctl_idx,]
+        ctl <- as.data.frame(dm[match(ctl_ord$U, rownames(dm)),])
+        ctl <- cbind(ctl, ctl_ord$col, ctl_ord$Probe_ID)
+        rownames(ctl) <- ctl_ord$Probe_ID
+        colnames(ctl) <- c('G','R','col','type')
+        ctl(sset) <- ctl
+    } else if (!is.null(controls)) {
+        ctl <- as.data.frame(dm[match(controls$Address, rownames(dm)),])
+        rownames(ctl) <- make.names(controls$Name, unique=TRUE)
+        ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
+        colnames(ctl) <- c('G','R','col','type')
+        ctl(sset) <- ctl
+    }
 
-    sset <- detectionPoobEcdf(sset)
+    sset <- detectionPoobEcdf2(sset)
     sset
 }
 

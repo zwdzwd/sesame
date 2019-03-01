@@ -4,11 +4,16 @@
 \alias{openSesame}
 \title{The openSesame pipeline}
 \usage{
-openSesame(x, what = "beta", BPPARAM = SerialParam(), ...)
+openSesame(x, platform = "", manifest = NULL, what = "beta",
+  BPPARAM = SerialParam(), ...)
 }
 \arguments{
 \item{x}{SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
 or RGChannelSet(s)}
+
+\item{platform}{optional platform string}
+
+\item{manifest}{optional dynamic manifest}
 
 \item{what}{either 'sigset' or 'beta'}
 

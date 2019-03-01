@@ -211,9 +211,11 @@ sliceFileSet <- function(
     res
 }
 
+
+
 #' Print a fileSet
 #'
-#' @param fset a sesame::fileSet
+#' @param x a sesame::fileSet
 #' @param ... stuff for print
 #' @return string representation
 #' @examples
@@ -222,9 +224,9 @@ sliceFileSet <- function(
 #' fset
 #' 
 #' @export
-print.fileSet <- function(fset, ...) {
-    cat('File Set for', fset$n,
-        'probes and', fset$m, 'samples.\n')
+print.fileSet <- function(x, ...) {
+    cat('File Set for', x$n,
+        'probes and', x$m, 'samples.\n')
 }
 
 binWriteNumeric <- function(con, num_array, inc=4, beg=0) {

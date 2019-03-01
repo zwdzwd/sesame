@@ -29,6 +29,7 @@ Imports: BiocParallel,
          wheatmap,
          ggplot2,
          parallel,
+         matrixStats,
          DNAcopy
 Suggests: scales,
           knitr,

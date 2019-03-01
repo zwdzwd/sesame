@@ -2,8 +2,8 @@
 % Please edit documentation in R/sesamize.R
 \name{sesamize}
 \alias{sesamize}
-\title{"fix" an RGset (for which IDATs may be unavailable) with Sesame
-The input is an RGSet and the output is a sesamized RGSet}
+\title{"fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
+The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet}
 \usage{
 sesamize(rgSet, naFrac = 1, BPPARAM = SerialParam())
 }
@@ -18,13 +18,13 @@ sesamize(rgSet, naFrac = 1, BPPARAM = SerialParam())
 a sesamized GenomicRatioSet
 }
 \description{
-"fix" an RGset (for which IDATs may be unavailable) with Sesame
-The input is an RGSet and the output is a sesamized RGSet
+"fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
+The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet
 }
 \examples{
 # Takes about two minutes to process 48 samples on my 48-core desktop
 if (require(FlowSorted.CordBloodNorway.450k)) {
-    sesamized <- sesamize(
+    sesamize(
         FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
 }
 }

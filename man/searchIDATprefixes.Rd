@@ -4,12 +4,15 @@
 \alias{searchIDATprefixes}
 \title{Identify IDATs from a directory}
 \usage{
-searchIDATprefixes(dir.name, recursive = FALSE)
+searchIDATprefixes(dir.name, recursive = TRUE, use.basename = TRUE)
 }
 \arguments{
 \item{dir.name}{the directory containing the IDAT files.}
 
 \item{recursive}{search IDAT files recursively}
+
+\item{use.basename}{basename of each IDAT path is used as sample name
+This won't work in rare situation where there are duplicate IDAT files.}
 }
 \value{
 the IDAT prefixes (a vector of character strings).
@@ -24,7 +27,7 @@ IDAT prefixes under the directory.
 IDATprefixes <- searchIDATprefixes(
     system.file("extdata", "", package = "sesameData"))
 
-## search files recursively
+## search files nonrecursively
 IDATprefixes <- searchIDATprefixes(
-    system.file(package = "sesameData"), recursive=TRUE)
+    system.file(package = "sesameData"), recursive=FALSE)
 }

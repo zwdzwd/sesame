@@ -1,6 +1,6 @@
 
-#' "fix" an RGset (for which IDATs may be unavailable) with Sesame
-#' The input is an RGSet and the output is a sesamized RGSet
+#' "fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
+#' The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet
 #' 
 #' @param rgSet an RGChannelSet, perhaps with colData of various flavors
 #' @param naFrac maximum NA fraction for a probe before it gets dropped (1)
@@ -13,7 +13,7 @@
 #' @examples
 #' # Takes about two minutes to process 48 samples on my 48-core desktop
 #' if (require(FlowSorted.CordBloodNorway.450k)) {
-#'     sesamized <- sesamize(
+#'     sesamize(
 #'         FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
 #' }
 #' @export 
@@ -80,14 +80,19 @@ platformSmToMinfi <- function(platform) {
 }
 
 ## reverse of chipAddressToSignal
-SigSetToRGChannel <- function(sset) {
-    
-    dfAddress <- sesameDataGet(paste0(sset@platform,'.address'))
+SigSetToRGChannel <- function(sset, manifest = NULL, controls = NULL) {
+
+    if (is.null(manifest)) {
+        dfAddress <- sesameDataGet(paste0(sset@platform,'.address'))
+        manifest <- dfAddress$ordering
+        controls <- dfAddress$controls
+    }
+
     SSRed <- NULL
     SSGrn <- NULL
     
-    IIdf <- dfAddress$ordering[
-        dfAddress$ordering$COLOR_CHANNEL=='Both', c('Probe_ID','U')]
+    IIdf <- manifest[
+        manifest$COLOR_CHANNEL=='Both', c('Probe_ID','U')]
     SSRed <- c(SSRed, setNames(sset@II[match(
         IIdf$Probe_ID, rownames(sset@II)), 'U'],
         as.character(IIdf$U)))
@@ -95,8 +100,8 @@ SigSetToRGChannel <- function(sset) {
         IIdf$Probe_ID, rownames(sset@II)), 'M'],
         as.character(IIdf$U)))
     
-    IRdf <- dfAddress$ordering[
-        dfAddress$ordering$COLOR_CHANNEL=='Red', c('Probe_ID','M','U')]
+    IRdf <- manifest[
+        manifest$COLOR_CHANNEL=='Red', c('Probe_ID','M','U')]
     SSRed <- c(SSRed, setNames(sset@IR[match(
         IRdf$Probe_ID, rownames(sset@IR)), 'M'],
         as.character(IRdf$M)))
@@ -111,8 +116,8 @@ SigSetToRGChannel <- function(sset) {
         IRdf$Probe_ID, rownames(sset@oobG)), 'U'],
         as.character(IRdf$U)))
     
-    IGdf <- dfAddress$ordering[
-        dfAddress$ordering$COLOR_CHANNEL=='Grn', c('Probe_ID','M','U')]
+    IGdf <- manifest[
+        manifest$COLOR_CHANNEL=='Grn', c('Probe_ID','M','U')]
     SSGrn <- c(SSGrn, setNames(sset@IG[match(
         IGdf$Probe_ID, rownames(sset@IG)), 'M'], 
         as.character(IGdf$M)))
@@ -127,14 +132,16 @@ SigSetToRGChannel <- function(sset) {
         IGdf$Probe_ID, rownames(sset@oobR)), 'U'],
         as.character(IGdf$U)))
     
-    # controls
-    control.names <- make.names(dfAddress$controls$Name, unique = TRUE)
-    SSGrn <- c(SSGrn, setNames(sset@ctl[match(
-        control.names, rownames(sset@ctl)),'G'], 
-        as.character(dfAddress$controls$Address)))
-    SSRed <- c(SSRed, setNames(sset@ctl[match(
-        control.names, rownames(sset@ctl)),'R'], 
-        as.character(dfAddress$controls$Address)))
+    ## controls
+    if (!is.null(controls)) {
+        control.names <- make.names(controls$Name, unique = TRUE)
+        SSGrn <- c(SSGrn, setNames(sset@ctl[match(
+            control.names, rownames(sset@ctl)),'G'], 
+            as.character(controls$Address)))
+        SSRed <- c(SSRed, setNames(sset@ctl[match(
+            control.names, rownames(sset@ctl)),'R'], 
+            as.character(controls$Address)))
+    } ## else TODO controls obtained from manifest
     
     list(grn=SSGrn, red=SSRed)
 }
@@ -178,12 +185,12 @@ SigSetsToRGChannelSet <- function(ssets, BPPARAM=SerialParam(), annotation=NA) {
         Green=do.call(cbind, lapply(ss_all, function(ss) ss$grn)), 
         Red=do.call(cbind, lapply(ss_all, function(ss) ss$red)), 
         annotation=c(
-            array=platformSmToMinfi(platform),
+            array=unname(platformSmToMinfi(platform)),
             annotation=annotation))
 }
 
 ## helper: convert RGChannelSet of one sample
-RGChannelSet1ToSigSet <- function(rgSet1) {
+RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
 
     pkgTest('minfi')
     stopifnot(ncol(rgSet1) == 1)
@@ -196,8 +203,15 @@ RGChannelSet1ToSigSet <- function(rgSet1) {
     colnames(dm) <- c('G','R') # just in case..
     attr(dm, 'platform') <- platformMinfiToSm(
         minfi::annotation(rgSet1)['array'])
-    
-    chipAddressToSignal(dm)
+
+    if (is.null(manifest)) {
+        df_address <- sesameDataGet(paste0(
+            attr(dm, 'platform'), '.address'))
+        manifest <- df_address$ordering
+        controls <- df_address$controls
+    }
+
+    chipAddressToSignal(dm, manifest, controls)
 }
 
 #' Convert RGChannelSet (minfi) to a list of SigSet (SeSAMe)

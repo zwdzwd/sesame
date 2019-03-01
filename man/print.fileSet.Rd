@@ -4,10 +4,12 @@
 \alias{print.fileSet}
 \title{Print a fileSet}
 \usage{
-\method{print}{fileSet}(fset)
+\method{print}{fileSet}(x, ...)
 }
 \arguments{
-\item{fset}{a sesame::fileSet}
+\item{x}{a sesame::fileSet}
+
+\item{...}{stuff for print}
 }
 \value{
 string representation
