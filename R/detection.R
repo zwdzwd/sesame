@@ -69,45 +69,6 @@ detectionPoobEcdf <- function(sset) {
     sset
 }
 
-#' Detection P-value based on ECDF of out-of-band signal
-#'
-#' The only difference between this and detectionPoobEcdf is that
-#' the out-of-band color channel is inferred from data instead of
-#' using the channel specified in the manifest.
-#' 
-#' aka pOOBAH (p-vals by Out-Of-Band Array Hybridization)
-#'
-#' The function takes a \code{SigSet} as input, computes detection p-value
-#' using out-of-band probes empirical distribution and returns a new
-#' \code{SigSet} with an updated pval slot.
-#'
-#' @param sset a \code{SigSet}
-#' @return detection p-value
-#' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- detectionPoobEcdf2(sset)
-#' 
-#' @export
-detectionPoobEcdf2 <- function(sset) {
-
-    stopifnot(is(sset, 'SigSet'))
-    funcG <- ecdf(inferOobG(sset))
-    funcR <- ecdf(inferOobR(sset))
-
-    ## p-value is the minimium detection p-value of the 2 alleles
-    pIR <- 1-apply(cbind(funcR(IR(sset)[,'M']), funcR(IR(sset)[,'U'])),1,max)
-    pIG <- 1-apply(cbind(funcG(IG(sset)[,'M']), funcG(IG(sset)[,'U'])),1,max)
-    pII <- 1-apply(cbind(funcG(II(sset)[,'M']), funcR(II(sset)[,'U'])),1,max)
-
-    names(pIR) <- rownames(IR(sset))
-    names(pIG) <- rownames(IG(sset))
-    names(pII) <- rownames(II(sset))
-
-    pval <- c(pIR,pIG,pII)
-    pval(sset) <- pval[order(names(pval))]
-    sset
-}
-
 #' @rdname detectionPoobEcdf
 #' @export
 #' @examples

@@ -5,7 +5,7 @@
 \title{Get beta Values}
 \usage{
 getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
-  mask.use.tcga = FALSE, pval.threshold = 0.05)
+  mask.use.tcga = FALSE, pval.threshold = 0.05, sum.typeI = FALSE)
 }
 \arguments{
 \item{sset}{\code{SigSet}}
@@ -17,12 +17,17 @@ getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
 \item{mask.use.tcga}{whether to use TCGA masking, only applies to HM450}
 
 \item{pval.threshold}{p-value threshold for nondetection mask}
+
+\item{sum.type.I}{whether to sum type I channels}
 }
 \value{
 a numeric vector, beta values
 }
 \description{
-Get beta Values
+sum.typeI is used for rescuing beta values on
+Color-Channel-Switching CCS probes. The function takes a \code{SigSet}
+and returns beta value except that Type-I in-band signal and out-of-band
+signal are combined. This prevents color-channel switching due to SNPs.
 }
 \examples{
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset

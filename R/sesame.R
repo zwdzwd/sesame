@@ -20,8 +20,8 @@
 #' sset <- readIDATpair(sub('_Grn.idat','',system.file(
 #'     'extdata','4207113116_A_Grn.idat',package='sesameData')))
 #'
-#' ## The TCGA standard pipeline
-#' betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
+#' ## The OpenSesame pipeline
+#' betas <- openSesame(sset)
 #'
 #' @keywords DNAMethylation Microarray QualityControl
 #'
@@ -303,28 +303,34 @@ inferSexKaryotypes <- function(sset) {
     karyotype
 }
 
-#' Infer out-of-band red instead of using what is specified in manifest
+#' Infer and reset color channel for Type-I probes instead of
+#' using what is specified in manifest
+#' 
 #' @param sset a \code{SigSet}
 #' @import matrixStats
-#' @return out-of-band data frame
-inferOobG <- function(sset) {
-    oob <- oobG(sset)
-    ib <- IR(sset)
-    to_replace <- which(rowMaxs(ib) < rowMaxs(oob))
-    oob[to_replace,] <- ib[to_replace,]
-    oob
-}
+#' @return a \code{SigSet}
+#' @examples
+#'
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' inferTypeIChannel(sset)
+#' 
+#' @export
+inferTypeIChannel <- function(sset) {
+    red_channel <- rbind(IR(sset), oobR(sset))
+    grn_channel <- rbind(oobG(sset), IG(sset))
+    red_idx0 <- 1:nrow(red_channel) <= nrow(IR(sset)) # old red index
+    red_idx <- rowMaxs(red_channel) > rowMaxs(grn_channel) # new red index
 
-#' Infer out-of-band green instead of using what is specified in manifest
-#' @param sset a \code{SigSet}
-#' @import matrixStats
-#' @return out-of-band data frame
-inferOobR <- function(sset) {
-    oob <- oobR(sset)
-    ib <- IG(sset)
-    to_replace <- which(rowMaxs(ib) < rowMaxs(oob))
-    oob[to_replace,] <- ib[to_replace,]
-    oob
+    message('R>R: ', sum(red_idx0 & red_idx))
+    message('G>G: ', sum(!red_idx0 & !red_idx))
+    message('R>G: ', sum(red_idx0 & !red_idx))
+    message('G>R: ', sum(!red_idx0 & red_idx))
+    
+    IR(sset) <- red_channel[red_idx,]
+    oobG(sset) <- grn_channel[red_idx,]
+    IG(sset) <- grn_channel[!red_idx,]
+    oobR(sset) <- red_channel[!red_idx,]
+    sset
 }
 
 #' Infer Sex
@@ -396,30 +402,50 @@ inferEthnicity <- function(sset) {
 
 #' Get beta Values
 #'
+#' sum.typeI is used for rescuing beta values on
+#' Color-Channel-Switching CCS probes. The function takes a \code{SigSet}
+#' and returns beta value except that Type-I in-band signal and out-of-band
+#' signal are combined. This prevents color-channel switching due to SNPs.
+#' 
 #' @param sset \code{SigSet}
 #' @param quality.mask whether to mask low quality probes
 #' @param nondetection.mask whether to mask nondetection
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @param pval.threshold p-value threshold for nondetection mask
+#' @param sum.type.I whether to sum type I channels
 #' @return a numeric vector, beta values
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getBetas(sset)
 #' @export
 getBetas <- function(
-    sset, quality.mask=TRUE, nondetection.mask=TRUE,
-    mask.use.tcga=FALSE, pval.threshold=0.05) {
+    sset,
+    quality.mask = TRUE,
+    nondetection.mask = TRUE,
+    mask.use.tcga = FALSE,
+    pval.threshold = 0.05,
+    sum.typeI = FALSE) {
     
-    if (is(sset, "SigSetList"))
+    if (is(sset, "SigSetList")) {
         return(do.call(cbind, lapply(
             sset, getBetas, quality.mask = quality.mask, 
             nondetection.mask = nondetection.mask,
             mask.use.tcga = mask.use.tcga, pval.threshold = pval.threshold)))
-
+    }
+        
     stopifnot(is(sset, "SigSet"))
 
-    betas1 <- pmax(IG(sset)[,'M'],1) / pmax(IG(sset)[,'M']+IG(sset)[,'U'],2)
-    betas2 <- pmax(IR(sset)[,'M'],1) / pmax(IR(sset)[,'M']+IR(sset)[,'U'],2)
+    ## optionally summing channels protects
+    ## against channel misspecification
+    IGs <- IG(sset)
+    IRs <- IR(sset)
+    if (sum.typeI) {
+        IGs <- IGs + oobR(sset)
+        IRs <- IRs + oobG(sset)
+    }
+    
+    betas1 <- pmax(IGs[,'M'],1) / pmax(IGs[,'M']+IGs[,'U'],2)
+    betas2 <- pmax(IRs[,'M'],1) / pmax(IRs[,'M']+IRs[,'U'],2)
     betas3 <- pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2)
     betas <- c(betas1, betas2, betas3)
     if (nondetection.mask) {
@@ -435,46 +461,6 @@ getBetas <- function(
         } else {
             mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
         }
-        betas[names(betas) %in% mask] <- NA
-    }
-    betas[order(names(betas))]
-}
-
-#' Get beta values treating type I by summing channels
-#'
-#' This function is used for rescuing beta values on
-#' Color-Channel-Switching CCS probes. The function takes a \code{SigSet}
-#' and returns beta value except that Type-I in-band signal and out-of-band
-#' signal are combined. This prevents color-channel switching due to SNPs.
-#'
-#' @param sset \code{SigSet}
-#' @param quality.mask whether to mask low quality probes
-#' @param nondetection.mask whether to mask nondetection
-#' @param pval.threshold p-value threshold for nondetection mask
-#' @return beta values
-#' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' betas <- getBetasTypeIbySumChannels(sset)
-#' @export
-getBetasTypeIbySumChannels <- function(
-    sset, quality.mask=TRUE, nondetection.mask=TRUE, pval.threshold=0.05) {
-
-    stopifnot(is(sset, "SigSet"))
-
-    ## .oobR <- oobR[rownames(IG),]
-    ## .oobG <- oobG[rownames(IR),]
-    betas1 <- pmax(IG(sset)[,'M']+oobR(sset)[,'M'],1) /
-        pmax(IG(sset)[,'M']+oobR(sset)[,'M']+IG(sset)[,'U']+oobR(sset)[,'U'],2)
-    betas2 <- pmax(IR(sset)[,'M']+oobG(sset)[,'M'],1) /
-        pmax(IR(sset)[,'M']+oobG(sset)[,'M']+IR(sset)[,'U']+oobG(sset)[,'U'],2)
-    betas3 <- pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2)
-    betas <- c(betas1, betas2, betas3)
-    if (nondetection.mask) {
-        pval(sset) <- pval(sset)[match(names(betas), names(pval(sset)))]
-        betas[pval(sset) > pval.threshold] <- NA
-    }
-    if (quality.mask) {
-        mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
         betas[names(betas) %in% mask] <- NA
     }
     betas[order(names(betas))]
@@ -724,7 +710,6 @@ chipAddressToSignal <- function(dm, manifest, controls = NULL) {
         ctl(sset) <- ctl
     }
 
-    sset <- detectionPoobEcdf2(sset)
     sset
 }
 

@@ -98,13 +98,14 @@ head(ctl(sset))
 The openSesame pipeline is composed of noob, nonlinear dye bias correction
 and pOOBAH, achieved through:
 ```{r}
-IDATprefixes <- searchIDATprefixes(
-    system.file("extdata/", package = "sesameData"))
-betas <- openSesame(IDATprefixes)
+idat_dir <- system.file("extdata/", package = "sesameData")
+betas <- openSesame(idat_dir)
 ```
-or equivalently
+or if you want to have more granuality of control
 ```{r}
-betas <- getBetas(dyeBiasCorrTypeINorm(noob(sset)))
+prefix <- searchIDATprefixes(idat_dir)
+sset <- readIDATpair(prefix[1])
+betas <- getBetas(dyeBiasCorrTypeINorm(noob(pOOBAH(sset))))
 ```
 behind the scene.
 
