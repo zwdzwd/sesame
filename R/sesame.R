@@ -412,7 +412,7 @@ inferEthnicity <- function(sset) {
 #' @param nondetection.mask whether to mask nondetection
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @param pval.threshold p-value threshold for nondetection mask
-#' @param sum.type.I whether to sum type I channels
+#' @param sum.TypeI whether to sum type I channels
 #' @return a numeric vector, beta values
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
@@ -424,7 +424,7 @@ getBetas <- function(
     nondetection.mask = TRUE,
     mask.use.tcga = FALSE,
     pval.threshold = 0.05,
-    sum.typeI = FALSE) {
+    sum.TypeI = FALSE) {
     
     if (is(sset, "SigSetList")) {
         return(do.call(cbind, lapply(
@@ -439,7 +439,7 @@ getBetas <- function(
     ## against channel misspecification
     IGs <- IG(sset)
     IRs <- IR(sset)
-    if (sum.typeI) {
+    if (sum.TypeI) {
         IGs <- IGs + oobR(sset)
         IRs <- IRs + oobG(sset)
     }

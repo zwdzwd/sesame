@@ -5,7 +5,7 @@
 \title{Get beta Values}
 \usage{
 getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
-  mask.use.tcga = FALSE, pval.threshold = 0.05, sum.typeI = FALSE)
+  mask.use.tcga = FALSE, pval.threshold = 0.05, sum.TypeI = FALSE)
 }
 \arguments{
 \item{sset}{\code{SigSet}}
@@ -18,7 +18,7 @@ getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
 
 \item{pval.threshold}{p-value threshold for nondetection mask}
 
-\item{sum.type.I}{whether to sum type I channels}
+\item{sum.TypeI}{whether to sum type I channels}
 }
 \value{
 a numeric vector, beta values

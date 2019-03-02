@@ -101,7 +101,7 @@ and pOOBAH, achieved through:
 idat_dir <- system.file("extdata/", package = "sesameData")
 betas <- openSesame(idat_dir)
 ```
-or if you want to have more granuality of control
+or if you want to have more granuality of control, openSesame is equivalent to
 ```{r}
 prefix <- searchIDATprefixes(idat_dir)
 sset <- readIDATpair(prefix[1])
@@ -144,8 +144,16 @@ happens when measurement from one channel affects the measurement in the other
 channel. SeSAMe's `noobsb` further removes residual background by regressing
 out the green-to-red and red-to-green relationship using Type-I probes.
 ```R
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.nb <- noob(sset)
 sset.nb <- noobsb(sset)
+```
+
+### Type-I channel inference
+Sometimes Type-I channel spec is inaccurate in the manifest. We can infer the
+channel using data.
+```R
+sset.TypeICorrected <- inferTypeIChannel(sset)
 ```
 
 ### Dye bias correction
@@ -206,7 +214,7 @@ the extension base and hence switching color channel. More details can be
 found in
 [Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
 ```{r}
-betas <- getBetasTypeIbySumChannels(sset)
+betas <- getBetas(sset, sum.TypeI = TRUE)
 ```
 
 For such probes, extra SNP allele frequencies can be derived by summing up
