@@ -143,7 +143,7 @@ and optionally with extra bleed-through subtraction. Signal bleed-through
 happens when measurement from one channel affects the measurement in the other
 channel. SeSAMe's `noobsb` further removes residual background by regressing
 out the green-to-red and red-to-green relationship using Type-I probes.
-```R
+```{r}
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.nb <- noob(sset)
 sset.nb <- noobsb(sset)
@@ -152,7 +152,7 @@ sset.nb <- noobsb(sset)
 ### Type-I channel inference
 Sometimes Type-I channel spec is inaccurate in the manifest. We can infer the
 channel using data.
-```R
+```{r}
 sset.TypeICorrected <- inferTypeIChannel(sset)
 ```
 

@@ -5,10 +5,12 @@
 \title{Infer and reset color channel for Type-I probes instead of
 using what is specified in manifest}
 \usage{
-inferTypeIChannel(sset)
+inferTypeIChannel(sset, verbose = TRUE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
+
+\item{verbose}{whether to print correction summary}
 }
 \value{
 a \code{SigSet}

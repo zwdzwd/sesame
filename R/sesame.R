@@ -307,6 +307,7 @@ inferSexKaryotypes <- function(sset) {
 #' using what is specified in manifest
 #' 
 #' @param sset a \code{SigSet}
+#' @param verbose whether to print correction summary
 #' @import matrixStats
 #' @return a \code{SigSet}
 #' @examples
@@ -315,16 +316,19 @@ inferSexKaryotypes <- function(sset) {
 #' inferTypeIChannel(sset)
 #' 
 #' @export
-inferTypeIChannel <- function(sset) {
+inferTypeIChannel <- function(sset, verbose = TRUE) {
     red_channel <- rbind(IR(sset), oobR(sset))
     grn_channel <- rbind(oobG(sset), IG(sset))
-    red_idx0 <- 1:nrow(red_channel) <= nrow(IR(sset)) # old red index
+    red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sset)) # old red index
     red_idx <- rowMaxs(red_channel) > rowMaxs(grn_channel) # new red index
 
-    message('R>R: ', sum(red_idx0 & red_idx))
-    message('G>G: ', sum(!red_idx0 & !red_idx))
-    message('R>G: ', sum(red_idx0 & !red_idx))
-    message('G>R: ', sum(!red_idx0 & red_idx))
+    if (verbose) {
+        message('Type-I color channel reset:')
+        message('R>R: ', sum(red_idx0 & red_idx))
+        message('G>G: ', sum(!red_idx0 & !red_idx))
+        message('R>G: ', sum(red_idx0 & !red_idx))
+        message('G>R: ', sum(!red_idx0 & red_idx))
+    }
     
     IR(sset) <- red_channel[red_idx,]
     oobG(sset) <- grn_channel[red_idx,]
