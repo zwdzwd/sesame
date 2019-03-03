@@ -57,10 +57,11 @@ openSesame <- function(
     } else { # multiple IDAT prefixes / sigsets
         if (what == 'beta') {
             do.call(
-                cbind, mclapply(x, openSesame,
-                    platform = platform, manifest = manifest))
+                cbind, bplapply(x, openSesame,
+                    platform = platform, manifest = manifest, BPPARAM=BPPARAM))
         } else {
-            mclapply(x, openSesame, what='sigset')
+            mclapply(x, openSesame, what='sigset',
+                platform = platform, manifest = manifest, BPPARAM=BPPARAM)
         }
     }
 }
