@@ -60,7 +60,7 @@ openSesame <- function(
                 cbind, bplapply(x, openSesame,
                     platform = platform, manifest = manifest, BPPARAM=BPPARAM))
         } else {
-            mclapply(x, openSesame, what='sigset',
+            bplapply(x, openSesame, what='sigset',
                 platform = platform, manifest = manifest, BPPARAM=BPPARAM)
         }
     }
