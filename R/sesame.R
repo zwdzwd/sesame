@@ -136,11 +136,11 @@ setMethod(
 #' @export
 subsetSignal <- function(sset, probes) {
     stopifnot(is(sset, "SigSet"))
-    IR(sset) <- IR(sset)[rownames(IR(sset)) %in% probes,]
-    IG(sset) <- IG(sset)[rownames(IG(sset)) %in% probes,]
-    II(sset) <- II(sset)[rownames(II(sset)) %in% probes,]
-    oobR(sset) <- oobR(sset)[rownames(oobR(sset)) %in% probes,]
-    oobG(sset) <- oobG(sset)[rownames(oobG(sset)) %in% probes,]
+    IR(sset) <- IR(sset)[rownames(IR(sset)) %in% probes,,drop=FALSE]
+    IG(sset) <- IG(sset)[rownames(IG(sset)) %in% probes,,drop=FALSE]
+    II(sset) <- II(sset)[rownames(II(sset)) %in% probes,,drop=FALSE]
+    oobR(sset) <- oobR(sset)[rownames(oobR(sset)) %in% probes,,drop=FALSE]
+    oobG(sset) <- oobG(sset)[rownames(oobG(sset)) %in% probes,,drop=FALSE]
     sset
 }
 
