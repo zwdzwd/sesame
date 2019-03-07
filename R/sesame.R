@@ -308,6 +308,7 @@ inferSexKaryotypes <- function(sset) {
 #' 
 #' @param sset a \code{SigSet}
 #' @param verbose whether to print correction summary
+#' @param switch_failed whether to switch failed probes
 #' @import matrixStats
 #' @return a \code{SigSet}
 #' @examples
@@ -316,24 +317,46 @@ inferSexKaryotypes <- function(sset) {
 #' inferTypeIChannel(sset)
 #' 
 #' @export
-inferTypeIChannel <- function(sset, verbose = TRUE) {
+inferTypeIChannel <- function(sset, switch_failed = TRUE, verbose = TRUE) {
     red_channel <- rbind(IR(sset), oobR(sset))
     grn_channel <- rbind(oobG(sset), IG(sset))
     red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sset)) # old red index
-    red_idx <- rowMaxs(red_channel) > rowMaxs(grn_channel) # new red index
+    red_max <- rowMaxs(red_channel)
+    grn_max <- rowMaxs(grn_channel)
+    red_idx <- red_max > grn_max # new red index
+
+    ## stop inference when in-band signal is lower than a minimum
+    min_ib <- quantile(pmin(rowMins(red_channel), rowMins(grn_channel)), 0.95)
+    big_idx <- pmax(red_max, grn_max) > min_ib # in-band is big enough? 
 
     if (verbose) {
         message('Type-I color channel reset:')
-        message('R>R: ', sum(red_idx0 & red_idx))
-        message('G>G: ', sum(!red_idx0 & !red_idx))
-        message('R>G: ', sum(red_idx0 & !red_idx))
-        message('G>R: ', sum(!red_idx0 & red_idx))
+        message('R>R: ', sum(red_idx0 & red_idx & big_idx))
+        message('G>G: ', sum(!red_idx0 & !red_idx & big_idx))
+        message('R>G: ', sum(red_idx0 & !red_idx & big_idx))
+        message('G>R: ', sum(!red_idx0 & red_idx & big_idx))
+        message('Failed: ', sum(!big_idx))
     }
-    
-    IR(sset) <- red_channel[red_idx,]
-    oobG(sset) <- grn_channel[red_idx,]
-    IG(sset) <- grn_channel[!red_idx,]
-    oobR(sset) <- red_channel[!red_idx,]
+
+    if (switch_failed) {
+        IR(sset) <- red_channel[red_idx,]
+        oobG(sset) <- grn_channel[red_idx,]
+        IG(sset) <- grn_channel[!red_idx,]
+        oobR(sset) <- red_channel[!red_idx,]
+    } else {
+        IR(sset) <- rbind(
+            red_channel[red_idx & big_idx,],
+            red_channel[red_idx0 & !big_idx,])
+        oobG(sset) <- rbind(
+            grn_channel[red_idx & big_idx,],
+            grn_channel[red_idx0 & !big_idx,])
+        IG(sset) <- rbind(
+            grn_channel[!red_idx & big_idx,],
+            grn_channel[!red_idx0 & !big_idx,])
+        oobR(sset) <- rbind(
+            red_channel[!red_idx & big_idx,],
+            red_channel[!red_idx0 & !big_idx,])
+    }
     sset
 }
 
