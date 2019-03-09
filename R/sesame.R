@@ -309,15 +309,17 @@ inferSexKaryotypes <- function(sset) {
 #' @param sset a \code{SigSet}
 #' @param verbose whether to print correction summary
 #' @param switch_failed whether to switch failed probes
+#' @param summary return summarized numbers only.
 #' @import matrixStats
-#' @return a \code{SigSet}
+#' @return a \code{SigSet}, or numerics if summary == TRUE
 #' @examples
 #'
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' inferTypeIChannel(sset)
 #' 
 #' @export
-inferTypeIChannel <- function(sset, switch_failed = TRUE, verbose = TRUE) {
+inferTypeIChannel <- function(
+    sset, switch_failed = TRUE, verbose = TRUE, summary = FALSE) {
     red_channel <- rbind(IR(sset), oobR(sset))
     grn_channel <- rbind(oobG(sset), IG(sset))
     red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sset)) # old red index
@@ -327,15 +329,28 @@ inferTypeIChannel <- function(sset, switch_failed = TRUE, verbose = TRUE) {
 
     ## stop inference when in-band signal is lower than a minimum
     min_ib <- quantile(pmin(rowMins(red_channel), rowMins(grn_channel)), 0.95)
-    big_idx <- pmax(red_max, grn_max) > min_ib # in-band is big enough? 
+    big_idx <- pmax(red_max, grn_max) > min_ib # in-band is big enough?
+
+    smry <- c(
+        R2R = sum(red_idx0 & red_idx & big_idx),
+        G2G = sum(!red_idx0 & !red_idx & big_idx),
+        R2G = sum(red_idx0 & !red_idx & big_idx),
+        G2R = sum(!red_idx0 & red_idx & big_idx),
+        FailedR = sum(red_idx0 & !big_idx),
+        FailedG = sum(!red_idx0 & !big_idx))
+    
+    if (summary) {
+        return(smry)
+    }
 
     if (verbose) {
         message('Type-I color channel reset:')
-        message('R>R: ', sum(red_idx0 & red_idx & big_idx))
-        message('G>G: ', sum(!red_idx0 & !red_idx & big_idx))
-        message('R>G: ', sum(red_idx0 & !red_idx & big_idx))
-        message('G>R: ', sum(!red_idx0 & red_idx & big_idx))
-        message('Failed: ', sum(!big_idx))
+        message('R>R: ', smry['R2R'])
+        message('G>G: ', smry['G2G'])
+        message('R>G: ', smry['R2G'])
+        message('G>R: ', smry['G2R'])
+        message('Red Failed: ', smry['FailedR'])
+        message('Grn Failed: ', smry['FailedG'])
     }
 
     if (switch_failed) {
@@ -470,7 +485,7 @@ getBetas <- function(
         IGs <- IGs + oobR(sset)
         IRs <- IRs + oobG(sset)
     }
-    
+
     betas1 <- pmax(IGs[,'M'],1) / pmax(IGs[,'M']+IGs[,'U'],2)
     betas2 <- pmax(IRs[,'M'],1) / pmax(IRs[,'M']+IRs[,'U'],2)
     betas3 <- pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2)

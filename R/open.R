@@ -45,7 +45,7 @@ openSesame <- function(
         } else if (is(x, 'SigSet')) { # SigSet input
             x <- dyeBiasCorrTypeINorm(noob(pOOBAH(x)))
             if (what == 'beta') {
-                getBetas(x, , ...)
+                getBetas(x, ...)
             } else {
                 x
             }
@@ -58,10 +58,12 @@ openSesame <- function(
         if (what == 'beta') {
             do.call(
                 cbind, bplapply(x, openSesame,
-                    platform = platform, manifest = manifest, BPPARAM=BPPARAM))
+                    platform = platform,
+                    manifest = manifest, BPPARAM=BPPARAM, ...))
         } else {
             bplapply(x, openSesame, what='sigset',
-                platform = platform, manifest = manifest, BPPARAM=BPPARAM)
+                platform = platform,
+                manifest = manifest, BPPARAM=BPPARAM, ...)
         }
     }
 }
