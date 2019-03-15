@@ -1,0 +1,7 @@
+html_document:
+  self_contained: true
+  theme: sandstone
+  highlight: kate
+  toc: true
+  toc_float: true
+  toc_depth: 3
