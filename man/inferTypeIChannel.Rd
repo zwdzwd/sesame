@@ -5,13 +5,13 @@
 \title{Infer and reset color channel for Type-I probes instead of
 using what is specified in manifest}
 \usage{
-inferTypeIChannel(sset, switch_failed = TRUE, verbose = TRUE,
+inferTypeIChannel(sset, switch_failed = FALSE, verbose = TRUE,
   summary = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
 
-\item{switch_failed}{whether to switch failed probes}
+\item{switch_failed}{whether to switch failed probes (default to FALSE)}
 
 \item{verbose}{whether to print correction summary}
 

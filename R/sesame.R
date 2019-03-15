@@ -308,7 +308,7 @@ inferSexKaryotypes <- function(sset) {
 #' 
 #' @param sset a \code{SigSet}
 #' @param verbose whether to print correction summary
-#' @param switch_failed whether to switch failed probes
+#' @param switch_failed whether to switch failed probes (default to FALSE)
 #' @param summary return summarized numbers only.
 #' @import matrixStats
 #' @return a \code{SigSet}, or numerics if summary == TRUE
@@ -319,7 +319,7 @@ inferSexKaryotypes <- function(sset) {
 #' 
 #' @export
 inferTypeIChannel <- function(
-    sset, switch_failed = TRUE, verbose = TRUE, summary = FALSE) {
+    sset, switch_failed = FALSE, verbose = TRUE, summary = FALSE) {
     red_channel <- rbind(IR(sset), oobR(sset))
     grn_channel <- rbind(oobG(sset), IG(sset))
     red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sset)) # old red index
@@ -773,6 +773,9 @@ chipAddressToSignal <- function(dm, manifest, controls = NULL) {
 bisConversionControl <- function(sset, use.median=FALSE) {
     extC <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extC
     extT <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extT
+    prbs <- rownames(oobG(sset))
+    extC <- intersect(prbs, extC)
+    extT <- intersect(prbs, extT)
     if (use.median) {
         median(oobG(sset)[extC,], na.rm=TRUE) /
             median(oobG(sset)[extT,], na.rm=TRUE)
