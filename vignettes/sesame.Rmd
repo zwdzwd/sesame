@@ -1,7 +1,6 @@
 ---
 title: "SeSAMe User Guide"
 shorttitle: "sesame guide"
-author: "Wanding Zhou, Timothy J Triche Jr, Hui Shen"
 package: sesame
 output: rmarkdown::html_vignette
 fig_width: 8
@@ -23,9 +22,8 @@ BiocManager::install("sesame")
 
 Development version can be installed from github
 ```{r, eval=FALSE}
-library(devtools)
-install_github('zwdzwd/sesameData')
-install_github('zwdzwd/sesame')
+devtools::install_github('zwdzwd/sesameData')
+devtools::install_github('zwdzwd/sesame')
 ```
 
 # Data Structure for Signal Intensities
@@ -57,7 +55,7 @@ Reference class, `SignalSet`. The current S4 implementation in `SigSet`
 complies with Bioconductor guidelines, and for backwards compatibility, the
 `signalR6toS4` function transforms a `SignalSet` to a `SigSet`.
 
-```{r}
+```{r, echo = FALSE, message = FALSE}
 library(sesameData)
 library(sesame)
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset

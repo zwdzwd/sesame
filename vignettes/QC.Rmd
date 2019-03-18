@@ -1,0 +1,32 @@
+---
+title: "SeSAMe Quality Controls"
+package: sesame
+output: rmarkdown::html_vignette
+fig_width: 8
+fig_height: 6
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Quality Controls}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Generation of Quality Controls
+
+SeSAMe provides a set of quality control steps.
+```{r, echo = FALSE, message = FALSE}
+library(sesame)
+library(FlowSorted.Blood.450k)
+ssets <- RGChannelSetToSigSets(FlowSorted.Blood.450k[,1:3])
+```
+
+The SeSAMe QC function returns an `sesameQC` object which can be directly
+printed onto the screen.
+```{r}
+qc <- sesameQC(ssets[[1]])
+qc
+```
+
+```{r}
+qc3 <- do.call(cbind, lapply(ssets, sesameQC))
+head(qc3)
+```
