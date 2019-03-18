@@ -1,14 +1,17 @@
-# SeSAMe - SEnsible Step-wise Analysis of Methylation data [![Travis-CI Build Status](https://travis-ci.org/zwdzwd/sesame.svg?branch=master)](https://travis-ci.org/zwdzwd/sesame)
+# SeSAMe - SEnsible Step-wise Analysis of Methylation data 
                   
-SeSAMe is an R package for processing Infinium DNA methylation data. SeSAMe currently supports EPIC, HM450 and HM27 platforms.
+SeSAMe is an R package for processing Infinium DNA methylation data. SeSAMe currently supports EPIC, HM450 and HM27 platforms and dynamically generated manifest.
 
 To install from github,
 ```R
-library(devtools)
-install_github("zwdzwd/sesame")
+install.packages("BiocManager")
+library(BiocManager)
+install("zwdzwd/sesame")
 ```
 
-See the [package vignettes](https://github.com/zwdzwd/sesame/blob/master/vignettes/sesame.Rmd) for usage and examples. It also has a depended [data package](https://github.com/zwdzwd/sesameData) for annotation and example data.
+See the package [Home Page on Bioconductor](https://bioconductor.org/packages/release/bioc/html/sesame.html) and the [Developmental Branch](https://bioconductor.org/packages/devel/bioc/html/sesame.html)
+
+It also has a depended [data package](https://github.com/zwdzwd/sesameData) for annotation and example data.
 
 ## Bugs
     
@@ -17,4 +20,4 @@ Bug reports are appreciated. Register issues at the SeSAMe [issue tracker](http:
     
 ## About
 
-See [SeSAMe: reducing artifactual detection of DNA methylation by Infinium BeadChips in genomic deletions](https://doi.org/10.1093/nar/gky691) for more details.
+Please cite and reference [SeSAMe: reducing artifactual detection of DNA methylation by Infinium BeadChips in genomic deletions](https://doi.org/10.1093/nar/gky691) for more details.
