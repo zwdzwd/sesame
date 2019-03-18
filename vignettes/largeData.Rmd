@@ -89,5 +89,5 @@ The mapped value should be equal to the generated beta value. Let's
 spot-check.
 ```{r}
 abs(sliceFileSet(fset2,'sample2','cg00000108') -
-        hypothetical_betas['cg00000108']) < 1e-8
+        hypothetical_betas['cg00000108']) < 1e-7
 ```

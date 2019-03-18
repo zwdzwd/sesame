@@ -4,7 +4,7 @@
 \alias{initFileSet}
 \title{initialize a fileSet class by allocating appropriate storage}
 \usage{
-initFileSet(map_path, platform, samples, inc = 4)
+initFileSet(map_path, platform, samples, probes = NULL, inc = 4)
 }
 \arguments{
 \item{map_path}{path of file to map}
@@ -12,6 +12,8 @@ initFileSet(map_path, platform, samples, inc = 4)
 \item{platform}{EPIC, HM450 or HM27, consistent with sset@platform}
 
 \item{samples}{sample names}
+
+\item{probes}{probe names}
 
 \item{inc}{bytes per unit data storage}
 }
