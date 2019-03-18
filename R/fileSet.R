@@ -48,18 +48,25 @@ openSesameToFile <- function(
 #' @param map_path path of file to map
 #' @param platform EPIC, HM450 or HM27, consistent with sset@platform
 #' @param samples sample names
+#' @param probes probe names
 #' @param inc bytes per unit data storage
 #' @return a sesame::fileSet object
 #' @examples
 #'
 #' fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
 #' @export
-initFileSet <- function(map_path, platform, samples, inc = 4) {
-    addr <- sesameDataGet(paste0(platform,'.address'))
+initFileSet <- function(map_path, platform, samples,
+    probes = NULL, inc = 4) {
+
+    if (is.null(probes)) {
+        addr <- sesameDataGet(paste0(platform,'.address'))
+        probes <- addr$ordering$Probe_ID
+    }
+    
     fset <- structure(list(
         map_path = map_path,
         platform = platform,
-        probes = sort(addr$ordering$Probe_ID),
+        probes = probes,
         samples = sort(samples),
         inc = inc # bytes per storage
     ), class='fileSet')
