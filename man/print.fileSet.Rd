@@ -19,7 +19,7 @@ Print a fileSet
 }
 \examples{
 
-fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
+fset <- initFileSet('mybetas2', 'HM27', c('s1','s2'))
 fset
 
 }

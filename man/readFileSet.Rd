@@ -18,7 +18,7 @@ This function only reads the meta-data.
 \examples{
 
 ## create two samples
-fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
+fset <- initFileSet('mybetas2', 'HM27', c('s1','s2'))
 
 ## a hypothetical numeric array (can be beta values, intensities etc)
 hypothetical <- setNames(runif(fset$n), fset$probes)
@@ -27,7 +27,7 @@ hypothetical <- setNames(runif(fset$n), fset$probes)
 mapFileSet(fset, 's1', hypothetical)
 
 ## read it from file
-fset <- readFileSet('/tmp/mybetas2')
+fset <- readFileSet('mybetas2')
 
 ## get data
 sliceFileSet(fset, 's1', 'cg00000292')

@@ -26,7 +26,7 @@ Slice a fileSet with samples and probes
 \examples{
 
 ## create two samples
-fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
+fset <- initFileSet('mybetas2', 'HM27', c('s1','s2'))
 
 ## a hypothetical numeric array (can be beta values, intensities etc)
 hypothetical <- setNames(runif(fset$n), fset$probes)

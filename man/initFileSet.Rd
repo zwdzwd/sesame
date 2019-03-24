@@ -25,5 +25,5 @@ initialize a fileSet class by allocating appropriate storage
 }
 \examples{
 
-fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
+fset <- initFileSet('mybetas2', 'HM27', c('s1','s2'))
 }

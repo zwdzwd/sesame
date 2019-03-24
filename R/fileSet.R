@@ -10,7 +10,7 @@
 #' @import BiocParallel
 #' @examples
 #'
-#' openSesameToFile('/tmp/mybetas',
+#' openSesameToFile('mybetas',
 #'     system.file('extdata',package='sesameData'))
 #' 
 #' @export
@@ -53,7 +53,7 @@ openSesameToFile <- function(
 #' @return a sesame::fileSet object
 #' @examples
 #'
-#' fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
+#' fset <- initFileSet('mybetas2', 'HM27', c('s1','s2'))
 #' @export
 initFileSet <- function(map_path, platform, samples,
     probes = NULL, inc = 4) {
@@ -98,7 +98,7 @@ initFileSet <- function(map_path, platform, samples,
 #' @examples
 #'
 #' ## create two samples
-#' fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
+#' fset <- initFileSet('mybetas2', 'HM27', c('s1','s2'))
 #'
 #' ## a hypothetical numeric array (can be beta values, intensities etc)
 #' hypothetical <- setNames(runif(fset$n), fset$probes)
@@ -107,7 +107,7 @@ initFileSet <- function(map_path, platform, samples,
 #' mapFileSet(fset, 's1', hypothetical)
 #'
 #' ## read it from file
-#' fset <- readFileSet('/tmp/mybetas2')
+#' fset <- readFileSet('mybetas2')
 #'
 #' ## get data
 #' sliceFileSet(fset, 's1', 'cg00000292')
@@ -128,7 +128,7 @@ readFileSet <- function(map_path) {
 #' @examples
 #'
 #' ## create two samples
-#' fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
+#' fset <- initFileSet('mybetas2', 'HM27', c('s1','s2'))
 #'
 #' ## a hypothetical numeric array (can be beta values, intensities etc)
 #' hypothetical <- setNames(runif(fset$n), fset$probes)
@@ -167,7 +167,7 @@ mapFileSet <- function(fset, sample, named_values) {
 #' @examples
 #'
 #' ## create two samples
-#' fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
+#' fset <- initFileSet('mybetas2', 'HM27', c('s1','s2'))
 #'
 #' ## a hypothetical numeric array (can be beta values, intensities etc)
 #' hypothetical <- setNames(runif(fset$n), fset$probes)
@@ -227,7 +227,7 @@ sliceFileSet <- function(
 #' @return string representation
 #' @examples
 #'
-#' fset <- initFileSet('/tmp/mybetas2', 'HM27', c('s1','s2'))
+#' fset <- initFileSet('mybetas2', 'HM27', c('s1','s2'))
 #' fset
 #' 
 #' @export

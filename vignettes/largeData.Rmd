@@ -29,11 +29,11 @@ library(sesame)
 ```
 
 The following `openSesameToFile` call does three things
-- generates a file called `/tmp/mybetas`. 
-- generates an index file called `/tmp/mybetas_idx.rds`
+- generates a file called `mybetas`. 
+- generates an index file called `mybetas_idx.rds`
 - returns a `fileSet` object which serves as an interface to the two files.
 ```{r}
-fset <- openSesameToFile('/tmp/mybetas',
+fset <- openSesameToFile('mybetas',
     system.file('extdata',package='sesameData'))
 ```
 

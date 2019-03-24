@@ -24,7 +24,7 @@ openSesame pipeline with file-backed storage
 }
 \examples{
 
-openSesameToFile('/tmp/mybetas',
+openSesameToFile('mybetas',
     system.file('extdata',package='sesameData'))
 
 }
