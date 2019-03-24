@@ -65,7 +65,7 @@ In the previous example, we preprocessed IDATs directly to `fileSet`. We can
 also read a pre-existing `fileSet` using the file path using `readFileSet`
 function.
 ```{r}
-fset <- readFileSet('/tmp/mybetas')
+fset <- readFileSet('mybetas')
 sliceFileSet(fset, '4207113116_A', 'cg00000292')
 ```
 
@@ -76,7 +76,7 @@ fileSet. We can write a fileSet by filling the space one sample by one sample.
 This is achieved by first allocating the space given the number of samples
 and the probe IDs (optional if platform is one if HM27, HM450 or EPIC).
 ```{r}
-fset2 <- initFileSet('/tmp/mybetas2', 'HM450', c('sample1', 'sample2'))
+fset2 <- initFileSet('mybetas2', 'HM450', c('sample1', 'sample2'))
 ```
 Then one can fill in the beta values by `mapFileSet`. Here I am 
 illustrating using a randomly generated beta values.

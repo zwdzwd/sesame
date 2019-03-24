@@ -12,9 +12,12 @@
 #' 
 #' @examples
 #' # Takes about two minutes to process 48 samples on my 48-core desktop
-#' if (require(FlowSorted.CordBloodNorway.450k)) {
-#'     sesamize(
-#'         FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
+#'
+#' \dontrun{
+#'     if (require(FlowSorted.CordBloodNorway.450k)) {
+#'         sesamize(
+#'             FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
+#'     }
 #' }
 #' @export 
 sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam()) { 

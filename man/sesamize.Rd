@@ -23,8 +23,11 @@ The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet
 }
 \examples{
 # Takes about two minutes to process 48 samples on my 48-core desktop
-if (require(FlowSorted.CordBloodNorway.450k)) {
-    sesamize(
-        FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
+
+\dontrun{
+    if (require(FlowSorted.CordBloodNorway.450k)) {
+        sesamize(
+            FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
+    }
 }
 }

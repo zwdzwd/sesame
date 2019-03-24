@@ -5,7 +5,7 @@
 \title{Import a pair of IDATs from one sample}
 \usage{
 readIDATpair(prefix.path, platform = "", manifest = NULL,
-  verbose = FALSE)
+  controls = NULL, verbose = FALSE)
 }
 \arguments{
 \item{prefix.path}{sample prefix without _Grn.idat and _Red.idat}
@@ -13,6 +13,8 @@ readIDATpair(prefix.path, platform = "", manifest = NULL,
 \item{platform}{EPIC, HM450 and HM27 etc.}
 
 \item{manifest}{optional design manifest file}
+
+\item{controls}{optional control probe manifest file}
 
 \item{verbose}{be verbose?  (FALSE)}
 }

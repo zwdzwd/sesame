@@ -118,12 +118,12 @@ dyeBiasCorrMostBalanced <- function(ssets) {
 dyeBiasCorrTypeINorm <- function(sset) {
 
     stopifnot(is(sset, "SigSet"))
-    maxIG <- max(IG(sset))
-    minIG <- min(IG(sset))
-    maxIR <- max(IR(sset))
-    minIR <- min(IR(sset))
+    maxIG <- max(IG(sset), na.rm = TRUE)
+    minIG <- min(IG(sset), na.rm = TRUE)
+    maxIR <- max(IR(sset), na.rm = TRUE)
+    minIR <- min(IR(sset), na.rm = TRUE)
 
-    if (maxIG == 0 || maxIR == 0) {
+    if (maxIG <= 0 || maxIR <= 0) {
         return(sset)
     }
 
@@ -179,8 +179,10 @@ dyeBiasCorrTypeINorm <- function(sset) {
     IG(sset) <- IG
 
     ## fit control
-    ctl(sset)[,'R'] <- fitfunRed(ctl(sset)[,'R'])
-    ctl(sset)[,'G'] <- fitfunGrn(ctl(sset)[,'G'])
+    if (nrow(ctl(sset)) > 0) {
+        ctl(sset)[,'R'] <- fitfunRed(ctl(sset)[,'R'])
+        ctl(sset)[,'G'] <- fitfunGrn(ctl(sset)[,'G'])
+    }
 
     ## fit oob
     oobR(sset) <- fitfunRed(oobR(sset))

@@ -9,13 +9,13 @@ library(BiocManager)
 install("zwdzwd/sesame")
 ```
 
-See the package [Home Page on Bioconductor](https://bioconductor.org/packages/release/bioc/html/sesame.html) and the [Developmental Branch](https://bioconductor.org/packages/devel/bioc/html/sesame.html)
+See the package [Home Page on Bioconductor](https://bioconductor.org/packages/release/bioc/html/sesame.html) and the [Developmental Branch](https://bioconductor.org/packages/devel/bioc/html/sesame.html).
 
 It also has a depended [data package](https://github.com/zwdzwd/sesameData) for annotation and example data.
 
 ## Bugs
     
-Bug reports are appreciated. Register issues at the SeSAMe [issue tracker](http://github.com/zwdzwd/sesame/issues)
+Bug reports are appreciated. Register issues at the SeSAMe [issue tracker](http://github.com/zwdzwd/sesame/issues).
     
     
 ## About

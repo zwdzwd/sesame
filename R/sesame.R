@@ -320,15 +320,33 @@ inferSexKaryotypes <- function(sset) {
 #' @export
 inferTypeIChannel <- function(
     sset, switch_failed = FALSE, verbose = TRUE, summary = FALSE) {
+    
     red_channel <- rbind(IR(sset), oobR(sset))
     grn_channel <- rbind(oobG(sset), IG(sset))
     red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sset)) # old red index
+
+    ## If there are NA in the probe intensity, exclude these probes.
+    ## This is rare and usually occurred when manifest is not complete
+    no_na <- complete.cases(cbind(red_channel, grn_channel))
+    if (!all(no_na)) {
+        red_channel <- red_channel[no_na,]
+        grn_channel <- grn_channel[no_na,]
+        red_idx0 <- red_idx0[no_na]
+        if (verbose) {
+            message(
+                'Warning! ', sum(!no_na),
+                ' Infinium I probes are excluded for having NA intensity.')
+        }
+    }
+        
     red_max <- rowMaxs(red_channel)
     grn_max <- rowMaxs(grn_channel)
     red_idx <- red_max > grn_max # new red index
 
     ## stop inference when in-band signal is lower than a minimum
-    min_ib <- quantile(pmin(rowMins(red_channel), rowMins(grn_channel)), 0.95)
+    min_ib <- quantile(
+        pmin(rowMins(red_channel), rowMins(grn_channel)), 0.95)
+    
     big_idx <- pmax(red_max, grn_max) > min_ib # in-band is big enough?
 
     smry <- c(
@@ -576,6 +594,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #'
 #' @param prefix.path sample prefix without _Grn.idat and _Red.idat
 #' @param manifest optional design manifest file
+#' @param controls optional control probe manifest file
 #' @param verbose     be verbose?  (FALSE)
 #' @param platform EPIC, HM450 and HM27 etc.
 #' 
@@ -587,7 +606,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #' @export
 readIDATpair <- function(
     prefix.path, platform = '',
-    manifest = NULL, verbose=FALSE) {
+    manifest = NULL, controls = NULL, verbose=FALSE) {
 
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
         grn.name <- paste0(prefix.path, '_Grn.idat')
