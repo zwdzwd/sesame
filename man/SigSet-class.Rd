@@ -46,6 +46,12 @@ one of "HM27", "HM450" or "EPIC".
 
 \item{\code{oobR}}{out-of-band probes in red channel}
 
+\item{\code{NBeadsIG}}{Number of Beads for Infinium I green channel}
+
+\item{\code{NBeadsIR}}{Number of Beads for Infinium I red channel}
+
+\item{\code{NBeadsII}}{Number of Beads for Infinium II}
+
 \item{\code{ctl}}{all the control probe intensities}
 
 \item{\code{pval}}{named numeric vector of p-values}

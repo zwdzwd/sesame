@@ -37,6 +37,9 @@
 #' @slot II intensity table for type II probes
 #' @slot oobG out-of-band probes in green channel
 #' @slot oobR out-of-band probes in red channel
+#' @slot NBeadsIG Number of Beads for Infinium I green channel
+#' @slot NBeadsIR Number of Beads for Infinium I red channel
+#' @slot NBeadsII Number of Beads for Infinium II
 #' @slot ctl all the control probe intensities
 #' @slot pval named numeric vector of p-values
 #' @slot platform "EPIC", "HM450" or "HM27"
@@ -56,6 +59,9 @@ setClass(
         II = 'matrix',
         oobG = 'matrix',
         oobR = 'matrix',
+        NBeadsIG = 'matrix',  # matrix of integers, two columns M and U
+        NBeadsIR = 'matrix',  # matrix of integers, two columns M and U
+        NBeadsII = 'integer', # for Infinium II M and U have same num. beads
         ctl = 'data.frame',
         pval = 'numeric',
         platform = 'character'))
@@ -570,8 +576,11 @@ getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
 readIDAT1 <- function(grn.name, red.name, platform='') {
     ida.grn <- illuminaio::readIDAT(grn.name);
     ida.red <- illuminaio::readIDAT(red.name);
-    d <- cbind(cy3=ida.grn$Quants[,"Mean"], cy5=ida.red$Quants[,"Mean"])
-    colnames(d) <- c('G', 'R')
+    d <- cbind(
+        cy3=ida.grn$Quants[,"Mean"],
+        cy5=ida.red$Quants[,"Mean"],
+        NBeads = ida.grn$Quants[,'NBeads'])
+    colnames(d) <- c('G', 'R', 'NBeads')
 
     if (platform != '') {
         attr(d, 'platform') <- platform
@@ -725,34 +734,48 @@ chipAddressToSignal <- function(dm, manifest, controls = NULL) {
     IordG <- manifest[(!is.na(manifest$col))&(manifest$col=='G'),]
     ## 2-channel for green probes' M allele
     IuG2ch <- dm[match(IordG$U, rownames(dm)),]
-    IuG <- IuG2ch[,1]
     ## 2-channel for green probes' U allele
     ImG2ch <- dm[match(IordG$M, rownames(dm)),]
-    ImG <- ImG2ch[,1]
     oobR(sset) <- as.matrix(
-        data.frame(M=ImG2ch[,2], U=IuG2ch[,2], row.names=IordG$Probe_ID))
-    IG(sset) <- as.matrix(data.frame(M=ImG, U=IuG, row.names=IordG$Probe_ID))
+        data.frame(M=ImG2ch[,'R'], U=IuG2ch[,'R'], row.names=IordG$Probe_ID))
+    IG(sset) <- as.matrix(data.frame(
+        M = ImG2ch[,'G'], U = IuG2ch[,'G'],
+        row.names = IordG$Probe_ID))
+    if ('NBeads' %in% colnames(dm)) {
+        sset@NBeadsIG <- as.matrix(data.frame(
+            M = ImG2ch[,'NBeads'], U = IuG2ch[,'NBeads'],
+            row.names = IordG$Probe_ID))
+    }
 
     ## type I red channel / oob green channel
     ## IordR <- manifest[((manifest$DESIGN=='I')&(manifest$col=='R')),]
     IordR <- manifest[(!is.na(manifest$col))&(manifest$col=='R'),]
     ## 2-channel for red probes' m allele
     IuR2ch <- dm[match(IordR$U, rownames(dm)),]
-    IuR <- IuR2ch[,2]
     ## 2-channel for red probes' u allele
     ImR2ch <- dm[match(IordR$M, rownames(dm)),]
-    ImR <- ImR2ch[,2]
     oobG(sset) <- as.matrix(
-        data.frame(M=ImR2ch[,1], U=IuR2ch[,1], row.names=IordR$Probe_ID))
-    IR(sset) <- as.matrix(data.frame(M=ImR, U=IuR, row.names=IordR$Probe_ID))
-
+        data.frame(M=ImR2ch[,'G'], U=IuR2ch[,'G'], row.names=IordR$Probe_ID))
+    IR(sset) <- as.matrix(data.frame(
+        M = ImR2ch[,'R'], U = IuR2ch[,'R'],
+        row.names = IordR$Probe_ID))
+    if ('NBeads' %in% colnames(dm)) {
+        sset@NBeadsIR <- as.matrix(data.frame(
+            M = ImR2ch[,'NBeads'], U = IuR2ch[,'NBeads'],
+            row.names = IordR$Probe_ID))
+    }
+    
     ## type II
     ## IIord <- manifest[manifest$DESIGN=="II",]
     IIord <- manifest[is.na(manifest$col),]
-    signal.II <- dm[match(IIord$U, rownames(dm)),]
+    signal.II <- dm[match(IIord$U, rownames(dm)),c('G','R')]
     colnames(signal.II) <- c('M', 'U')
     rownames(signal.II) <- IIord$Probe_ID
     II(sset) <- signal.II
+    if ('NBeads' %in% colnames(dm)) {
+        sset@NBeadsII <- dm[match(IIord$U, rownames(dm)),'NBeads']
+        names(sset@NBeadsII) <- IIord$Probe_ID
+    }
 
     ## control probes
     ctl_idx <- grep('^ctl',manifest$Probe_ID)
