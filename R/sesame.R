@@ -101,7 +101,7 @@ SigSet <- function(...) new("SigSet", ...)
 #' The display method for SigSet
 #'
 #' The function outputs the number of probes in each category and the first
-#' few signal measurements.
+#' few signal measurements. NBeads slots are not shown here.
 #'
 #' @param object displayed object
 #' @return message of number of probes in each category.
