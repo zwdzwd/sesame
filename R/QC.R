@@ -10,7 +10,7 @@
 #' @export
 sesameQC <- function(sset, betas = NULL) {
 
-    qc <- structure(list(), class='sesameQC')
+    qc <- structure(data.frame(), class='sesameQC')
     qc$num_probes_II <- nrow(II(sset))
     qc$num_probes_IR <- nrow(IR(sset))
     qc$num_probes_IG <- nrow(IG(sset))
@@ -148,4 +148,24 @@ print.sesameQC <- function(x, ...) {
     
     cat('\n')
 }
-    
+
+
+#' Coerce a sesameQC into a dataframe
+#'
+#' @param x          a sesameQC object
+#' @param row.names  see as.data.frame
+#' @param optional   see as.data.frame
+#' @param ...        see as.data.frame
+#' @return           a data.frame
+#' @examples
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' qc <- sesameQC(sset)
+#' df1 <- sesameQC2DF(qc)
+#' df2 <- sesameQC2DF(list(qc,qc)) # a data.frame with 2 rows
+#' @export
+as.data.frame.sesameQC <- function(
+    x, row.names = NULL, optional = FALSE, ...) {
+
+    class(x) <- NULL;
+    as.data.frame(x)
+}

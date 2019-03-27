@@ -6,7 +6,7 @@ fig_width: 8
 fig_height: 6
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Minfi Interaction}
+  %\VignetteIndexEntry{3. Minfi Interaction}
   %\VignetteEncoding{UTF-8}
 ---
 

@@ -7,7 +7,7 @@ fig_width: 8
 fig_height: 6
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{SeSAMe User Guide}
+  %\VignetteIndexEntry{0. SeSAMe User Guide}
   %\VignetteEncoding{UTF-8}
 ---
 
