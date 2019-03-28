@@ -48,7 +48,7 @@ ggplot(qc10,
     xlim(c(500,1200)) + ylim(c(500,1200))
 ```
 
-## Mean Intensity
+# Mean Intensity
 
 The mean {M,U} intensity can be reached by `mean_intensity`.
 Similarly, the mean M+U intensity can be reached by
@@ -95,7 +95,7 @@ p1 <- ggplot(qc10) +
     theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
 p2 <- ggplot(qc10) +
     geom_bar(aes(sample_name, frac_na_cg), stat='identity') +
-    xlab('Sample Name') + ylab('Number of NAs') +
+    xlab('Sample Name') + ylab('Fraction of NAs (%)') +
     theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
 WGG(p1) + WGG(p2, RightOf())
 ```

@@ -25,6 +25,5 @@ Coerce a sesameQC into a dataframe
 \examples{
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 qc <- sesameQC(sset)
-df1 <- sesameQC2DF(qc)
-df2 <- sesameQC2DF(list(qc,qc)) # a data.frame with 2 rows
+df <- as.data.frame(qc)
 }
