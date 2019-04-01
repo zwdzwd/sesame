@@ -1,6 +1,6 @@
 # SeSAMe - SEnsible Step-wise Analysis of Methylation data 
 
-- Latest version: [![last commit](https://img.shields.io/github/last-commit/zwdzwd/sesame/latest/total.svg?maxAge=3600)](https://github.com/zwdzwd/sesame/commits/master)
+- Latest version: [![last commit](https://img.shields.io/github/last-commit/zwdzwd/sesame.svg?style=flat-square)](https://github.com/zwdzwd/sesame/commits/master)
                   
 SeSAMe is an R package for processing Infinium DNA methylation data. SeSAMe currently supports EPIC, HM450 and HM27 platforms and dynamically generated manifest.
 
