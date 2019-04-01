@@ -368,13 +368,14 @@ inferTypeIChannel <- function(
     }
 
     if (verbose) {
-        message('Type-I color channel reset:')
-        message('R>R: ', smry['R2R'])
-        message('G>G: ', smry['G2G'])
-        message('R>G: ', smry['R2G'])
-        message('G>R: ', smry['G2R'])
-        message('Red Failed: ', smry['FailedR'])
-        message('Grn Failed: ', smry['FailedG'])
+        message(
+            'Type-I color channel reset:\n',
+            'R>R: ', smry['R2R'], '\n',
+            'G>G: ', smry['G2G'], '\n',
+            'R>G: ', smry['R2G'], '\n',
+            'G>R: ', smry['G2R'], '\n',
+            'Red Failed: ', smry['FailedR'], '\n',
+            'Grn Failed: ', smry['FailedG'])
     }
 
     if (switch_failed) {
@@ -646,7 +647,7 @@ readIDATpair <- function(
         controls <- df_address$controls
     }
 
-    chipAddressToSignal(dm, manifest, controls)
+    detectionZero(chipAddressToSignal(dm, manifest, controls))
 }
 
 #' Identify IDATs from a directory

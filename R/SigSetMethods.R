@@ -1,5 +1,28 @@
 #' @include sesame.R
 
+#' probeNames generic
+#'
+#' @param x object of \code{Sigset}
+#'
+#' @rdname probeNames-methods
+#' @docType methods
+#' @export
+setGeneric("probeNames", function(x) {
+    standardGeneric("probeNames")
+})
+
+#' Get Probe Names of SigSet class
+#'
+#' @rdname probeNames-methods
+#' @return A char vector
+#' @aliases probeNames,SigSet-method
+#' @examples
+#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' head(probeNames(sset))
+setMethod("probeNames", "SigSet", function(x) {
+    c(rownames(x@II), rownames(x@IR), rownames(x@IG))
+})
+
 ##############
 #### pval ####
 ##############

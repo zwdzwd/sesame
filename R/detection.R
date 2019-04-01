@@ -1,3 +1,19 @@
+
+#' Detection P-value set to all zero
+#'
+#' @param sset a \code{SigSet}
+#' @return detection p-value set to all zero
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' sset <- detectionZero(sset)
+#' 
+#' @export
+detectionZero <- function(sset) {
+    nms <- probeNames(sset)
+    pval(sset) <- setNames(rep(0, times = length(nms)), nms)
+    sset
+}
+
 #' Detection P-value based on ECDF of negative control
 #'
 #' The function takes a \code{SigSet} as input, computes detection p-value

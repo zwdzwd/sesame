@@ -7,11 +7,20 @@ fig_width: 8
 fig_height: 6
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{0. SeSAMe User Guide}
+  %\VignetteIndexEntry{"0. SeSAMe User Guide"}
   %\VignetteEncoding{UTF-8}
 ---
 
-# Installation
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(sesame)
+library(dplyr)
+```
+
+
+SeSAMe is designed to process Illumina Infinium DNA methylation data. It
+currently supports EPIC, HM450 and HM27 platforms.
+
+# Install SeSAMe
 
 From Bioconductor
 ```{r, eval=FALSE}
@@ -22,18 +31,82 @@ BiocManager::install("sesame")
 
 Development version can be installed from github
 ```{r, eval=FALSE}
-devtools::install_github('zwdzwd/sesameData')
-devtools::install_github('zwdzwd/sesame')
+BiocManager::install('zwdzwd/sesameData')
+BiocManager::install('zwdzwd/sesame')
 ```
 
-# Data Structure for Signal Intensities
+# The openSesame Pipeline
 
-SeSAMe is designed to process Illumina Infinium DNA methylation data. It
-currently supports EPIC, HM450 and HM27 platforms. The design includes a
-light-weight full exposure of internal signal intensities (essential 
-information for users of Illumina methylation array data, as demonstrated
-in Zhou et al 2018), which permits sensitive and specific joint inference
-on copy number and DNA methylation.
+The openSesame pipeline is composed of noob, nonlinear dye bias correction
+and pOOBAH, achieved through:
+```{r message = FALSE, warning = FALSE}
+idat_dir <- system.file("extdata/", package = "sesameData")
+betas <- openSesame(idat_dir)
+```
+where `idat_dir` is the directory containing all the IDAT files (they can be
+present under nested sub-directories).
+
+If you want to have more granuality of control, openSesame is equivalent to
+```{r message = FALSE, warning = FALSE, eval = FALSE}
+betas <- do.call(cbind, lapply(searchIDATprefixes(idat_dir), function(pfx) {
+    pfx %>% readIDATpair %>% pOOBAH %>%
+        noob %>% dyeBiasCorrTypeINorm %>% getBetas
+}))
+```
+behind the scene.
+
+## How/Why Probes Are Masked?
+
+The `openSesame` command also takes the arguments to turn on/off probe masking (
+when probe beta value measurements are replaced with NA) and adjust for
+stringency in detection calling. The current probe masking is constituted by two
+major parts:
+
+1) Low intensity-based detection calling achieved by `pOOBAH`: This sets the
+p-value for each probe
+([Zhou et al. 2018](https://www.ncbi.nlm.nih.gov/pubmed/30085201)). Probes with
+p-value higher than a threshold (default: 0.05) are masked. The default
+threshold can be adjusted to say, 0.1, by `pval.threshold = 0.1` in either
+`getBetas` or `openSesame`. 
+
+2) Probes masked for putative design issues designated in
+`sesameDataGet('HM450.probeInfo')$mask` (
+[Zhou et al. 2017](https://www.ncbi.nlm.nih.gov/pubmed/27924034)): This masking
+only supports EPIC, HM450 and HM27 and is turned on by default.  It can be
+turned off by setting `quality.mask = FALSE` for either `getBetas` or
+`openSesame`.
+
+## Specify Your Own Manifest
+
+Instead of working with HM450, EPIC etc, SeSAMe also works with customed array.
+
+```{r eval = FALSE}
+openSesame(idat_dir, 'custom_array_name', manifest_file)
+```
+
+In this case, one needs to provide a `platform` string, which can be any string
+used to reference the platform, and a `manifest_file` which is a data frame (
+or tibble) with a minimum of four columns (`Probe_ID`, `M`, `U` and `col`).
+```
+  Probe_ID          M        U col
+  <chr>         <dbl>    <dbl> <chr>
+1 cg14361672  7743487 51800947 R
+2 cg21784030       NA 29783926 NA
+3 cg13417420 27786954  5613976 G
+4 cg12480843 19684581 16692916 R
+5 cg05493344       NA 58754149 NA
+6 cg10136773       NA  3699389 NA
+```
+
+The `col` is either `G` (stand for Green) or `R` (stand for Red) or `NA` (
+stand for both in the case of Infinium II design).
+
+# Data Structure for Signal Intensity
+
+SeSAMe design includes alight-weight full exposure of internal signal
+intensities (essential information for users of Illumina methylation array data,
+as demonstrated in Zhou et al 2018), which permits sensitive and specific joint
+inference on copy number and DNA methylation.
 
 Central to the SeSAMe platform is the `SigSet` data structure,
 an S4 class with slots containing signals for six different classes of probes:
@@ -66,46 +139,34 @@ For example, printing the SigSet directly shows its content
 sset
 ```
 
-Type-II probe signal can be browsed in
-```{r}
-head(slot(sset, 'II'))
-```
+## Infinium I/II Probes
 
-or via the getter function
+Infinium-II probe signal can be accessed using the slot function `sset@II` or
+via the getter function
+
 ```{r}
 head(II(sset))
 ```
 
-Similarly, signals for Type-I probes (`sset@IR` and `sset@IG`) and out-of-band
-probes (`sset@oobG` and `sset@oobR`) can be found in
-```{r}
-head(IR(sset))
-head(oobG(sset))
-```
-as one can see the probe names (row names) of `IR` always coincide with the
+## Infinium I Out-of-band Signal
+
+Similarly, signals for Type-I probes can be accessed from `sset@IR` and
+`sset@IG` and out-of-band signals from `sset@oobG` and `sset@oobR`.
+As one can see the probe names (row names) of `IR` always coincide with the
 probe names (row names) of `oobG` (and vice versa). This is because the
 out-of-band probe signal for red channel probes is in green channel
-(and vice versa). Lastly, Control probes are represented in a data frame with
-the last column holding the type of the control.
+(and vice versa). 
+
+## Control Probes
+
+Lastly, Control probes are represented in a data frame with the last column
+holding the type of the control.
+
 ```{r}
 head(ctl(sset))
 ```
 
-# The openSesame pipeline
-
-The openSesame pipeline is composed of noob, nonlinear dye bias correction
-and pOOBAH, achieved through:
-```{r}
-idat_dir <- system.file("extdata/", package = "sesameData")
-betas <- openSesame(idat_dir)
-```
-or if you want to have more granuality of control, openSesame is equivalent to
-```{r}
-prefix <- searchIDATprefixes(idat_dir)
-sset <- readIDATpair(prefix[1])
-betas <- getBetas(dyeBiasCorrTypeINorm(noob(pOOBAH(sset))))
-```
-behind the scene.
+## Number of Beads
 
 # Functionalities
 

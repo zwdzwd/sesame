@@ -4,7 +4,7 @@
 \name{pval<-}
 \alias{pval<-}
 \alias{pval<-,SigSet-method}
-\title{Replace pval slot of SigSet class}
+\title{pval replacement generic}
 \usage{
 pval(x) <- value
 
@@ -19,6 +19,8 @@ pval(x) <- value
 a new \code{SigSet}
 }
 \description{
+pval replacement generic
+
 Replace pval slot of SigSet class
 }
 \examples{
