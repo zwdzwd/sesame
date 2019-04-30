@@ -5,7 +5,7 @@
 \title{Import a pair of IDATs from one sample}
 \usage{
 readIDATpair(prefix.path, platform = "", manifest = NULL,
-  controls = NULL, verbose = FALSE)
+  controls = NULL, readNBeads = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{prefix.path}{sample prefix without _Grn.idat and _Red.idat}
@@ -15,6 +15,8 @@ readIDATpair(prefix.path, platform = "", manifest = NULL,
 \item{manifest}{optional design manifest file}
 
 \item{controls}{optional control probe manifest file}
+
+\item{readNBeads}{whether to read number of beads}
 
 \item{verbose}{be verbose?  (FALSE)}
 }

@@ -4,7 +4,7 @@
 \alias{chipAddressToSignal}
 \title{Lookup address in one sample}
 \usage{
-chipAddressToSignal(dm, manifest, controls = NULL)
+chipAddressToSignal(dm, manifest, controls = NULL, readNBeads = FALSE)
 }
 \arguments{
 \item{dm}{data frame in chip address, 2 columns: cy3/Grn and cy5/Red}
@@ -15,6 +15,8 @@ chipAddressToSignal(dm, manifest, controls = NULL)
 but might be necessary for some preprocessing methods that depends on these
 control probes. This is left for backward compatibility. Updated version
 should have controls consolidated into manifest.}
+
+\item{readNBeads}{whether to read bead signal}
 }
 \value{
 a SigSet, indexed by probe ID address

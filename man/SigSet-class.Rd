@@ -33,6 +33,10 @@ one of "HM27", "HM450" or "EPIC".
 The function takes a string describing the platform of the data. It can be
 one of "HM27", "HM450" or "EPIC".
 }
+\details{
+The NBeads* slots are normally left empty but can be optionally
+turned on.
+}
 \section{Slots}{
 
 \describe{

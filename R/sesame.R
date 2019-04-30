@@ -32,6 +32,9 @@
 #' This is the main data class for SeSAMe. The class holds different
 #' classes of signal intensities.
 #'
+#' The NBeads* slots are normally left empty but can be optionally
+#' turned on.
+#'
 #' @slot IG intensity table for type I probes in green channel
 #' @slot IR intensity table for type I probes in red channel
 #' @slot II intensity table for type II probes
@@ -297,7 +300,7 @@ inferSexKaryotypes <- function(sset) {
 
     ## adjust X copy number by fraction of XCI
     if ((sexX == 'Xi' || sexX == 'Xa') && XdivAuto >= 1.0 &&
-        sex.info['fracXlinked'] >= 0.5)
+            sex.info['fracXlinked'] >= 0.5)
         sexX <- 'XaXi'
 
     if (YdivAuto > 0.3 || sex.info['medianY'] > 2000)
@@ -344,7 +347,7 @@ inferTypeIChannel <- function(
                 ' Infinium I probes are excluded for having NA intensity.')
         }
     }
-        
+    
     red_max <- rowMaxs(red_channel)
     grn_max <- rowMaxs(grn_channel)
     red_idx <- red_max > grn_max # new red index
@@ -499,7 +502,7 @@ getBetas <- function(
             nondetection.mask = nondetection.mask,
             mask.use.tcga = mask.use.tcga, pval.threshold = pval.threshold)))
     }
-        
+    
     stopifnot(is(sset, "SigSet"))
 
     ## optionally summing channels protects
@@ -607,6 +610,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #' @param controls optional control probe manifest file
 #' @param verbose     be verbose?  (FALSE)
 #' @param platform EPIC, HM450 and HM27 etc.
+#' @param readNBeads whether to read number of beads
 #' 
 #' @return a \code{SigSet}
 #' 
@@ -615,8 +619,8 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
 readIDATpair <- function(
-    prefix.path, platform = '',
-    manifest = NULL, controls = NULL, verbose=FALSE) {
+    prefix.path, platform = '', manifest = NULL,
+    controls = NULL, readNBeads = FALSE, verbose=FALSE) {
 
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
         grn.name <- paste0(prefix.path, '_Grn.idat')
@@ -647,7 +651,7 @@ readIDATpair <- function(
         controls <- df_address$controls
     }
 
-    detectionZero(chipAddressToSignal(dm, manifest, controls))
+    detectionZero(chipAddressToSignal(dm, manifest, controls, readNBeads))
 }
 
 #' Identify IDATs from a directory
@@ -723,8 +727,10 @@ searchIDATprefixes <- function(dir.name,
 #' but might be necessary for some preprocessing methods that depends on these
 #' control probes. This is left for backward compatibility. Updated version
 #' should have controls consolidated into manifest.
+#' @param readNBeads whether to read bead signal
 #' @return a SigSet, indexed by probe ID address
-chipAddressToSignal <- function(dm, manifest, controls = NULL) {
+chipAddressToSignal <- function(
+    dm, manifest, controls = NULL, readNBeads = FALSE) {
 
     platform <- attr(dm, 'platform')
 
@@ -742,7 +748,7 @@ chipAddressToSignal <- function(dm, manifest, controls = NULL) {
     IG(sset) <- as.matrix(data.frame(
         M = ImG2ch[,'G'], U = IuG2ch[,'G'],
         row.names = IordG$Probe_ID))
-    if ('NBeads' %in% colnames(dm)) {
+    if (readNBeads && 'NBeads' %in% colnames(dm)) {
         sset@NBeadsIG <- as.matrix(data.frame(
             M = ImG2ch[,'NBeads'], U = IuG2ch[,'NBeads'],
             row.names = IordG$Probe_ID))
@@ -760,7 +766,7 @@ chipAddressToSignal <- function(dm, manifest, controls = NULL) {
     IR(sset) <- as.matrix(data.frame(
         M = ImR2ch[,'R'], U = IuR2ch[,'R'],
         row.names = IordR$Probe_ID))
-    if ('NBeads' %in% colnames(dm)) {
+    if (readNBeads && 'NBeads' %in% colnames(dm)) {
         sset@NBeadsIR <- as.matrix(data.frame(
             M = ImR2ch[,'NBeads'], U = IuR2ch[,'NBeads'],
             row.names = IordR$Probe_ID))
@@ -773,7 +779,7 @@ chipAddressToSignal <- function(dm, manifest, controls = NULL) {
     colnames(signal.II) <- c('M', 'U')
     rownames(signal.II) <- IIord$Probe_ID
     II(sset) <- signal.II
-    if ('NBeads' %in% colnames(dm)) {
+    if (readNBeads && 'NBeads' %in% colnames(dm)) {
         sset@NBeadsII <- dm[match(IIord$U, rownames(dm)),'NBeads']
         names(sset@NBeadsII) <- IIord$Probe_ID
     }
