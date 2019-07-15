@@ -139,7 +139,7 @@ dyeBiasCorrTypeINorm <- function(sset) {
         insupp    <- data <= maxIR & data >= minIR & (!is.na(data))
         oversupp  <- data > maxIR & (!is.na(data))
         undersupp <- data < minIR & (!is.na(data))
-        data[insupp]    <- approx(x=IR1, y=IRmid, xout=data[insupp])$y
+        data[insupp] <- approx(x=IR1, y=IRmid, xout=data[insupp], ties=mean)$y
         data[oversupp]  <- data[oversupp] - maxIR + maxIRmid
         data[undersupp] <- minIRmid/ minIR * data[undersupp]
         data
@@ -157,7 +157,7 @@ dyeBiasCorrTypeINorm <- function(sset) {
         insupp    <- data <= maxIG & data >= minIG & (!is.na(data))
         oversupp  <- data > maxIG & (!is.na(data))
         undersupp <- data < minIG & (!is.na(data))
-        data[insupp]    <- approx(x=IG1, y=IGmid, xout=data[insupp])$y
+        data[insupp] <- approx(x=IG1, y=IGmid, xout=data[insupp], ties=mean)$y
         data[oversupp]  <- data[oversupp] - maxIG + maxIGmid
         data[undersupp] <- minIGmid/ minIG * data[undersupp]
         data
@@ -204,7 +204,7 @@ dyeBiasCorrTypeINormG2R <- function(sset) {
     IG2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(
         matrix(IG1), as.vector(IR(sset)))))
     
-    fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx)$y
+    fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx, ties=mean)$y
 
     ## fit type II
     insupp <- II(sset)[,'M'] <= maxIG & II(sset)[,'M'] >= minIG
@@ -259,7 +259,7 @@ dyeBiasCorrTypeINormR2G <- function(sset) {
     IR1 <- sort(as.numeric(IR(sset)))
     IR2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(
         matrix(IR1), as.vector(IG(sset)))))
-    fitfun <- function(xx) approx(x=IR1, y=IR2, xout=xx)$y
+    fitfun <- function(xx) approx(x=IR1, y=IR2, xout=xx, ties=mean)$y
 
     ## fit type II
     insupp <- II(sset)[,'U'] <= maxIR & II(sset)[,'U'] >= minIR
@@ -310,7 +310,7 @@ dyeBiasCorrTypeINormMpU <- function(sset) {
     IG1 <- sort(as.numeric(rowSums(IG(sset))))
     IG2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(
         matrix(IG1), as.vector(rowSums(IR(sset))))))
-    fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx)$y
+    fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx, ties=mean)$y
 
     ## fit type II
     insupp <- II(sset)[,'M'] <= maxIG & II(sset)[,'M'] >= minIG

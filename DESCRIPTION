@@ -9,7 +9,7 @@ Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "Hui.Shen@vai.org"),
              person("Timothy", "Triche", role = "ctb"),
              person("Bret", "Barnes", role = "ctb"))
-Depends: R (>= 3.5),
+Depends: R (>= 3.6),
           sesameData,
           methods
 License: Artistic-2.0
