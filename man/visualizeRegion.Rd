@@ -8,7 +8,8 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = c("EPIC",
   "HM450"), refversion = c("hg38", "hg19"), sample.name.fontsize = 10,
   heat.height = NULL, draw = TRUE, show.sampleNames = TRUE,
   show.samples.n = NULL, show.probeNames = TRUE,
-  cluster.samples = FALSE, na.rm = FALSE, dmin = 0, dmax = 1)
+  cluster.samples = FALSE, nprobes.max = 1000, na.rm = FALSE,
+  dmin = 0, dmax = 1)
 }
 \arguments{
 \item{chrm}{chromosome}
@@ -36,6 +37,8 @@ visualizeRegion(chrm, plt.beg, plt.end, betas, platform = c("EPIC",
 \item{show.probeNames}{whether to show probe names}
 
 \item{cluster.samples}{whether to cluster samples}
+
+\item{nprobes.max}{maximum number of probes to plot}
 
 \item{na.rm}{remove probes with all NA.}
 

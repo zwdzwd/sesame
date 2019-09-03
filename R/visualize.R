@@ -191,7 +191,7 @@ getProbesByTSS <- function(
 
     target.txns <- txns[gene2txn[[geneName]]]
 
-    tss <- GenomicRanges::reduce(unlist(GenomicRanges::GenomicRangesList(
+    tss <- GenomicRanges::reduce(unlist(GenomicRanges::GRangesList(
         lapply(target.txns, function(txn) {
             tss1 <- ifelse(
                 as.vector(GenomicRanges::strand(txn))[1] == '-',
@@ -239,6 +239,7 @@ getProbesByTSS <- function(
 #' @param sample.name.fontsize sample name font size
 #' @param dmin data min
 #' @param dmax data max
+#' @param nprobes.max maximum number of probes to plot
 #' @param na.rm remove probes with all NA.
 #' @return graphics or a matrix containing the captured beta values
 #' @import grid
@@ -258,6 +259,7 @@ visualizeRegion <- function(
     show.samples.n = NULL,
     show.probeNames = TRUE,
     cluster.samples = FALSE,
+    nprobes.max = 1000,
     na.rm = FALSE, dmin = 0, dmax = 1) {
 
     platform <- match.arg(platform)
@@ -293,7 +295,7 @@ visualizeRegion <- function(
         stop("No probe overlap region ", sprintf(
             '%s:%d-%d', chrm, plt.beg, plt.end))
 
-    if (nprobes > 1000) {
+    if (nprobes > nprobes.max) {
         stop(sprintf('Too many probes (%d). Consider smaller region?', nprobes))
     }
 
