@@ -387,7 +387,7 @@ inferTypeIChannel <- function(
     if (!switch_failed)
         red_idx <- ifelse(big_idx, red_idx, red_idx0)
     
-    sset@IRR <- red_idx[1:n_red]
+    sset@IRR <- red_idx[seq_len(n_red)]
     sset@IGG <- !red_idx[(n_red+1):length(red_idx)]
     
     if (summary) {

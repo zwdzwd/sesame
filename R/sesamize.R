@@ -10,15 +10,6 @@
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
 #' 
-#' @examples
-#' # Takes about two minutes to process 48 samples on my 48-core desktop
-#'
-#' \dontrun{
-#'     if (require(FlowSorted.CordBloodNorway.450k)) {
-#'         sesamize(
-#'             FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
-#'     }
-#' }
 #' @export 
 sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam()) { 
     stopifnot(is(rgSet, "RGChannelSet"))
@@ -60,6 +51,15 @@ sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam()) {
         SummarizedExperiment::colData(rgSet)
     return(ratioSet[kept, ])
 }
+
+## @examples
+## Takes about two minutes to process 48 samples on my 48-core desktop
+## \dontrun{
+##   if (require(FlowSorted.CordBloodNorway.450k)) {
+##       sesamize(
+##         FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
+##     }
+## }
 
 platformMinfiToSm <- function(platform) {
     plf <- sub("HMEPIC", "EPIC", 
