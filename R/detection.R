@@ -10,7 +10,7 @@
 #' @export
 detectionZero <- function(sset) {
     nms <- probeNames(sset)
-    pval(sset) <- setNames(rep(0, times = length(nms)), nms)
+    pval(sset)[["Zero"]] <- setNames(rep(0, times = length(nms)), nms)
     sset
 }
 
@@ -25,7 +25,7 @@ detectionZero <- function(sset) {
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' sset <- detectionPnegEcdf(sset)
-#' 
+#' @import methods
 #' @export
 detectionPnegEcdf <- function(sset) {
 
@@ -43,10 +43,9 @@ detectionPnegEcdf <- function(sset) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
 
-    pval <- c(pIR,pIG,pII)
-    pval(sset) <- pval[order(names(pval))]
+    ## note: no sorting here
+    pval(sset)[["PnegEcdf"]] <- c(pIR,pIG,pII)
     sset
-    
 }
 
 #' Detection P-value based on ECDF of out-of-band signal
@@ -80,8 +79,8 @@ detectionPoobEcdf <- function(sset) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
 
-    pval <- c(pIR,pIG,pII)
-    pval(sset) <- pval[order(names(pval))]
+    ## should have PoobEcdf aliased
+    pval(sset)[["pOOBAH"]] <- c(pIR,pIG,pII)
     sset
 }
 
@@ -121,7 +120,9 @@ detectionPnegNorm <- function(sset) {
     sdG <- sd(negctls$G)
     muR <- median(negctls$R)
     sdR <- sd(negctls$R)
-    detectionPfixedNorm(sset, muG, sdG, muR, sdR)
+    sset <- detectionPfixedNorm(sset, muG, sdG, muR, sdR)
+    pval(sset)[['PnegNorm']] <- pval(sset)[['PfixNorm']]
+    sset
 }
 
 #' Detection P-value based on normal fitting with gived parameters
@@ -162,8 +163,7 @@ detectionPfixedNorm <- function(
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    pval <- c(pIR,pIG,pII)
-    pval(sset) <- pval[order(names(pval))]
+    pval(sset)[["PfixedNorm"]] <- c(pIR,pIG,pII)
     sset
 }
 
@@ -196,8 +196,7 @@ detectionPnegNormGS <- function(sset) {
     names(pIR) <- rownames(IR(sset))
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
-    pval <- c(pIR,pIG,pII)
-    pval(sset) <- pval[order(names(pval))]
+    pval(sset)[['PnegNormGS']] <- c(pIR,pIG,pII)
     sset
     
 }
@@ -234,8 +233,7 @@ detectionPnegNormTotal <- function(sset) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    pval <- c(pIR,pIG,pII)
-    pval(sset) <- pval[order(names(pval))]
+    pval(sset)[['PnegNormTotal']] <- c(pIR,pIG,pII)
     sset
 }
 

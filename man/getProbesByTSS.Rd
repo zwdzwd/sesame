@@ -4,8 +4,13 @@
 \alias{getProbesByTSS}
 \title{Get Probes by Gene Transcription Start Site (TSS)}
 \usage{
-getProbesByTSS(geneName, upstream = 1500, dwstream = 1500,
-  platform = c("EPIC", "HM450"), refversion = c("hg38", "hg19"))
+getProbesByTSS(
+  geneName,
+  upstream = 1500,
+  dwstream = 1500,
+  platform = c("EPIC", "HM450"),
+  refversion = c("hg38", "hg19")
+)
 }
 \arguments{
 \item{geneName}{gene name}

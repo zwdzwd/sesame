@@ -37,6 +37,8 @@
 #'
 #' @slot IG intensity table for type I probes in green channel
 #' @slot IR intensity table for type I probes in red channel
+#' @slot IGG Type-I green that is inferred to be green
+#' @slot IRR Type-I red that is inferred to be red
 #' @slot II intensity table for type II probes
 #' @slot oobG out-of-band probes in green channel
 #' @slot oobR out-of-band probes in red channel
@@ -62,11 +64,14 @@ setClass(
         II = 'matrix',
         oobG = 'matrix',
         oobR = 'matrix',
+        IGG = 'logical',
+        IRR = 'logical',
         NBeadsIG = 'matrix',  # matrix of integers, two columns M and U
         NBeadsIR = 'matrix',  # matrix of integers, two columns M and U
+        ## TODO, type-II number of beads is not all the same between channels
         NBeadsII = 'integer', # for Infinium II M and U have same num. beads
         ctl = 'data.frame',
-        pval = 'numeric',
+        pval = 'list',
         platform = 'character'))
 
 #' Constructor method of SigSet class.
@@ -84,6 +89,7 @@ setMethod(
     "initialize", "SigSet",
     function(.Object, platform, ...)  {
         .Object <- callNextMethod()
+        .Object@pval <- list()
         .Object@platform <- platform # match.arg(platform)
         .Object
     })
@@ -98,6 +104,7 @@ setMethod(
 #' @rdname SigSet-class
 #' @examples
 #' SigSet('EPIC')
+#' @import methods
 #' @export
 SigSet <- function(...) new("SigSet", ...)
 
@@ -127,8 +134,18 @@ setMethod(
             "...\n - @oobR probes:", nrow(object@oobR),
             '-', as.numeric(head(object@oobR, n=3)),
             "...\n - @ctl probes:", nrow(object@ctl),
-            "...\n - @pval:", length(object@pval),
-            "-", as.numeric(head(object@pval, n=3)), "...\n")
+            "...\n")
+        if (is(object@pval, "numeric")) { # backward-compatible
+            cat(" - @pval:", length(object@pval),
+                "-", as.numeric(head(object@pval, n=3)), "...\n")
+        } else {
+            if(length(object@pval) > 0) {
+                for (nm in names(object@pval)) {
+                    cat(" - @pval ", nm, ":", length(object@pval[[nm]]),
+                        "-", as.numeric(head(object@pval[[nm]], n=3)), "...\n")
+                }
+            }
+        }
     })
 
 #' Select a subset of probes
@@ -332,6 +349,7 @@ inferTypeIChannel <- function(
     
     red_channel <- rbind(IR(sset), oobR(sset))
     grn_channel <- rbind(oobG(sset), IG(sset))
+    n_red <- nrow(IR(sset))
     red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sset)) # old red index
 
     ## If there are NA in the probe intensity, exclude these probes.
@@ -365,6 +383,12 @@ inferTypeIChannel <- function(
         G2R = sum(!red_idx0 & red_idx & big_idx),
         FailedR = sum(red_idx0 & !big_idx),
         FailedG = sum(!red_idx0 & !big_idx))
+
+    if (!switch_failed)
+        red_idx <- ifelse(big_idx, red_idx, red_idx0)
+    
+    sset@IRR <- red_idx[1:n_red]
+    sset@IGG <- !red_idx[n_red+1:length(red_idx)]
     
     if (summary) {
         return(smry)
@@ -381,25 +405,25 @@ inferTypeIChannel <- function(
             'Grn Failed: ', smry['FailedG'])
     }
 
-    if (switch_failed) {
-        IR(sset) <- red_channel[red_idx,]
-        oobG(sset) <- grn_channel[red_idx,]
-        IG(sset) <- grn_channel[!red_idx,]
-        oobR(sset) <- red_channel[!red_idx,]
-    } else {
-        IR(sset) <- rbind(
-            red_channel[red_idx & big_idx,],
-            red_channel[red_idx0 & !big_idx,])
-        oobG(sset) <- rbind(
-            grn_channel[red_idx & big_idx,],
-            grn_channel[red_idx0 & !big_idx,])
-        IG(sset) <- rbind(
-            grn_channel[!red_idx & big_idx,],
-            grn_channel[!red_idx0 & !big_idx,])
-        oobR(sset) <- rbind(
-            red_channel[!red_idx & big_idx,],
-            red_channel[!red_idx0 & !big_idx,])
-    }
+    ## if (switch_failed) {
+    ##     IR(sset) <- red_channel[red_idx,]
+    ##     oobG(sset) <- grn_channel[red_idx,]
+    ##     IG(sset) <- grn_channel[!red_idx,]
+    ##     oobR(sset) <- red_channel[!red_idx,]
+    ## } else {
+    ##     IR(sset) <- rbind(
+    ##         red_channel[red_idx & big_idx,],
+    ##         red_channel[red_idx0 & !big_idx,])
+    ##     oobG(sset) <- rbind(
+    ##         grn_channel[red_idx & big_idx,],
+    ##         grn_channel[red_idx0 & !big_idx,])
+    ##     IG(sset) <- rbind(
+    ##         grn_channel[!red_idx & big_idx,],
+    ##         grn_channel[!red_idx0 & !big_idx,])
+    ##     oobR(sset) <- rbind(
+    ##         red_channel[!red_idx & big_idx,],
+    ##         red_channel[!red_idx0 & !big_idx,])
+    ## }
     sset
 }
 
@@ -470,6 +494,42 @@ inferEthnicity <- function(sset) {
     as.character(predict(ethnicity.model, af))
 }
 
+## Type-I Grn after correction
+IG2 <- function(sset) {
+    if (.hasSlot(sset, 'IGG')) {
+        rbind(sset@IG[sset@IGG,], sset@oobG[!sset@IRR,])
+    } else {
+        IG(sset)
+    }
+}
+
+## Type-I Red after correction
+IR2 <- function(sset) {
+    if (.hasSlot(sset, 'IGG')) {
+        rbind(sset@IR[sset@IRR,], sset@oobR[!sset@IGG,])
+    } else {
+        IR(sset)
+    }
+}
+
+## OOB Grn after correction
+oobG2 <- function(sset) {
+    if (.hasSlot(sset, 'IGG')) {
+        rbind(sset@oobG[sset@IRR,], sset@IG[!sset@IGG,])
+    } else { # backward-compatible
+        oobG(sset)
+    }
+}
+
+## OOB Red after correction
+oobR2 <- function(sset) {
+    if (.hasSlot(sset, 'IGG')) {
+        rbind(sset@oobR[sset@IGG,], sset@IR[!sset@IRR,])
+    } else { # backward-compatible
+        oobR(sset)
+    }
+}
+
 #' Get beta Values
 #'
 #' sum.typeI is used for rescuing beta values on
@@ -481,6 +541,7 @@ inferEthnicity <- function(sset) {
 #' @param quality.mask whether to mask low quality probes
 #' @param nondetection.mask whether to mask nondetection
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
+#' @param pval.method method for detection threshold, like pOOBAH, PnegEcdf
 #' @param pval.threshold p-value threshold for nondetection mask
 #' @param sum.TypeI whether to sum type I channels
 #' @return a numeric vector, beta values
@@ -494,6 +555,7 @@ getBetas <- function(
     nondetection.mask = TRUE,
     mask.use.tcga = FALSE,
     pval.threshold = 0.05,
+    pval.method = NULL,
     sum.TypeI = FALSE) {
     
     if (is(sset, "SigSetList")) {
@@ -507,11 +569,11 @@ getBetas <- function(
 
     ## optionally summing channels protects
     ## against channel misspecification
-    IGs <- IG(sset)
-    IRs <- IR(sset)
+    IGs <- IG2(sset)
+    IRs <- IR2(sset)
     if (sum.TypeI) {
-        IGs <- IGs + oobR(sset)
-        IRs <- IRs + oobG(sset)
+        IGs <- IGs + oobR2(sset)
+        IRs <- IRs + oobG2(sset)
     }
 
     betas1 <- pmax(IGs[,'M'],1) / pmax(IGs[,'M']+IGs[,'U'],2)
@@ -519,8 +581,14 @@ getBetas <- function(
     betas3 <- pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2)
     betas <- c(betas1, betas2, betas3)
     if (nondetection.mask) {
-        pval(sset) <- pval(sset)[match(names(betas), names(pval(sset)))]
-        betas[pval(sset) > pval.threshold] <- NA
+        stopifnot(length(pval(sset)) > 0)
+        if (is.null(pval.method)) {
+            pval.method <- names(pval(sset))[1]
+        }
+        stopifnot(pval.method %in% names(pval(sset)))
+        pv <- pval(sset)[[pval.method]]
+        pv <- pv[match(names(betas), names(pv))]
+        betas[pv > pval.threshold] <- NA
     }
 
     ## currently quality masking only supports three platforms
@@ -834,88 +902,4 @@ bisConversionControl <- function(sset, use.median=FALSE) {
     }
 }
 
-#### Following are obsolete and exist for backward-compatibility #####
-
-#' SignalSet class
-#'
-#' @docType class
-#' @importFrom R6 R6Class
-#' @importFrom stats ecdf
-#' @importFrom utils data
-#' @importFrom utils download.file
-#' @export
-#' @return Object of class \code{SignalSet}
-#' @format An \code{\link{R6Class}} object.
-#' @examples
-#' SignalSet$new("EPIC")
-#' @field platform platform name, supports "EPIC", "HM450" and "HM27"
-#' @field IG intensity table for type I probes in green channel
-#' @field IR intensity table for type I probes in red channel
-#' @field II intensity table for type II probes
-#' @field oobG out-of-band probes in green channel
-#' @field oobR out-of-band probes in red channel
-#' @field ctl all the control probe intensities
-#' @field pval named numeric vector of p-values
-#' @field mask probe mask
-#' \describe{
-#'   \item{Documentation}{For full documentation of each method go to }
-#'   \item{\code{new(platform)}}{Create a SignalSet in the specified platform}
-#'   \item{\code{detectPValue()}}{Detect P-value for each probe}
-#'   \item{\code{toM()}}{Convert to M values}
-#'   \item{\code{totalIntensities()}}{Total intensity on each probe}
-#' }
-SignalSet <- R6Class(
-    'SignalSet',
-    portable = FALSE,
-    public = list(
-        platform = 'EPIC',
-        IG = NULL,
-        IR = NULL,
-        II = NULL,
-        oobG = NULL,
-        oobR = NULL,
-        ctl = NULL,
-        pval = NULL,
-
-        initialize = function(x) self$platform <- x,
-
-        toM = function() {
-            m1 <- log2(pmax(IG[,'M'],1) / pmax(IG[,'U']))
-            m2 <- log2(pmax(IR[,'M'],1) / pmax(IR[,'U']))
-            m3 <- log2(pmax(II[,'M'],1) / pmax(II[,'U']))
-            m <- c(m1, m2, m3)
-            m[pval[names(m)]>0.05] <- NA
-            m[order(names(m))]
-        },
-
-        totalIntensities = function() {
-            rowSums(rbind(IG, IR, II))
-        }
-    )
-)
-
-#' sesame R6 to S4
-#'
-#' SignalSet-SigSet conversion
-#'
-#' @param sset signalset in R6
-#' @return signalset in S4
-#' @import methods
-#' @examples
-#'
-#' sset <- SignalSet$new('EPIC')
-#' sset$IG <- matrix(1:4, nrow=2)
-#' sset$IR <- matrix(1:4, nrow=2)
-#' sset$II <- matrix(1:4, nrow=2)
-#' sset$oobG <- matrix(1:4, nrow=2)
-#' sset$oobR <- matrix(1:4, nrow=2)
-#' sset$ctl <- data.frame(G=1:2,R=3:4)
-#' sset$pval <- rep(0,2)
-#'
-#' signalR6toS4(sset)
-#' @export
-signalR6toS4 <- function(sset) {
-    new('SigSet', IG=sset$IG, IR=sset$IR, II=sset$II,
-        oobG=sset$oobG, oobR=sset$oobR, ctl=sset$ctl,
-        pval=sset$pval, platform=toupper(sset$platform))
-}
+## R6 utility functions deleted after 1.5.0

@@ -4,8 +4,15 @@
 \alias{getBetas}
 \title{Get beta Values}
 \usage{
-getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
-  mask.use.tcga = FALSE, pval.threshold = 0.05, sum.TypeI = FALSE)
+getBetas(
+  sset,
+  quality.mask = TRUE,
+  nondetection.mask = TRUE,
+  mask.use.tcga = FALSE,
+  pval.threshold = 0.05,
+  pval.method = NULL,
+  sum.TypeI = FALSE
+)
 }
 \arguments{
 \item{sset}{\code{SigSet}}
@@ -17,6 +24,8 @@ getBetas(sset, quality.mask = TRUE, nondetection.mask = TRUE,
 \item{mask.use.tcga}{whether to use TCGA masking, only applies to HM450}
 
 \item{pval.threshold}{p-value threshold for nondetection mask}
+
+\item{pval.method}{method for detection threshold, like pOOBAH, PnegEcdf}
 
 \item{sum.TypeI}{whether to sum type I channels}
 }

@@ -4,8 +4,14 @@
 \alias{DML}
 \title{Test differential methylation on each locus}
 \usage{
-DML(betas, sample.data, formula, se.lb = 0.06, balanced = FALSE,
-  cf.test = NULL)
+DML(
+  betas,
+  sample.data,
+  formula,
+  se.lb = 0.06,
+  balanced = FALSE,
+  cf.test = NULL
+)
 }
 \arguments{
 \item{betas}{beta values}

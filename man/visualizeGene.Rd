@@ -4,9 +4,15 @@
 \alias{visualizeGene}
 \title{Visualize Gene}
 \usage{
-visualizeGene(geneName, betas, platform = c("EPIC", "HM450"),
-  upstream = 2000, dwstream = 2000, refversion = c("hg38", "hg19"),
-  ...)
+visualizeGene(
+  geneName,
+  betas,
+  platform = c("EPIC", "HM450"),
+  upstream = 2000,
+  dwstream = 2000,
+  refversion = c("hg38", "hg19"),
+  ...
+)
 }
 \arguments{
 \item{geneName}{gene name}

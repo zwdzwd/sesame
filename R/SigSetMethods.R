@@ -49,7 +49,7 @@ setGeneric("pval<-", function(x, value) {
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' df <- pval(sset)
 #' df[1] <- 0.01
-#' pval(sset) <- df 
+#' pval(sset) <- list(pOOBAH=df)
 setReplaceMethod("pval", "SigSet", function(x, value){ x@pval <- value; x})
 
 #' pval getter generic

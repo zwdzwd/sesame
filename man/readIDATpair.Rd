@@ -4,8 +4,14 @@
 \alias{readIDATpair}
 \title{Import a pair of IDATs from one sample}
 \usage{
-readIDATpair(prefix.path, platform = "", manifest = NULL,
-  controls = NULL, readNBeads = FALSE, verbose = FALSE)
+readIDATpair(
+  prefix.path,
+  platform = "",
+  manifest = NULL,
+  controls = NULL,
+  readNBeads = FALSE,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{prefix.path}{sample prefix without _Grn.idat and _Red.idat}

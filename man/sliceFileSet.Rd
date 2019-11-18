@@ -4,8 +4,7 @@
 \alias{sliceFileSet}
 \title{Slice a fileSet with samples and probes}
 \usage{
-sliceFileSet(fset, samples = fset$samples, probes = fset$probes,
-  memmax = 10^5)
+sliceFileSet(fset, samples = fset$samples, probes = fset$probes, memmax = 10^5)
 }
 \arguments{
 \item{fset}{a sesame::fileSet, as obtained via readFileSet}

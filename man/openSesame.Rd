@@ -4,8 +4,14 @@
 \alias{openSesame}
 \title{The openSesame pipeline}
 \usage{
-openSesame(x, platform = "", manifest = NULL, what = "beta",
-  BPPARAM = SerialParam(), ...)
+openSesame(
+  x,
+  platform = "",
+  manifest = NULL,
+  what = "beta",
+  BPPARAM = SerialParam(),
+  ...
+)
 }
 \arguments{
 \item{x}{SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 

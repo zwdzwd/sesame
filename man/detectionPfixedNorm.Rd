@@ -4,8 +4,7 @@
 \alias{detectionPfixedNorm}
 \title{Detection P-value based on normal fitting with gived parameters}
 \usage{
-detectionPfixedNorm(sset, muG = 500, sdG = 200, muR = 500,
-  sdR = 200)
+detectionPfixedNorm(sset, muG = 500, sdG = 200, muR = 500, sdR = 200)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}

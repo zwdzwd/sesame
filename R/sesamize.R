@@ -214,7 +214,7 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
         controls <- df_address$controls
     }
 
-    chipAddressToSignal(dm, manifest, controls)
+    pOOBAH(chipAddressToSignal(dm, manifest, controls))
 }
 
 #' Convert RGChannelSet (minfi) to a list of SigSet (SeSAMe)

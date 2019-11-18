@@ -4,8 +4,7 @@
 \alias{parseGEOSignalABFile}
 \title{Parse GEO signal-A/B File into a SigSet List}
 \usage{
-parseGEOSignalABFile(path, platform = "HM450", drop = TRUE,
-  parallel = TRUE)
+parseGEOSignalABFile(path, platform = "HM450", drop = TRUE, parallel = TRUE)
 }
 \arguments{
 \item{path}{path to Signal-A/B file downlaoded from GEO. 

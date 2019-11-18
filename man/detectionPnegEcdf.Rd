@@ -20,5 +20,4 @@ using negative control probes' empirical distribution and returns a new
 \examples{
 sset <- makeExampleSeSAMeDataSet()
 sset <- detectionPnegEcdf(sset)
-
 }

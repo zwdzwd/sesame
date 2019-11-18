@@ -44,6 +44,10 @@ turned on.
 
 \item{\code{IR}}{intensity table for type I probes in red channel}
 
+\item{\code{IGG}}{Type-I green that is inferred to be green}
+
+\item{\code{IRR}}{Type-I red that is inferred to be red}
+
 \item{\code{II}}{intensity table for type II probes}
 
 \item{\code{oobG}}{out-of-band probes in green channel}
