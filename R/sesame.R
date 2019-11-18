@@ -388,7 +388,7 @@ inferTypeIChannel <- function(
         red_idx <- ifelse(big_idx, red_idx, red_idx0)
     
     sset@IRR <- red_idx[1:n_red]
-    sset@IGG <- !red_idx[n_red+1:length(red_idx)]
+    sset@IGG <- !red_idx[(n_red+1):length(red_idx)]
     
     if (summary) {
         return(smry)
@@ -498,7 +498,7 @@ inferEthnicity <- function(sset) {
 
 ## Type-I Grn after correction
 IG2 <- function(sset) {
-    if (.hasSlot(sset, 'IGG')) {
+    if (.hasSlot(sset, 'IGG') && length(sset@IGG) > 0) {
         rbind(sset@IG[sset@IGG,], sset@oobG[!sset@IRR,])
     } else {
         IG(sset)
@@ -507,7 +507,7 @@ IG2 <- function(sset) {
 
 ## Type-I Red after correction
 IR2 <- function(sset) {
-    if (.hasSlot(sset, 'IGG')) {
+    if (.hasSlot(sset, 'IGG') && length(sset@IGG) > 0) {
         rbind(sset@IR[sset@IRR,], sset@oobR[!sset@IGG,])
     } else {
         IR(sset)
@@ -516,7 +516,7 @@ IR2 <- function(sset) {
 
 ## OOB Grn after correction
 oobG2 <- function(sset) {
-    if (.hasSlot(sset, 'IGG')) {
+    if (.hasSlot(sset, 'IGG') && length(sset@IGG) > 0) {
         rbind(sset@oobG[sset@IRR,], sset@IG[!sset@IGG,])
     } else { # backward-compatible
         oobG(sset)
@@ -525,7 +525,7 @@ oobG2 <- function(sset) {
 
 ## OOB Red after correction
 oobR2 <- function(sset) {
-    if (.hasSlot(sset, 'IGG')) {
+    if (.hasSlot(sset, 'IGG') && length(sset@IGG) > 0) {
         rbind(sset@oobR[sset@IGG,], sset@IR[!sset@IRR,])
     } else { # backward-compatible
         oobR(sset)
