@@ -8,6 +8,7 @@ getBetas(
   sset,
   quality.mask = TRUE,
   nondetection.mask = TRUE,
+  correct.switch = TRUE,
   mask.use.tcga = FALSE,
   pval.threshold = 0.05,
   pval.method = NULL,
@@ -20,6 +21,8 @@ getBetas(
 \item{quality.mask}{whether to mask low quality probes}
 
 \item{nondetection.mask}{whether to mask nondetection}
+
+\item{correct.switch}{whether to correct switch}
 
 \item{mask.use.tcga}{whether to use TCGA masking, only applies to HM450}
 

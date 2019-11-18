@@ -486,7 +486,9 @@ inferEthnicity <- function(sset) {
     ethnicity.model <- ethnicity.inference$model
     af <- c(
         getBetas(
-            subsetSignal(sset, rsprobes), quality.mask = FALSE,
+            subsetSignal(sset, rsprobes),
+            quality.mask = FALSE,
+            correct.switch = FALSE,
             nondetection.mask=FALSE),
         getAFTypeIbySumAlleles(
             subsetSignal(sset, ccsprobes)))
@@ -540,6 +542,7 @@ oobR2 <- function(sset) {
 #' @param sset \code{SigSet}
 #' @param quality.mask whether to mask low quality probes
 #' @param nondetection.mask whether to mask nondetection
+#' @param correct.switch whether to correct switch
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @param pval.method method for detection threshold, like pOOBAH, PnegEcdf
 #' @param pval.threshold p-value threshold for nondetection mask
@@ -553,6 +556,7 @@ getBetas <- function(
     sset,
     quality.mask = TRUE,
     nondetection.mask = TRUE,
+    correct.switch = TRUE,
     mask.use.tcga = FALSE,
     pval.threshold = 0.05,
     pval.method = NULL,
@@ -569,11 +573,20 @@ getBetas <- function(
 
     ## optionally summing channels protects
     ## against channel misspecification
-    IGs <- IG2(sset)
-    IRs <- IR2(sset)
-    if (sum.TypeI) {
-        IGs <- IGs + oobR2(sset)
-        IRs <- IRs + oobG2(sset)
+    if (correct.switch) {
+        IGs <- IG2(sset)
+        IRs <- IR2(sset)
+        if (sum.TypeI) {
+            IGs <- IGs + oobR2(sset)
+            IRs <- IRs + oobG2(sset)
+        }
+    } else {
+        IGs <- IG(sset)
+        IRs <- IR(sset)
+        if (sum.TypeI) {
+            IGs <- IGs + oobR(sset)
+            IRs <- IRs + oobG(sset)
+        }
     }
 
     betas1 <- pmax(IGs[,'M'],1) / pmax(IGs[,'M']+IGs[,'U'],2)
