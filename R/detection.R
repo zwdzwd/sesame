@@ -3,14 +3,20 @@
 #'
 #' @param sset a \code{SigSet}
 #' @return detection p-value set to all zero
+#' @param force force rerun even if result already exists
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' sset <- detectionZero(sset)
 #' 
 #' @export
-detectionZero <- function(sset) {
+detectionZero <- function(sset, force=FALSE) {
+
+    stopifnot(is(sset, "SigSet"))
+    method <- "Zero"
+    if (!force && method %in% names(pval(sset))) return(sset)
+    
     nms <- probeNames(sset)
-    pval(sset)[["Zero"]] <- setNames(rep(0, times = length(nms)), nms)
+    pval(sset)[[method]] <- setNames(rep(0, times = length(nms)), nms)
     sset
 }
 
@@ -21,15 +27,19 @@ detectionZero <- function(sset) {
 #' \code{SigSet} with an updated pval slot.
 #'
 #' @param sset a \code{SigSet}
+#' @param force force rerun even if result already exists
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' sset <- detectionPnegEcdf(sset)
 #' @import methods
 #' @export
-detectionPnegEcdf <- function(sset) {
+detectionPnegEcdf <- function(sset, force=FALSE) {
 
     stopifnot(is(sset, "SigSet"))
+    method <- "PnegEcdf"
+    if (!force && method %in% names(pval(sset))) return(sset)
+
     negctls <- negControls(sset)
     funcG <- ecdf(negctls$G)
     funcR <- ecdf(negctls$R)
@@ -44,7 +54,7 @@ detectionPnegEcdf <- function(sset) {
     names(pII) <- rownames(II(sset))
 
     ## note: no sorting here
-    pval(sset)[["PnegEcdf"]] <- c(pIR,pIG,pII)
+    pval(sset)[[method]] <- c(pIR,pIG,pII)
     sset
 }
 
@@ -58,15 +68,19 @@ detectionPnegEcdf <- function(sset) {
 #'
 #' @name detectionPoobEcdf
 #' @param sset a \code{SigSet}
+#' @param force force rerun even if result already exists
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' sset <- detectionPoobEcdf(sset)
 #' 
 #' @export
-detectionPoobEcdf <- function(sset) {
+detectionPoobEcdf <- function(sset, force=FALSE) {
 
     stopifnot(is(sset, "SigSet"))
+    method <- "pOOBAH"
+    if (!force && method %in% names(pval(sset))) return(sset)
+
     funcG <- ecdf(oobG(sset))
     funcR <- ecdf(oobR(sset))
 
@@ -80,7 +94,7 @@ detectionPoobEcdf <- function(sset) {
     names(pII) <- rownames(II(sset))
 
     ## should have PoobEcdf aliased
-    pval(sset)[["pOOBAH"]] <- c(pIR,pIG,pII)
+    pval(sset)[[method]] <- c(pIR,pIG,pII)
     sset
 }
 
@@ -106,22 +120,26 @@ pOOBAH <- detectionPoobEcdf
 #' minimum of the p-value of the two alleles (color depends on probe design).
 #'
 #' @param sset a \code{SigSet}
+#' @param force force rerun even if result already exists
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' sset <- detectionPnegNorm(sset)
 #' 
 #' @export
-detectionPnegNorm <- function(sset) {
-    
+detectionPnegNorm <- function(sset, force=FALSE) {
+
     stopifnot(is(sset, "SigSet"))
+    method <- "PnegNorm"
+    if (!force && method %in% names(pval(sset))) return(sset)
+    
     negctls <- negControls(sset)
     muG <- median(negctls$G)
     sdG <- sd(negctls$G)
     muR <- median(negctls$R)
     sdR <- sd(negctls$R)
     sset <- detectionPfixedNorm(sset, muG, sdG, muR, sdR)
-    pval(sset)[['PnegNorm']] <- pval(sset)[['PfixNorm']]
+    pval(sset)[[method]] <- pval(sset)[['PfixNorm']]
     sset
 }
 
@@ -136,6 +154,7 @@ detectionPnegNorm <- function(sset) {
 #' two alleles (color depends on probe design).
 #'
 #' @param sset a \code{SigSet}
+#' @param force force rerun even if result already exists
 #' @param sdG SD of background in Grn channel
 #' @param muG mean of background in Grn channel
 #' @param sdR SD of background in Red channel
@@ -147,9 +166,12 @@ detectionPnegNorm <- function(sset) {
 #' 
 #' @export
 detectionPfixedNorm <- function(
-    sset, muG = 500, sdG = 200, muR = 500, sdR = 200) {
+    sset, muG = 500, sdG = 200, muR = 500, sdR = 200,
+    force = FALSE) {
     
     stopifnot(is(sset, "SigSet"))
+    method <- "PfixedNorm"
+    if (!force && method %in% names(pval(sset))) return(sset)
     
     pIR <- 1 - pnorm(
         pmax(IR(sset)[,'M'], IR(sset)[,'U']), mean=muR, sd=sdR)
@@ -163,7 +185,7 @@ detectionPfixedNorm <- function(
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    pval(sset)[["PfixedNorm"]] <- c(pIR,pIG,pII)
+    pval(sset)[[method]] <- c(pIR,pIG,pII)
     sset
 }
 
@@ -178,15 +200,19 @@ detectionPfixedNorm <- function(
 #' estimating p-value the Red and Grn are summed (non-ideal).
 #'
 #' @param sset a \code{SigSet}
+#' @param force force rerun even if result already exists
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' sset <- detectionPnegNormGS(sset)
 #' 
 #' @export
-detectionPnegNormGS <- function(sset) {
+detectionPnegNormGS <- function(sset, force=FALSE) {
     
     stopifnot(is(sset, "SigSet"))
+    method <- "PnegNormGS"
+    if (!force && method %in% names(pval(sset))) return(sset)
+    
     negctls <- negControls(sset)
     BGsd <- sd(c(negctls$G, negctls$R))
     BGmu <- mean(c(negctls$G, negctls$R))
@@ -196,7 +222,8 @@ detectionPnegNormGS <- function(sset) {
     names(pIR) <- rownames(IR(sset))
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
-    pval(sset)[['PnegNormGS']] <- c(pIR,pIG,pII)
+    
+    pval(sset)[[method]] <- c(pIR,pIG,pII)
     sset
     
 }
@@ -211,16 +238,20 @@ detectionPnegNormGS <- function(sset) {
 #' signal (not the most accurate treatment).
 #'
 #' @param sset a \code{SigSet}
+#' @param force force rerun even if result already exists
 #' @return detection p-value
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' sset <- detectionPnegNormTotal(sset)
 #' 
 #' @export
-detectionPnegNormTotal <- function(sset) {
+detectionPnegNormTotal <- function(sset, force=FALSE) {
     
     ## sort of how minfi does it (sd instead of MAD)
     stopifnot(is(sset, "SigSet"))
+    method <- "PnegNormTotal"
+    if (!force && method %in% names(pval(sset))) return(sset)
+    
     negctls <- negControls(sset)
     sdG <- sd(negctls$G)
     muG <- median(negctls$G)
@@ -233,7 +264,7 @@ detectionPnegNormTotal <- function(sset) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    pval(sset)[['PnegNormTotal']] <- c(pIR,pIG,pII)
+    pval(sset)[[method]] <- c(pIR,pIG,pII)
     sset
 }
 

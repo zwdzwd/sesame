@@ -4,10 +4,12 @@
 \alias{detectionPnegEcdf}
 \title{Detection P-value based on ECDF of negative control}
 \usage{
-detectionPnegEcdf(sset)
+detectionPnegEcdf(sset, force = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
+
+\item{force}{force rerun even if result already exists}
 }
 \value{
 detection p-value

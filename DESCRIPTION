@@ -13,7 +13,7 @@ Depends: R (>= 3.6),
           sesameData,
           methods
 License: MIT + file LICENSE
-RoxygenNote: 7.0.0
+RoxygenNote: 7.0.2
 Imports: BiocParallel,
          grDevices,
          utils,
@@ -67,4 +67,5 @@ Collate:
     'simulate_data.R'
     'snp.R'
     'utils.R'
+    'vcf.R'
     'visualize.R'

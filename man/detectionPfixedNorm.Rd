@@ -4,7 +4,14 @@
 \alias{detectionPfixedNorm}
 \title{Detection P-value based on normal fitting with gived parameters}
 \usage{
-detectionPfixedNorm(sset, muG = 500, sdG = 200, muR = 500, sdR = 200)
+detectionPfixedNorm(
+  sset,
+  muG = 500,
+  sdG = 200,
+  muR = 500,
+  sdR = 200,
+  force = FALSE
+)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
@@ -16,6 +23,8 @@ detectionPfixedNorm(sset, muG = 500, sdG = 200, muR = 500, sdR = 200)
 \item{muR}{mean of background in Red channel}
 
 \item{sdR}{SD of background in Red channel}
+
+\item{force}{force rerun even if result already exists}
 }
 \value{
 detection p-value

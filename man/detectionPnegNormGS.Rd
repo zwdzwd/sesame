@@ -4,10 +4,12 @@
 \alias{detectionPnegNormGS}
 \title{Detection P-value emulating Genome Studio}
 \usage{
-detectionPnegNormGS(sset)
+detectionPnegNormGS(sset, force = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
+
+\item{force}{force rerun even if result already exists}
 }
 \value{
 detection p-value

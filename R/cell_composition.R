@@ -309,3 +309,79 @@ estimateLeukocyte<-function(
     names(leuko.estimate) <- colnames(betas.tissue)
     leuko.estimate
 }
+
+twoCompsDiff <- function(pop1, pop2) {
+    pb <- intersect(rownames(pop1), rownames(pop2))
+    pop1 <- pop1[pb,]
+    pop2 <- pop2[pb,]
+    tt <- sort(rowMeans(pop1) - rowMeans(pop2))
+    res <- list(
+        diff_1m2u = names(tail(tt, n=1000)),
+        diff_1u2m = names(head(tt, n=1000)))
+    res
+}
+
+
+#' Estimate the fraction of the 2nd component in a 2-component mixture
+#' 
+#' @param pop1 Reference methylation level matrix for population 1
+#' @param pop2 Reference methylation level matrix for population 2
+#' @param target Target methylation level matrix to be analyzed
+#' @return Estimate of the 2nd component in the 2-component mixture
+twoCompsEst2 <- function(pop1, pop2, target, use.ave=TRUE, diff_1m2u=NULL, diff_1u2m=NULL) {
+
+    pb <- intersect(
+        intersect(rownames(pop1), rownames(pop2)),
+            rownames(target))
+    cat(length(pb), "probes are shared among data sets. Starting from there.\n")
+    
+    pop1 <- pop1[pb,]
+    pop2 <- pop2[pb,]
+    target <- target[pb,]
+
+    if (is.null(diff_1m2u) || is.null(diff_1u2m)) {
+        if (use.ave) {
+            tt <- sort(rowMeans(pop1) - rowMeans(pop2))
+            diff_1m2u <- names(tail(tt, n=1000))
+            diff_1u2m <- names(head(tt, n=1000))
+        } else {
+            diff_1u2m <- names(which(
+                apply(pop1,1,function(x) {
+                    all(x<0.3, na.rm=T) && sum(is.na(x)) / length(x) < 0.5
+                }) & apply(pop2,1,function(x) {
+                    all(x>0.7, na.rm=T) && sum(is.na(x)) / length(x) < 0.5
+                })))
+            
+            diff_1m2u <- names(which(
+                apply(pop1,1,function(x) {
+                    all(x>0.7, na.rm=T) && sum(is.na(x)) / length(x) < 0.5
+                }) & apply(pop2,1,function(x) {
+                    all(x<0.3, na.rm=T) && sum(is.na(x)) / length(x) < 0.5
+                })))
+        }
+    }
+    
+    cat(length(diff_1u2m),
+        "probes methylated in 2 and unmethylated in 1.\n")
+    cat(length(diff_1m2u),
+        "probes methylated in 1 and unmethylated in 2.\n")
+
+    bnd_1u2m_hi <- rowMaxs(pop2[diff_1u2m,])
+    bnd_1u2m_lo <- rowMins(pop1[diff_1u2m,])
+
+    bnd_1m2u_hi <- rowMaxs(pop1[diff_1m2u,])
+    bnd_1m2u_lo <- rowMins(pop2[diff_1m2u,])
+
+    est <- vapply(seq_len(ncol(target)), function(i) {
+        xx <- c(
+        (target[diff_1u2m,i] - bnd_1u2m_lo) / (bnd_1u2m_hi - bnd_1u2m_lo),
+        1-(target[diff_1m2u,i] - bnd_1m2u_lo) / (bnd_1m2u_hi - bnd_1m2u_lo))
+        
+        dd <- density(na.omit(xx))
+        dd$x[which.max(dd$y)]
+    }, numeric(1))
+
+    names(est) <- colnames(target)
+    est
+}
+

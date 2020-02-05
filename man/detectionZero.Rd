@@ -4,10 +4,12 @@
 \alias{detectionZero}
 \title{Detection P-value set to all zero}
 \usage{
-detectionZero(sset)
+detectionZero(sset, force = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
+
+\item{force}{force rerun even if result already exists}
 }
 \value{
 detection p-value set to all zero

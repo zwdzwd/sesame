@@ -5,12 +5,14 @@
 \alias{pOOBAH}
 \title{Detection P-value based on ECDF of out-of-band signal}
 \usage{
-detectionPoobEcdf(sset)
+detectionPoobEcdf(sset, force = FALSE)
 
-pOOBAH(sset)
+pOOBAH(sset, force = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
+
+\item{force}{force rerun even if result already exists}
 }
 \value{
 detection p-value

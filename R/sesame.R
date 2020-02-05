@@ -345,7 +345,7 @@ inferSexKaryotypes <- function(sset) {
 #' 
 #' @export
 inferTypeIChannel <- function(
-    sset, switch_failed = FALSE, verbose = TRUE, summary = FALSE) {
+    sset, switch_failed = FALSE, verbose = FALSE, summary = FALSE) {
     
     red_channel <- rbind(IR(sset), oobR(sset))
     grn_channel <- rbind(oobG(sset), IG(sset))
@@ -732,7 +732,7 @@ readIDATpair <- function(
         controls <- df_address$controls
     }
 
-    detectionZero(chipAddressToSignal(dm, manifest, controls, readNBeads))
+    pOOBAH(chipAddressToSignal(dm, manifest, controls, readNBeads))
 }
 
 #' Identify IDATs from a directory

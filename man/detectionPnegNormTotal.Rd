@@ -5,10 +5,12 @@
 \title{Detection P-value based on normal fitting the negative controls,
 channels are first summed}
 \usage{
-detectionPnegNormTotal(sset)
+detectionPnegNormTotal(sset, force = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
+
+\item{force}{force rerun even if result already exists}
 }
 \value{
 detection p-value
