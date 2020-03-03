@@ -327,8 +327,15 @@ twoCompsDiff <- function(pop1, pop2) {
 #' @param pop1 Reference methylation level matrix for population 1
 #' @param pop2 Reference methylation level matrix for population 2
 #' @param target Target methylation level matrix to be analyzed
+#' @param diff_1m2u A vector of differentially methylated probes (methylated
+#' in population 1 but unmethylated in population 2)
+#' @param diff_1u2m A vector of differentially methylated probes (unmethylated
+#' in population 1 but methylated in population 2)
+#' @param use.ave use population average in selecting differentially
+#' methylated probes
 #' @return Estimate of the 2nd component in the 2-component mixture
-twoCompsEst2 <- function(pop1, pop2, target, use.ave=TRUE, diff_1m2u=NULL, diff_1u2m=NULL) {
+twoCompsEst2 <- function(
+    pop1, pop2, target, use.ave=TRUE, diff_1m2u=NULL, diff_1u2m=NULL) {
 
     pb <- intersect(
         intersect(rownames(pop1), rownames(pop2)),
@@ -347,16 +354,16 @@ twoCompsEst2 <- function(pop1, pop2, target, use.ave=TRUE, diff_1m2u=NULL, diff_
         } else {
             diff_1u2m <- names(which(
                 apply(pop1,1,function(x) {
-                    all(x<0.3, na.rm=T) && sum(is.na(x)) / length(x) < 0.5
+                    all(x<0.3, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
                 }) & apply(pop2,1,function(x) {
-                    all(x>0.7, na.rm=T) && sum(is.na(x)) / length(x) < 0.5
+                    all(x>0.7, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
                 })))
             
             diff_1m2u <- names(which(
                 apply(pop1,1,function(x) {
-                    all(x>0.7, na.rm=T) && sum(is.na(x)) / length(x) < 0.5
+                    all(x>0.7, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
                 }) & apply(pop2,1,function(x) {
-                    all(x<0.3, na.rm=T) && sum(is.na(x)) / length(x) < 0.5
+                    all(x<0.3, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
                 })))
         }
     }

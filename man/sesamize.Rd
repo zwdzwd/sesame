@@ -5,7 +5,7 @@
 \title{"fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
 The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet}
 \usage{
-sesamize(rgSet, naFrac = 1, BPPARAM = SerialParam())
+sesamize(rgSet, naFrac = 1, BPPARAM = SerialParam(), HDF5 = NULL)
 }
 \arguments{
 \item{rgSet}{an RGChannelSet, perhaps with colData of various flavors}
@@ -13,6 +13,8 @@ sesamize(rgSet, naFrac = 1, BPPARAM = SerialParam())
 \item{naFrac}{maximum NA fraction for a probe before it gets dropped (1)}
 
 \item{BPPARAM}{get parallel with MulticoreParam(n)}
+
+\item{HDF5}{is the rgSet HDF5-backed? if so, avoid eating RAM (perhaps)}
 }
 \value{
 a sesamized GenomicRatioSet

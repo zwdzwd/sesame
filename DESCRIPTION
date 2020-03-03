@@ -2,7 +2,7 @@ Package: sesame
 Type: Package
 Title: Tools For Analyzing Illumina Infinium DNA Methylation Arrays
 Description: Tools For analyzing Illumina Infinium DNA methylation arrays.
-Version: 1.5.2
+Version: 1.5.3
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "zhouwanding@gmail.com"),
              person("Hui", "Shen", role = c("aut"),
@@ -30,13 +30,14 @@ Imports: BiocParallel,
          ggplot2,
          parallel,
          matrixStats,
-         DNAcopy
+         DNAcopy,
+         HDF5Array,
+         SummarizedExperiment
 Suggests: scales,
           knitr,
           rmarkdown,
           testthat,
           minfi,
-          SummarizedExperiment,
           FlowSorted.CordBloodNorway.450k,
           FlowSorted.Blood.450k,
           dplyr,
@@ -67,5 +68,4 @@ Collate:
     'simulate_data.R'
     'snp.R'
     'utils.R'
-    'vcf.R'
     'visualize.R'

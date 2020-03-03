@@ -19,6 +19,15 @@ twoCompsEst2(
 \item{pop2}{Reference methylation level matrix for population 2}
 
 \item{target}{Target methylation level matrix to be analyzed}
+
+\item{use.ave}{use population average in selecting differentially
+methylated probes}
+
+\item{diff_1m2u}{A vector of differentially methylated probes (methylated
+in population 1 but unmethylated in population 2)}
+
+\item{diff_1u2m}{A vector of differentially methylated probes (unmethylated
+in population 1 but methylated in population 2)}
 }
 \value{
 Estimate of the 2nd component in the 2-component mixture

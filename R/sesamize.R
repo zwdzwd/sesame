@@ -1,39 +1,66 @@
-
 #' "fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
 #' The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet
 #' 
 #' @param rgSet an RGChannelSet, perhaps with colData of various flavors
 #' @param naFrac maximum NA fraction for a probe before it gets dropped (1)
 #' @param BPPARAM get parallel with MulticoreParam(n)
+#' @param HDF5 is the rgSet HDF5-backed? if so, avoid eating RAM (perhaps)
+#'
 #' @return a sesamized GenomicRatioSet
 #' @import BiocParallel
+#' @importFrom HDF5Array saveHDF5SummarizedExperiment
+#' @importFrom SummarizedExperiment start
+#' @importFrom SummarizedExperiment end
+#' @importFrom SummarizedExperiment rowRanges
+#' @importFrom SummarizedExperiment assays
+#' @importFrom SummarizedExperiment assays<-
+#' @importFrom SummarizedExperiment colData
+#' @importFrom SummarizedExperiment colData<-
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
 #' 
 #' @export 
-sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam()) { 
+sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL) {
+
     stopifnot(is(rgSet, "RGChannelSet"))
+
     pkgTest('minfi')
     pkgTest('SummarizedExperiment')
-
     samples <- colnames(rgSet)
     names(samples) <- samples
+
+    if (is.null(HDF5)) {
+        ## are we working on an HDF5-backed RGChannelSet?
+        HDF5 <- (class(assays(rgSet)[[1]])[1] == "DelayedMatrix")
+    }
+
     ratioSet <- do.call(
         SummarizedExperiment::cbind,
         bplapply(samples, function(sample) {
             message("Sesamizing ", sample, "...")
             sset <- RGChannelSet1ToSigSet(rgSet[,sample])
             sset <- dyeBiasCorrTypeINorm(noob(sset))
-            SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
+            SigSetToRatioSet(sset)}, BPPARAM=BPPARAM)
+    )
+
+    if (HDF5) {
+        pkgTest('HDF5Array')
+        td <- paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/")
+        ratioSet <- saveHDF5SummarizedExperiment(
+            ratioSet, dir=td, replace=TRUE)
+    }
 
     ## mapping occurs first, SNPs get separated here
     ratioSet <- minfi::mapToGenome(ratioSet)
     
     ## keep only probes surviving naFrac
-    kept <- which((rowSums(is.na(
-        minfi::getBeta(ratioSet))) / ncol(ratioSet)) <= naFrac)
-    if (length(kept) < 1) 
-        stop("No probes survived with naFrac <= ",naFrac,".")
+    kept <- seq_len(nrow(ratioSet))
+    if (naFrac < 1) { 
+        kept <- which((rowSums(is.na(minfi::getBeta(ratioSet))) / 
+                           ncol(ratioSet)) <= naFrac)
+        if (length(kept) < 1) 
+            stop("No probes survived with naFrac <= ",naFrac,".")
+    } 
     
     ## put back colData(), @processMethod, $SNPs
     mfst <- packageVersion(paste(minfi::annotation(ratioSet), collapse="anno."))
@@ -46,9 +73,9 @@ sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam()) {
 
     ## SNP not adjusted in minfi, so keep them that way
     metadata(ratioSet)$SNPs <- minfi::getSnpBeta(rgSet)
-    SummarizedExperiment::assays(ratioSet)[["M"]] <- NULL 
-    SummarizedExperiment::colData(ratioSet) <-
-        SummarizedExperiment::colData(rgSet)
+    assays(ratioSet)[["M"]] <- NULL 
+    colData(ratioSet) <- colData(rgSet)
+    
     return(ratioSet[kept, ])
 }
 
