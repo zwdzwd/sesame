@@ -5,7 +5,9 @@
 #' @param naFrac maximum NA fraction for a probe before it gets dropped (1)
 #' @param BPPARAM get parallel with MulticoreParam(n)
 #' @param HDF5 is the rgSet HDF5-backed? if so, avoid eating RAM (perhaps)
-#'
+#' @param HDF5SEdestination character(1) path to where the HDF5-backed GenomicRatioSet will 
+#' be stored
+#' @param replace logical(1) passed to saveHDF5SummarizedExperiment
 #' @return a sesamized GenomicRatioSet
 #' @import BiocParallel
 #' @importFrom HDF5Array saveHDF5SummarizedExperiment
@@ -20,7 +22,8 @@
 #' @importFrom S4Vectors metadata<-
 #' 
 #' @export 
-sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL) {
+sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL, HDF5SEdestination=
+                    paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/"), replace=FALSE) {
 
     stopifnot(is(rgSet, "RGChannelSet"))
 
@@ -45,9 +48,9 @@ sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL) {
 
     if (HDF5) {
         pkgTest('HDF5Array')
-        td <- paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/")
+        #td <- paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/")
         ratioSet <- saveHDF5SummarizedExperiment(
-            ratioSet, dir=td, replace=TRUE)
+            ratioSet, dir=HDF5SEdestination, replace=replace) #td, replace=TRUE)
     }
 
     ## mapping occurs first, SNPs get separated here
