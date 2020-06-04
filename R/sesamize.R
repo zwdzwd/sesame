@@ -45,7 +45,7 @@ sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL, HDF5SEde
             sset <- dyeBiasCorrTypeINorm(noob(sset))
             SigSetToRatioSet(sset)}, BPPARAM=BPPARAM)
     )
-
+    colnames(ratioSet) = colnames(rgSet)
     if (HDF5) {
         pkgTest('HDF5Array')
         #td <- paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/")
