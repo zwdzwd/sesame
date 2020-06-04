@@ -5,7 +5,14 @@
 \title{"fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
 The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet}
 \usage{
-sesamize(rgSet, naFrac = 1, BPPARAM = SerialParam(), HDF5 = NULL)
+sesamize(
+  rgSet,
+  naFrac = 1,
+  BPPARAM = SerialParam(),
+  HDF5 = NULL,
+  HDF5SEdestination = paste(tempdir(check = TRUE), "sesamize_HDF5_scratch", sep = "/"),
+  replace = FALSE
+)
 }
 \arguments{
 \item{rgSet}{an RGChannelSet, perhaps with colData of various flavors}
@@ -15,6 +22,11 @@ sesamize(rgSet, naFrac = 1, BPPARAM = SerialParam(), HDF5 = NULL)
 \item{BPPARAM}{get parallel with MulticoreParam(n)}
 
 \item{HDF5}{is the rgSet HDF5-backed? if so, avoid eating RAM (perhaps)}
+
+\item{HDF5SEdestination}{character(1) path to where the HDF5-backed GenomicRatioSet will 
+be stored}
+
+\item{replace}{logical(1) passed to saveHDF5SummarizedExperiment}
 }
 \value{
 a sesamized GenomicRatioSet
