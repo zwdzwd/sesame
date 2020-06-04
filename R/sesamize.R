@@ -8,6 +8,7 @@
 #' @param HDF5SEdestination character(1) path to where the HDF5-backed GenomicRatioSet will 
 #' be stored
 #' @param replace logical(1) passed to saveHDF5SummarizedExperiment
+#' @note We employ BPREDO for a second chance if bplapply hits an error.
 #' @return a sesamized GenomicRatioSet
 #' @import BiocParallel
 #' @importFrom HDF5Array saveHDF5SummarizedExperiment
@@ -36,14 +37,22 @@ sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL, HDF5SEde
         ## are we working on an HDF5-backed RGChannelSet?
         HDF5 <- (class(assays(rgSet)[[1]])[1] == "DelayedMatrix")
     }
-
-    ratioSet <- do.call(
-        SummarizedExperiment::cbind,
-        bplapply(samples, function(sample) {
+    t1 =  bptry(bplapply(samples, function(sample) {
             message("Sesamizing ", sample, "...")
             sset <- RGChannelSet1ToSigSet(rgSet[,sample])
             sset <- dyeBiasCorrTypeINorm(noob(sset))
-            SigSetToRatioSet(sset)}, BPPARAM=BPPARAM)
+            SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
+    lk = sapply(t1, inherits, "bperror")  # second try?
+    if (any(lk)) {
+      t1 =  bptry(bplapply(samples, function(sample) {
+            message("Sesamizing ", sample, "...")
+            sset <- RGChannelSet1ToSigSet(rgSet[,sample])
+            sset <- dyeBiasCorrTypeINorm(noob(sset))
+            SigSetToRatioSet(sset)}, BPREDO=t1, BPPARAM=BPPARAM))
+      }
+
+    ratioSet <- do.call(
+        SummarizedExperiment::cbind, t1
     )
     colnames(ratioSet) = colnames(rgSet)
     if (HDF5) {

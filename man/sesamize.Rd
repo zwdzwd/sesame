@@ -35,3 +35,6 @@ a sesamized GenomicRatioSet
 "fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
 The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet
 }
+\note{
+We employ BPREDO for a second chance if bplapply hits an error.
+}
