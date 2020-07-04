@@ -32,9 +32,6 @@
 #' This is the main data class for SeSAMe. The class holds different
 #' classes of signal intensities.
 #'
-#' The NBeads* slots are normally left empty but can be optionally
-#' turned on.
-#'
 #' @slot IG intensity table for type I probes in green channel
 #' @slot IR intensity table for type I probes in red channel
 #' @slot IGG Type-I green that is inferred to be green
@@ -42,9 +39,6 @@
 #' @slot II intensity table for type II probes
 #' @slot oobG out-of-band probes in green channel
 #' @slot oobR out-of-band probes in red channel
-#' @slot NBeadsIG Number of Beads for Infinium I green channel
-#' @slot NBeadsIR Number of Beads for Infinium I red channel
-#' @slot NBeadsII Number of Beads for Infinium II
 #' @slot ctl all the control probe intensities
 #' @slot pval named numeric vector of p-values
 #' @slot platform "EPIC", "HM450" or "HM27"
@@ -66,10 +60,7 @@ setClass(
         oobR = 'matrix',
         IGG = 'logical',
         IRR = 'logical',
-        NBeadsIG = 'matrix',  # matrix of integers, two columns M and U
-        NBeadsIR = 'matrix',  # matrix of integers, two columns M and U
-        ## TODO, type-II number of beads is not all the same between channels
-        NBeadsII = 'integer', # for Infinium II M and U have same num. beads
+        ## the NBeads slots are removed
         ctl = 'data.frame',
         pval = 'list',
         platform = 'character'))
@@ -111,7 +102,7 @@ SigSet <- function(...) new("SigSet", ...)
 #' The display method for SigSet
 #'
 #' The function outputs the number of probes in each category and the first
-#' few signal measurements. NBeads slots are not shown here.
+#' few signal measurements.
 #'
 #' @param object displayed object
 #' @return message of number of probes in each category.
@@ -176,6 +167,17 @@ negControls <- function(sset) {
     negctls <- ctl(sset)[grep('negative', tolower(rownames(ctl(sset)))),]
     negctls <- subset(negctls, col!=-99)
     negctls
+}
+
+#' report M and U for regular probes
+#'
+#' @param sset a \code{SigSet}
+#' @return a data frame of M and U columns
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' signalMU(sset)
+#' @export
+signalMU <- function(sset) {
+    rbind(IR(sset), IG(sset), II(sset))
 }
 
 #' Mean Intensity
@@ -664,9 +666,8 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
     ida.red <- illuminaio::readIDAT(red.name);
     d <- cbind(
         cy3=ida.grn$Quants[,"Mean"],
-        cy5=ida.red$Quants[,"Mean"],
-        NBeads = ida.grn$Quants[,'NBeads'])
-    colnames(d) <- c('G', 'R', 'NBeads')
+        cy5=ida.red$Quants[,"Mean"])
+    colnames(d) <- c('G', 'R')
 
     if (platform != '') {
         attr(d, 'platform') <- platform
@@ -692,7 +693,6 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #' @param controls optional control probe manifest file
 #' @param verbose     be verbose?  (FALSE)
 #' @param platform EPIC, HM450 and HM27 etc.
-#' @param readNBeads whether to read number of beads
 #' 
 #' @return a \code{SigSet}
 #' 
@@ -702,7 +702,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #' @export
 readIDATpair <- function(
     prefix.path, platform = '', manifest = NULL,
-    controls = NULL, readNBeads = FALSE, verbose=FALSE) {
+    controls = NULL, verbose=FALSE) {
 
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
         grn.name <- paste0(prefix.path, '_Grn.idat')
@@ -733,7 +733,7 @@ readIDATpair <- function(
         controls <- df_address$controls
     }
 
-    pOOBAH(chipAddressToSignal(dm, manifest, controls, readNBeads))
+    pOOBAH(chipAddressToSignal(dm, manifest, controls))
 }
 
 #' Identify IDATs from a directory
@@ -809,10 +809,9 @@ searchIDATprefixes <- function(dir.name,
 #' but might be necessary for some preprocessing methods that depends on these
 #' control probes. This is left for backward compatibility. Updated version
 #' should have controls consolidated into manifest.
-#' @param readNBeads whether to read bead signal
 #' @return a SigSet, indexed by probe ID address
 chipAddressToSignal <- function(
-    dm, manifest, controls = NULL, readNBeads = FALSE) {
+    dm, manifest, controls = NULL) {
 
     platform <- attr(dm, 'platform')
 
@@ -830,11 +829,6 @@ chipAddressToSignal <- function(
     IG(sset) <- as.matrix(data.frame(
         M = ImG2ch[,'G'], U = IuG2ch[,'G'],
         row.names = IordG$Probe_ID))
-    if (readNBeads && 'NBeads' %in% colnames(dm)) {
-        sset@NBeadsIG <- as.matrix(data.frame(
-            M = ImG2ch[,'NBeads'], U = IuG2ch[,'NBeads'],
-            row.names = IordG$Probe_ID))
-    }
 
     ## type I red channel / oob green channel
     ## IordR <- manifest[((manifest$DESIGN=='I')&(manifest$col=='R')),]
@@ -848,11 +842,6 @@ chipAddressToSignal <- function(
     IR(sset) <- as.matrix(data.frame(
         M = ImR2ch[,'R'], U = IuR2ch[,'R'],
         row.names = IordR$Probe_ID))
-    if (readNBeads && 'NBeads' %in% colnames(dm)) {
-        sset@NBeadsIR <- as.matrix(data.frame(
-            M = ImR2ch[,'NBeads'], U = IuR2ch[,'NBeads'],
-            row.names = IordR$Probe_ID))
-    }
     
     ## type II
     ## IIord <- manifest[manifest$DESIGN=="II",]
@@ -861,10 +850,6 @@ chipAddressToSignal <- function(
     colnames(signal.II) <- c('M', 'U')
     rownames(signal.II) <- IIord$Probe_ID
     II(sset) <- signal.II
-    if (readNBeads && 'NBeads' %in% colnames(dm)) {
-        sset@NBeadsII <- dm[match(IIord$U, rownames(dm)),'NBeads']
-        names(sset@NBeadsII) <- IIord$Probe_ID
-    }
 
     ## control probes
     ctl_idx <- grep('^ctl',manifest$Probe_ID)
@@ -890,8 +875,7 @@ chipAddressToSignal <- function(
 #'
 #' Compute GCT score for internal bisulfite conversion control. The function
 #' takes a \code{SigSet} as input. The higher the GCT score, the more likely
-#' the incomplete conversion. The lower the GCT score, the more likely
-#' over-conversion.
+#' the incomplete conversion.
 #'
 #' @param sset signal set
 #' @param use.median use median to compute GCT instead of mean
