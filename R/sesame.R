@@ -173,6 +173,7 @@ negControls <- function(sset) {
 #'
 #' @param sset a \code{SigSet}
 #' @return a data frame of M and U columns
+#' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' signalMU(sset)
 #' @export

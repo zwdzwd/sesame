@@ -8,6 +8,7 @@
 #' @param version manifest version, default to the latest/current.
 #' @param probeType cg, ch or rs, default to all probes
 #' @param designType I (Infinium-I) or II (Infinium-II), default to both
+#' @return manifest file of requested probes
 #' @examples
 #'
 #' mft <- getManifest('HM27', 'hg38')
@@ -49,6 +50,7 @@ getManifest <- function(
 #' @param platform Infinium platform
 #' @param refversion human reference version, irrelevant for mouse array
 #' @param version manifest version, default to the latest/current.
+#' @return variant annotation file of explicit rs probes
 #' @examples
 #'
 #' annoS <- getVariantAnno_SNP('EPIC', 'hg38')
@@ -64,7 +66,9 @@ getVariantAnno_SNP <- function(
 
     download_path <-
         sprintf(
-            'http://zwdzwd.io/InfiniumAnnotation/%s/%s/%s.%s.snp_overlap_b151.rds',
+            paste0(
+                'http://zwdzwd.io/InfiniumAnnotation/'
+                '%s/%s/%s.%s.snp_overlap_b151.rds'),
             version, platform, platform, refversion)
 
     cat("Retrieving SNP annotation from ",download_path, "... ")
@@ -81,6 +85,7 @@ getVariantAnno_SNP <- function(
 #' @param platform Infinium platform
 #' @param refversion human reference version, irrelevant for mouse array
 #' @param version manifest version, default to the latest/current.
+#' @return variant annotation file of infinium I probes
 #' @examples
 #'
 #' annoI <- getVariantAnno_InfiniumI('EPIC', 'hg38')
@@ -96,7 +101,9 @@ getVariantAnno_InfiniumI <- function(
 
     download_path <-
         sprintf(
-            'http://zwdzwd.io/InfiniumAnnotation/%s/%s/%s.%s.typeI_overlap_b151.rds',
+            paste0(
+                'http://zwdzwd.io/InfiniumAnnotation/'
+                '%s/%s/%s.%s.typeI_overlap_b151.rds'),
             version, platform, platform, refversion)
 
     cat("Retrieving SNP annotation from ",download_path, "... ")

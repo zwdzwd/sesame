@@ -24,14 +24,15 @@
 #' head(formatVCF(sset, annoS=annoS, annoI=annoI))
 #' 
 #' @export
-formatVCF <- function(sset, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL) {
+formatVCF <- function(
+    sset, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL) {
 
     platform <- sset@platform
 
     if (is.null(annoS)) annoS <- getVariantAnno_SNP(platform)
     betas <- getBetas(sset, quality.mask=FALSE)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
-    vcflines_snp <- cbind(as.character(seqnames(annoS)),
+    vcflines_snp <- cbind(as.character(GenomicRanges::seqnames(annoS)),
         as.character(end(annoS)),
         names(annoS),
         annoS$REF, annoS$ALT,
@@ -49,7 +50,7 @@ formatVCF <- function(sset, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL)
 
     af <- af[names(annoI)]
     vafs <- ifelse(annoI$In.band == 'REF', af, 1-af)
-    vcflines_typeI <- cbind(as.character(seqnames(annoI)),
+    vcflines_typeI <- cbind(as.character(GenomicRanges::seqnames(annoI)),
         as.character(end(annoI)),
         names(annoI),
         annoI$REF, annoI$ALT,
