@@ -31,8 +31,8 @@ Convert SNP from Infinium array to VCF file
 \examples{
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 
-annoS <- getVariantAnno_SNP('EPIC','hg19')
-annoI <- getVariantAnno_InfiniumI('EPIC','hg19')
+annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
+annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
 ## output to console
 head(formatVCF(sset, annoS=annoS, annoI=annoI))
 
