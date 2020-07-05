@@ -17,8 +17,7 @@ GCT score (the higher, the more incomplete conversion)
 \description{
 Compute GCT score for internal bisulfite conversion control. The function
 takes a \code{SigSet} as input. The higher the GCT score, the more likely
-the incomplete conversion. The lower the GCT score, the more likely
-over-conversion.
+the incomplete conversion.
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet('HM450')
