@@ -18,8 +18,8 @@
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #'
-#' annoS <- getVariantAnno_SNP('EPIC','hg19')
-#' annoI <- getVariantAnno_InfiniumI('EPIC','hg19')
+#' annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
+#' annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
 #' ## output to console
 #' head(formatVCF(sset, annoS=annoS, annoI=annoI))
 #' 
@@ -29,7 +29,7 @@ formatVCF <- function(
 
     platform <- sset@platform
 
-    if (is.null(annoS)) annoS <- getVariantAnno_SNP(platform)
+    if (is.null(annoS)) annoS <- sesameDataPullVariantAnno_SNP(platform)
     betas <- getBetas(sset, quality.mask=FALSE)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
     vcflines_snp <- cbind(as.character(GenomicRanges::seqnames(annoS)),
@@ -41,7 +41,7 @@ formatVCF <- function(
         sprintf("VAF=%1.3f", vafs))
 
 
-    if (is.null(annoI)) annoI <- getVariantAnno_InfiniumI(platform)
+    if (is.null(annoI)) annoI <- sesameDataPullVariantAnno_InfiniumI(platform)
     af <- c(
         pmax(rowSums(oobR(sset)),1)/(
             pmax(rowSums(oobR(sset))+rowSums(IG(sset)),2)),

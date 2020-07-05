@@ -10,7 +10,7 @@ sesamize(
   naFrac = 1,
   BPPARAM = SerialParam(),
   HDF5 = NULL,
-  HDF5SEdestination = paste(tempdir(check = TRUE), "sesamize_HDF5_scratch", sep = "/"),
+  HDF5SEdestination = paste0(tempdir(check = TRUE), "/sesamize_HDF5_scratch"),
   replace = FALSE
 )
 }

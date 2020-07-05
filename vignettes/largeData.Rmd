@@ -26,6 +26,7 @@ on the `fileSet` by referencing the path to the file.
 
 ```{r message = FALSE}
 library(sesame)
+options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 The following `openSesameToFile` call does three things

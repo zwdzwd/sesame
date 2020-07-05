@@ -59,7 +59,6 @@ Collate:
     'cell_composition.R'
     'cnv.R'
     'controls.R'
-    'data.R'
     'detection.R'
     'differential_methylation.R'
     'dye_bias.R'
