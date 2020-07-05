@@ -2,18 +2,19 @@ Package: sesame
 Type: Package
 Title: Tools For Analyzing Illumina Infinium DNA Methylation Arrays
 Description: Tools For analyzing Illumina Infinium DNA methylation arrays.
-Version: 1.7.0
+<<<<<<< HEAD
+Version: 1.7.1
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "zhouwanding@gmail.com"),
              person("Hui", "Shen", role = c("aut"),
              email = "Hui.Shen@vai.org"),
              person("Timothy", "Triche", role = "ctb"),
              person("Bret", "Barnes", role = "ctb"))
-Depends: R (>= 3.6),
+Depends: R (>= 3.6.0),
           sesameData,
           methods
 License: MIT + file LICENSE
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 Imports: BiocParallel,
          grDevices,
          utils,
@@ -59,6 +60,7 @@ Collate:
     'cell_composition.R'
     'cnv.R'
     'controls.R'
+    'data.R'
     'detection.R'
     'differential_methylation.R'
     'dye_bias.R'
@@ -68,4 +70,5 @@ Collate:
     'simulate_data.R'
     'snp.R'
     'utils.R'
+    'vcf.R'
     'visualize.R'

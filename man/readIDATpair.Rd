@@ -9,7 +9,6 @@ readIDATpair(
   platform = "",
   manifest = NULL,
   controls = NULL,
-  readNBeads = FALSE,
   verbose = FALSE
 )
 }
@@ -21,8 +20,6 @@ readIDATpair(
 \item{manifest}{optional design manifest file}
 
 \item{controls}{optional control probe manifest file}
-
-\item{readNBeads}{whether to read number of beads}
 
 \item{verbose}{be verbose?  (FALSE)}
 }

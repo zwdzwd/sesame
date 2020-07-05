@@ -4,10 +4,12 @@
 \alias{RGChannelSetToSigSets}
 \title{Convert RGChannelSet (minfi) to a list of SigSet (SeSAMe)}
 \usage{
-RGChannelSetToSigSets(rgSet, BPPARAM = SerialParam())
+RGChannelSetToSigSets(rgSet, manifest = NULL, BPPARAM = SerialParam())
 }
 \arguments{
 \item{rgSet}{a minfi::RGChannelSet}
+
+\item{manifest}{manifest file}
 
 \item{BPPARAM}{get parallel with MulticoreParam(n)}
 }

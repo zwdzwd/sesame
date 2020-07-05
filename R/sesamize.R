@@ -231,10 +231,9 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
         R=as.matrix(minfi::getRed(rgSet1)))
     
     colnames(dm) <- c('G','R') # just in case..
-    attr(dm, 'platform') <- platformMinfiToSm(
-        minfi::annotation(rgSet1)['array'])
-
     if (is.null(manifest)) {
+        attr(dm, 'platform') <- platformMinfiToSm(
+            minfi::annotation(rgSet1)['array'])
         df_address <- sesameDataGet(paste0(
             attr(dm, 'platform'), '.address'))
         manifest <- df_address$ordering
@@ -251,6 +250,7 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
 #'
 #' @param rgSet a minfi::RGChannelSet
 #' @param BPPARAM get parallel with MulticoreParam(n)
+#' @param manifest manifest file
 #' @return a list of sesame::SigSet
 #' @import BiocParallel
 #' @examples
@@ -260,13 +260,14 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
 #'     ssets <- RGChannelSetToSigSets(rgSet)
 #' }
 #' @export
-RGChannelSetToSigSets <- function(rgSet, BPPARAM=SerialParam()) {
+RGChannelSetToSigSets <- function(
+    rgSet, manifest=NULL, BPPARAM=SerialParam()) {
 
     pkgTest('minfi')
     samples <- colnames(rgSet)
     setNames(bplapply(
         samples, function(sample) {
-        RGChannelSet1ToSigSet(rgSet[,sample])
+        RGChannelSet1ToSigSet(rgSet[,sample], manifest=manifest)
     }, BPPARAM=BPPARAM), samples)
 }
 
