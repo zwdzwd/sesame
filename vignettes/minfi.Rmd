@@ -23,6 +23,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 ```{r}
 grSet <- sesamize(FlowSorted.Blood.450k[,1:4])
-grSet
+grSet 
+
 ```
 
