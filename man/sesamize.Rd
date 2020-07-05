@@ -23,8 +23,8 @@ sesamize(
 
 \item{HDF5}{is the rgSet HDF5-backed? if so, avoid eating RAM (perhaps)}
 
-\item{HDF5SEdestination}{character(1) path to where the HDF5-backed GenomicRatioSet will 
-be stored}
+\item{HDF5SEdestination}{character(1) path to where the
+HDF5-backed GenomicRatioSet will be stored}
 
 \item{replace}{logical(1) passed to saveHDF5SummarizedExperiment}
 }

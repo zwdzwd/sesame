@@ -67,7 +67,7 @@ getVariantAnno_SNP <- function(
     download_path <-
         sprintf(
             paste0(
-                'http://zwdzwd.io/InfiniumAnnotation/'
+                'http://zwdzwd.io/InfiniumAnnotation/',
                 '%s/%s/%s.%s.snp_overlap_b151.rds'),
             version, platform, platform, refversion)
 
@@ -102,7 +102,7 @@ getVariantAnno_InfiniumI <- function(
     download_path <-
         sprintf(
             paste0(
-                'http://zwdzwd.io/InfiniumAnnotation/'
+                'http://zwdzwd.io/InfiniumAnnotation/',
                 '%s/%s/%s.%s.typeI_overlap_b151.rds'),
             version, platform, platform, refversion)
 

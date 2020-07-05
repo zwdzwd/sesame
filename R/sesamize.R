@@ -5,8 +5,8 @@
 #' @param naFrac maximum NA fraction for a probe before it gets dropped (1)
 #' @param BPPARAM get parallel with MulticoreParam(n)
 #' @param HDF5 is the rgSet HDF5-backed? if so, avoid eating RAM (perhaps)
-#' @param HDF5SEdestination character(1) path to where the HDF5-backed GenomicRatioSet will 
-#' be stored
+#' @param HDF5SEdestination character(1) path to where the
+#' HDF5-backed GenomicRatioSet will be stored
 #' @param replace logical(1) passed to saveHDF5SummarizedExperiment
 #' @note We employ BPREDO for a second chance if bplapply hits an error.
 #' @return a sesamized GenomicRatioSet
@@ -21,10 +21,12 @@
 #' @importFrom SummarizedExperiment colData<-
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
-#' 
+#'
 #' @export 
-sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL, HDF5SEdestination=
-                    paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/"), replace=FALSE) {
+sesamize <- function(
+    rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL,
+    HDF5SEdestination=paste0(tempdir(check=TRUE), "/sesamize_HDF5_scratch"),
+    replace=FALSE) {
 
     stopifnot(is(rgSet, "RGChannelSet"))
 
@@ -42,7 +44,7 @@ sesamize <- function(rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL, HDF5SEde
             sset <- RGChannelSet1ToSigSet(rgSet[,sample])
             sset <- dyeBiasCorrTypeINorm(noob(sset))
             SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
-    lk = sapply(t1, inherits, "bperror")  # second try?
+    lk = vapply(t1, inherits, "bperror")  # second try?
     if (any(lk)) {
       t1 =  bptry(bplapply(samples, function(sample) {
             message("Sesamizing ", sample, "...")

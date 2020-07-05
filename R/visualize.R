@@ -214,6 +214,81 @@ getProbesByTSS <- function(
     probes1
 }
 
+## helper function to plot transcript
+plotTranscripts <- function(
+    target.txns, target.region, plt.beg, plt.end, txn2gene) {
+
+    plt.width <- plt.end - plt.beg
+    isoformHeight <- 1/length(target.txns)
+    padHeight <- isoformHeight*0.2
+
+    do.call(gList, lapply(seq_along(target.txns), function(i) {
+        txn <- target.txns[[i]]
+        txn.name <- names(target.txns)[i]
+
+        txn.beg <- max(plt.beg, min(GenomicRanges::start(txn))-2000)
+        txn.end <- min(plt.end, max(GenomicRanges::end(txn))+2000)
+
+        txn <- subsetByOverlaps(txn, target.region)
+
+        txn.strand <- as.character(GenomicRanges::strand(txn[1]))
+        if (txn.strand == '+') {
+            line.direc <- c(txn.beg-plt.beg, txn.end-plt.beg) / plt.width
+        } else {
+            line.direc <- c(txn.end-plt.beg, txn.beg-plt.beg) / plt.width
+        }
+        
+        y.bot <- (i-1)*isoformHeight+padHeight
+        y.bot.exon <- y.bot+padHeight
+        y.hei <- isoformHeight-2*padHeight
+        y.hei.exon <- isoformHeight-4*padHeight
+
+        g <- gList(
+            ## plot transcript name
+            grid.text(
+                sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
+                x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
+                just=c('center','bottom'), draw=FALSE),
+            
+            ## plot transcript line
+            grid.lines(
+                x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
+
+            grid.lines(
+                x=c(0,1), y=y.bot+y.hei/2,
+                gp=gpar(lty='dotted'), draw=FALSE),
+
+            ## plot exons
+            grid.rect(
+            (GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
+            GenomicRanges::width(txn)/plt.width, y.hei.exon,
+            gp=gpar(fill='red',col='red'),
+            just=c('left','bottom'), draw=FALSE))
+
+        ## plot cds
+        cdsEnd <- as.integer(GenomicRanges::mcols(txn)$cdsEnd[1])
+        cdsStart <- as.integer(GenomicRanges::mcols(txn)$cdsStart[1])
+        txnCds <- txn[(
+            GenomicRanges::start(txn) < cdsEnd) &
+                (GenomicRanges::end(txn) > cdsStart)]
+        
+        GenomicRanges::start(txnCds) <- pmax(
+            GenomicRanges::start(txnCds), cdsStart)
+        
+        GenomicRanges::end(txnCds) <- pmin(
+            GenomicRanges::end(txnCds), cdsEnd)
+
+        if (cdsEnd > cdsStart && length(txnCds) > 0) {
+            g <- gList(g, gList(grid.rect(
+            (GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
+            GenomicRanges::width(txnCds)/plt.width,
+            y.hei, gp=gpar(fill='grey'),
+            just=c('left','bottom'), draw=FALSE)))
+        }
+        g
+    }))
+}
+
 #' Visualize Region
 #'
 #' The function takes a genomic coordinate (chromosome, start and end) and a
@@ -253,11 +328,8 @@ visualizeRegion <- function(
     platform = c('EPIC','HM450'),
     refversion = c('hg38','hg19'),
     sample.name.fontsize = 10,
-    heat.height = NULL,
-    draw = TRUE,
-    show.sampleNames = TRUE,
-    show.samples.n = NULL,
-    show.probeNames = TRUE,
+    heat.height = NULL, draw = TRUE,
+    show.sampleNames = TRUE, show.samples.n = NULL, show.probeNames = TRUE,
     cluster.samples = FALSE,
     nprobes.max = 1000,
     na.rm = FALSE, dmin = 0, dmax = 1) {
@@ -299,76 +371,10 @@ visualizeRegion <- function(
         stop(sprintf('Too many probes (%d). Consider smaller region?', nprobes))
     }
 
-    isoformHeight <- 1/length(target.txns)
-    padHeight <- isoformHeight*0.2
-
     ## plot transcripts
     if (length(target.txns) > 0) {
-        plt.txns <- do.call(gList, lapply(seq_along(target.txns), function(i) {
-            txn <- target.txns[[i]]
-            txn.name <- names(target.txns)[i]
-
-            txn.beg <- max(plt.beg, min(GenomicRanges::start(txn))-2000)
-            txn.end <- min(plt.end, max(GenomicRanges::end(txn))+2000)
-
-            txn <- subsetByOverlaps(txn, target.region)
-
-            txn.strand <- as.character(GenomicRanges::strand(txn[1]))
-            if (txn.strand == '+') {
-                line.direc <- c(txn.beg-plt.beg, txn.end-plt.beg) / plt.width
-            } else {
-                line.direc <- c(txn.end-plt.beg, txn.beg-plt.beg) / plt.width
-            }
-            
-            y.bot <- (i-1)*isoformHeight+padHeight
-            y.bot.exon <- y.bot+padHeight
-            y.hei <- isoformHeight-2*padHeight
-            y.hei.exon <- isoformHeight-4*padHeight
-
-            g <- gList(
-                ## plot transcript name
-                grid.text(
-                    sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
-                    x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
-                    just=c('center','bottom'), draw=FALSE),
-                
-                ## plot transcript line
-                grid.lines(
-                    x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
-
-                grid.lines(
-                    x=c(0,1), y=y.bot+y.hei/2,
-                    gp=gpar(lty='dotted'), draw=FALSE),
-
-                ## plot exons
-                grid.rect(
-                    (GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
-                    GenomicRanges::width(txn)/plt.width, y.hei.exon,
-                    gp=gpar(fill='red',col='red'),
-                    just=c('left','bottom'), draw=FALSE))
-
-            ## plot cds
-            cdsEnd <- as.integer(GenomicRanges::mcols(txn)$cdsEnd[1])
-            cdsStart <- as.integer(GenomicRanges::mcols(txn)$cdsStart[1])
-            txnCds <- txn[(
-                GenomicRanges::start(txn) < cdsEnd) &
-                    (GenomicRanges::end(txn) > cdsStart)]
-            
-            GenomicRanges::start(txnCds) <- pmax(
-                GenomicRanges::start(txnCds), cdsStart)
-            
-            GenomicRanges::end(txnCds) <- pmin(
-                GenomicRanges::end(txnCds), cdsEnd)
-
-            if (cdsEnd > cdsStart && length(txnCds) > 0) {
-                g <- gList(g, gList(grid.rect(
-                    (GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
-                    GenomicRanges::width(txnCds)/plt.width,
-                    y.hei, gp=gpar(fill='grey'),
-                    just=c('left','bottom'), draw=FALSE)))
-            }
-            g
-        }))
+        plt.txns <- plotTranscripts(
+            target.txns, target.region, plt.beg, plt.end, txn2gene)
     } else {
         plt.txns <- gList(
             grid.rect(0,0.1,1,0.8, just = c('left','bottom'), draw=FALSE),
