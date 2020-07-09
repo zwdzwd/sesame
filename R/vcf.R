@@ -32,14 +32,15 @@ formatVCF <- function(
     if (is.null(annoS)) annoS <- sesameDataPullVariantAnno_SNP(platform)
     betas <- getBetas(sset, quality.mask=FALSE)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
+    gts <- lapply(vafs, genotype)
+    GT <- vapply(gts, function(g) g$GT, character(1))
+    GS <- vapply(gts, function(g) g$GS, numeric(1))
     vcflines_snp <- cbind(as.character(GenomicRanges::seqnames(annoS)),
         as.character(end(annoS)),
         names(annoS),
         annoS$REF, annoS$ALT,
-        ".",
-        ".",
-        sprintf("VAF=%1.3f", vafs))
-
+        GS, ifelse(GS>20,'PASS','FAIL'),
+        sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
 
     if (is.null(annoI)) annoI <- sesameDataPullVariantAnno_InfiniumI(platform)
     af <- c(
@@ -50,13 +51,15 @@ formatVCF <- function(
 
     af <- af[names(annoI)]
     vafs <- ifelse(annoI$In.band == 'REF', af, 1-af)
+    gts <- lapply(vafs, genotype)
+    GT <- vapply(gts, function(g) g$GT, character(1))
+    GS <- vapply(gts, function(g) g$GS, numeric(1))
     vcflines_typeI <- cbind(as.character(GenomicRanges::seqnames(annoI)),
         as.character(end(annoI)),
         names(annoI),
         annoI$REF, annoI$ALT,
-        ".",
-        ".",
-        sprintf("PVF=%1.3f", vafs))
+        GS, ifelse(GS>20,'PASS','FAIL'),
+        sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
 
     header <- c(
         '##fileformat=VCFv4.0',
@@ -64,13 +67,20 @@ formatVCF <- function(
         sprintf('##reference=%s', refversion),
         paste0(
             '##INFO=<ID=PVF,Number=1,Type=Float,',
-            'Description="Pseudo Variant Frequency">'))
+            'Description="Pseudo Variant Frequency">'),
+        paste0('##INFO=<ID=GT,Number=1,Type=String,',
+            'Description="Genotype">'),
+        paste0(
+            '##INFO=<ID=GS,Number=1,Type=Integer,',
+            'Description="Genotyping score from 7 to 85">')
+        )
     
     out <- data.frame(rbind(
         vcflines_snp, vcflines_typeI))
     colnames(out) <- c(
         "#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO")
     rownames(out) <- out$ID
+    out <- out[with(out, order(`#CHROM`,as.numeric(`POS`))),]
     
     if(is.null(vcf)) {
         out
@@ -80,4 +90,20 @@ formatVCF <- function(
             out, file=vcf, append=TRUE, sep='\t',
             row.names = FALSE, col.names = FALSE, quote = FALSE)
     }
+}
+
+## very simple genotyper
+genotype <- function(x, model_background=0.1, model_nbeads=40) {
+
+    GL <- vapply(
+        c(model_background, 0.5, 1-model_background),
+        function(af) {
+            dbinom(
+                round(x*model_nbeads),
+                size=model_nbeads, prob=af)}, numeric(1))
+        
+    ind <- which.max(GL)
+    GT <- c('0/0','0/1','1/1')[ind]
+    GS <- floor(-log10(1-GL[ind] / sum(GL))*10) # assuming equal prior
+    list(GT=GT, GS=GS)
 }
