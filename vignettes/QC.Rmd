@@ -102,3 +102,17 @@ p2 <- ggplot(qc10) +
 WGG(p1) + WGG(p2, RightOf())
 ```
 
+# Output explicit and Infinium-I-derived SNP to VCF
+
+```{r}
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+
+annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
+annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
+
+## output to console
+head(formatVCF(sset, annoS=annoS, annoI=annoI))
+```
+
+One can output to actual VCF file with a header by `formatVCF(sset,
+vcf=path_to_vcf)`.
