@@ -37,14 +37,15 @@ sesameQC <- function(sset) {
         qc[[paste0('InfI_switch_', nm)]] <- unname(res[nm])
     }
 
-    sset1 <- noob(sset)
-    sset2 <- dyeBiasCorrTypeINorm(sset1)
-    betas <- getBetas(sset2)
+    betas <- getBetas(qualityMask(
+        detectionMask(dyeBiasCorrTypeINorm(noob(sset)))))
 
     qc$num_probes <- length(betas)
     qc$num_na <- sum(is.na(betas))
     num_ok <- qc$num_probes - qc$num_na
     qc$frac_na <- qc$num_na / qc$num_probes * 100
+    qc$num_nondt <- sum(pval(sset) > 0.05)
+    qc$frac_nondt <- qc$num_nondt / qc$num_probes
     qc$mean_beta <- mean(betas, na.rm = TRUE)
     qc$median_beta <- median(betas, na.rm = TRUE)
     qc$frac_unmeth <- sum(betas < 0.3, na.rm = TRUE) / num_ok * 100
@@ -66,7 +67,8 @@ sesameQC <- function(sset) {
         qc[[paste0('frac_meth_', pt)]] <-
             sum(betas1 > 0.7, na.rm = TRUE) / num_ok * 100
     }
-    qc$age <- predictAgeHorvath353(betas)
+    ## assuming no preprocessing
+    qc$age <- predictAgeHorvath353(getBetas(sset))
     
     qc
 }
@@ -117,11 +119,14 @@ print.sesameQC <- function(x, ...) {
 
     cat('\n')
     cat('=======================\n')
-    cat('=      Beta Values    =\n')
+    cat('=    Non-detection    =\n')
     cat('=======================\n')
-    cat('No. probes:                       ', x$num_probes, '\n')
-    cat('No. probes w/ NA (num_na,frac_na):',
+    cat('No. probes:                       ', x$num_na, '\n')
+    cat('No. probes w/ NA (num_na):        ',
         sprintf('%d (%1.3f%%)\n', x$num_na, x$frac_na))
+    cat('No. nondetection (num_nondt):     ',
+        sprintf('%d (%1.3f%%)\n', x$num_nondt, x$frac_nondt))
+
     
     cat('\n')
     cat('=======================\n')

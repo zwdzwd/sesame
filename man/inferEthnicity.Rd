@@ -19,6 +19,9 @@ Color-Channel-Switching probes to infer ethnicity.
 \details{
 sset better be background subtracted and dyebias corrected for
 best accuracy
+
+Please note: the betas should come from sigset *without*
+channel inference.
 }
 \examples{
 sset <- makeExampleSeSAMeDataSet("HM450")

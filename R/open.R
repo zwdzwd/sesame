@@ -38,14 +38,14 @@ openSesame <- function(
             stopifnot(is(x, 'SigSet'))
             x <- dyeBiasCorrTypeINorm(noob(pOOBAH(x)))
             if (what == 'beta') {
-                getBetas(x, ...)
+                getBetas(qualityMask(detectionMask(x)), ...)
             } else {
                 x
             }
         } else if (is(x, 'SigSet')) { # SigSet input
             x <- dyeBiasCorrTypeINorm(noob(pOOBAH(x)))
             if (what == 'beta') {
-                getBetas(x, ...)
+                getBetas(qualityMask(detectionMask(x)), ...)
             } else {
                 x
             }

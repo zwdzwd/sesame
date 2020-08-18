@@ -30,7 +30,7 @@ formatVCF <- function(
     platform <- sset@platform
 
     if (is.null(annoS)) annoS <- sesameDataPullVariantAnno_SNP(platform)
-    betas <- getBetas(sset, quality.mask=FALSE)[names(annoS)]
+    betas <- getBetas(sset)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
     gts <- lapply(vafs, genotype)
     GT <- vapply(gts, function(g) g$GT, character(1))

@@ -20,6 +20,6 @@ a filtered \code{SigSet}
 Currently quality masking only supports three platforms
 }
 \examples{
-betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-betas.masked <- qualityMaskBeta(betas, "HM450")
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+sset.masked <- qualityMask(sset)
 }

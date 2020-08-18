@@ -45,13 +45,20 @@ idat_dir <- system.file("extdata/", package = "sesameData")
 betas <- openSesame(idat_dir)
 ```
 where `idat_dir` is the directory containing all the IDAT files (they can be
-present under nested sub-directories).
+present under nested sub-directories). This is meant for tha quick start default.
 
-If you want to have more granuality of control, openSesame is equivalent to
+But if you want to have more granuality of control (like provide parameters in
+each step), openSesame is equivalent to
 ```{r message = FALSE, warning = FALSE, eval = FALSE}
 betas <- do.call(cbind, lapply(searchIDATprefixes(idat_dir), function(pfx) {
-    pfx %>% readIDATpair %>% pOOBAH %>%
-        noob %>% dyeBiasCorrTypeINorm %>% getBetas
+    pfx %>%
+        readIDATpair %>%
+        pOOBAH %>%
+        noob %>%
+        dyeBiasCorrTypeINorm %>%
+        qualityMask %>%
+        detectionMask %>%
+        getBetas
 }))
 ```
 behind the scene.
@@ -67,15 +74,14 @@ major parts:
 p-value for each probe
 ([Zhou et al. 2018](https://www.ncbi.nlm.nih.gov/pubmed/30085201)). Probes with
 p-value higher than a threshold (default: 0.05) are masked. The default
-threshold can be adjusted to say, 0.1, by `pval.threshold = 0.1` in either
-`getBetas` or `openSesame`. 
+threshold can be adjusted to say, 0.1, by `pval.threshold = 0.1` in 
+`detectionMask`.
 
 2) Probes masked for putative design issues designated in
 `sesameDataGet('HM450.probeInfo')$mask` (
 [Zhou et al. 2017](https://www.ncbi.nlm.nih.gov/pubmed/27924034)): This masking
-only supports EPIC, HM450 and HM27 and is turned on by default.  It can be
-turned off by setting `quality.mask = FALSE` for either `getBetas` or
-`openSesame`.
+only supports EPIC, HM450 and HM27 and is turned on by default and achieved in
+the function `qualityMask`.
 
 ## Specify Your Own Manifest
 

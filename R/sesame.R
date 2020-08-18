@@ -267,7 +267,7 @@ getSexInfo <- function(sset) {
     probe2chr <- sesameDataGet(paste0(
         sset@platform,'.probeInfo'))$probe2chr.hg19
 
-    xLinkedBeta <- getBetas(subsetSignal(sset, xLinked), quality.mask=FALSE)
+    xLinkedBeta <- getBetas(subsetSignal(sset, xLinked))
     intens <- totalIntensities(sset)
     probes <- intersect(names(intens), names(probe2chr))
     intens <- intens[probes]
@@ -372,6 +372,9 @@ inferSex <- function(sset) {
 #' sset better be background subtracted and dyebias corrected for
 #' best accuracy
 #'
+#' Please note: the betas should come from sigset *without*
+#' channel inference.
+#'
 #' @param sset a \code{SigSet}
 #' @return string of ethnicity
 #' @importFrom randomForest randomForest
@@ -392,11 +395,7 @@ inferEthnicity <- function(sset) {
     rsprobes <- ethnicity.inference$rs.probes
     ethnicity.model <- ethnicity.inference$model
     af <- c(
-        getBetas(
-            subsetSignal(sset, rsprobes),
-            quality.mask = FALSE,
-            correct.switch = FALSE,
-            nondetection.mask=FALSE),
+        getBetas(sset)[rsprobes],
         getAFTypeIbySumAlleles(
             subsetSignal(sset, ccsprobes)))
 
@@ -412,8 +411,8 @@ inferEthnicity <- function(sset) {
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @return a filtered \code{SigSet}
 #' @examples
-#' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-#' betas.masked <- qualityMaskBeta(betas, "HM450")
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' sset.masked <- qualityMask(sset)
 #' @export 
 qualityMask <- function(
     sset,
