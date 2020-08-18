@@ -1,19 +1,24 @@
 
 #' Generate summary numbers that indicative of experiment quality
-#'
+#' Please provide a raw sigset (before any preprocessing). Usually
+#' directly from readIDATpair
+#' 
 #' @param sset a \code{SigSet} object
-#' @param betas processed beta values
 #' @return a sesameQC class object
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sesameQC(sset)
 #' @export
-sesameQC <- function(sset, betas = NULL) {
+sesameQC <- function(sset) {
 
     qc <- structure(data.frame(), class='sesameQC')
+    ## number of type II probes
     qc$num_probes_II <- nrow(II(sset))
+    ## number of type I (red channel) probes
     qc$num_probes_IR <- nrow(IR(sset))
+    ## number of type I (grn channel) probes
     qc$num_probes_IG <- nrow(IG(sset))
+    ## number of all probes
     qc$num_probes_all <- qc$num_probes_II +
         qc$num_probes_IR + qc$num_probes_IG
     qc$mean_ii <- mean(II(sset), na.rm = TRUE)
@@ -32,9 +37,9 @@ sesameQC <- function(sset, betas = NULL) {
         qc[[paste0('InfI_switch_', nm)]] <- unname(res[nm])
     }
 
-    if (is.null(betas)) {
-        betas <- getBetas(sset)
-    }
+    sset1 <- noob(sset)
+    sset2 <- dyeBiasCorrTypeINorm(sset1)
+    betas <- getBetas(sset2)
 
     qc$num_probes <- length(betas)
     qc$num_na <- sum(is.na(betas))
@@ -81,59 +86,68 @@ print.sesameQC <- function(x, ...) {
     cat('=======================\n')
     cat('=      Intensities    =\n')
     cat('=======================\n')
-    cat('No. probes                     ', x$num_probes_all, '\n')
-    cat('mean (M/U) (in-band InfI):     ', x$mean_intensity, '\n')
-    cat('mean (M+U) (in-band InfI):     ', x$mean_intensity_total, '\n')
+    cat('No. probes (num_probes_all)       ', x$num_probes_all, '\n')
+    cat('mean (M/U) (mean_intensity):      ', x$mean_intensity, '\n')
+    cat('mean (M+U) (mean_intensity_total):', x$mean_intensity_total, '\n')
 
     cat('\n-- Infinium II --\n')
-    cat(sprintf('No. probes:                    %d (%1.3f%%)\n',
+    cat(sprintf(
+        'No. probes: (num_probes_II)        %d (%1.3f%%)\n',
         x$num_probes_II, x$num_probes_II / x$num_probes_all * 100))
-    cat('Mean Intensity:                ', x$mean_ii, '\n')
+    cat('Mean Intensity (mean_ii):         ', x$mean_ii, '\n')
     
     cat('\n-- Infinium I (Red) -- \n')
-    cat(sprintf('No. probes:                     %d (%1.3f%%)\n',
+    cat(sprintf(
+        'No. probes: (num_probes_IR)        %d (%1.3f%%)\n',
         x$num_probes_IR, x$num_probes_IR / x$num_probes_all * 100))
-    cat('No. Probes Consistent Channel: ', x$InfI_switch_R2R, '\n')
-    cat('No. Porbes Swapped Channel:    ', x$InfI_switch_R2G, '\n')
-    cat('No. Probes Low Intensity:      ', x$InfI_switch_FailedR, '\n')
-    cat('Mean Intensity (in-band):      ', x$mean_inb_red, '\n')
-    cat('Mean Intensity (out-of-band):  ', x$mean_oob_red, '\n')
+    cat('No. Probes Consistent Channel:    ', x$InfI_switch_R2R, '\n')
+    cat('No. Porbes Swapped Channel:       ', x$InfI_switch_R2G, '\n')
+    cat('No. Probes Low Intensity:         ', x$InfI_switch_FailedR, '\n')
+    cat('Mean Intensity (in-band):         ', x$mean_inb_red, '\n')
+    cat('Mean Intensity (out-of-band):     ', x$mean_oob_red, '\n')
     
     cat('\n-- Infinium I (Grn) -- \n')
     cat(sprintf('No. probes:                     %d (%1.3f%%)\n',
         x$num_probes_IG, x$num_probes_IG / x$num_probes_all * 100))
-    cat('No. Probes Consistent Channel: ', x$InfI_switch_G2G, '\n')
-    cat('No. Probes Swapped Channel:    ', x$InfI_switch_G2R, '\n')
-    cat('No. Probes Low Intensity:      ', x$InfI_switch_FailedG, '\n')
-    cat('Mean Intensity (in-band):      ', x$mean_inb_grn, '\n')
-    cat('Mean Intensity (out-of-band):  ', x$mean_oob_grn, '\n')
+    cat('No. Probes Consistent Channel:    ', x$InfI_switch_G2G, '\n')
+    cat('No. Probes Swapped Channel:       ', x$InfI_switch_G2R, '\n')
+    cat('No. Probes Low Intensity:         ', x$InfI_switch_FailedG, '\n')
+    cat('Mean Intensity (in-band):         ', x$mean_inb_grn, '\n')
+    cat('Mean Intensity (out-of-band):     ', x$mean_oob_grn, '\n')
+
+    cat('\n')
+    cat('=======================\n')
+    cat('=      Beta Values    =\n')
+    cat('=======================\n')
+    cat('No. probes:                       ', x$num_probes, '\n')
+    cat('No. probes w/ NA (num_na,frac_na):',
+        sprintf('%d (%1.3f%%)\n', x$num_na, x$frac_na))
     
     cat('\n')
     cat('=======================\n')
     cat('=      Beta Values    =\n')
     cat('=======================\n')
-    cat('No. probes:                    ', x$num_probes, '\n')
-    cat('No. probes with NA:            ',
-        sprintf('%d (%1.3f%%)\n', x$num_na, x$frac_na))
-    cat('Mean Betas:                    ', x$mean_beta, '\n')
-    cat('Median Betas:                  ', x$median_beta, '\n')
+    cat('Mean Betas:                       ', x$mean_beta, '\n')
+    cat('Median Betas:                     ', x$median_beta, '\n')
     cat(sprintf('%% Unmethylated (Beta < 0.3):    %1.3f%%\n', x$Frac_Unmeth))
     cat(sprintf('%% Methylated (Beta > 0.7):      %1.3f%%\n', x$Frac_Meth))
 
     for (pt in c('cg','ch','rs')) {
         cat(sprintf('\n-- %s probes --\n', pt))
-        cat('No. Probes:                    ',
+        cat('No. Probes:                       ',
             x[[paste0('num_probes_', pt)]], '\n')
-        cat('No. Probes with NA:            ',
+        cat('No. Probes with NA:               ',
             sprintf('%d (%1.3f%%)\n',
                 x[[paste0('num_na_', pt)]], x[[paste0('frac_na_', pt)]]))
-        cat('Mean Betas:                    ',
+        cat('Mean Betas:                       ',
             x[[paste0('mean_beta_', pt)]], '\n')
-        cat('Median Betas:                  ',
+        cat('Median Betas:                     ',
             x[[paste0('median_beta_', pt)]], '\n')
-        cat(sprintf('%% Unmethylated (Beta < 0.3):    %1.3f%%\n',
+        cat(sprintf(
+            '%% Unmethylated (Beta < 0.3):       %1.3f%%\n',
             x[[paste0('frac_unmeth_', pt)]]))
-        cat(sprintf('%% Methylated (Beta > 0.7):      %1.3f%%\n',
+        cat(sprintf(
+            '%% Methylated (Beta > 0.7):         %1.3f%%\n',
             x[[paste0('frac_meth_', pt)]]))
     }
 

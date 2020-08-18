@@ -15,8 +15,13 @@ detectionZero <- function(sset, force=FALSE) {
     method <- "Zero"
     if (!force && method %in% names(pval(sset))) return(sset)
     
+    if (!('pvals' %in% extra(sset)))
+        extra(sset)[['pvals']] <- list()
+    
     nms <- probeNames(sset)
-    pval(sset)[[method]] <- setNames(rep(0, times = length(nms)), nms)
+    extra(sset)[['pvals']][[method]] <-
+        setNames(rep(0, times = length(nms)), nms)
+    
     sset
 }
 
@@ -54,7 +59,11 @@ detectionPnegEcdf <- function(sset, force=FALSE) {
     names(pII) <- rownames(II(sset))
 
     ## note: no sorting here
-    pval(sset)[[method]] <- c(pIR,pIG,pII)
+    if (!('pvals' %in% extra(sset)))
+        extra(sset)[['pvals']] <- list()
+    
+    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
+
     sset
 }
 
@@ -94,7 +103,10 @@ detectionPoobEcdf <- function(sset, force=FALSE) {
     names(pII) <- rownames(II(sset))
 
     ## should have PoobEcdf aliased
-    pval(sset)[[method]] <- c(pIR,pIG,pII)
+    if (!('pvals' %in% extra(sset)))
+        extra(sset)[['pvals']] <- list()
+    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
+    
     sset
 }
 
@@ -139,7 +151,11 @@ detectionPnegNorm <- function(sset, force=FALSE) {
     muR <- median(negctls$R)
     sdR <- sd(negctls$R)
     sset <- detectionPfixedNorm(sset, muG, sdG, muR, sdR)
-    pval(sset)[[method]] <- pval(sset)[['PfixNorm']]
+
+    if (!('pvals' %in% extra(sset)))
+        extra(sset)[['pvals']] <- list()
+    
+    extra(sset)[['pvals']][[method]] <- extra(sset)[['pvals']][['PfixNorm']]
     sset
 }
 
@@ -185,7 +201,10 @@ detectionPfixedNorm <- function(
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    pval(sset)[[method]] <- c(pIR,pIG,pII)
+    if (!('pvals' %in% extra(sset)))
+        extra(sset)[['pvals']] <- list()
+    
+    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
     sset
 }
 
@@ -223,7 +242,10 @@ detectionPnegNormGS <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    pval(sset)[[method]] <- c(pIR,pIG,pII)
+    if (!('pvals' %in% extra(sset)))
+        extra(sset)[['pvals']] <- list()
+    
+    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
     sset
     
 }
@@ -264,7 +286,10 @@ detectionPnegNormTotal <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    pval(sset)[[method]] <- c(pIR,pIG,pII)
+    if (!('pvals' %in% extra(sset)))
+        extra(sset)[['pvals']] <- list()
+    
+    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
     sset
 }
 

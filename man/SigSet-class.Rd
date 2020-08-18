@@ -40,10 +40,6 @@ one of "HM27", "HM450" or "EPIC".
 
 \item{\code{IR}}{intensity table for type I probes in red channel}
 
-\item{\code{IGG}}{Type-I green that is inferred to be green}
-
-\item{\code{IRR}}{Type-I red that is inferred to be red}
-
 \item{\code{II}}{intensity table for type II probes}
 
 \item{\code{oobG}}{out-of-band probes in green channel}
@@ -53,6 +49,11 @@ one of "HM27", "HM450" or "EPIC".
 \item{\code{ctl}}{all the control probe intensities}
 
 \item{\code{pval}}{named numeric vector of p-values}
+
+\item{\code{extra}}{extra data, currently,
+IGG => Type-I green that is inferred to be green
+IRR => Type-I red that is inferred to be red
+pvals => list of other pvals}
 
 \item{\code{platform}}{"EPIC", "HM450" or "HM27"}
 }}

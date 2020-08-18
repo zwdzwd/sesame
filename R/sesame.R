@@ -34,13 +34,15 @@
 #'
 #' @slot IG intensity table for type I probes in green channel
 #' @slot IR intensity table for type I probes in red channel
-#' @slot IGG Type-I green that is inferred to be green
-#' @slot IRR Type-I red that is inferred to be red
 #' @slot II intensity table for type II probes
 #' @slot oobG out-of-band probes in green channel
 #' @slot oobR out-of-band probes in red channel
 #' @slot ctl all the control probe intensities
 #' @slot pval named numeric vector of p-values
+#' @slot extra extra data, currently,
+#' IGG => Type-I green that is inferred to be green
+#' IRR => Type-I red that is inferred to be red
+#' pvals => list of other pvals
 #' @slot platform "EPIC", "HM450" or "HM27"
 #' @return a \code{SigSet} object
 #'
@@ -58,12 +60,22 @@ setClass(
         II = 'matrix',
         oobG = 'matrix',
         oobR = 'matrix',
-        IGG = 'logical',
-        IRR = 'logical',
-        ## the NBeads slots are removed
         ctl = 'data.frame',
-        pval = 'list',
+        pval = 'numeric',
+        extra = 'list', # extra data, extended to allow additional data
         platform = 'character'))
+
+## update old SigSet without slot extra
+updateSigSet <- function(sset) {
+    sset2 <- SigSet(sset@platform)
+    for(sname in c("IG", "IR", "II", "oobG", "oobR", "ctl", "pval", "extra", "platform")) {
+        if (sname == 'extra')
+            slot(sset2, sname) <- list()
+        else
+            slot(sset2, sname) <- slot(sset, sname)
+    }
+    sset2
+}
 
 #' Constructor method of SigSet class.
 #'
@@ -80,7 +92,7 @@ setMethod(
     "initialize", "SigSet",
     function(.Object, platform, ...)  {
         .Object <- callNextMethod()
-        .Object@pval <- list()
+        .Object@extra <- list()
         .Object@platform <- platform # match.arg(platform)
         .Object
     })
@@ -125,18 +137,8 @@ setMethod(
             "...\n - @oobR probes:", nrow(object@oobR),
             '-', as.numeric(head(object@oobR, n=3)),
             "...\n - @ctl probes:", nrow(object@ctl),
-            "...\n")
-        if (is(object@pval, "numeric")) { # backward-compatible
-            cat(" - @pval:", length(object@pval),
-                "-", as.numeric(head(object@pval, n=3)), "...\n")
-        } else {
-            if(length(object@pval) > 0) {
-                for (nm in names(object@pval)) {
-                    cat(" - @pval ", nm, ":", length(object@pval[[nm]]),
-                        "-", as.numeric(head(object@pval[[nm]], n=3)), "...\n")
-                }
-            }
-        }
+            "...\n - @pval:", length(object@pval),
+            "-", as.numeric(head(object@pval, n=3)), "...\n")
     })
 
 #' Select a subset of probes
@@ -332,105 +334,6 @@ inferSexKaryotypes <- function(sset) {
     karyotype
 }
 
-#' Infer and reset color channel for Type-I probes instead of
-#' using what is specified in manifest
-#' 
-#' @param sset a \code{SigSet}
-#' @param verbose whether to print correction summary
-#' @param switch_failed whether to switch failed probes (default to FALSE)
-#' @param summary return summarized numbers only.
-#' @importFrom matrixStats rowMaxs
-#' @importFrom matrixStats rowMins
-#' @return a \code{SigSet}, or numerics if summary == TRUE
-#' @examples
-#'
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' inferTypeIChannel(sset)
-#' 
-#' @export
-inferTypeIChannel <- function(
-    sset, switch_failed = FALSE, verbose = FALSE, summary = FALSE) {
-    
-    red_channel <- rbind(IR(sset), oobR(sset))
-    grn_channel <- rbind(oobG(sset), IG(sset))
-    n_red <- nrow(IR(sset))
-    red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sset)) # old red index
-
-    ## If there are NA in the probe intensity, exclude these probes.
-    ## This is rare and usually occurred when manifest is not complete
-    no_na <- complete.cases(cbind(red_channel, grn_channel))
-    if (!all(no_na)) {
-        red_channel <- red_channel[no_na,]
-        grn_channel <- grn_channel[no_na,]
-        red_idx0 <- red_idx0[no_na]
-        if (verbose) {
-            message(
-                'Warning! ', sum(!no_na),
-                ' Infinium I probes are excluded for having NA intensity.')
-        }
-    }
-    
-    red_max <- rowMaxs(red_channel)
-    grn_max <- rowMaxs(grn_channel)
-    red_idx <- red_max > grn_max # new red index
-
-    ## stop inference when in-band signal is lower than a minimum
-    min_ib <- quantile(
-        pmin(rowMins(red_channel), rowMins(grn_channel)), 0.95)
-    
-    big_idx <- pmax(red_max, grn_max) > min_ib # in-band is big enough?
-
-    smry <- c(
-        R2R = sum(red_idx0 & red_idx & big_idx),
-        G2G = sum(!red_idx0 & !red_idx & big_idx),
-        R2G = sum(red_idx0 & !red_idx & big_idx),
-        G2R = sum(!red_idx0 & red_idx & big_idx),
-        FailedR = sum(red_idx0 & !big_idx),
-        FailedG = sum(!red_idx0 & !big_idx))
-
-    if (!switch_failed)
-        red_idx <- ifelse(big_idx, red_idx, red_idx0)
-    
-    sset@IRR <- red_idx[seq_len(n_red)]
-    sset@IGG <- !red_idx[(n_red+1):length(red_idx)]
-    
-    if (summary) {
-        return(smry)
-    }
-
-    if (verbose) {
-        message(
-            'Type-I color channel reset:\n',
-            'R>R: ', smry['R2R'], '\n',
-            'G>G: ', smry['G2G'], '\n',
-            'R>G: ', smry['R2G'], '\n',
-            'G>R: ', smry['G2R'], '\n',
-            'Red Failed: ', smry['FailedR'], '\n',
-            'Grn Failed: ', smry['FailedG'])
-    }
-
-    ## if (switch_failed) {
-    ##     IR(sset) <- red_channel[red_idx,]
-    ##     oobG(sset) <- grn_channel[red_idx,]
-    ##     IG(sset) <- grn_channel[!red_idx,]
-    ##     oobR(sset) <- red_channel[!red_idx,]
-    ## } else {
-    ##     IR(sset) <- rbind(
-    ##         red_channel[red_idx & big_idx,],
-    ##         red_channel[red_idx0 & !big_idx,])
-    ##     oobG(sset) <- rbind(
-    ##         grn_channel[red_idx & big_idx,],
-    ##         grn_channel[red_idx0 & !big_idx,])
-    ##     IG(sset) <- rbind(
-    ##         grn_channel[!red_idx & big_idx,],
-    ##         grn_channel[!red_idx0 & !big_idx,])
-    ##     oobR(sset) <- rbind(
-    ##         red_channel[!red_idx & big_idx,],
-    ##         red_channel[!red_idx0 & !big_idx,])
-    ## }
-    sset
-}
-
 #' Infer Sex
 #'
 #' @param sset a \code{SigSet}
@@ -500,40 +403,81 @@ inferEthnicity <- function(sset) {
     as.character(predict(ethnicity.model, af))
 }
 
-## Type-I Grn after correction
-IG2 <- function(sset) {
-    if (.hasSlot(sset, 'IGG') && length(sset@IGG) > 0) {
-        rbind(sset@IG[sset@IGG,], sset@oobG[!sset@IRR,])
+#' Mask beta values by design quality
+#' 
+#' Currently quality masking only supports three platforms
+#' 
+#' @param betas numeric vector of beta values
+#' @param platform HM27, HM450 or EPIC
+#' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
+#' @return a filtered \code{SigSet}
+#' @examples
+#' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
+#' betas.masked <- qualityMaskBeta(betas, "HM450")
+#' @export 
+qualityMask <- function(
+    sset,
+    mask.use.tcga=FALSE) {
+
+    if(!(sset@platform %in% c('HM27','HM450','EPIC'))) {
+        message(sprintf(
+            "Quality masking is not supported for %s.", sset@platform))
+        return(sset)
+    }
+        
+    
+    if (mask.use.tcga) {
+        stopifnot(platform == 'HM450')
+        mask <- sesameDataGet('HM450.probeInfo')$mask.tcga
     } else {
-        IG(sset)
+        mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
     }
+
+    id_IR <- is.na(match(rownames(sset@IR), mask))
+    sset@IR   <- sset@IR[id_IR,]
+    sset@oobG <- sset@oobG[id_IR,]
+    
+    id_IG <- is.na(match(rownames(sset@IG), mask))
+    sset@IG <- sset@IG[id_IG,]
+    sset@oobR <- sset@oobR[id_IG,]
+    
+    id_II <- is.na(match(rownames(sset@II), mask))
+    sset@II <- sset@II[id_II,]
+
+    return(sset)
 }
 
-## Type-I Red after correction
-IR2 <- function(sset) {
-    if (.hasSlot(sset, 'IGG') && length(sset@IGG) > 0) {
-        rbind(sset@IR[sset@IRR,], sset@oobR[!sset@IGG,])
+#' Mask Sigset by detection p-value
+#'
+#' @param sset a \code{SigSet}
+#' @param pval.method which method to use in calculating p-values
+#' @param pval.threshold the p-value threshold
+#' @return a filtered \code{SigSet}
+#' @examples
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' sset.masked <- detectionMask(sset)
+#' @export
+detectionMask <- function(
+    sset, pval.method=NULL, pval.threshold=0.05) {
+    if (is.null(pval.method)) {
+        pv <- pval(sset)
     } else {
-        IR(sset)
+        stopifnot('pvals' %in% sset@extra && pval.method %in% sset@extra$pvals)
+        pv <- sset@extra$pvals[[pval.method]]
     }
-}
+    
+    id_IR <- pv[match(rownames(sset@IR), names(pv))] < pval.threshold
+    sset@IR   <- sset@IR[id_IR,]
+    sset@oobG <- sset@oobG[id_IR,]
+    
+    id_IG <- pv[match(rownames(sset@IG), names(pv))] < pval.threshold
+    sset@IG <- sset@IG[id_IG,]
+    sset@oobR <- sset@oobR[id_IG,]
+    
+    id_II <- pv[match(rownames(sset@II), names(pv))] < pval.threshold
+    sset@II <- sset@II[id_II,]
 
-## OOB Grn after correction
-oobG2 <- function(sset) {
-    if (.hasSlot(sset, 'IGG') && length(sset@IGG) > 0) {
-        rbind(sset@oobG[sset@IRR,], sset@IG[!sset@IGG,])
-    } else { # backward-compatible
-        oobG(sset)
-    }
-}
-
-## OOB Red after correction
-oobR2 <- function(sset) {
-    if (.hasSlot(sset, 'IGG') && length(sset@IGG) > 0) {
-        rbind(sset@oobR[sset@IGG,], sset@IR[!sset@IRR,])
-    } else { # backward-compatible
-        oobR(sset)
-    }
+    sset
 }
 
 #' Get beta Values
@@ -544,80 +488,39 @@ oobR2 <- function(sset) {
 #' signal are combined. This prevents color-channel switching due to SNPs.
 #' 
 #' @param sset \code{SigSet}
-#' @param quality.mask whether to mask low quality probes
-#' @param nondetection.mask whether to mask nondetection
-#' @param correct.switch whether to correct switch
-#' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
-#' @param pval.method method for detection threshold, like pOOBAH, PnegEcdf
-#' @param pval.threshold p-value threshold for nondetection mask
 #' @param sum.TypeI whether to sum type I channels
 #' @return a numeric vector, beta values
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getBetas(sset)
 #' @export
-getBetas <- function(
-    sset,
-    quality.mask = TRUE,
-    nondetection.mask = TRUE,
-    correct.switch = TRUE,
-    mask.use.tcga = FALSE,
-    pval.threshold = 0.05,
-    pval.method = NULL,
-    sum.TypeI = FALSE) {
-    
+getBetas <- function(sset, sum.TypeI = FALSE) {
+
     if (is(sset, "SigSetList")) {
         return(do.call(cbind, lapply(
-            sset, getBetas, quality.mask = quality.mask, 
-            nondetection.mask = nondetection.mask,
-            mask.use.tcga = mask.use.tcga, pval.threshold = pval.threshold)))
+            sset, getBetas, sum.TypeI=sum.TypeI)))
     }
     
     stopifnot(is(sset, "SigSet"))
 
+    IGs <- IG2(sset)
+    IRs <- IR2(sset)
+
     ## optionally summing channels protects
     ## against channel misspecification
-    if (correct.switch) {
-        IGs <- IG2(sset)
-        IRs <- IR2(sset)
-        if (sum.TypeI) {
-            IGs <- IGs + oobR2(sset)
-            IRs <- IRs + oobG2(sset)
-        }
-    } else {
-        IGs <- IG(sset)
-        IRs <- IR(sset)
-        if (sum.TypeI) {
-            IGs <- IGs + oobR(sset)
-            IRs <- IRs + oobG(sset)
-        }
+    if (sum.TypeI) {
+        IGs <- IGs + oobR2(sset)
+        IRs <- IRs + oobG2(sset)
     }
-
+    
     betas1 <- pmax(IGs[,'M'],1) / pmax(IGs[,'M']+IGs[,'U'],2)
     betas2 <- pmax(IRs[,'M'],1) / pmax(IRs[,'M']+IRs[,'U'],2)
     betas3 <- pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2)
-    betas <- c(betas1, betas2, betas3)
-    if (nondetection.mask) {
-        stopifnot(length(pval(sset)) > 0)
-        if (is.null(pval.method)) {
-            pval.method <- names(pval(sset))[1]
-        }
-        stopifnot(pval.method %in% names(pval(sset)))
-        pv <- pval(sset)[[pval.method]]
-        pv <- pv[match(names(betas), names(pv))]
-        betas[pv > pval.threshold] <- NA
-    }
-
-    ## currently quality masking only supports three platforms
-    if (quality.mask && sset@platform %in% c('HM27','HM450','EPIC')) {
-        if (mask.use.tcga) {
-            stopifnot(sset@platform == 'HM450')
-            mask <- sesameDataGet('HM450.probeInfo')$mask.tcga
-        } else {
-            mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
-        }
-        betas[names(betas) %in% mask] <- NA
-    }
+    betas <- setNames(rep(NA, length(pval(sset))), names(pval(sset)))
+    betas[names(betas1)] <- betas1
+    betas[names(betas2)] <- betas2
+    betas[names(betas3)] <- betas3
+    
     betas[order(names(betas))]
 }
 
@@ -734,7 +637,10 @@ readIDATpair <- function(
         controls <- df_address$controls
     }
 
-    pOOBAH(chipAddressToSignal(dm, manifest, controls))
+    ## this is critical, sset must have default one p-value
+    sset <- pOOBAH(chipAddressToSignal(dm, manifest, controls))
+    pval(sset) <- extra(sset)[['pvals']][['pOOBAH']]
+    sset
 }
 
 #' Identify IDATs from a directory

@@ -366,3 +366,53 @@ setGeneric("ctl", function(x) {
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(ctl(sset))
 setMethod("ctl", "SigSet", function(x){ x@ctl })
+
+############
+#### extra ###
+############
+#' extra replacement generic
+#' 
+#' @param x object of \code{SigSet}
+#' @param value new value
+#' 
+#' @rdname extra-replace-methods
+#' @docType methods
+#' @export
+setGeneric("extra<-", function(x, value) {
+    standardGeneric("extra<-")
+})
+
+#' Replace extra slot of SigSet class
+#' 
+#' @rdname extra-replace-methods
+#' @return a new \code{SigSet}
+#' @docType methods
+#' @aliases extra<-,SigSet-method
+#' @examples 
+#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' df <- extra(sset)
+#' df[1,1] <- 10
+#' extra(sset) <- df 
+setReplaceMethod("extra", "SigSet", function(x, value){ x@extra <- value; x})
+
+#' extra getter generic
+#' 
+#' @param x object of \code{SigSet}
+#' 
+#' @rdname extra-methods
+#' @docType methods
+#' @export
+setGeneric("extra", function(x) {
+    standardGeneric("extra")
+})
+
+#' Get extra slot of SigSet class
+#' 
+#' @rdname extra-methods
+#' @return The extra slot of \code{SigSet}
+#' @aliases extra,SigSet-method
+#' @examples 
+#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' head(extra(sset))
+setMethod("extra", "SigSet", function(x){ x@extra })
+
