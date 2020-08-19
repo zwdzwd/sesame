@@ -267,7 +267,7 @@ getSexInfo <- function(sset) {
     probe2chr <- sesameDataGet(paste0(
         sset@platform,'.probeInfo'))$probe2chr.hg19
 
-    xLinkedBeta <- getBetas(subsetSignal(sset, xLinked))
+    xLinkedBeta <- getBetas(subsetSignal(sset, xLinked), mask=FALSE)
     intens <- totalIntensities(sset)
     probes <- intersect(names(intens), names(probe2chr))
     intens <- intens[probes]
@@ -395,7 +395,7 @@ inferEthnicity <- function(sset) {
     rsprobes <- ethnicity.inference$rs.probes
     ethnicity.model <- ethnicity.inference$model
     af <- c(
-        getBetas(sset)[rsprobes],
+        getBetas(sset, mask=FALSE)[rsprobes],
         getAFTypeIbySumAlleles(
             subsetSignal(sset, ccsprobes)))
 
@@ -432,16 +432,7 @@ qualityMask <- function(
         mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
     }
 
-    id_IR <- is.na(match(rownames(sset@IR), mask))
-    sset@IR   <- sset@IR[id_IR,]
-    sset@oobG <- sset@oobG[id_IR,]
-    
-    id_IG <- is.na(match(rownames(sset@IG), mask))
-    sset@IG <- sset@IG[id_IG,]
-    sset@oobR <- sset@oobR[id_IG,]
-    
-    id_II <- is.na(match(rownames(sset@II), mask))
-    sset@II <- sset@II[id_II,]
+    sset@extra$mask <- union(sset@extra$mask, mask)
 
     return(sset)
 }
@@ -464,17 +455,9 @@ detectionMask <- function(
         stopifnot('pvals' %in% sset@extra && pval.method %in% sset@extra$pvals)
         pv <- sset@extra$pvals[[pval.method]]
     }
-    
-    id_IR <- pv[match(rownames(sset@IR), names(pv))] < pval.threshold
-    sset@IR   <- sset@IR[id_IR,]
-    sset@oobG <- sset@oobG[id_IR,]
-    
-    id_IG <- pv[match(rownames(sset@IG), names(pv))] < pval.threshold
-    sset@IG <- sset@IG[id_IG,]
-    sset@oobR <- sset@oobR[id_IG,]
-    
-    id_II <- pv[match(rownames(sset@II), names(pv))] < pval.threshold
-    sset@II <- sset@II[id_II,]
+
+    mask <- names(pv)[pv > pval.threshold]
+    sset@extra$mask <- union(sset@extra$mask, mask)
 
     sset
 }
@@ -488,39 +471,43 @@ detectionMask <- function(
 #' 
 #' @param sset \code{SigSet}
 #' @param sum.TypeI whether to sum type I channels
+#' @param mask whether to use mask
 #' @return a numeric vector, beta values
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getBetas(sset)
 #' @export
-getBetas <- function(sset, sum.TypeI = FALSE) {
+getBetas <- function(sset, mask=TRUE, sum.TypeI = FALSE) {
 
     if (is(sset, "SigSetList")) {
         return(do.call(cbind, lapply(
-            sset, getBetas, sum.TypeI=sum.TypeI)))
+            sset, getBetas, mask=mask, sum.TypeI=sum.TypeI)))
     }
     
     stopifnot(is(sset, "SigSet"))
 
-    IGs <- IG2(sset)
-    IRs <- IR2(sset)
+    IGs <- IG(sset)
+    IRs <- IR(sset)
 
     ## optionally summing channels protects
     ## against channel misspecification
     if (sum.TypeI) {
         IGs <- IGs + oobR2(sset)
         IRs <- IRs + oobG2(sset)
+    } else if (!is.null(sset@extra$IGG) && !is.null(sset@extra$IRR)) {
+        IGs[!sset@extra$IGG,] <- sset@extra$oobR[!sset@extra$IGG,]
+        IRs[!sset@extra$IRR,] <- sset@extra$oobG[!sset@extra$IRR,]
     }
-    
-    betas1 <- pmax(IGs[,'M'],1) / pmax(IGs[,'M']+IGs[,'U'],2)
-    betas2 <- pmax(IRs[,'M'],1) / pmax(IRs[,'M']+IRs[,'U'],2)
-    betas3 <- pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2)
-    betas <- setNames(rep(NA, length(pval(sset))), names(pval(sset)))
-    betas[names(betas1)] <- betas1
-    betas[names(betas2)] <- betas2
-    betas[names(betas3)] <- betas3
-    
-    betas[order(names(betas))]
+
+    betas <- c(
+        pmax(IGs[,'M'],1) / pmax(IGs[,'M']+IGs[,'U'],2),
+        pmax(IRs[,'M'],1) / pmax(IRs[,'M']+IRs[,'U'],2),
+        pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2))
+
+    if (mask)
+        betas[!is.na(match(names(betas), sset@extra$mask))] <- NA
+
+    betas
 }
 
 #' Get allele frequency treating type I by summing alleles

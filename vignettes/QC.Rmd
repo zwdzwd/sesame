@@ -102,6 +102,16 @@ p2 <- ggplot(qc10) +
 WGG(p1) + WGG(p2, RightOf())
 ```
 
+# Quality Ranking
+
+Sesame provide convenient function to compare your sample with
+public data sets processed with the same pipeline. All you need
+is a raw SigSet.
+```{r}
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+qualityRank(sset)
+```
+
 # Output explicit and Infinium-I-derived SNP to VCF
 
 ```{r}

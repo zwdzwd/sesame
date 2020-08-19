@@ -84,7 +84,7 @@ inferTypeIChannel <- function(
 
 ## Type-I Grn after correction
 IG2 <- function(sset) {
-    if ('IGG' %in% sset@extra & 'IRR' %in% sset@extra) {
+    if ('IGG' %in% names(sset@extra) && 'IRR' %in% names(sset@extra)) {
         rbind(sset@IG[sset@extra$IGG,], sset@oobG[!sset@extra$IRR,])
     } else {
         IG(sset)
@@ -93,7 +93,7 @@ IG2 <- function(sset) {
 
 ## Type-I Red after correction
 IR2 <- function(sset) {
-    if ('IGG' %in% sset@extra & 'IRR' %in% sset@extra) {
+    if ('IGG' %in% names(sset@extra) && 'IRR' %in% names(sset@extra)) {
         rbind(sset@IR[sset@extra$IRR,], sset@oobR[!sset@extra$IGG,])
     } else {
         IR(sset)
@@ -102,7 +102,7 @@ IR2 <- function(sset) {
 
 ## OOB Grn after correction
 oobG2 <- function(sset) {
-    if ('IGG' %in% sset@extra & 'IRR' %in% sset@extra) {
+    if ('IGG' %in% names(sset@extra) && 'IRR' %in% names(sset@extra)) {
         rbind(sset@oobG[sset@extra$IRR,], sset@IG[!sset@extra$IGG,])
     } else { # backward-compatible
         oobG(sset)
@@ -111,9 +111,11 @@ oobG2 <- function(sset) {
 
 ## OOB Red after correction
 oobR2 <- function(sset) {
-    if ('IGG' %in% sset@extra & 'IRR' %in% sset@extra) {
+    if ('IGG' %in% names(sset@extra) && 'IRR' %in% names(sset@extra)) {
         rbind(sset@oobR[sset@extra$IGG,], sset@IR[!sset@extra$IRR,])
     } else { # backward-compatible
         oobR(sset)
     }
 }
+
+

@@ -13,9 +13,9 @@ detectionZero <- function(sset, force=FALSE) {
 
     stopifnot(is(sset, "SigSet"))
     method <- "Zero"
-    if (!force && method %in% names(pval(sset))) return(sset)
+    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
-    if (!('pvals' %in% extra(sset)))
+    if (!('pvals' %in% names(extra(sset))))
         extra(sset)[['pvals']] <- list()
     
     nms <- probeNames(sset)
@@ -43,7 +43,7 @@ detectionPnegEcdf <- function(sset, force=FALSE) {
 
     stopifnot(is(sset, "SigSet"))
     method <- "PnegEcdf"
-    if (!force && method %in% names(pval(sset))) return(sset)
+    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
 
     negctls <- negControls(sset)
     funcG <- ecdf(negctls$G)
@@ -59,7 +59,7 @@ detectionPnegEcdf <- function(sset, force=FALSE) {
     names(pII) <- rownames(II(sset))
 
     ## note: no sorting here
-    if (!('pvals' %in% extra(sset)))
+    if (!('pvals' %in% names(extra(sset))))
         extra(sset)[['pvals']] <- list()
     
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
@@ -88,7 +88,7 @@ detectionPoobEcdf <- function(sset, force=FALSE) {
 
     stopifnot(is(sset, "SigSet"))
     method <- "pOOBAH"
-    if (!force && method %in% names(pval(sset))) return(sset)
+    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
 
     funcG <- ecdf(oobG(sset))
     funcR <- ecdf(oobR(sset))
@@ -103,7 +103,7 @@ detectionPoobEcdf <- function(sset, force=FALSE) {
     names(pII) <- rownames(II(sset))
 
     ## should have PoobEcdf aliased
-    if (!('pvals' %in% extra(sset)))
+    if (!('pvals' %in% names(extra(sset))))
         extra(sset)[['pvals']] <- list()
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
     
@@ -143,7 +143,7 @@ detectionPnegNorm <- function(sset, force=FALSE) {
 
     stopifnot(is(sset, "SigSet"))
     method <- "PnegNorm"
-    if (!force && method %in% names(pval(sset))) return(sset)
+    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
     negctls <- negControls(sset)
     muG <- median(negctls$G)
@@ -152,7 +152,7 @@ detectionPnegNorm <- function(sset, force=FALSE) {
     sdR <- sd(negctls$R)
     sset <- detectionPfixedNorm(sset, muG, sdG, muR, sdR)
 
-    if (!('pvals' %in% extra(sset)))
+    if (!('pvals' %in% names(extra(sset))))
         extra(sset)[['pvals']] <- list()
     
     extra(sset)[['pvals']][[method]] <- extra(sset)[['pvals']][['PfixNorm']]
@@ -187,7 +187,7 @@ detectionPfixedNorm <- function(
     
     stopifnot(is(sset, "SigSet"))
     method <- "PfixedNorm"
-    if (!force && method %in% names(pval(sset))) return(sset)
+    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
     pIR <- 1 - pnorm(
         pmax(IR(sset)[,'M'], IR(sset)[,'U']), mean=muR, sd=sdR)
@@ -201,7 +201,7 @@ detectionPfixedNorm <- function(
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    if (!('pvals' %in% extra(sset)))
+    if (!('pvals' %in% names(extra(sset))))
         extra(sset)[['pvals']] <- list()
     
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
@@ -230,7 +230,7 @@ detectionPnegNormGS <- function(sset, force=FALSE) {
     
     stopifnot(is(sset, "SigSet"))
     method <- "PnegNormGS"
-    if (!force && method %in% names(pval(sset))) return(sset)
+    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
     negctls <- negControls(sset)
     BGsd <- sd(c(negctls$G, negctls$R))
@@ -242,7 +242,7 @@ detectionPnegNormGS <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    if (!('pvals' %in% extra(sset)))
+    if (!('pvals' %in% names(extra(sset))))
         extra(sset)[['pvals']] <- list()
     
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
@@ -272,7 +272,7 @@ detectionPnegNormTotal <- function(sset, force=FALSE) {
     ## sort of how minfi does it (sd instead of MAD)
     stopifnot(is(sset, "SigSet"))
     method <- "PnegNormTotal"
-    if (!force && method %in% names(pval(sset))) return(sset)
+    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
     negctls <- negControls(sset)
     sdG <- sd(negctls$G)
@@ -286,7 +286,7 @@ detectionPnegNormTotal <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    if (!('pvals' %in% extra(sset)))
+    if (!('pvals' %in% names(extra(sset))))
         extra(sset)[['pvals']] <- list()
     
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)

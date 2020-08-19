@@ -4,10 +4,12 @@
 \alias{getBetas}
 \title{Get beta Values}
 \usage{
-getBetas(sset, sum.TypeI = FALSE)
+getBetas(sset, mask = TRUE, sum.TypeI = FALSE)
 }
 \arguments{
 \item{sset}{\code{SigSet}}
+
+\item{mask}{whether to use mask}
 
 \item{sum.TypeI}{whether to sum type I channels}
 }

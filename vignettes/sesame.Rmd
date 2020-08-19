@@ -53,7 +53,6 @@ each step), openSesame is equivalent to
 betas <- do.call(cbind, lapply(searchIDATprefixes(idat_dir), function(pfx) {
     pfx %>%
         readIDATpair %>%
-        pOOBAH %>%
         noob %>%
         dyeBiasCorrTypeINorm %>%
         qualityMask %>%
