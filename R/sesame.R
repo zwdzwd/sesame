@@ -359,6 +359,7 @@ inferSexKaryotypes <- function(sset) {
 #' @export
 inferSex <- function(sset) {
     stopifnot(is(sset, "SigSet"))
+    stopifnot(sset@platform %in% c('EPIC','HM450'))
     sex.info <- getSexInfo(sset)[seq_len(3)]
     as.character(predict(
         sesameDataGet('sex.inference'), sex.info))
@@ -389,6 +390,7 @@ inferEthnicity <- function(sset) {
         return(vapply(sset, inferEthnicity, character(1)))
     
     stopifnot(is(sset, 'SigSet'))
+    stopifnot(sset@platform %in% c('EPIC','HM450'))
 
     ethnicity.inference <- sesameDataGet('ethnicity.inference')
     ccsprobes <- ethnicity.inference$ccs.probes
@@ -779,6 +781,8 @@ chipAddressToSignal <- function(
 #'
 #' @export
 bisConversionControl <- function(sset, use.median=FALSE) {
+
+    stopifnot(sset@platform %in% c('EPIC','HM450'))
     extC <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extC
     extT <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extT
     prbs <- rownames(oobG(sset))

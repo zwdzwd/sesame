@@ -29,9 +29,19 @@ sesameQC <- function(sset) {
     qc$mean_inb_red <- mean(IR(sset))
     qc$mean_oob_grn <- mean(oobG(sset))
     qc$mean_oob_red <- mean(oobR(sset))
-    qc$sex <- inferSex(sset)
-    qc$ethnicity <- inferEthnicity(sset)
-    qc$GCT <- bisConversionControl(sset)
+
+    ## inferences
+    if (sset@platform %in% c("EPIC","HM450")) {
+        qc$sex <- inferSex(sset)
+        qc$ethnicity <- inferEthnicity(sset)
+        qc$GCT <- bisConversionControl(sset)
+    } else {
+        qc$sex <- "na"
+        qc$ethnicity <- "na"
+        qc$GCT <- "na"
+    }
+     
+
     res <- inferTypeIChannel(sset, summary = TRUE)
     for (nm in names(res)) {
         qc[[paste0('InfI_switch_', nm)]] <- unname(res[nm])
@@ -228,4 +238,4 @@ qualityRank <- function(
         rank_nondetection = 1-ecdf(df$na_nondt)(na_nondt),
         rank_meanintensity = ecdf(df$mean_intensity)(mean_intensity))
 }
-    
+
