@@ -725,6 +725,7 @@ chipAddressToSignal <- function(
         M = ImG2ch[,'G'], U = IuG2ch[,'G'],
         row.names = IordG$Probe_ID))
 
+
     ## type I red channel / oob green channel
     ## IordR <- manifest[((manifest$DESIGN=='I')&(manifest$col=='R')),]
     IordR <- manifest[(!is.na(manifest$col))&(manifest$col=='R'),]
@@ -737,6 +738,7 @@ chipAddressToSignal <- function(
     IR(sset) <- as.matrix(data.frame(
         M = ImR2ch[,'R'], U = IuR2ch[,'R'],
         row.names = IordR$Probe_ID))
+    IR(sset)[rowSums(is.na(IR(sset))) > 0] <- 0
     
     ## type II
     ## IIord <- manifest[manifest$DESIGN=="II",]

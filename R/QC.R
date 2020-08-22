@@ -35,12 +35,14 @@ sesameQC <- function(sset) {
         qc$sex <- inferSex(sset)
         qc$ethnicity <- inferEthnicity(sset)
         qc$GCT <- bisConversionControl(sset)
+        ## assuming no preprocessing
+        qc$age <- predictAgeHorvath353(getBetas(sset, mask=FALSE))
     } else {
         qc$sex <- "na"
         qc$ethnicity <- "na"
         qc$GCT <- "na"
+        qc$age <- "na"
     }
-     
 
     res <- inferTypeIChannel(sset, summary = TRUE)
     for (nm in names(res)) {
@@ -77,8 +79,6 @@ sesameQC <- function(sset) {
         qc[[paste0('frac_meth_', pt)]] <-
             sum(betas1 > 0.7, na.rm = TRUE) / num_ok * 100
     }
-    ## assuming no preprocessing
-    qc$age <- predictAgeHorvath353(getBetas(sset, mask=FALSE))
     
     qc
 }
