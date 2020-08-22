@@ -39,7 +39,7 @@ createUCSCtrack <- function(
                 betas < 0.3, '0,0,255', # blue
                 ifelse(
                     betas > 0.7, '255,0,0', # red
-                    '255,127,0'))) # orange
+                    '50,150,0'))) # green
     )
 
     if (is.null(output))
