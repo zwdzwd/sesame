@@ -550,6 +550,15 @@ getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
     af[order(names(af))]
 }
 
+## res is the output of illuminaio::readIDAT
+inferPlatform <- function(res) {
+    switch(res$ChipType,
+        'BeadChip 8x5'='EPIC',
+        'BeadChip 12x8'='HM450',
+        'BeadChip 12x1'='HM27',
+        "Custom")
+}
+
 ## Import one IDAT file
 ## return a data frame with 2 columns, corresponding to
 ## cy3 (Grn) and cy5 (Red) color channel signal
@@ -566,11 +575,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
     } else {
         ## this is not always accurate
         ## TODO should identify unique tengo IDs.
-        attr(d, 'platform') <- switch(
-            ida.red$ChipType,
-            'BeadChip 8x5'='EPIC',
-            'BeadChip 12x8'='HM450',
-            'BeadChip 12x1'='HM27')
+        attr(d, 'platform') <- inferPlatform(ida.red)
     }
     d
 }

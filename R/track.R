@@ -12,8 +12,8 @@
 #' df <- createUCSCtrack(betas.tissue)
 #' 
 #' ## to convert to bigBed
-#' ## sort -k1,1 -k2,2n ~/output.bed >~/output_sorted.bed
-#' ## bedToBigBed ~/output_sorted.bed ~/references/hg38/hg38.fa.fai ~/output.bb
+#' ## sort -k1,1 -k2,2n output.bed >output_sorted.bed
+#' ## bedToBigBed output_sorted.bed hg38.chrom output.bb
 #' @export
 createUCSCtrack <- function(
     betas, output=NULL, platform='HM450', refversion='hg38') {
@@ -21,18 +21,18 @@ createUCSCtrack <- function(
     probeInfo <- sesameDataGet(paste0(
         platform, '.', refversion, '.manifest'))
 
-    probeInfo <- probeInfo[seqnames(probeInfo) != "*"]
+    probeInfo <- probeInfo[GenomicRanges::seqnames(probeInfo) != "*"]
 
     betas <- betas[names(probeInfo)]
     df <- data.frame(
-        chrm = seqnames(probeInfo),
-        beg = start(probeInfo)-1,
-        end = end(probeInfo),
+        chrm = GenomicRanges::seqnames(probeInfo),
+        beg = GenomicRanges::start(probeInfo)-1,
+        end = GenomicRanges::end(probeInfo),
         name = names(probeInfo),
         score = ifelse(is.na(betas), 0, as.integer(betas*1000)),
-        strand = strand(probeInfo),
-        thickStart = start(probeInfo)-1,
-        thickEnd = end(probeInfo),
+        strand = GenomicRanges::strand(probeInfo),
+        thickStart = GenomicRanges::start(probeInfo)-1,
+        thickEnd = GenomicRanges::end(probeInfo),
         itemRgb = ifelse(
             is.na(betas), '0,0,0',
             ifelse(
