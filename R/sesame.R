@@ -563,8 +563,8 @@ inferPlatform <- function(res) {
 ## return a data frame with 2 columns, corresponding to
 ## cy3 (Grn) and cy5 (Red) color channel signal
 readIDAT1 <- function(grn.name, red.name, platform='') {
-    ida.grn <- illuminaio::readIDAT(grn.name);
-    ida.red <- illuminaio::readIDAT(red.name);
+    ida.grn <- suppressWarnings(illuminaio::readIDAT(grn.name));
+    ida.red <- suppressWarnings(illuminaio::readIDAT(red.name));
     d <- cbind(
         cy3=ida.grn$Quants[,"Mean"],
         cy5=ida.red$Quants[,"Mean"])

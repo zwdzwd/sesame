@@ -1,6 +1,8 @@
 
 #' De-identify IDATs by removing SNP probes
 #'
+#' Mask SNP probe intensity mean by zero.
+#'
 #' @param path input IDAT file
 #' @param out_path output IDAT file
 #' @param snps SNP definition, if not given, default to SNP probes
@@ -16,7 +18,7 @@
 #' @export
 deidentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
 
-    res <- illuminaio::readIDAT(path)
+    res <- suppressWarnings(illuminaio::readIDAT(path))
     platform <- inferPlatform(res)
 
     if(is.null(out_path)) {
