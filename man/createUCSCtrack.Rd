@@ -15,6 +15,9 @@ createUCSCtrack(betas, output = NULL, platform = "HM450", refversion = "hg38")
 
 \item{refversion}{hg38, hg19 etc.}
 }
+\value{
+when output is null, return a data.frame, otherwise NULL
+}
 \description{
 Turn beta values into a UCSC browser track
 }

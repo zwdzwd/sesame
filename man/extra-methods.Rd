@@ -22,6 +22,6 @@ extra getter generic
 Get extra slot of SigSet class
 }
 \examples{
-sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 head(extra(sset))
 }

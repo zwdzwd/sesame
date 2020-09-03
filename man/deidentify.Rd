@@ -4,7 +4,7 @@
 \alias{deIdentify}
 \title{De-identify IDATs by removing SNP probes}
 \usage{
-deIdentify(path, out_path = NULL, snps = NULL, mft = NULL, secret = NULL)
+deIdentify(path, out_path = NULL, snps = NULL, mft = NULL, randomize = FALSE)
 }
 \arguments{
 \item{path}{input IDAT file}
@@ -15,18 +15,24 @@ deIdentify(path, out_path = NULL, snps = NULL, mft = NULL, secret = NULL)
 
 \item{mft}{sesame-compatible manifest if non-standard}
 
-\item{secret}{a numeric integer, max 2^31-1
-when not NULL randomize the signal intensities
-when NULL (default), this sets all SNP intensities to zero.}
+\item{randomize}{whether to randomize the SNPs. if TRUE,
+randomize the signal intensities. one can use set.seed to
+reidentify the IDAT with the secret seed (see examples).
+If FALSE, this sets all SNP intensities to zero.}
+}
+\value{
+NULL, changes made to the IDAT files
 }
 \description{
 Mask SNP probe intensity mean by zero.
 }
 \examples{
 
+my_secret <- 13412084
+set.seed(my_secret)
 temp_out <- tempfile("test")
 deIdentify(system.file(
     "extdata", "4207113116_A_Grn.idat", package = "sesameData"),
-     temp_out)
+     temp_out, randomize = TRUE)
 unlink(temp_out)
 }

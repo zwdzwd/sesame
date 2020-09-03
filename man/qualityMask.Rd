@@ -7,11 +7,9 @@
 qualityMask(sset, mask.use.tcga = FALSE)
 }
 \arguments{
+\item{sset}{a \code{SigSet} object}
+
 \item{mask.use.tcga}{whether to use TCGA masking, only applies to HM450}
-
-\item{betas}{numeric vector of beta values}
-
-\item{platform}{HM27, HM450 or EPIC}
 }
 \value{
 a filtered \code{SigSet}

@@ -80,7 +80,8 @@ formatVCF <- function(
     colnames(out) <- c(
         "#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO")
     rownames(out) <- out$ID
-    out <- out[with(out, order(`#CHROM`,as.numeric(`POS`))),]
+    ## out <- out[with(out, order(`#CHROM`,as.numeric(`POS`))),]
+    out <- out[order(out[['#CHROM']], as.numeric(out[['POS']])),]
     
     if(is.null(vcf)) {
         out

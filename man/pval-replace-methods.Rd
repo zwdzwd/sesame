@@ -27,5 +27,5 @@ Replace pval slot of SigSet class
 sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 df <- pval(sset)
 df[1] <- 0.01
-pval(sset) <- list(pOOBAH=df)
+pval(sset) <- df
 }

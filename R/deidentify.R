@@ -7,19 +7,22 @@
 #' @param out_path output IDAT file
 #' @param snps SNP definition, if not given, default to SNP probes
 #' @param mft sesame-compatible manifest if non-standard
-#' @param secret a numeric integer, max 2^31-1
-#' when not NULL randomize the signal intensities
-#' when NULL (default), this sets all SNP intensities to zero.
-#' @return NULL
+#' @param randomize whether to randomize the SNPs. if TRUE,
+#' randomize the signal intensities. one can use set.seed to
+#' reidentify the IDAT with the secret seed (see examples).
+#' If FALSE, this sets all SNP intensities to zero.
+#' @return NULL, changes made to the IDAT files
 #' @examples
 #'
+#' my_secret <- 13412084
+#' set.seed(my_secret)
 #' temp_out <- tempfile("test")
 #' deIdentify(system.file(
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData"),
-#'      temp_out)
+#'      temp_out, randomize = TRUE)
 #' unlink(temp_out)
 #' @export
-deIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL, secret=NULL) {
+deIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL, randomize=FALSE) {
 
     res <- suppressWarnings(illuminaio::readIDAT(path))
     platform <- inferPlatform(res)
@@ -44,11 +47,10 @@ deIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL, secret=NULL) {
     qt <- res$Quants
     snpsIdx <- match(snpsTango, rownames(qt))
     dt <- qt[,'Mean']
-    if (is.null(secret)) {
-        dt[snpsIdx] <- 0
-    } else {
-        set.seed(secret)
+    if (randomize) {
         dt[snpsIdx] <- sample(dt[snpsIdx])
+    } else {
+        dt[snpsIdx] <- 0
     }
     
     if(grepl("\\.gz$", path)) {
@@ -75,23 +77,25 @@ deIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL, secret=NULL) {
 
 #' Re-identify IDATs by restoring scrambled SNP intensities
 #'
+#' This requries setting a seed with a secret number that was used to
+#' de-identify the IDAT (see example).
 #' This requires a secret number that was used to de-idenitfy the IDAT
 #'
 #' @param path input IDAT file
-#' @param secret the numeric number used to de-identify the IDAT
 #' @param out_path output IDAT file
 #' @param snps SNP definition, if not given, default to SNP probes
 #' @param mft sesame-compatible manifest if non-standard
-#' @return NULL
+#' @return NULL, changes made to the IDAT files
 #' @examples
 #'
 #' temp_out <- tempfile("test")
+#' 
+#' set.seed(123)
 #' reIdentify(system.file(
-#'     "extdata", "4207113116_A_Grn.idat", package = "sesameData"),
-#'      temp_out, 123)
+#'     "extdata", "4207113116_A_Grn.idat", package = "sesameData"), temp_out)
 #' unlink(temp_out)
 #' @export
-reIdentify <- function(path, secret, out_path=NULL, snps=NULL, mft=NULL) {
+reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
 
     res <- suppressWarnings(illuminaio::readIDAT(path))
     platform <- inferPlatform(res)
@@ -117,7 +121,6 @@ reIdentify <- function(path, secret, out_path=NULL, snps=NULL, mft=NULL) {
     snpsIdx <- match(snpsTango, rownames(qt))
     dt <- qt[,'Mean']
     idx <- seq_along(snpsIdx)
-    set.seed(secret)
     dt[snpsIdx] <- dt[snpsIdx[match(idx, sample(idx))]]
     
     if(grepl("\\.gz$", path)) {

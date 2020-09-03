@@ -408,8 +408,7 @@ inferEthnicity <- function(sset) {
 #' 
 #' Currently quality masking only supports three platforms
 #' 
-#' @param betas numeric vector of beta values
-#' @param platform HM27, HM450 or EPIC
+#' @param sset a \code{SigSet} object
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @return a filtered \code{SigSet}
 #' @examples
@@ -428,7 +427,7 @@ qualityMask <- function(
         
     
     if (mask.use.tcga) {
-        stopifnot(platform == 'HM450')
+        stopifnot(sset@platform == 'HM450')
         mask <- sesameDataGet('HM450.probeInfo')$mask.tcga
     } else {
         mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask

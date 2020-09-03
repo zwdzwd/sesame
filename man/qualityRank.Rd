@@ -31,6 +31,7 @@ of the target data quality
 }
 \examples{
 
-# to be added
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+ranks <- qualityRank(sset)
 
 }

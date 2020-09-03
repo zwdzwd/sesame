@@ -24,8 +24,7 @@ extra replacement generic
 Replace extra slot of SigSet class
 }
 \examples{
-sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 df <- extra(sset)
-df[1,1] <- 10
-extra(sset) <- df 
+extra(sset) <- list(pval=numeric(0))
 }

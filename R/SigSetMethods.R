@@ -49,7 +49,7 @@ setGeneric("pval<-", function(x, value) {
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' df <- pval(sset)
 #' df[1] <- 0.01
-#' pval(sset) <- list(pOOBAH=df)
+#' pval(sset) <- df
 setReplaceMethod("pval", "SigSet", function(x, value){ x@pval <- value; x})
 
 #' pval getter generic
@@ -367,9 +367,9 @@ setGeneric("ctl", function(x) {
 #' head(ctl(sset))
 setMethod("ctl", "SigSet", function(x){ x@ctl })
 
-############
+##############
 #### extra ###
-############
+##############
 #' extra replacement generic
 #' 
 #' @param x object of \code{SigSet}
@@ -389,10 +389,9 @@ setGeneric("extra<-", function(x, value) {
 #' @docType methods
 #' @aliases extra<-,SigSet-method
 #' @examples 
-#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' df <- extra(sset)
-#' df[1,1] <- 10
-#' extra(sset) <- df 
+#' extra(sset) <- list(pval=numeric(0))
 setReplaceMethod("extra", "SigSet", function(x, value){ x@extra <- value; x})
 
 #' extra getter generic
@@ -412,7 +411,7 @@ setGeneric("extra", function(x) {
 #' @return The extra slot of \code{SigSet}
 #' @aliases extra,SigSet-method
 #' @examples 
-#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' head(extra(sset))
 setMethod("extra", "SigSet", function(x){ x@extra })
 

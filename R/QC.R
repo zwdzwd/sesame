@@ -213,7 +213,8 @@ as.data.frame.sesameQC <- function(
 #' 4. The higher the fraction, the better the sample.
 #' @examples
 #'
-#' # to be added
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' ranks <- qualityRank(sset)
 #' 
 #' @export
 qualityRank <- function(
@@ -223,19 +224,24 @@ qualityRank <- function(
     raw = FALSE) {
 
     df <- sesameDataGet('detection.stats')
-    df <- subset(df, Platform == sset@platform)
+    df <- df[df$Platform == sset@platform,]
     if (!is.null(tissue))
-        df <- subset(df, Tissue==tissue)
+        df <- df[df$Tissue==tissue,]
     if (!is.null(samplePrep))
-        df <- subset(df, SamplePrep==samplePrep)
-    stopifnot(nrow(df) < 5) # stop if there are too few number of samples
+        df <- df[df$SamplePrep==samplePrep,]
+    stopifnot(nrow(df) >= 5) # stop if there are too few number of samples
     if (raw) return (df);
 
     mean_intensity <- meanIntensity(sset)
-    na_nondt <- sum(sset@extra$pvals[['pOOBAH']] > 0.05)
+    if (is.null(sset@extra$pvals[['pOOBAH']])) {
+        pvals <- pval(sset)
+    } else {
+        pvals <- sset@extra$pvals[['pOOBAH']]
+    }
+    frac_nondt <- sum(pvals > 0.05)
     c(
         n_compared = nrow(df),
-        rank_nondetection = 1-ecdf(df$na_nondt)(na_nondt),
+        rank_nondetection = 1-ecdf(df$frac_nondt)(frac_nondt),
         rank_meanintensity = ecdf(df$mean_intensity)(mean_intensity))
 }
 

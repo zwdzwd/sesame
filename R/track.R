@@ -5,6 +5,7 @@
 #' @param output output file name
 #' @param platform HM450, EPIC etc.
 #' @param refversion hg38, hg19 etc.
+#' @return when output is null, return a data.frame, otherwise NULL
 #' @examples
 #'
 #' betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
@@ -46,5 +47,6 @@ createUCSCtrack <- function(
         df
     else
         write.table(
-            df, file=output, col.names=F, row.names=F, quote=F, sep='\t')
+            df, file=output, col.names=FALSE,
+            row.names=FALSE, quote=FALSE, sep='\t')
 }
