@@ -7,12 +7,14 @@
 #' 
 #' @param sset a \code{SigSet}
 #' @param offset offset
+#' @param oobRprobes out-of-band red probes, if not given use all oobR
+#' @param oobGprobes out-of-band grn probes, if not given use all oobG
 #' @return a new \code{SigSet} with noob background correction
 #' @examples
 #' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)
 #' @export
-noob <- function(sset, offset=15) {
+noob <- function(sset, oobRprobes = NULL, oobGprobes = NULL, offset=15) {
 
     ## skip if all oob signals are nil (likely the
     ## entire chip failed)
@@ -31,12 +33,24 @@ noob <- function(sset, offset=15) {
     ## oobG and oobR are untouched besides the 0>1 switch
     oobR(sset)[oobR(sset)==0] <- 1
     oobG(sset)[oobG(sset)==0] <- 1
+
+    if (is.null(oobRprobes)) {
+        real_oobR <- oobR(sset)
+    } else {
+        real_oobR <- oobR(sset)[oobRprobes,]
+    }
+
+    if (is.null(oobGprobes)) {
+        real_oobG <- oobG(sset)
+    } else {
+        real_oobG <- oobG(sset)[oobGprobes,]
+    }
     
     ## do background correction in each channel
     ibR.nl <- .backgroundCorrectionNoobCh1(
-        ibR, oobR(sset), ctl(sset)$R, offset=offset)
+        ibR, real_oobR, ctl(sset)$R, offset=offset)
     ibG.nl <- .backgroundCorrectionNoobCh1(
-        ibG, oobG(sset), ctl(sset)$G, offset=offset)
+        ibG, real_oobG, ctl(sset)$G, offset=offset)
 
     ## build back the list
     ## type IG

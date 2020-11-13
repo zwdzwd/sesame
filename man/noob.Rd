@@ -4,10 +4,14 @@
 \alias{noob}
 \title{Noob background correction}
 \usage{
-noob(sset, offset = 15)
+noob(sset, oobRprobes = NULL, oobGprobes = NULL, offset = 15)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
+
+\item{oobRprobes}{out-of-band red probes, if not given use all oobR}
+
+\item{oobGprobes}{out-of-band grn probes, if not given use all oobG}
 
 \item{offset}{offset}
 }

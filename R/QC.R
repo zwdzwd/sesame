@@ -24,7 +24,7 @@ sesameQC <- function(sset) {
     qc$mean_ii <- mean(II(sset), na.rm = TRUE)
     
     qc$mean_intensity <- meanIntensity(sset) # excluding type-I out-of-band
-    qc$mean_intensity_total <- mean(totalIntensities(sset)) # M + U
+    qc$mean_intensity_total <- mean(totalIntensities(sset), na.rm=T) # M + U
     qc$mean_inb_grn <- mean(IG(sset))
     qc$mean_inb_red <- mean(IR(sset))
     qc$mean_oob_grn <- mean(oobG(sset))
