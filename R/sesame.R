@@ -496,8 +496,8 @@ getBetas <- function(sset, mask=TRUE, sum.TypeI = FALSE) {
         IGs <- IGs + oobR2(sset)
         IRs <- IRs + oobG2(sset)
     } else if (!is.null(sset@extra$IGG) && !is.null(sset@extra$IRR)) {
-        IGs[!sset@extra$IGG,] <- sset@extra$oobR[!sset@extra$IGG,]
-        IRs[!sset@extra$IRR,] <- sset@extra$oobG[!sset@extra$IRR,]
+        IGs[!sset@extra$IGG,] <- sset@oobR[!sset@extra$IGG,]
+        IRs[!sset@extra$IRR,] <- sset@oobG[!sset@extra$IRR,]
     }
 
     betas <- c(
