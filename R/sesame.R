@@ -453,7 +453,7 @@ detectionMask <- function(
     if (is.null(pval.method)) {
         pv <- pval(sset)
     } else {
-        stopifnot('pvals' %in% sset@extra && pval.method %in% sset@extra$pvals)
+        stopifnot('pvals' %in% names(sset@extra) && pval.method %in% names(sset@extra$pvals))
         pv <- sset@extra$pvals[[pval.method]]
     }
 
