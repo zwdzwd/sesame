@@ -110,12 +110,65 @@ detectionPoobEcdf <- function(sset, force=FALSE) {
     sset
 }
 
+#' Detection P-value based on ECDF of out-of-band signal
+#' 
+#' aka pOOBAH2 (p-vals by Out-Of-Band Array Hybridization)
+#'
+#' The function takes a \code{SigSet} as input, computes detection p-value
+#' using out-of-band probes empirical distribution and returns a new
+#' \code{SigSet} with an updated pval slot.
+#'
+#' The difference between this function and the original pOOBAH
+#' is that pOOBAH2 is based on background-subtracted and dyebias
+#' corrected signal and do not distinguish the color channel difference.
+#'
+#' @name detectionPoobEcdf2
+#' @param sset a \code{SigSet}
+#' @param force force rerun even if result already exists
+#' @return detection p-value
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' sset <- detectionPoobEcdf(sset)
+#' 
+#' @export
+detectionPoobEcdf2 <- function(sset, force=FALSE) {
+
+    stopifnot(is(sset, "SigSet"))
+    method <- "pOOBAH2"
+    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
+
+    func <- ecdf(c(oobG(sset), oobR(sset)))
+
+    ## p-value is the minimium detection p-value of the 2 alleles
+    pIR <- 1-apply(cbind(func(IR(sset)[,'M']), func(IR(sset)[,'U'])),1,max)
+    pIG <- 1-apply(cbind(func(IG(sset)[,'M']), func(IG(sset)[,'U'])),1,max)
+    pII <- 1-apply(cbind(func(II(sset)[,'M']), func(II(sset)[,'U'])),1,max)
+
+    names(pIR) <- rownames(IR(sset))
+    names(pIG) <- rownames(IG(sset))
+    names(pII) <- rownames(II(sset))
+
+    ## should have PoobEcdf aliased
+    if (!('pvals' %in% names(extra(sset))))
+        extra(sset)[['pvals']] <- list()
+    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
+    
+    sset
+}
+
 #' @rdname detectionPoobEcdf
 #' @export
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' sset <- pOOBAH(sset)
 pOOBAH <- detectionPoobEcdf
+
+#' @rdname detectionPoobEcdf2
+#' @export
+#' @examples
+#' sset <- makeExampleSeSAMeDataSet()
+#' sset <- pOOBAH2(sset)
+pOOBAH2 <- detectionPoobEcdf2
 
 #################################################
 ## Detection P-value based on normal distribution

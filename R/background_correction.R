@@ -1,3 +1,69 @@
+
+
+#' SCRUB background correction
+#'
+#' This function takes a \code{SigSet} and returns a modified \code{SigSet}
+#' with background subtracted. scrub subtracts residual background using
+#' background median
+#'
+#' This function is meant to be used after noob.
+#'
+#' @param sset a \code{SigSet}
+#' @param offset offset
+#' @param oobRprobes out-of-band red probes, if not given use all oobR
+#' @param oobGprobes out-of-band grn probes, if not given use all oobG
+#' @return a new \code{SigSet} with noob background correction
+#' sset <- makeExampleTinyEPICDataSet()
+#' sset.nb <- noob(sset)
+#' sset.nb.scrub <- scrub(sset.nb)
+#' @export
+scrub <- function(sset) {
+    bG <- median(oobG(sset))
+    bR <- median(oobR(sset))
+    sset@IR <- pmax(sset@IR - bR,1)
+    sset@IG <- pmax(sset@IG - bG,1)
+    sset@II <- cbind(M=pmax(sset@II[,'M'] - bG,1), U=pmax(sset@II[,'U'] - bR,1))
+    sset@oobR <- pmax(sset@oobR - bR,1)
+    sset@oobG <- pmax(sset@oobG - bG,1)
+    sset
+}
+
+noobSub <- function(sig, bg) {
+    e <- MASS::huber(bg)
+    mu <- e$mu
+    sigma <- e$s
+    alpha <- pmax(MASS::huber(sig)$mu-mu, 10)
+    .normExpSignal(mu, sigma, alpha, sig)
+}
+
+#' SCRUB background correction
+#'
+#' This function takes a \code{SigSet} and returns a modified \code{SigSet}
+#' with background subtracted. scrubSoft subtracts residual background using a
+#' noob-like procedure.
+#'
+#' This function is meant to be used after noob.
+#'
+#' @param sset a \code{SigSet}
+#' @param offset offset
+#' @param oobRprobes out-of-band red probes, if not given use all oobR
+#' @param oobGprobes out-of-band grn probes, if not given use all oobG
+#' @return a new \code{SigSet} with noob background correction
+#' sset <- makeExampleTinyEPICDataSet()
+#' sset.nb <- noob(sset)
+#' sset.nb.scrubSoft <- scrubSoft(sset.nb)
+#' @export
+scrubSoft <- function(sset) {
+    sset@IR <- noobSub(sset@IR, oobR(sset))
+    sset@IG <- noobSub(sset@IG, oobG(sset))
+    sset@II <- cbind(
+        M=noobSub(sset@II[,'M'], oobG(sset)),
+        U=noobSub(sset@II[,'U'], oobR(sset)))
+    sset@oobR <- noobSub(oobR(sset), oobR(sset))
+    sset@oobG <- noobSub(oobG(sset), oobG(sset))
+    sset
+}
+
 #' Noob background correction
 #'
 #' The function takes a \code{SigSet} and returns a modified \code{SigSet}
