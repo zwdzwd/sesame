@@ -76,3 +76,74 @@ getProbesByRegion <- function(
     target.region <- GenomicRanges::GRanges(chrm, IRanges::IRanges(beg, end))
     subsetByOverlaps(probes, target.region)
 }
+
+#' Get Probes by Chromosome
+#'
+#' @param chrms chromosomes to subset
+#' @param platform EPIC, HM450, Mouse
+#' @param refversion hg19, hg38, mm10
+#' @return a vector of probes on the selected chromosomes
+#' @examples
+#' sex.probes <- getProbesByChromosome(c('chrX','chrY'))
+#' @export
+getProbesByChromosome <- function(
+    chrms, platform = c('EPIC','HM450'),
+    refversion=c('hg19','hg38')) {
+    mft <- sesameDataGet(sprintf('%s.hg38.manifest', platform))
+    names(mft)[as.character(seqnames(mft)) %in% chrms]
+}
+
+#' Get autosome probes
+#'
+#' @param platform 'EPIC', 'HM450' etc.
+#' @return a vector of autosome probes
+#' @examples
+#' auto.probes <- getAutosomeProbes('EPIC')
+#' @export
+getAutosomeProbes <- function(
+    platform=c('EPIC','HM450','Mouse'),
+    refversion=c('hg19','hg38','mm10')) {
+    
+    mft <- sesameDataGet(sprintf('%s.hg38.manifest', platform))
+    names(mft)[!(as.character(seqnames(mft)) %in% c('chrX', 'chrY'))]
+}
+
+#' Get most variable probes
+#'
+#' @param betas beta value matrix (row: cpg; column: sample)
+#' @param n number of most variable probes
+#' @return beta value matrix for the most variable probes
+#' @examples
+#' ## get most variable autosome probes
+#' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
+#' betas.most.variable <- getMostVariableProbes(
+#'     betas[getAutosomeProbes('HM450'),],2000)
+#' @export
+getMostVariableProbes <- function(betas, n=2000) {
+    sd <- apply(betas, 1, sd, na.rm=T)
+    betas[names(sort(sd, decreasing=T)[1:n]),]
+}
+
+#' subset beta value matrix by probes
+#' 
+#' @param betas beta value matrix
+#' @param probes probe set
+#' @examples
+#' probes <- getAutosomeProbes('HM450')
+#' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
+#' betas <- bSubProbes(betas, probes)
+#' @export
+bSubProbes <- function(betas, probes) {
+    betas[intersect(rownames(betas), probes),]
+}
+
+#' subset beta value matrix by complete probes
+#' 
+#' @param betas beta value matrix
+#' @examples
+#' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
+#' betas <- bSubComplete(betas)
+#' @export
+bSubComplete <- function(betas) {
+    betas[complete.cases(betas),]
+}

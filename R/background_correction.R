@@ -23,8 +23,8 @@ scrub <- function(sset) {
     sset@IR <- pmax(sset@IR - bR,1)
     sset@IG <- pmax(sset@IG - bG,1)
     sset@II <- cbind(M=pmax(sset@II[,'M'] - bG,1), U=pmax(sset@II[,'U'] - bR,1))
-    sset@oobR <- pmax(sset@oobR - bR,1)
-    sset@oobG <- pmax(sset@oobG - bG,1)
+    sset@oobR <- pmax(sset@oobR - bR,1) # subtract oobR itself
+    sset@oobG <- pmax(sset@oobG - bG,1) # subtract oobG itself
     sset
 }
 
@@ -59,8 +59,8 @@ scrubSoft <- function(sset) {
     sset@II <- cbind(
         M=noobSub(sset@II[,'M'], oobG(sset)),
         U=noobSub(sset@II[,'U'], oobR(sset)))
-    sset@oobR <- noobSub(oobR(sset), oobR(sset))
-    sset@oobG <- noobSub(oobG(sset), oobG(sset))
+    sset@oobR <- noobSub(oobR(sset), oobR(sset)) # subtract oobR itself
+    sset@oobG <- noobSub(oobG(sset), oobG(sset)) # subtract oobG itself
     sset
 }
 

@@ -16,6 +16,11 @@
 getNormCtls <- function(sset, average = FALSE) {
     df <- ctl(sset)
     df <- df[grep('norm(_|\\.)', tolower(rownames(df))),]
+
+    ## stop if no control probes
+    if (nrow(df) == 0)
+        stop("No normalization control probes found!")
+
     if (sset@platform == 'HM27') {
         df$channel <- ifelse(grepl(
             'norm\\.green', tolower(rownames(df))), 'G', 'R')
@@ -23,7 +28,7 @@ getNormCtls <- function(sset, average = FALSE) {
         df$channel <- ifelse(grepl(
             'norm_(c|g)', tolower(rownames(df))), 'G', 'R')
     }
-    
+   
     if (average) {
         c(
             G=mean(df[df$channel=='G','G'], na.rm=TRUE), 

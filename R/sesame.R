@@ -438,6 +438,18 @@ qualityMask <- function(
     return(sset)
 }
 
+#' Reset Masking
+#'
+#' @param sset a \code{SigSet}
+#' @return a new \code{SigSet} with mask reset to empty
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' sset.no.mask <- resetMask(sset)
+#' @export
+resetMask <- function(sset) {
+    sset@extra$mask <- character(0)
+    sset
+}
+
 #' Mask Sigset by detection p-value
 #'
 #' @param sset a \code{SigSet}
@@ -804,3 +816,4 @@ bisConversionControl <- function(sset, use.median=FALSE) {
 }
 
 ## R6 utility functions deleted after 1.5.0
+
