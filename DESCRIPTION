@@ -42,7 +42,8 @@ Suggests: scales,
           FlowSorted.Blood.450k,
           dplyr,
           tidyr,
-          BiocStyle
+          BiocStyle,
+          IlluminaHumanMethylation450kmanifest
 Encoding: UTF-8
 VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame
