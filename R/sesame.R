@@ -783,7 +783,9 @@ chipAddressToSignal <- function(
     }
 
     ## additional annotation in manifest
-    IordG 
+    if ('mapUniq' %in% colnames(manifest)) {
+        sset <- extraSet(sset, 'mapUniq', manifest$Probe_ID[manifest$mapUniq])
+    }
     
     sset
 }

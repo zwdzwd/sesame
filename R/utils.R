@@ -204,5 +204,6 @@ extraGet <- function(sset, k) {
 
 extraSet <- function(sset, k, v) {
     extra(sset)[[k]] <- v
+    sset
 }
     
