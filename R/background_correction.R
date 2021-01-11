@@ -9,17 +9,14 @@
 #' This function is meant to be used after noob.
 #'
 #' @param sset a \code{SigSet}
-#' @param offset offset
-#' @param oobRprobes out-of-band red probes, if not given use all oobR
-#' @param oobGprobes out-of-band grn probes, if not given use all oobG
 #' @return a new \code{SigSet} with noob background correction
 #' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)
 #' sset.nb.scrub <- scrub(sset.nb)
 #' @export
 scrub <- function(sset) {
-    bG <- median(oobG(sset))
-    bR <- median(oobR(sset))
+    bG <- median(getOobG(sset))
+    bR <- median(getOobR(sset))
     sset@IR <- pmax(sset@IR - bR,1)
     sset@IG <- pmax(sset@IG - bG,1)
     sset@II <- cbind(M=pmax(sset@II[,'M'] - bG,1), U=pmax(sset@II[,'U'] - bR,1))
@@ -45,23 +42,50 @@ noobSub <- function(sig, bg) {
 #' This function is meant to be used after noob.
 #'
 #' @param sset a \code{SigSet}
-#' @param offset offset
-#' @param oobRprobes out-of-band red probes, if not given use all oobR
-#' @param oobGprobes out-of-band grn probes, if not given use all oobG
 #' @return a new \code{SigSet} with noob background correction
 #' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)
 #' sset.nb.scrubSoft <- scrubSoft(sset.nb)
 #' @export
 scrubSoft <- function(sset) {
-    sset@IR <- noobSub(sset@IR, oobR(sset))
-    sset@IG <- noobSub(sset@IG, oobG(sset))
+    oobR1 <- getOobR(sset)
+    oobG1 <- getOobG(sset)
+    sset@IR <- noobSub(sset@IR, oobR1)
+    sset@IG <- noobSub(sset@IG, oobG1)
     sset@II <- cbind(
-        M=noobSub(sset@II[,'M'], oobG(sset)),
-        U=noobSub(sset@II[,'U'], oobR(sset)))
-    sset@oobR <- noobSub(oobR(sset), oobR(sset)) # subtract oobR itself
-    sset@oobG <- noobSub(oobG(sset), oobG(sset)) # subtract oobG itself
+        M=noobSub(sset@II[,'M'], oobG1),
+        U=noobSub(sset@II[,'U'], oobR1))
+    sset@oobR <- noobSub(oobR(sset), oobR1) # subtract oobR itself
+    sset@oobG <- noobSub(oobG(sset), oobG1) # subtract oobG itself
     sset
+}
+
+getOobR <- function(sset, oobRprobes = NULL) {
+    if (!is.null(oobRprobes)) { return(oobR(sset)[oobRprobes,]); }
+
+    res <- oobR(sset);
+    
+    ## exclude multi-mapping and repeat
+    ## only available for MM285 and more recent arrays
+    if (extraHas(sset, 'oobR')) {
+        res[intersect(extraGet(sset, 'oobR'), rownames(res)),]
+    }
+
+    res
+}
+
+getOobG <- function(sset, oobGprobes = NULL) {
+    if (!is.null(oobGprobes)) { return(oobG(sset)[oobGprobes,]); }
+
+    res <- oobG(sset);
+
+    ## exclude multi-mapping and repeat
+    ## only available for MM285 and more recent arrays
+    if (extraHas(sset, 'oobG')) {
+        res[intersect(extraGet(sset, 'oobG'), rownames(res)),]
+    }
+
+    res
 }
 
 #' Noob background correction
@@ -100,23 +124,11 @@ noob <- function(sset, oobRprobes = NULL, oobGprobes = NULL, offset=15) {
     oobR(sset)[oobR(sset)==0] <- 1
     oobG(sset)[oobG(sset)==0] <- 1
 
-    if (is.null(oobRprobes)) {
-        real_oobR <- oobR(sset)
-    } else {
-        real_oobR <- oobR(sset)[oobRprobes,]
-    }
-
-    if (is.null(oobGprobes)) {
-        real_oobG <- oobG(sset)
-    } else {
-        real_oobG <- oobG(sset)[oobGprobes,]
-    }
-    
     ## do background correction in each channel
     ibR.nl <- .backgroundCorrectionNoobCh1(
-        ibR, real_oobR, ctl(sset)$R, offset=offset)
+        ibR, getOobR(sset, oobRprobes), ctl(sset)$R, offset=offset)
     ibG.nl <- .backgroundCorrectionNoobCh1(
-        ibG, real_oobG, ctl(sset)$G, offset=offset)
+        ibG, getOobG(sset, oobGprobes), ctl(sset)$G, offset=offset)
 
     ## build back the list
     ## type IG

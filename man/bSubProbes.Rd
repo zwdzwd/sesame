@@ -11,6 +11,9 @@ bSubProbes(betas, probes)
 
 \item{probes}{probe set}
 }
+\value{
+subsetted beta value matrix
+}
 \description{
 subset beta value matrix by probes
 }

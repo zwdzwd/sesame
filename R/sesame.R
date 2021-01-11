@@ -465,7 +465,9 @@ detectionMask <- function(
     if (is.null(pval.method)) {
         pv <- pval(sset)
     } else {
-        stopifnot('pvals' %in% names(sset@extra) && pval.method %in% names(sset@extra$pvals))
+        stopifnot(
+            extraHas(sset, 'pvals') &&
+                pval.method %in% names(sset@extra$pvals))
         pv <- sset@extra$pvals[[pval.method]]
     }
 
@@ -724,12 +726,9 @@ searchIDATprefixes <- function(dir.name,
 chipAddressToSignal <- function(
     dm, manifest, controls = NULL) {
 
-    platform <- attr(dm, 'platform')
+    sset <- SigSet(attr(dm, 'platform'))
 
-    sset <- SigSet(platform)
-
-    ## type I green channel / oob red channel
-    ## IordG <- manifest[((manifest$DESIGN=='I')&(manifest$col=='G')),]
+    ## Infinium I green channel / oob red channel
     IordG <- manifest[(!is.na(manifest$col))&(manifest$col=='G'),]
     ## 2-channel for green probes' M allele
     IuG2ch <- dm[match(IordG$U, rownames(dm)),]
@@ -741,9 +740,7 @@ chipAddressToSignal <- function(
         M = ImG2ch[,'G'], U = IuG2ch[,'G'],
         row.names = IordG$Probe_ID))
 
-
-    ## type I red channel / oob green channel
-    ## IordR <- manifest[((manifest$DESIGN=='I')&(manifest$col=='R')),]
+    ## Infinium I red channel / oob green channel
     IordR <- manifest[(!is.na(manifest$col))&(manifest$col=='R'),]
     ## 2-channel for red probes' m allele
     IuR2ch <- dm[match(IordR$U, rownames(dm)),]
@@ -756,9 +753,13 @@ chipAddressToSignal <- function(
         row.names = IordR$Probe_ID))
     IR(sset)[rowSums(is.na(IR(sset))) > 0] <- 0
     
-    ## type II
-    ## IIord <- manifest[manifest$DESIGN=="II",]
-    IIord <- manifest[is.na(manifest$col),]
+    ## Infinium II
+    if (isUniqProbeID(manifest$Probe_ID)) { # mouse array probe ID
+        is.InfII <- probeID_designType(manifest$Probe_ID) == '2'
+    } else { # traditional probe ID with just the cg number
+        is.InfII <- is.na(manifest$col)
+    }
+    IIord <- manifest[is.InfII,]
     signal.II <- dm[match(IIord$U, rownames(dm)),c('G','R')]
     colnames(signal.II) <- c('M', 'U')
     rownames(signal.II) <- IIord$Probe_ID
@@ -781,6 +782,9 @@ chipAddressToSignal <- function(
         ctl(sset) <- ctl
     }
 
+    ## additional annotation in manifest
+    IordG 
+    
     sset
 }
 

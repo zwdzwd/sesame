@@ -9,6 +9,9 @@ bSubComplete(betas)
 \arguments{
 \item{betas}{beta value matrix}
 }
+\value{
+subsetted beta value matrix
+}
 \description{
 subset beta value matrix by complete probes
 }

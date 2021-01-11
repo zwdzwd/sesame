@@ -19,7 +19,7 @@ Get most variable probes
 }
 \examples{
 ## get most variable autosome probes
-betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
+betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
 betas.most.variable <- getMostVariableProbes(
     betas[getAutosomeProbes('HM450'),],2000)
 }

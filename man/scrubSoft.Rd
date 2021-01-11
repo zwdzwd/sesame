@@ -8,12 +8,6 @@ scrubSoft(sset)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
-
-\item{offset}{offset}
-
-\item{oobRprobes}{out-of-band red probes, if not given use all oobR}
-
-\item{oobGprobes}{out-of-band grn probes, if not given use all oobG}
 }
 \value{
 a new \code{SigSet} with noob background correction

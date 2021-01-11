@@ -11,6 +11,8 @@ getAutosomeProbes(
 }
 \arguments{
 \item{platform}{'EPIC', 'HM450' etc.}
+
+\item{refversion}{hg19, hg38, mm10}
 }
 \value{
 a vector of autosome probes

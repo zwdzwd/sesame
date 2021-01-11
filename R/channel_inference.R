@@ -61,8 +61,8 @@ inferTypeIChannel <- function(
     if (!switch_failed)
         red_idx <- ifelse(big_idx, red_idx, red_idx0)
     
-    sset@extra$IRR <- red_idx[seq_len(n_red)]
-    sset@extra$IGG <- !red_idx[(n_red+1):length(red_idx)]
+    sset@extra[['IRR']] <- red_idx[seq_len(n_red)]
+    sset@extra[['IGG']] <- !red_idx[(n_red+1):length(red_idx)]
     
     if (summary) {
         return(smry)
@@ -84,7 +84,7 @@ inferTypeIChannel <- function(
 
 ## Type-I Grn after correction
 IG2 <- function(sset) {
-    if ('IGG' %in% names(sset@extra) && 'IRR' %in% names(sset@extra)) {
+    if (extraHas(sset,'IGG') && extraHas(sset,'IRR')) {
         rbind(sset@IG[sset@extra$IGG,], sset@oobG[!sset@extra$IRR,])
     } else {
         IG(sset)
@@ -93,7 +93,7 @@ IG2 <- function(sset) {
 
 ## Type-I Red after correction
 IR2 <- function(sset) {
-    if ('IGG' %in% names(sset@extra) && 'IRR' %in% names(sset@extra)) {
+    if (extraHas(sset,'IGG') && extraHas(sset,'IRR')) {
         rbind(sset@IR[sset@extra$IRR,], sset@oobR[!sset@extra$IGG,])
     } else {
         IR(sset)

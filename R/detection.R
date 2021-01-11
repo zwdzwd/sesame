@@ -15,8 +15,8 @@ detectionZero <- function(sset, force=FALSE) {
     method <- "Zero"
     if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
-    if (!('pvals' %in% names(extra(sset))))
-        extra(sset)[['pvals']] <- list()
+    if (!extraHas(sset, 'pvals'))
+        extraSet(sset, 'pvals', list())
     
     nms <- probeNames(sset)
     extra(sset)[['pvals']][[method]] <-
@@ -59,8 +59,8 @@ detectionPnegEcdf <- function(sset, force=FALSE) {
     names(pII) <- rownames(II(sset))
 
     ## note: no sorting here
-    if (!('pvals' %in% names(extra(sset))))
-        extra(sset)[['pvals']] <- list()
+    if (!extraHas(sset, 'pvals'))
+        extraSet(sset, 'pvals', list())
     
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
 
@@ -103,8 +103,9 @@ detectionPoobEcdf <- function(sset, force=FALSE) {
     names(pII) <- rownames(II(sset))
 
     ## should have PoobEcdf aliased
-    if (!('pvals' %in% names(extra(sset))))
-        extra(sset)[['pvals']] <- list()
+    if (!extraHas(sset, 'pvals'))
+        extraSet(sset, 'pvals', list())
+
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
     
     sset
@@ -149,8 +150,9 @@ detectionPoobEcdf2 <- function(sset, force=FALSE) {
     names(pII) <- rownames(II(sset))
 
     ## should have PoobEcdf aliased
-    if (!('pvals' %in% names(extra(sset))))
-        extra(sset)[['pvals']] <- list()
+    if (!extraHas(sset, 'pvals'))
+        extraSet(sset, 'pvals', list())
+
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
     
     sset
@@ -205,8 +207,8 @@ detectionPnegNorm <- function(sset, force=FALSE) {
     sdR <- sd(negctls$R)
     sset <- detectionPfixedNorm(sset, muG, sdG, muR, sdR)
 
-    if (!('pvals' %in% names(extra(sset))))
-        extra(sset)[['pvals']] <- list()
+    if (!extraHas(sset, 'pvals'))
+        extraSet(sset, 'pvals', list())
     
     extra(sset)[['pvals']][[method]] <- extra(sset)[['pvals']][['PfixNorm']]
     sset
@@ -254,8 +256,8 @@ detectionPfixedNorm <- function(
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    if (!('pvals' %in% names(extra(sset))))
-        extra(sset)[['pvals']] <- list()
+    if (!extraHas(sset, 'pvals'))
+        extraSet(sset, 'pvals', list())
     
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
     sset
@@ -295,8 +297,8 @@ detectionPnegNormGS <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    if (!('pvals' %in% names(extra(sset))))
-        extra(sset)[['pvals']] <- list()
+    if (!extraHas(sset, 'pvals'))
+        extraSet(sset, 'pvals', list())
     
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
     sset
@@ -339,8 +341,8 @@ detectionPnegNormTotal <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    if (!('pvals' %in% names(extra(sset))))
-        extra(sset)[['pvals']] <- list()
+    if (!extraHas(sset, 'pvals'))
+        extraSet(sset, 'pvals', list())
     
     extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
     sset
