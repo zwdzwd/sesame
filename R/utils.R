@@ -206,4 +206,4 @@ extraSet <- function(sset, k, v) {
     extra(sset)[[k]] <- v
     sset
 }
-    
+

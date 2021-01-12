@@ -448,7 +448,6 @@ qualityMask <- function(
 #' @export
 resetMask <- function(sset) {
     extraSet(sset, 'mask', character(0))
-    sset
 }
 
 #' Mask Sigset by detection p-value
