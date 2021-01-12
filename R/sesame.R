@@ -442,11 +442,12 @@ qualityMask <- function(
 #'
 #' @param sset a \code{SigSet}
 #' @return a new \code{SigSet} with mask reset to empty
+#' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.no.mask <- resetMask(sset)
 #' @export
 resetMask <- function(sset) {
-    sset@extra$mask <- character(0)
+    extraSet(sset, 'mask', character(0))
     sset
 }
 
