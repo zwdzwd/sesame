@@ -140,7 +140,8 @@ getAutosomeProbes <- function(
     platform=c('EPIC','HM450','Mouse'),
     refversion=c('hg19','hg38','mm10')) {
     
-    mft <- sesameDataGet(sprintf('%s.hg38.manifest', platform))
+    mft <- sesameDataGet(sprintf(
+        '%s.%s.manifest', platform, refversion))
     names(mft)[!(as.character(GenomicRanges::seqnames(mft)) %in% c('chrX', 'chrY'))]
 }
 
@@ -156,8 +157,8 @@ getAutosomeProbes <- function(
 #'     betas[getAutosomeProbes('HM450'),],2000)
 #' @export
 getMostVariableProbes <- function(betas, n=2000) {
-    sd <- apply(betas, 1, sd, na.rm=TRUE)
-    betas[names(sort(sd, decreasing=TRUE)[seq_len(n)]),]
+    std <- apply(betas, 1, sd, na.rm=TRUE)
+    betas[names(sort(std, decreasing=TRUE)[seq_len(n)]),]
 }
 
 #' subset beta value matrix by probes
