@@ -67,8 +67,8 @@ getOobR <- function(sset, oobRprobes = NULL) {
     
     ## exclude multi-mapping and repeat
     ## only available for MM285 and more recent arrays
-    if (extraHas(sset, 'mapUniq')) {
-        res[intersect(extraGet(sset, 'mapUniq'), rownames(res)),]
+    if (extraHas(sset, 'mask')) {
+        res[!extraGet(sset, 'mask')[rownames(res)],]
     }
 
     res
@@ -81,8 +81,8 @@ getOobG <- function(sset, oobGprobes = NULL) {
 
     ## exclude multi-mapping and repeat
     ## only available for MM285 and more recent arrays
-    if (extraHas(sset, 'mapUniq')) {
-        res[intersect(extraGet(sset, 'mapUniq'), rownames(res)),]
+    if (extraHas(sset, 'mask')) {
+        res[!extraGet(sset, 'mask')[rownames(res)],]
     }
 
     res

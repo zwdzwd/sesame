@@ -192,13 +192,25 @@ signalMU <- function(sset) {
 #' numeric for the mean.
 #'
 #' @param sset a \code{SigSet}
+#' @param use.manifest.mask use mask column in the manifest to filter probes
+#' attributes set in extra(sset)
 #' @return mean of all intensities
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' meanIntensity(sset)
 #' @export
-meanIntensity <- function(sset) {
+meanIntensity <- function(sset, use.manifest.mask = TRUE) {
     stopifnot(is(sset, "SigSet"))
+    IGset <- IG(sset)
+    IRset <- IR(sset)
+    IIset <- II(sset)
+    if (use.manifest.mask && extraHas(sset, 'mask')) {
+        pmask <- extraGet(sset, 'mask')
+        IGset <- IGset[!pmask(rownames(IGset)),]
+        IRset <- IRset[!pmask(rownames(IRset)),]
+        IIset <- IIset[!pmask(rownames(IIset)),]
+    }
+    
     mean(c(IG(sset), IR(sset), II(sset)), na.rm=TRUE)
 }
 
@@ -783,8 +795,9 @@ chipAddressToSignal <- function(
     }
 
     ## additional annotation in manifest
-    if ('mapUniq' %in% colnames(manifest)) {
-        sset <- extraSet(sset, 'mapUniq', manifest$Probe_ID[manifest$mapUniq])
+    if ('mask' %in% colnames(manifest)) {
+        sset <- extraSet(
+            sset, 'mask', setNames(manifest$mask, manifest$Probe_ID))
     }
     
     sset

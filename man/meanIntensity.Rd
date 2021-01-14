@@ -4,10 +4,13 @@
 \alias{meanIntensity}
 \title{Mean Intensity}
 \usage{
-meanIntensity(sset)
+meanIntensity(sset, use.manifest.mask = TRUE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
+
+\item{use.manifest.mask}{use mask column in the manifest to filter probes
+attributes set in extra(sset)}
 }
 \value{
 mean of all intensities
