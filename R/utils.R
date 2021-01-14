@@ -124,7 +124,11 @@ getProbesByRegion <- function(
 getProbesByChromosome <- function(
     chrms, platform = c('EPIC','HM450'),
     refversion=c('hg19','hg38')) {
-    mft <- sesameDataGet(sprintf('%s.hg38.manifest', platform))
+
+    platform <- match.arg(platform)
+    refversion <- match.arg(refversion)
+    
+    mft <- sesameDataGet(sprintf('%s.%s.manifest', platform, refversion))
     names(mft)[as.character(GenomicRanges::seqnames(mft)) %in% chrms]
 }
 
@@ -139,6 +143,9 @@ getProbesByChromosome <- function(
 getAutosomeProbes <- function(
     platform=c('EPIC','HM450','Mouse'),
     refversion=c('hg19','hg38','mm10')) {
+
+    platform <- match.arg(platform)
+    refversion <- match.arg(refversion)
     
     mft <- sesameDataGet(sprintf(
         '%s.%s.manifest', platform, refversion))
@@ -208,3 +215,14 @@ extraSet <- function(sset, k, v) {
     sset
 }
 
+#' return all probe IDs
+#'
+#' @param sset a \code{SigSet}
+#' @return all Probe IDs, excluding controls
+probeIDs <- function(sset) {
+    c(
+        rownames(IG(sset)),
+        rownames(IR(sset)),
+        rownames(II(sset)))
+}
+        

@@ -192,23 +192,23 @@ signalMU <- function(sset) {
 #' numeric for the mean.
 #'
 #' @param sset a \code{SigSet}
-#' @param use.manifest.mask use mask column in the manifest to filter probes
+#' @param mask.use.manifest use mask column in the manifest to filter probes
 #' attributes set in extra(sset)
 #' @return mean of all intensities
 #' @examples
 #' sset <- makeExampleSeSAMeDataSet()
 #' meanIntensity(sset)
 #' @export
-meanIntensity <- function(sset, use.manifest.mask = TRUE) {
+meanIntensity <- function(sset, mask.use.manifest = TRUE) {
     stopifnot(is(sset, "SigSet"))
     IGset <- IG(sset)
     IRset <- IR(sset)
     IIset <- II(sset)
-    if (use.manifest.mask && extraHas(sset, 'mask')) {
+    if (mask.use.manifest && extraHas(sset, 'mask')) {
         pmask <- extraGet(sset, 'mask')
-        IGset <- IGset[!pmask(rownames(IGset)),]
-        IRset <- IRset[!pmask(rownames(IRset)),]
-        IIset <- IIset[!pmask(rownames(IIset)),]
+        IGset <- IGset[!pmask[rownames(IGset)],]
+        IRset <- IRset[!pmask[rownames(IRset)],]
+        IIset <- IIset[!pmask[rownames(IIset)],]
     }
     
     mean(c(IG(sset), IR(sset), II(sset)), na.rm=TRUE)
@@ -429,7 +429,7 @@ inferEthnicity <- function(sset) {
 #' @export 
 qualityMask <- function(
     sset,
-    mask.use.tcga=FALSE) {
+    mask.use.tcga = FALSE) {
 
     if(!(sset@platform %in% c('HM27','HM450','EPIC'))) {
         message(sprintf(
@@ -440,12 +440,15 @@ qualityMask <- function(
     
     if (mask.use.tcga) {
         stopifnot(sset@platform == 'HM450')
-        mask <- sesameDataGet('HM450.probeInfo')$mask.tcga
+        masked <- sesameDataGet('HM450.probeInfo')$mask.tcga
     } else {
-        mask <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
+        masked <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
     }
 
-    sset@extra$mask <- union(sset@extra$mask, mask)
+    if (!extraHas(sset, 'mask')) {
+        resetMask(sset);
+    }
+    sset@extra$mask[masked] <- TRUE
 
     return(sset)
 }
@@ -459,7 +462,8 @@ qualityMask <- function(
 #' sset.no.mask <- resetMask(sset)
 #' @export
 resetMask <- function(sset) {
-    extraSet(sset, 'mask', character(0))
+    probes <- probeIDs(sset)
+    sset@extra$mask <- setNames(rep(FALSE, length(probes)), probes)
 }
 
 #' Mask Sigset by detection p-value
@@ -483,8 +487,10 @@ detectionMask <- function(
         pv <- sset@extra$pvals[[pval.method]]
     }
 
-    mask <- names(pv)[pv > pval.threshold]
-    sset@extra$mask <- union(sset@extra$mask, mask)
+    if (!extraHas(sset, 'mask')) {
+        resetMask(sset);
+    }
+    sset@extra$mask[pv[names(sset@extra$mask)] > pval.threshold] <- TRUE
 
     sset
 }
@@ -531,8 +537,9 @@ getBetas <- function(sset, mask=TRUE, sum.TypeI = FALSE) {
         pmax(IRs[,'M'],1) / pmax(IRs[,'M']+IRs[,'U'],2),
         pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2))
 
-    if (mask)
-        betas[!is.na(match(names(betas), sset@extra$mask))] <- NA
+    if (mask) {
+        betas[sset@extra$mask[names(betas)]] <- NA
+    }
 
     betas
 }
@@ -798,6 +805,12 @@ chipAddressToSignal <- function(
     if ('mask' %in% colnames(manifest)) {
         sset <- extraSet(
             sset, 'mask', setNames(manifest$mask, manifest$Probe_ID))
+    }
+
+    ## backward support for mouse array, to remove in the future
+    if ('mapUniq' %in% colnames(manifest)) {
+        sset <- extraSet(
+            sset, 'mask', setNames(!manifest$mapUniq, manifest$Probe_ID))
     }
     
     sset
