@@ -713,7 +713,8 @@ chipAddressToSignal <- function(
         rownames(ctl) <- ctl_ord$Probe_ID
         colnames(ctl) <- c('G','R','col','type')
         ctl(sset) <- ctl
-    } else if (!is.null(controls)) {
+    } else if (!is.null(controls) && !('M' %in% colnames(controls))) {
+        ## TODO: fix the control probe panel
         ctl <- as.data.frame(dm[match(controls$Address, rownames(dm)),])
         rownames(ctl) <- make.names(controls$Name, unique=TRUE)
         ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
