@@ -123,22 +123,20 @@ dyeBiasCorrMostBalanced <- function(ssets) {
 dyeBiasCorrTypeINorm <- function(sset) {
 
     stopifnot(is(sset, "SigSet"))
-    maxIG <- max(IG(sset), na.rm = TRUE)
-    minIG <- min(IG(sset), na.rm = TRUE)
-    maxIR <- max(IR(sset), na.rm = TRUE)
-    minIR <- min(IR(sset), na.rm = TRUE)
 
-    if (maxIG <= 0 || maxIR <= 0) {
-        return(sset)
-    }
+    IG0 <- IGpass(sset); IR0 <- IRpass(sset)
+    
+    maxIG <- max(IG0, na.rm = TRUE); minIG <- min(IG0, na.rm = TRUE)
+    maxIR <- max(IR0, na.rm = TRUE); minIR <- min(IR0, na.rm = TRUE)
 
-    IR1 <- sort(as.numeric(IR(sset)))
+    if (maxIG <= 0 || maxIR <= 0) { return(sset); }
+
+    IR1 <- sort(as.numeric(IR0))
     IR2 <- sort(as.vector(normalize.quantiles.use.target(
-        matrix(IR1), as.vector(IG(sset)))))
+        matrix(IR1), as.vector(IG0))))
     
     IRmid <- (IR1 + IR2) / 2.0
-    maxIRmid <- max(IRmid)
-    minIRmid <- min(IRmid)
+    maxIRmid <- max(IRmid); minIRmid <- min(IRmid)
 
     fitfunRed <- function(data) {
         insupp    <- data <= maxIR & data >= minIR & (!is.na(data))
@@ -150,13 +148,12 @@ dyeBiasCorrTypeINorm <- function(sset) {
         data
     }
 
-    IG1 <- sort(as.numeric(IG(sset)))
+    IG1 <- sort(as.numeric(IG0))
     IG2 <- sort(as.vector(normalize.quantiles.use.target(
-        matrix(IG1), as.vector(IR(sset)))))
+        matrix(IG1), as.vector(IR0))))
     
     IGmid <- (IG1 + IG2) / 2.0
-    maxIGmid <- max(IGmid)
-    minIGmid <- min(IGmid)
+    maxIGmid <- max(IGmid); minIGmid <- min(IGmid)
 
     fitfunGrn <- function(data) {
         insupp    <- data <= maxIG & data >= minIG & (!is.na(data))
@@ -173,15 +170,9 @@ dyeBiasCorrTypeINorm <- function(sset) {
     II(sset)[,'M'] <- fitfunGrn(II(sset)[,'M'])
 
     ## IR
-    IR <- fitfunRed(IR(sset))
-    ## dim(IRmid) <- dim(IR(sset))
-    ## dimnames(IRmid) <- dimnames(IR(sset))
-    IR(sset) <- IR
+    IR(sset) <- fitfunRed(IR(sset))
     ## IG
-    IG <- fitfunGrn(IG(sset))
-    ## dim(IGmid) <- dim(IG(sset))
-    ## dimnames(IGmid) <- dimnames(IG(sset))
-    IG(sset) <- IG
+    IG(sset) <- fitfunGrn(IG(sset))
 
     ## fit control
     if (nrow(ctl(sset)) > 0) {
@@ -196,160 +187,5 @@ dyeBiasCorrTypeINorm <- function(sset) {
     sset
 }
 
-## M, U, green matched to red distribution
-dyeBiasCorrTypeINormG2R <- function(sset) {
-
-    stopifnot(is(sset, "SigSet"))
-    maxIG <- max(IG(sset))
-    minIG <- min(IG(sset))
-    maxIR <- max(IR(sset))
-    minIR <- min(IR(sset))
-
-    IG1 <- sort(as.numeric(IG(sset)))
-    IG2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(
-        matrix(IG1), as.vector(IR(sset)))))
-    
-    fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx, ties=mean)$y
-
-    ## fit type II
-    insupp <- II(sset)[,'M'] <= maxIG & II(sset)[,'M'] >= minIG
-    oversupp <- II(sset)[,'M'] > maxIG
-    undersupp <- II(sset)[,'M'] < minIG
-
-    II(sset)[insupp,'M'] <- fitfun(II(sset)[insupp,'M'])
-
-    II(sset)[oversupp,'M'] <- maxIR +
-        (II(sset)[oversupp,'M'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-
-    II(sset)[undersupp,'M'] <- minIR / minIG * II(sset)[undersupp,'M']
-
-    ## fit IG
-    IG.fit <- fitfun(IG(sset))
-    dim(IG.fit) <- dim(IG(sset))
-    dimnames(IG.fit) <- dimnames(IG(sset))
-    IG(sset) <- IG.fit
-
-    ## fit control
-    insupp <- ctl(sset)[,'G'] <= maxIG &
-        ctl(sset)[,'G'] >= minIG & (!is.na(ctl(sset)[,'G']))
-    oversupp <- ctl(sset)[,'G'] > maxIG & (!is.na(ctl(sset)[,'G']))
-    undersupp <- ctl(sset)[,'G'] < minIG & (!is.na(ctl(sset)[,'G']))
-    ctl(sset)[insupp,'G'] <- fitfun(ctl(sset)[insupp,'G'])
-    ctl(sset)[oversupp,'G'] <- maxIR +
-        (ctl(sset)[oversupp,'G'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    ctl(sset)[undersupp,'G'] <- minIR / minIG * ctl(sset)[undersupp,'G']
-
-    ## fit oob
-    insupp <- oobG(sset) <= maxIG & oobG(sset) >= minIG & (!is.na(oobG(sset)))
-    oversupp <- oobG(sset) > maxIG & (!is.na(oobG(sset)))
-    undersupp <- oobG(sset) < minIG & (!is.na(oobG(sset)))
-    oobG(sset)[insupp] <- fitfun(oobG(sset)[insupp])
-    oobG(sset)[oversupp] <- maxIR +
-        (oobG(sset)[oversupp] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    oobG(sset)[undersupp] <- minIR / minIG * oobG(sset)[undersupp]
-
-    sset
-}
-
-
-## M,U red matched to green distribution
-dyeBiasCorrTypeINormR2G <- function(sset) {
-
-    stopifnot(is(sset, "SigSet"))
-    maxIG <- max(IG(sset))
-    minIG <- min(IG(sset))
-    maxIR <- max(IR(sset))
-    minIR <- min(IR(sset))
-
-    IR1 <- sort(as.numeric(IR(sset)))
-    IR2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(
-        matrix(IR1), as.vector(IG(sset)))))
-    fitfun <- function(xx) approx(x=IR1, y=IR2, xout=xx, ties=mean)$y
-
-    ## fit type II
-    insupp <- II(sset)[,'U'] <= maxIR & II(sset)[,'U'] >= minIR
-    oversupp <- II(sset)[,'U'] > maxIR
-    undersupp <- II(sset)[,'U'] < minIR
-    II(sset)[insupp,'U'] <- fitfun(II(sset)[insupp,'U'])
-    II(sset)[oversupp,'U'] <- maxIG +
-        (II(sset)[oversupp,'U'] - maxIR) * (maxIG-minIG) / (maxIR-minIR)
-    II(sset)[undersupp,'U'] <- minIG / minIR * II(sset)[undersupp,'U']
-
-    ## fit IR
-    IR.fit <- fitfun(IR(sset))
-    dim(IR.fit) <- dim(IR(sset))
-    dimnames(IR.fit) <- dimnames(IR(sset))
-    IR(sset) <- IR.fit
-
-    ## fit control
-    insupp <- ctl(sset)[,'R'] <= maxIR & ctl(sset)[,'R'] >= minIR &
-        (!is.na(ctl(sset)[,'R']))
-    oversupp <- ctl(sset)[,'R'] > maxIR & (!is.na(ctl(sset)[,'R']))
-    undersupp <- ctl(sset)[,'R'] < minIR & (!is.na(ctl(sset)[,'R']))
-    ctl(sset)[insupp,'R'] <- fitfun(ctl(sset)[insupp,'R'])
-    ctl(sset)[oversupp,'R'] <- maxIG +
-        (ctl(sset)[oversupp,'R'] - maxIR) * (maxIG-minIG) / (maxIR-minIR)
-    ctl(sset)[undersupp,'R'] <- minIG / minIR * ctl(sset)[undersupp,'R']
-
-    ## fit oob
-    insupp <- oobR(sset) <= maxIR & oobR(sset) >= minIR & (!is.na(oobR(sset)))
-    oversupp <- oobR(sset) > maxIR & (!is.na(oobR(sset)))
-    undersupp <- oobR(sset) < minIR & (!is.na(oobR(sset)))
-    oobR(sset)[insupp] <- fitfun(oobR(sset)[insupp])
-    oobR(sset)[oversupp] <- maxIG +
-        (oobR(sset)[oversupp] - maxIR) * (maxIG-minIG) / (maxIR-minIR)
-    oobR(sset)[undersupp] <- minIG / minIR * oobR(sset)[undersupp]
-
-    sset
-}
-
-## M + U green matched to red distribution
-dyeBiasCorrTypeINormMpU <- function(sset) {
-
-    stopifnot(is(sset, "SigSet"))
-    maxIG <- max(rowSums(IG(sset)))
-    minIG <- min(rowSums(IG(sset)))
-    maxIR <- max(rowSums(IR(sset)))
-    minIR <- min(rowSums(IR(sset)))
-
-    IG1 <- sort(as.numeric(rowSums(IG(sset))))
-    IG2 <- sort(as.vector(preprocessCore::normalize.quantiles.use.target(
-        matrix(IG1), as.vector(rowSums(IR(sset))))))
-    fitfun <- function(xx) approx(x=IG1, y=IG2, xout=xx, ties=mean)$y
-
-    ## fit type II
-    insupp <- II(sset)[,'M'] <= maxIG & II(sset)[,'M'] >= minIG
-    oversupp <- II(sset)[,'M'] > maxIG
-    undersupp <- II(sset)[,'M'] < minIG
-    II(sset)[insupp,'M'] <- fitfun(II(sset)[insupp,'M'])
-    II(sset)[oversupp,'M'] <- maxIR +
-        (II(sset)[oversupp,'M'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    II(sset)[undersupp,'M'] <- minIR / minIG * II(sset)[undersupp,'M']
-
-    ## fit IG
-    IG.fit <- fitfun(IG(sset))
-    dim(IG.fit) <- dim(IG(sset))
-    dimnames(IG.fit) <- dimnames(IG(sset))
-    IG(sset) <- IG.fit
-
-    ## fit control
-    insupp <- ctl(sset)[,'G'] <= maxIG &
-        ctl(sset)[,'G'] >= minIG & (!is.na(ctl(sset)[,'G']))
-    oversupp <- ctl(sset)[,'G'] > maxIG & (!is.na(ctl(sset)[,'G']))
-    undersupp <- ctl(sset)[,'G'] < minIG & (!is.na(ctl(sset)[,'G']))
-    ctl(sset)[insupp,'G'] <- fitfun(ctl(sset)[insupp,'G'])
-    ctl(sset)[oversupp,'G'] <- maxIR +
-        (ctl(sset)[oversupp,'G'] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    ctl(sset)[undersupp,'G'] <- minIR / minIG * ctl(sset)[undersupp,'G']
-
-    ## fit oob
-    insupp <- oobG(sset) <= maxIG & oobG(sset) >= minIG & (!is.na(oobG(sset)))
-    oversupp <- oobG(sset) > maxIG & (!is.na(oobG(sset)))
-    undersupp <- oobG(sset) < minIG & (!is.na(oobG(sset)))
-    oobG(sset)[insupp] <- fitfun(oobG(sset)[insupp])
-    oobG(sset)[oversupp] <- maxIR +
-        (oobG(sset)[oversupp] - maxIG) * (maxIR-minIR) / (maxIG-minIG)
-    oobG(sset)[undersupp] <- minIR / minIG * oobG(sset)[undersupp]
-
-    sset
-}
+## the following three functions are retired since 1.9.1
+## dyeBiasCorrTypeINormMpU, dyeBiasCorrTypeINormG2R, dyeBiasCorrTypeINormR2G

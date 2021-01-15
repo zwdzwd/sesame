@@ -211,7 +211,7 @@ meanIntensity <- function(sset, mask.use.manifest = TRUE) {
         IIset <- IIset[!pmask[rownames(IIset)],]
     }
     
-    mean(c(IG(sset), IR(sset), II(sset)), na.rm=TRUE)
+    mean(c(IGset, IRset, IIset), na.rm=TRUE)
 }
 
 #' M+U Intensities for All Probes
@@ -416,85 +416,6 @@ inferEthnicity <- function(sset) {
     as.character(predict(ethnicity.model, af))
 }
 
-#' Mask beta values by design quality
-#' 
-#' Currently quality masking only supports three platforms
-#' 
-#' @param sset a \code{SigSet} object
-#' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
-#' @return a filtered \code{SigSet}
-#' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.masked <- qualityMask(sset)
-#' @export 
-qualityMask <- function(
-    sset,
-    mask.use.tcga = FALSE) {
-
-    if(!(sset@platform %in% c('HM27','HM450','EPIC'))) {
-        message(sprintf(
-            "Quality masking is not supported for %s.", sset@platform))
-        return(sset)
-    }
-        
-    
-    if (mask.use.tcga) {
-        stopifnot(sset@platform == 'HM450')
-        masked <- sesameDataGet('HM450.probeInfo')$mask.tcga
-    } else {
-        masked <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
-    }
-
-    if (!extraHas(sset, 'mask')) {
-        resetMask(sset);
-    }
-    sset@extra$mask[masked] <- TRUE
-
-    return(sset)
-}
-
-#' Reset Masking
-#'
-#' @param sset a \code{SigSet}
-#' @return a new \code{SigSet} with mask reset to empty
-#' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.no.mask <- resetMask(sset)
-#' @export
-resetMask <- function(sset) {
-    probes <- probeIDs(sset)
-    sset@extra$mask <- setNames(rep(FALSE, length(probes)), probes)
-}
-
-#' Mask Sigset by detection p-value
-#'
-#' @param sset a \code{SigSet}
-#' @param pval.method which method to use in calculating p-values
-#' @param pval.threshold the p-value threshold
-#' @return a filtered \code{SigSet}
-#' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.masked <- detectionMask(sset)
-#' @export
-detectionMask <- function(
-    sset, pval.method=NULL, pval.threshold=0.05) {
-    if (is.null(pval.method)) {
-        pv <- pval(sset)
-    } else {
-        stopifnot(
-            extraHas(sset, 'pvals') &&
-                pval.method %in% names(sset@extra$pvals))
-        pv <- sset@extra$pvals[[pval.method]]
-    }
-
-    if (!extraHas(sset, 'mask')) {
-        resetMask(sset);
-    }
-    sset@extra$mask[pv[names(sset@extra$mask)] > pval.threshold] <- TRUE
-
-    sset
-}
-
 #' Get beta Values
 #'
 #' sum.typeI is used for rescuing beta values on
@@ -583,12 +504,11 @@ getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
 }
 
 ## res is the output of illuminaio::readIDAT
+## Infer platform from IDATs
 inferPlatform <- function(res) {
-    switch(res$ChipType,
-        'BeadChip 8x5'='EPIC',
-        'BeadChip 12x8'='HM450',
-        'BeadChip 12x1'='HM27',
-        "Custom")
+    sig <- sesameDataGet('idatSignature')
+    names(which.max(vapply(
+        sig, function(x) sum(x %in% rownames(res$Quants)), integer(1))))
 }
 
 ## Import one IDAT file

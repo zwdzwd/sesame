@@ -215,14 +215,3 @@ extraSet <- function(sset, k, v) {
     sset
 }
 
-#' return all probe IDs
-#'
-#' @param sset a \code{SigSet}
-#' @return all Probe IDs, excluding controls
-probeIDs <- function(sset) {
-    c(
-        rownames(IG(sset)),
-        rownames(IR(sset)),
-        rownames(II(sset)))
-}
-        

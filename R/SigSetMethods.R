@@ -122,6 +122,24 @@ setGeneric("IG", function(x) {
 #' head(IG(sset))
 setMethod("IG", "SigSet", function(x){ x@IG })
 
+#' Get IG slot of SigSet class that passes mask
+#' This is the same as IG() if there is no mask set
+#'
+#' @param sset SigSet object
+#' @return The IG slot that passes extra$mask filter
+#' @examples
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' head(IGpass(sset))
+#' @export
+IGpass <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
+    if (extraHas(sset, "mask")) {
+        sset@IG[!extraGet(sset,"mask")[rownames(sset@IG)],]
+    } else {
+        sset@IG
+    }
+}
+
 ############
 #### IR ####
 ############
@@ -170,6 +188,24 @@ setGeneric("IR", function(x) {
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(IR(sset))
 setMethod("IR", "SigSet", function(x){ x@IR })
+
+#' Get IR slot of SigSet class that passes mask
+#' This is the same as IR() if there is no mask set
+#'
+#' @param sset SigSet object
+#' @return The IR slot that passes extra$mask filter
+#' @examples
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' head(IRpass(sset))
+#' @export
+IRpass <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
+    if (extraHas(sset, "mask")) {
+        sset@IR[!extraGet(sset,"mask")[rownames(sset@IR)],]
+    } else {
+        sset@IR
+    }
+}
 
 ############
 #### II ####
@@ -220,6 +256,24 @@ setGeneric("II", function(x) {
 #' head(II(sset))
 setMethod("II", "SigSet", function(x){ x@II })
 
+#' Get II slot of SigSet class that passes mask
+#' This is the same as II() if there is no mask set
+#'
+#' @param sset SigSet object
+#' @return The II slot that passes extra$mask filter
+#' @examples
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' head(IIpass(sset))
+#' @export
+IIpass <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
+    if (extraHas(sset, "mask")) {
+        sset@II[!extraGet(sset,"mask")[rownames(sset@II)],]
+    } else {
+        sset@II
+    }
+}
+
 ##############
 #### oobG ####
 ##############
@@ -269,6 +323,24 @@ setGeneric("oobG", function(x) {
 #' head(oobG(sset))
 setMethod("oobG", "SigSet", function(x){ x@oobG })
 
+#' Get oobG slot of SigSet class that passes mask
+#' This is the same as oobG() if there is no mask set
+#'
+#' @param sset SigSet object
+#' @return The oobG slot that passes extra$mask filter
+#' @examples
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' head(oobGpass(sset))
+#' @export
+oobGpass <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
+    if (extraHas(sset, "mask")) {
+        sset@oobG[!extraGet(sset,"mask")[rownames(sset@oobG)],]
+    } else {
+        sset@oobG
+    }
+}
+
 ##############
 #### oobR ####
 ##############
@@ -317,6 +389,24 @@ setGeneric("oobR", function(x) {
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(oobR(sset))
 setMethod("oobR", "SigSet", function(x){ x@oobR })
+
+#' Get oobR slot of SigSet class that passes mask
+#' This is the same as oobR() if there is no mask set
+#'
+#' @param sset SigSet object
+#' @return The oobR slot that passes extra$mask filter
+#' @examples
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' head(oobRpass(sset))
+#' @export
+oobRpass <- function(sset) {
+    stopifnot(is(sset, "SigSet"))
+    if (extraHas(sset, "mask")) {
+        sset@oobR[!extraGet(sset,"mask")[rownames(sset@oobR)],]
+    } else {
+        sset@oobR
+    }
+}
 
 ############
 #### ctl ###

@@ -15,8 +15,8 @@
 #' sset.nb.scrub <- scrub(sset.nb)
 #' @export
 scrub <- function(sset) {
-    bG <- median(getOobG(sset))
-    bR <- median(getOobR(sset))
+    bG <- median(oobGpass(sset))
+    bR <- median(oobRpass(sset))
     sset@IR <- pmax(sset@IR - bR,1)
     sset@IG <- pmax(sset@IG - bG,1)
     sset@II <- cbind(M=pmax(sset@II[,'M'] - bG,1), U=pmax(sset@II[,'U'] - bR,1))
@@ -48,8 +48,8 @@ noobSub <- function(sig, bg) {
 #' sset.nb.scrubSoft <- scrubSoft(sset.nb)
 #' @export
 scrubSoft <- function(sset) {
-    oobR1 <- getOobR(sset)
-    oobG1 <- getOobG(sset)
+    oobR1 <- oobRpass(sset)
+    oobG1 <- oobGpass(sset)
     sset@IR <- noobSub(sset@IR, oobR1)
     sset@IG <- noobSub(sset@IG, oobG1)
     sset@II <- cbind(
@@ -60,32 +60,20 @@ scrubSoft <- function(sset) {
     sset
 }
 
-getOobR <- function(sset, oobRprobes = NULL) {
-    if (!is.null(oobRprobes)) { return(oobR(sset)[oobRprobes,]); }
-
-    res <- oobR(sset);
-    
-    ## exclude multi-mapping and repeat
-    ## only available for MM285 and more recent arrays
-    if (extraHas(sset, 'mask')) {
-        res[!extraGet(sset, 'mask')[rownames(res)],]
+getBackgroundR <- function(sset, bgR = NULL) {
+    if (!is.null(bgR)) {
+        oobR(sset)[bgR,]
+    } else {
+        oobRpass(sset)
     }
-
-    res
 }
 
-getOobG <- function(sset, oobGprobes = NULL) {
-    if (!is.null(oobGprobes)) { return(oobG(sset)[oobGprobes,]); }
-
-    res <- oobG(sset);
-
-    ## exclude multi-mapping and repeat
-    ## only available for MM285 and more recent arrays
-    if (extraHas(sset, 'mask')) {
-        res[!extraGet(sset, 'mask')[rownames(res)],]
+getBackgroundG <- function(sset, bgG = NULL) {
+    if (!is.null(bgG)) {
+        oobG(sset)[bgG,]
+    } else {
+        oobGpass(sset)
     }
-
-    res
 }
 
 #' Noob background correction
@@ -97,14 +85,14 @@ getOobG <- function(sset, oobGprobes = NULL) {
 #' 
 #' @param sset a \code{SigSet}
 #' @param offset offset
-#' @param oobRprobes out-of-band red probes, if not given use all oobR
-#' @param oobGprobes out-of-band grn probes, if not given use all oobG
+#' @param bgR background red probes, if not given use all oobR
+#' @param bgG background grn probes, if not given use all oobG
 #' @return a new \code{SigSet} with noob background correction
 #' @examples
 #' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)
 #' @export
-noob <- function(sset, oobRprobes = NULL, oobGprobes = NULL, offset=15) {
+noob <- function(sset, bgR = NULL, bgG = NULL, offset=15) {
 
     ## skip if all oob signals are nil (likely the
     ## entire chip failed)
@@ -126,9 +114,9 @@ noob <- function(sset, oobRprobes = NULL, oobGprobes = NULL, offset=15) {
 
     ## do background correction in each channel
     ibR.nl <- .backgroundCorrectionNoobCh1(
-        ibR, getOobR(sset, oobRprobes), ctl(sset)$R, offset=offset)
+        ibR, oobR(sset), ctl(sset)$R, getBackgroundR(sset, bgR), offset=offset)
     ibG.nl <- .backgroundCorrectionNoobCh1(
-        ibG, getOobG(sset, oobGprobes), ctl(sset)$G, offset=offset)
+        ibG, oobG(sset), ctl(sset)$G, getBackgroundG(sset, bgG), offset=offset)
 
     ## build back the list
     ## type IG
@@ -140,21 +128,23 @@ noob <- function(sset, oobRprobes = NULL, oobGprobes = NULL, offset=15) {
         IG(sset) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
     ## type IR
-    if (length(IR(sset))>0)
+    if (length(IR(sset))>0) {
         IR(sset) <- matrix(
             ibR.nl$i[seq_along(IR(sset))],
             nrow=nrow(IR(sset)), dimnames=dimnames(IR(sset)))
-    else
+    } else {
         IR(sset) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    }
 
     ## type II
-    if (nrow(II(sset)) > 0)
+    if (nrow(II(sset)) > 0) {
         II(sset) <- as.matrix(data.frame(
             M=ibG.nl$i[(length(IG(sset))+1):length(ibG)],
             U=ibR.nl$i[(length(IR(sset))+1):length(ibR)],
             row.names=rownames(II(sset))))
-    else
+    } else {
         II(sset) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    }
 
     ## controls
     ctl(sset)$G <- ibG.nl$c
@@ -173,9 +163,9 @@ noob <- function(sset, oobRprobes = NULL, oobGprobes = NULL, offset=15) {
 ## ctl control probe signals
 ## offset padding for normalized signal
 ## return normalized in-band signal
-.backgroundCorrectionNoobCh1 <- function(ib, oob, ctl, offset=15) {
+.backgroundCorrectionNoobCh1 <- function(ib, oob, ctl, bg, offset=15) {
 
-    e <- MASS::huber(oob)
+    e <- MASS::huber(bg)
     mu <- e$mu
     sigma <- e$s
     alpha <- pmax(MASS::huber(ib)$mu-mu, 10)
