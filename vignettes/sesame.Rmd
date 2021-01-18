@@ -45,7 +45,8 @@ idat_dir <- system.file("extdata/", package = "sesameData")
 betas <- openSesame(idat_dir)
 ```
 where `idat_dir` is the directory containing all the IDAT files (they can be
-present under nested sub-directories). This is meant for tha quick start default.
+present under nested sub-directories). This is meant for tha quick start
+default.
 
 But if you want to have more granuality of control (like provide parameters in
 each step), openSesame is equivalent to

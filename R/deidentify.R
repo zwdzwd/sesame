@@ -22,7 +22,8 @@
 #'      temp_out, randomize = TRUE)
 #' unlink(temp_out)
 #' @export
-deIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL, randomize=FALSE) {
+deIdentify <- function(
+    path, out_path=NULL, snps=NULL, mft=NULL, randomize=FALSE) {
 
     res <- suppressWarnings(illuminaio::readIDAT(path))
     platform <- inferPlatform(res)
@@ -62,13 +63,15 @@ deIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL, randomize=FALSE
     con2 <- file(out_path, "wb")
 
     ## before Mean section
-    writeBin(readBin(con, "raw", n = res$fields["Mean", 'byteOffset']), con2)
+    writeBin(readBin(
+        con, "raw", n = res$fields["Mean", 'byteOffset']), con2)
 
     ## write new Mean section
     writeBin(as.integer(dt), con2, size=2, endian='little')
 
     ## after Mean section
-    a <- readBin(con, "raw", n = res$nSNPsRead*2) # skip by reading..., seek might not work for gzfile
+    ## skip by reading..., seek might not work for gzfile
+    a <- readBin(con, "raw", n = res$nSNPsRead*2)
     while (length(a <- readBin(con, 'raw', n=1))>0) writeBin(a, con2)
 
     close(con)
@@ -138,7 +141,8 @@ reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
     writeBin(as.integer(dt), con2, size=2, endian='little')
 
     ## after Mean section
-    a <- readBin(con, "raw", n = res$nSNPsRead*2) # skip by reading..., seek might not work for gzfile
+    ## skip by reading..., seek might not work for gzfile
+    a <- readBin(con, "raw", n = res$nSNPsRead*2)
     while (length(a <- readBin(con, 'raw', n=1))>0) writeBin(a, con2)
 
     close(con)

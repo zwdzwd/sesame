@@ -68,7 +68,9 @@ setClass(
 ## update old SigSet without slot extra
 updateSigSet <- function(sset) {
     sset2 <- SigSet(sset@platform)
-    for(sname in c("IG", "IR", "II", "oobG", "oobR", "ctl", "pval", "extra", "platform")) {
+    for(sname in c(
+        "IG", "IR", "II", "oobG", "oobR",
+        "ctl", "pval", "extra", "platform")) {
         if (sname == 'extra')
             slot(sset2, sname) <- list()
         else

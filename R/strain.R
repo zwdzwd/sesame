@@ -9,6 +9,7 @@
 #' sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
 #' vafs <- betaToAF(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
 #' inferStrain(vafs)
+#' @import tibble
 #' @export
 inferStrain <- function(vafs, strain_snp_table = NULL) {
 
@@ -20,7 +21,7 @@ inferStrain <- function(vafs, strain_snp_table = NULL) {
     bb <- vapply(probes, function(p) {
         dnorm(vafs[p], mean=strain_snp_table[p,], sd=0.8)
     }, numeric(ncol(strain_snp_table)))
-    bbloglik <- apply(bb,1,function(x) sum(log(x),na.rm=T))
+    bbloglik <- apply(bb,1,function(x) sum(log(x),na.rm=TRUE))
     probs <- exp(bbloglik - max(bbloglik))
     best.index <- which.max(probs)
 

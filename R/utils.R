@@ -149,7 +149,8 @@ getAutosomeProbes <- function(
     
     mft <- sesameDataGet(sprintf(
         '%s.%s.manifest', platform, refversion))
-    names(mft)[!(as.character(GenomicRanges::seqnames(mft)) %in% c('chrX', 'chrY'))]
+    names(mft)[!(as.character(
+        GenomicRanges::seqnames(mft)) %in% c('chrX', 'chrY'))]
 }
 
 #' Get most variable probes
