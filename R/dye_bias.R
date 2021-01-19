@@ -189,3 +189,4 @@ dyeBiasCorrTypeINorm <- function(sset) {
 
 ## the following three functions are retired since 1.9.1
 ## dyeBiasCorrTypeINormMpU, dyeBiasCorrTypeINormG2R, dyeBiasCorrTypeINormR2G
+
