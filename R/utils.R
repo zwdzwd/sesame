@@ -161,10 +161,10 @@ getAutosomeProbes <- function(
 #' @examples
 #' ## get most variable autosome probes
 #' betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
-#' betas.most.variable <- getMostVariableProbes(
+#' betas.most.variable <- bSubMostVariable(
 #'     betas[getAutosomeProbes('HM450'),],2000)
 #' @export
-getMostVariableProbes <- function(betas, n=2000) {
+bSubMostVariable <- function(betas, n=2000) {
     std <- apply(betas, 1, sd, na.rm=TRUE)
     betas[names(sort(std, decreasing=TRUE)[seq_len(n)]),]
 }
