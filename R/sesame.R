@@ -755,7 +755,7 @@ chipAddressToSignal <- function(
 #' @export
 bisConversionControl <- function(sset, use.median=FALSE) {
 
-    stopifnot(sset@platform %in% c('EPIC','HM450'))
+    stopifnot(sset@platform %in% c('EPICplus','EPIC','HM450'))
     extC <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extC
     extT <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extT
     prbs <- rownames(oobG(sset))

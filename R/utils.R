@@ -141,7 +141,7 @@ getProbesByChromosome <- function(
 #' auto.probes <- getAutosomeProbes('EPIC')
 #' @export
 getAutosomeProbes <- function(
-    platform=c('EPIC','HM450','Mouse'),
+    platform=c('EPIC','HM450','MM285'),
     refversion=c('hg19','hg38','mm10')) {
 
     platform <- match.arg(platform)
