@@ -7,10 +7,10 @@
 visualizeGene(
   geneName,
   betas,
-  platform = c("EPIC", "HM450"),
+  platform = c("EPIC", "HM450", "MM285"),
   upstream = 2000,
   dwstream = 2000,
-  refversion = c("hg38", "hg19"),
+  refversion = c("hg38", "hg19", "mm10"),
   ...
 )
 }
@@ -19,13 +19,13 @@ visualizeGene(
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 
-\item{platform}{HM450 or EPIC (default)}
+\item{platform}{HM450, EPIC, or MM285 (default)}
 
 \item{upstream}{distance to extend upstream}
 
 \item{dwstream}{distance to extend downstream}
 
-\item{refversion}{hg19 or hg38 (default)}
+\item{refversion}{hg19, hg38, or mm10 (default)}
 
 \item{...}{additional options, see visualizeRegion}
 }

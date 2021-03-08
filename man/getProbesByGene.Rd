@@ -6,10 +6,10 @@
 \usage{
 getProbesByGene(
   geneName,
-  platform = c("EPIC", "HM450"),
+  platform = c("EPIC", "HM450", "MM285"),
   upstream = 0,
   dwstream = 0,
-  refversion = c("hg38", "hg19")
+  refversion = c("hg38", "hg19", "mm10")
 )
 }
 \arguments{

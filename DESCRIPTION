@@ -67,6 +67,7 @@ Collate:
     'detection.R'
     'differential_methylation.R'
     'dye_bias.R'
+    'feature_selection.R'
     'fileSet.R'
     'mask.R'
     'open.R'

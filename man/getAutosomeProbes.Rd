@@ -5,7 +5,7 @@
 \title{Get autosome probes}
 \usage{
 getAutosomeProbes(
-  platform = c("EPIC", "HM450", "Mouse"),
+  platform = c("EPIC", "HM450", "MM285"),
   refversion = c("hg19", "hg38", "mm10")
 )
 }

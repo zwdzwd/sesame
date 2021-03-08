@@ -9,8 +9,8 @@ visualizeRegion(
   plt.beg,
   plt.end,
   betas,
-  platform = c("EPIC", "HM450"),
-  refversion = c("hg38", "hg19"),
+  platform = c("EPIC", "HM450", "MM285"),
+  refversion = c("hg38", "hg19", "mm10"),
   sample.name.fontsize = 10,
   heat.height = NULL,
   draw = TRUE,
@@ -33,9 +33,9 @@ visualizeRegion(
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 
-\item{platform}{EPIC or HM450}
+\item{platform}{EPIC, HM450, or MM285}
 
-\item{refversion}{hg38 or hg19}
+\item{refversion}{hg38, hg19, or mm10}
 
 \item{sample.name.fontsize}{sample name font size}
 

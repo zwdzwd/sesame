@@ -7,8 +7,8 @@
 visualizeProbes(
   probeNames,
   betas,
-  platform = c("EPIC", "HM450"),
-  refversion = c("hg38", "hg19"),
+  platform = c("EPIC", "HM450", "MM285"),
+  refversion = c("hg38", "hg19", "mm10"),
   upstream = 1000,
   dwstream = 1000,
   ...
@@ -19,9 +19,9 @@ visualizeProbes(
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 
-\item{platform}{HM450 or EPIC (default)}
+\item{platform}{HM450, EPIC or MM285 (default)}
 
-\item{refversion}{hg19 or hg38 (default)}
+\item{refversion}{hg19, hg38 or mm10 (default)}
 
 \item{upstream}{distance to extend upstream}
 

@@ -9,10 +9,10 @@
 #'
 #' @param geneName gene name
 #' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform HM450 or EPIC (default)
+#' @param platform HM450, EPIC, or MM285 (default)
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
-#' @param refversion hg19 or hg38 (default)
+#' @param refversion hg19, hg38, or mm10 (default)
 #' @param ... additional options, see visualizeRegion
 #' @import grid
 #' @return None
@@ -21,9 +21,9 @@
 #' visualizeGene('ADA', betas, 'HM450')
 #' @export
 visualizeGene <- function(
-    geneName, betas, platform = c('EPIC','HM450'),
+    geneName, betas, platform = c('EPIC','HM450','MM285'),
     upstream = 2000, dwstream = 2000,
-    refversion = c('hg38', 'hg19'), ...) {
+    refversion = c('hg38', 'hg19', 'mm10'), ...) {
 
     platform <- match.arg(platform)
     refversion <- match.arg(refversion)
@@ -33,7 +33,7 @@ visualizeGene <- function(
     }
     
     pkgTest('GenomicRanges')
-
+    
     gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
     if (!(geneName %in% names(gene2txn))) {
         stop('Gene ', geneName, ' not found in this reference.');
@@ -70,8 +70,8 @@ visualizeGene <- function(
 #' 
 #' @param probeNames probe names
 #' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform HM450 or EPIC (default)
-#' @param refversion hg19 or hg38 (default)
+#' @param platform HM450, EPIC or MM285 (default)
+#' @param refversion hg19, hg38 or mm10 (default)
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
 #' @param ... additional options, see visualizeRegion
@@ -83,8 +83,8 @@ visualizeGene <- function(
 #' @export
 visualizeProbes <- function(
     probeNames, betas,
-    platform = c('EPIC', 'HM450'),
-    refversion = c('hg38','hg19'),
+    platform = c('EPIC', 'HM450', 'MM285'),
+    refversion = c('hg38','hg19','mm10'),
     upstream = 1000, dwstream = 1000, ...) {
 
     platform <- match.arg(platform)
@@ -127,9 +127,9 @@ visualizeProbes <- function(
 #' probes <- getProbesByGene('CDKN2A', upstream=500, dwstream=500)
 #' @export
 getProbesByGene <- function(
-    geneName, platform = c('EPIC','HM450'),
+    geneName, platform = c('EPIC','HM450','MM285'),
     upstream = 0, dwstream = 0,
-    refversion = c('hg38','hg19')) {
+    refversion = c('hg38','hg19','mm10')) {
 
     platform <- match.arg(platform)
     refversion <- match.arg(refversion)
@@ -170,15 +170,16 @@ getProbesByGene <- function(
 #' @param geneName gene name
 #' @param upstream the number of base pairs to expand upstream the TSS
 #' @param dwstream the number of base pairs to expand dwstream the TSS
-#' @param platform EPIC or HM450
-#' @param refversion hg38 or hg19
+#' @param platform EPIC, HM450, or MM285
+#' @param refversion hg38, hg19 or mm10
 #' @return probes that fall into the given gene
 #' @examples
 #' probes <- getProbesByTSS('CDKN2A')
 #' @export
 getProbesByTSS <- function(
     geneName, upstream = 1500, dwstream = 1500,
-    platform = c('EPIC','HM450'), refversion = c('hg38','hg19')) {
+    platform = c('EPIC','HM450','MM285'),
+    refversion = c('hg38','hg19','mm10')) {
 
     platform <- match.arg(platform)
     refversion <- match.arg(refversion)
@@ -303,8 +304,8 @@ plotTranscripts <- function(
 #' @param plt.beg begin of the region
 #' @param plt.end end of the region
 #' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform EPIC or HM450
-#' @param refversion hg38 or hg19
+#' @param platform EPIC, HM450, or MM285
+#' @param refversion hg38, hg19, or mm10
 #' @param draw draw figure or return betas
 #' @param heat.height heatmap height (auto inferred based on rows)
 #' @param show.sampleNames whether to show sample names
@@ -325,8 +326,8 @@ plotTranscripts <- function(
 #' @export
 visualizeRegion <- function(
     chrm, plt.beg, plt.end, betas,
-    platform = c('EPIC','HM450'),
-    refversion = c('hg38','hg19'),
+    platform = c('EPIC','HM450','MM285'),
+    refversion = c('hg38','hg19','mm10'),
     sample.name.fontsize = 10,
     heat.height = NULL, draw = TRUE,
     show.sampleNames = TRUE, show.samples.n = NULL, show.probeNames = TRUE,
@@ -348,6 +349,10 @@ visualizeRegion <- function(
     probes <- sesameDataGet(paste0(
         platform, '.probeInfo'))[[paste0('mapped.probes.',refversion)]]
 
+    if (is.null(probes)) {
+        stop("Probe info unfound. Wrong platform and refversion?")
+    }
+    
     target.region <- GenomicRanges::GRanges(
         chrm, IRanges::IRanges(plt.beg, plt.end))
     target.txns <- subsetByOverlaps(txns, target.region)
@@ -421,7 +426,7 @@ visualizeRegion <- function(
 #' @importFrom grDevices gray.colors
 plotCytoBand <- function(
     chrom, plt.beg, plt.end,
-    refversion = c('hg38', 'hg19')) {
+    refversion = c('hg38', 'hg19','mm10')) {
 
     refversion <- match.arg(refversion)
     cytoBand <- sesameDataGet(paste0('genomeInfo.',refversion))$cytoBand

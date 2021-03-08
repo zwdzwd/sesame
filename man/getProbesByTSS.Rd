@@ -8,8 +8,8 @@ getProbesByTSS(
   geneName,
   upstream = 1500,
   dwstream = 1500,
-  platform = c("EPIC", "HM450"),
-  refversion = c("hg38", "hg19")
+  platform = c("EPIC", "HM450", "MM285"),
+  refversion = c("hg38", "hg19", "mm10")
 )
 }
 \arguments{
@@ -19,9 +19,9 @@ getProbesByTSS(
 
 \item{dwstream}{the number of base pairs to expand dwstream the TSS}
 
-\item{platform}{EPIC or HM450}
+\item{platform}{EPIC, HM450, or MM285}
 
-\item{refversion}{hg38 or hg19}
+\item{refversion}{hg38, hg19 or mm10}
 }
 \value{
 probes that fall into the given gene
