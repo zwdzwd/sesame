@@ -380,6 +380,9 @@ visualizeRegion <- function(
     if (length(target.txns) > 0) {
         plt.txns <- plotTranscripts(
             target.txns, target.region, plt.beg, plt.end, txn2gene)
+        if (is.null(heat.height)) {
+            heat.height = 10 / length(target.txns);
+        }
     } else {
         plt.txns <- gList(
             grid.rect(0,0.1,1,0.8, just = c('left','bottom'), draw=FALSE),

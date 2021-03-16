@@ -554,7 +554,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 readIDATpair <- function(
     prefix.path, platform = '', manifest = NULL,
     controls = NULL, verbose=FALSE) {
-
+    
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
         grn.name <- paste0(prefix.path, '_Grn.idat')
     } else if (file.exists(paste0(prefix.path, '_Grn.idat.gz'))) {
@@ -715,7 +715,10 @@ chipAddressToSignal <- function(
         rownames(ctl) <- ctl_ord$Probe_ID
         colnames(ctl) <- c('G','R','col','type')
         ctl(sset) <- ctl
-    } else if (!is.null(controls) && !('M' %in% colnames(controls))) {
+    } else if (
+        !is.null(controls) && nrow(controls) > 0 &&
+            !('M' %in% colnames(controls))) {
+        
         ## TODO: fix the control probe panel
         ctl <- as.data.frame(dm[match(controls$Address, rownames(dm)),])
         rownames(ctl) <- make.names(controls$Name, unique=TRUE)
