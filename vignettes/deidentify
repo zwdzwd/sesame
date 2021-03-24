@@ -1,0 +1,28 @@
+title: de-identifier 
+package: sesame 
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(sesame)
+library(dplyr)
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
+# R markdown 
+
+```{r,
+
+
+}
+
+idat_dir <- system.file("extdata/", package = "sesameData")
+pfx = searchIDATprefixes(idat_dir)
+> pfx
+                                                                                4207113116_A 
+"/Users/elaineficarra/.Renv/versions/4.1.dev/lib/R/library/sesameData/extdata//4207113116_A" 
+                                                                                4207113116_B 
+"/Users/elaineficarra/.Renv/versions/4.1.dev/lib/R/library/sesameData/extdata//4207113116_B"
+
+# de-identiy 
+deIdentify("/Users/elaineficarra/.Renv/versions/4.1.dev/lib/R/library/sesameData/extdata/4207113116_A_Grn.idat")
+deIdentify("/Users/elaineficarra/.Renv/versions/4.1.dev/lib/R/library/sesameData/extdata/4207113116_A_Red.idat")
