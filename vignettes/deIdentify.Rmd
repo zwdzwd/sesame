@@ -33,9 +33,17 @@ The code should produce the above, which tells you what to put into the working 
 # deIdentify
 
 ```{r, eval=FALSE}
-setwd("/Users/elaineficarra/.Renv/versions/4.1.dev/lib/R/library/sesameData")
-deIdentify("extdata/4207113116_A_Red.idat")
-deIdentify("extdata/4207113116_A_Grn.idat")
-deIdentify("extdata//4207113116_B_Red.idat")
-deIdentify("extdata//4207113116_B_Grn.idat")
+
+betas = getBetas(readIDATpair(pfx[3]))
+head(betas[grep('^rs', names(betas))])
+
+deIdentify(system.file(
+     "extdata", "4207113116_A_Grn.idat", package = "sesameData"),
+      out_path='test_Grn.idat', randomize = TRUE)
+deIdentify(system.file(
+     "extdata", "4207113116_A_Red.idat", package = "sesameData"),
+       out_path='test_Red.idat', randomize = TRUE)
+betas2 = getBetas(readIDATpair('test'))
+head(betas2[grep('^rs', names(betas2))])
+
 }
