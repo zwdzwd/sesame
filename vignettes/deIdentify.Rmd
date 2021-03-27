@@ -23,13 +23,7 @@ idat_dir <- system.file("extdata/", package = "sesameData")
 pfx = searchIDATprefixes(idat_dir)
 > pfx
 }
-                                                                                4207113116_A 
-"/Users/elaineficarra/.Renv/versions/4.1.dev/lib/R/library/sesameData/extdata//4207113116_A" 
-                                                                                4207113116_B 
-"/Users/elaineficarra/.Renv/versions/4.1.dev/lib/R/library/sesameData/extdata//4207113116_B"
-
-The code should produce the above, which tells you what to put into the working directory and deIdentify function in the next step. Make sure to include both red and green. 
-
+                                                      
 # deIdentify
 
 ```{r, eval=FALSE}
