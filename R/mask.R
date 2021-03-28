@@ -52,6 +52,7 @@ restoreMask <- function(sset, from='mask2') {
 #' Currently quality masking only supports three platforms
 #' 
 #' @param sset a \code{SigSet} object
+#' @param mask.use.manifest use manifest to mask probes
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @return a filtered \code{SigSet}
 #' @examples
@@ -60,6 +61,7 @@ restoreMask <- function(sset, from='mask2') {
 #' @export 
 qualityMask <- function(
     sset,
+    mask.use.manifest = TRUE,
     mask.use.tcga = FALSE) {
 
     if(!(sset@platform %in% c('HM27','HM450','EPIC'))) {
@@ -67,8 +69,16 @@ qualityMask <- function(
             "Quality masking is not supported for %s.", sset@platform))
         return(sset)
     }
+
+    if (mask.use.manifest && extraHas(sset, "maskManifest")) {
+        if (!extraHas(sset, "mask")) {
+            sset@extra$mask = sset@extra$maskManifest
+        } else {
+            mask = sset@extra$maskManifest[names(sset@extra$mask)]
+            sset@extra$mask[mask] = TRUE
+        }
+    }
         
-    
     if (mask.use.tcga) {
         stopifnot(sset@platform == 'HM450')
         masked <- sesameDataGet('HM450.probeInfo')$mask.tcga

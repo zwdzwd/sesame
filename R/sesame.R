@@ -464,7 +464,8 @@ getBetas <- function(sset, mask=TRUE, sum.TypeI = FALSE) {
         betas[sset@extra$mask[names(betas)]] <- NA
     }
 
-    betas
+    ## make sure the order is always the same
+    betas[order(names(betas))]
 }
 
 #' Get allele frequency treating type I by summing alleles
@@ -729,14 +730,16 @@ chipAddressToSignal <- function(
 
     ## additional annotation in manifest
     if ('mask' %in% colnames(manifest)) {
-        sset <- extraSet(
-            sset, 'mask', setNames(manifest$mask, manifest$Probe_ID))
+        sset = extraSet(
+            sset, "maskManifest",
+            setNames(manifest$mask, manifest$Probe_ID))
     }
 
     ## backward support for mouse array, to remove in the future
     if ('mapUniq' %in% colnames(manifest)) {
-        sset <- extraSet(
-            sset, 'mask', setNames(!manifest$mapUniq, manifest$Probe_ID))
+        sset = extraSet(
+            sset, 'maskManifest',
+            setNames(!manifest$mapUniq, manifest$Probe_ID))
     }
     
     sset
