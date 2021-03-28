@@ -16,27 +16,26 @@ library(dplyr)
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
+## Load IDATs, preprocessing and masking
+
+### read IDATs
+
 SeSAMe provides extensive native support for the Illumina mouse array
 (referred to as the MM285 array).
 The MM285 contains ~285,000 probes covering over 20 design categories including
 gene promoters, enhancers, CpGs in synteny to human EPIC array as well as other
 biology. This documents describe the procedure to process the MM285 array.
 
-You can download an example mouse array IDAT
+Let's download an example mouse array IDAT
 ```{r eval=FALSE}
 res_grn = sesameDataDownload("204637490002_R05C01_Grn.idat")
 res_red = sesameDataDownload("204637490002_R05C01_Red.idat")
 pfx = sprintf("%s/204637490002_R05C01", res_red$dest_dir)
 ```
 
-Load IDAT into `SigSet`
+To load IDAT into `SigSet`, one needs the readIDATpair function,
 ```{r eval=FALSE}
 sset = readIDATpair(pfx)
-```
-
-or let's consider a pre-built `SigSet` object
-```{r include=FALSE}
-sset = sesameDataGet('MM285.1.NOD.FrontalLobe')
 ```
 
 The default openSesame pipeline works for the mouse array
@@ -44,18 +43,26 @@ The default openSesame pipeline works for the mouse array
 openSesame(idat_dir)
 ```
 
+### Preprocessing
+
+Let's load a pre-built `SigSet` object
+```{r include=FALSE}
+sset = sesameDataGet('MM285.1.NOD.FrontalLobe')
+```
+
 Preprocess the sigset to produce beta values.
 The standard `noob`, `dyeBiasCorrTypeINorm` works as expected:
 ```{r}
 sset_normalized = sset %>%
-                       noob %>%
-                       dyeBiasCorrTypeINorm %>%
-                       qualityMask %>%
-                       detectionMask
+                  noob %>%
+                  dyeBiasCorrTypeINorm
 ```
 Retrieve beta values using the following commands
 ```{r}
-betas = sset %>% getBetas
+betas = sset_normalized %>%
+        qualityMask %>%
+        detectionMask %>%
+        getBetas
 ```
 
 By default the repeat and suboptimally designed probes are masked by `NA`.
@@ -63,14 +70,36 @@ Starting from mouse array, the suboptimally designed probes take a new
 probe ID prefix ("uk") instead of the "cg"/"ch"/"rs" typically seen in
 the human array.
 ```{r}
+sum(is.na(betas))
 head(betas[grep('uk', names(betas))])
 ```
 
-To use the un-masked probes, one should use the resetMask function
+To use these probes, one skip qualityMask:
 ```{r}
-betas = sset_normalized %>% getBetas(mask=FALSE)
+betas = sset_normalized %>%
+        detectionMask %>%
+        getBetas
+sum(is.na(betas))
 head(betas[grep('uk', names(betas))])
 ```
 
+Note that probes can still be masked because of insignificant detection p-value
+One can completely turn off masking by skipping that
+```{r}
+betas = sset_normalized %>% getBetas
+sum(is.na(betas))
+```
+or use `mask=FALSE` in the `getBetas` function.
+```{r}
+betas = sset_normalized %>%
+        qualityMask %>%
+        detectionMask %>%
+        getBetas(mask = FALSE)
+sum(is.na(betas))
+```
 
+## Visualize mouse array betas
+```{r eval=FALSE}
+visualizeGene(geneName, "Igf2", cbind(betas), platform="MM285")
+```
 

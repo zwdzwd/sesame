@@ -4,10 +4,12 @@
 \alias{qualityMask}
 \title{Mask beta values by design quality}
 \usage{
-qualityMask(sset, mask.use.tcga = FALSE)
+qualityMask(sset, mask.use.manifest = TRUE, mask.use.tcga = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet} object}
+
+\item{mask.use.manifest}{use manifest to mask probes}
 
 \item{mask.use.tcga}{whether to use TCGA masking, only applies to HM450}
 }
