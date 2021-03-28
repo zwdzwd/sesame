@@ -18,7 +18,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 ## Load IDATs, preprocessing and masking
 
-### read IDATs
+### Read IDATs
 
 SeSAMe provides extensive native support for the Illumina mouse array
 (referred to as the MM285 array).
@@ -99,7 +99,8 @@ sum(is.na(betas))
 ```
 
 ## Visualize mouse array betas
-```{r eval=FALSE}
-visualizeGene(geneName, "Igf2", cbind(betas), platform="MM285")
+```{r message=FALSE}
+betas = sesameDataGet("MM285.10.tissue")$betas
+visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
 ```
 

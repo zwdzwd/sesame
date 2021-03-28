@@ -64,12 +64,11 @@ qualityMask <- function(
     mask.use.manifest = TRUE,
     mask.use.tcga = FALSE) {
 
-    if(!(sset@platform %in% c('HM27','HM450','EPIC'))) {
-        message(sprintf(
-            "Quality masking is not supported for %s.", sset@platform))
-        return(sset)
+    if (!extraHas(sset, 'mask')) {
+        resetMask(sset);
     }
 
+    ## mask using manifest
     if (mask.use.manifest && extraHas(sset, "maskManifest")) {
         if (!extraHas(sset, "mask")) {
             sset@extra$mask = sset@extra$maskManifest
@@ -78,18 +77,18 @@ qualityMask <- function(
             sset@extra$mask[mask] = TRUE
         }
     }
-        
+
+    ## mask HM450/HM27/EPIC using TCGA masking
     if (mask.use.tcga) {
+        if(!(sset@platform %in% c('HM27','HM450','EPIC'))) {
+            message(sprintf(
+                "TCGA masking is not supported for %s.", sset@platform))
+            return(sset)
+        }
         stopifnot(sset@platform == 'HM450')
         masked <- sesameDataGet('HM450.probeInfo')$mask.tcga
-    } else {
-        masked <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
+        sset@extra$mask[masked] = TRUE
     }
-
-    if (!extraHas(sset, 'mask')) {
-        resetMask(sset);
-    }
-    sset@extra$mask[masked] <- TRUE
 
     return(sset)
 }
