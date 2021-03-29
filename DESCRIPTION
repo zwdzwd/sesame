@@ -2,14 +2,14 @@ Package: sesame
 Type: Package
 Title: Tools For Analyzing Illumina Infinium DNA Methylation Arrays
 Description: Tools For analyzing Illumina Infinium DNA methylation arrays.SeSAMe provides utilities to support analyses of multiple generations of Infinium DNA methylation BeadChips, including preprocessing, quality control, visualization and inference. SeSAMe features more accurate detection calling, intelligenet inference of ethnicity, sex and advanced quality control routines.
-Version: 1.9.8
+Version: 1.9.9
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "zhouwanding@gmail.com"),
              person("Hui", "Shen", role = c("aut"),
              email = "Hui.Shen@vai.org"),
              person("Timothy", "Triche", role = "ctb"),
              person("Bret", "Barnes", role = "ctb"))
-Depends: R (>= 4.0),
+Depends: R (>= 4.1),
           sesameData,
           methods
 License: MIT + file LICENSE
@@ -33,19 +33,19 @@ Imports: BiocParallel,
          parallel,
          matrixStats,
          DNAcopy,
-         HDF5Array,
          SummarizedExperiment
 Suggests: scales,
           knitr,
           rmarkdown,
           testthat,
-          minfi,
-          FlowSorted.CordBloodNorway.450k,
-          FlowSorted.Blood.450k,
           dplyr,
           tidyr,
           BiocStyle,
-          IlluminaHumanMethylation450kmanifest
+          IlluminaHumanMethylation450kmanifest,
+          minfi,
+          FlowSorted.CordBloodNorway.450k,
+          FlowSorted.Blood.450k,
+          HDF5Array
 Encoding: UTF-8
 VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame

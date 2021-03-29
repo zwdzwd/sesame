@@ -32,8 +32,7 @@ HDF5-backed GenomicRatioSet will be stored}
 a sesamized GenomicRatioSet
 }
 \description{
-"fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
-The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet
+\code{HDF5Array} package required.
 }
 \note{
 We employ BPREDO for a second chance if bplapply hits an error.

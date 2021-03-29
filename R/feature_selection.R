@@ -47,7 +47,9 @@ clusterWithSignature <- function(betas, grouping, sigs) {
     betas[pbs, spl]
 }
 
-clusterWithSampleGrouping <- function(betas, grouping, groups=unique(grouping)) {
+clusterWithSampleGrouping <- function(
+    betas, grouping, groups=unique(grouping)) {
+    
     do.call(cbind, lapply(groups, function(g) {
         column.cluster(betas[,grouping == g])$mat
     }))

@@ -1,6 +1,8 @@
 #' "fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
 #' The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet
 #' 
+#' \code{HDF5Array} package required.
+#' 
 #' @param rgSet an RGChannelSet, perhaps with colData of various flavors
 #' @param naFrac maximum NA fraction for a probe before it gets dropped (1)
 #' @param BPPARAM get parallel with MulticoreParam(n)
@@ -11,7 +13,6 @@
 #' @note We employ BPREDO for a second chance if bplapply hits an error.
 #' @return a sesamized GenomicRatioSet
 #' @import BiocParallel
-#' @importFrom HDF5Array saveHDF5SummarizedExperiment
 #' @importFrom SummarizedExperiment start
 #' @importFrom SummarizedExperiment end
 #' @importFrom SummarizedExperiment rowRanges
@@ -60,7 +61,7 @@ sesamize <- function(
     if (HDF5) {
         pkgTest('HDF5Array')
         #td <- paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/")
-        ratioSet <- saveHDF5SummarizedExperiment(
+        ratioSet <- HDF5Array::saveHDF5SummarizedExperiment(
             ratioSet, dir=HDF5SEdestination, replace=replace) #td, replace=TRUE)
     }
 
@@ -92,15 +93,6 @@ sesamize <- function(
     
     return(ratioSet[kept, ])
 }
-
-## @examples
-## Takes about two minutes to process 48 samples on my 48-core desktop
-## \dontrun{
-##   if (require(FlowSorted.CordBloodNorway.450k)) {
-##       sesamize(
-##         FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
-##     }
-## }
 
 platformMinfiToSm <- function(platform) {
     plf <- sub("HMEPIC", "EPIC", 
