@@ -77,3 +77,28 @@ predictAge <- function(betas, cf) {
             cf$CoefficientTraining[
                 match(probes, cf$CpGmarker)] %*% betas[probes]))
 }
+
+#' Mouse age predictor
+#'
+#' The function takes a named numeric vector of beta values. The name attribute
+#' contains the probe ID. The function looks for overlapping
+#' probes and estimate age using an aging model built from 321 MM285 probes.
+#' The function outputs a single numeric of age in months. The clock is most
+#' accurate with the sesame preprocessing.
+#'
+#' @param betas a probeID-named vector of beta values
+#' @param na_fallback use the fallback default for NAs.
+#' @return age in month
+#' @examples
+#' betas = sesameDataGet('MM285.10.tissue')$betas
+#' predictMouseAgeInMonth(betas[,1])
+#' @export
+predictMouseAgeInMonth = function(betas1, na_fallback=TRUE) {
+    coefs = sesameDataGet("MM285.clock347")
+    dat = betas1[names(coefs$slopes)]
+    if (sum(is.na(dat)) > 0 && na_fallback) {
+        k = is.na(dat)
+        dat[k] = coefs$na_fallback[names(k[k])]
+    }
+    sum(dat * coefs$slopes) + coefs$intercept
+}
