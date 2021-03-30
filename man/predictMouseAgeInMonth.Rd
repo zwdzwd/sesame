@@ -4,12 +4,12 @@
 \alias{predictMouseAgeInMonth}
 \title{Mouse age predictor}
 \usage{
-predictMouseAgeInMonth(betas1, na_fallback = TRUE)
+predictMouseAgeInMonth(betas, na_fallback = TRUE)
 }
 \arguments{
-\item{na_fallback}{use the fallback default for NAs.}
-
 \item{betas}{a probeID-named vector of beta values}
+
+\item{na_fallback}{use the fallback default for NAs.}
 }
 \value{
 age in month

@@ -93,9 +93,9 @@ predictAge <- function(betas, cf) {
 #' betas = sesameDataGet('MM285.10.tissue')$betas
 #' predictMouseAgeInMonth(betas[,1])
 #' @export
-predictMouseAgeInMonth = function(betas1, na_fallback=TRUE) {
+predictMouseAgeInMonth = function(betas, na_fallback=TRUE) {
     coefs = sesameDataGet("MM285.clock347")
-    dat = betas1[names(coefs$slopes)]
+    dat = betas[names(coefs$slopes)]
     if (sum(is.na(dat)) > 0 && na_fallback) {
         k = is.na(dat)
         dat[k] = coefs$na_fallback[names(k[k])]
