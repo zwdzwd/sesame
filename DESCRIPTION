@@ -75,6 +75,7 @@ Collate:
     'simulate_data.R'
     'snp.R'
     'strain.R'
+    'tissue.R'
     'track.R'
     'utils.R'
     'vcf.R'
