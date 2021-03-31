@@ -4,7 +4,7 @@
 \alias{as.data.frame.sesameQC}
 \title{Coerce a sesameQC into a dataframe}
 \usage{
-\method{as.data.frame}{sesameQC}(x, row.names = NULL, optional = FALSE, ...)
+as.data.frame.sesameQC(x, row.names = NULL, optional = FALSE, ...)
 }
 \arguments{
 \item{x}{a sesameQC object}
