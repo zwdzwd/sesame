@@ -10,13 +10,13 @@ vignette: >
   %\VignetteEncoding{UTF-8} 
 ---
 
-De-Identify IDATs by masking SNP probe intensity mean by zero
 Will need R package seSAMe
+De-Identify IDATs by masking SNP probe intensity mean by zero
+Modifies IDAT files in place so they can be released to public domain without privacy leak
+As a consequence, the allele frequency will be 0.5
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(sesame)
-library(dplyr)
-options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 # sesameData
@@ -24,9 +24,9 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 Can find high-quality DNA methylation data on more than 10,000 human samples with the HM450 platform
 
 ```{r, eval=FALSE}
-idat_dir <- system.file("extdata/", package = "sesameData")
-pfx = searchIDATprefixes(idat_dir)
-pfx
+dest_dir = tempdir()
+res_grn = sesameDataDownload("3999492009_R01C01_Grn.idat", dest_dir=dest_dir)
+res_red = sesameDataDownload("3999492009_R01C01_Red.idat", dest_dir=dest_dir)
 ```
                                                    
 # deIdentify
@@ -35,18 +35,15 @@ DNA methylation readouts from these arrays are usually expressed in β values
 
 ```{r, eval=FALSE}
 
-betas = getBetas(readIDATpair(pfx[3]))
-head(betas[grep('^rs', names(betas))])
+deIdentify(res_grn$dest_file, sprintf("%s/deidentified_Grn.idat", dest_dir))
+deIdentify(res_red$dest_file, sprintf("%s/deidentified_Red.idat", dest_dir))
 
-deIdentify(system.file(
-     "extdata", "4207113116_A_Grn.idat", package = "sesameData"),
-      out_path='test_Grn.idat', randomize = TRUE)
-deIdentify(system.file(
-     "extdata", "4207113116_A_Red.idat", package = "sesameData"),
-       out_path='test_Red.idat', randomize = TRUE)
-betas2 = getBetas(readIDATpair('test'))
-head(betas2[grep('^rs', names(betas2))])
+betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
+betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", dest_dir)))
 
-Whether a signal is considered real is determined by a detection P-value, representing the probability of a detected signal being background fluorescence.
+head(betas1[grep('rs',names(betas1))]) # before deIdentify, the rs values will all be different 
+head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be 0.5
+```
 
-}
+
+
