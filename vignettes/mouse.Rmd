@@ -104,3 +104,28 @@ betas = sesameDataGet("MM285.10.tissue")$betas
 visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
 ```
 
+## Infer Strain Information
+
+Let's load a pre-built `SigSet` object from SeSAMeData
+```{r}
+sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
+```
+
+Calculate $\beta$ values using the following commands.
+```{r}
+betas <- sset %>%
+         noob %>%
+         dyeBiasCorrTypeINorm %>%
+         getBetas
+```
+
+Convert the $\beta$ values to Variant Allele Frequencies.
+```{r}
+vafs <- betaToAF(betas)
+```
+
+Infer strain information for mouse array. This will return a list containing the best guess, p-value of the best guess, and probabilities of all strains.
+```{r}
+strain <- inferStrain(vafs)
+strain$pval
+```
