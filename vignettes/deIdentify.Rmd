@@ -10,6 +10,9 @@ vignette: >
   %\VignetteEncoding{UTF-8} 
 ---
 
+De-Identify IDATs by masking SNP probe intensity mean by zero
+Will need R package seSAMe
+
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(sesame)
 library(dplyr)
@@ -18,13 +21,17 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # sesameData
 
+Can find high-quality DNA methylation data on more than 10,000 human samples with the HM450 platform
+
 ```{r, eval=FALSE}
 idat_dir <- system.file("extdata/", package = "sesameData")
 pfx = searchIDATprefixes(idat_dir)
-> pfx
-}
-                                                      
+pfx
+```
+                                                   
 # deIdentify
+
+DNA methylation readouts from these arrays are usually expressed in β values
 
 ```{r, eval=FALSE}
 
@@ -39,5 +46,7 @@ deIdentify(system.file(
        out_path='test_Red.idat', randomize = TRUE)
 betas2 = getBetas(readIDATpair('test'))
 head(betas2[grep('^rs', names(betas2))])
+
+Whether a signal is considered real is determined by a detection P-value, representing the probability of a detected signal being background fluorescence.
 
 }
