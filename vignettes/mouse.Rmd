@@ -111,7 +111,7 @@ Let's load a pre-built `SigSet` object from SeSAMeData
 sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
 ```
 
-Calculate $\beta$ values using the following commands.
+Calculate beta values using the following commands.
 ```{r}
 betas <- sset %>%
          noob %>%
@@ -119,7 +119,7 @@ betas <- sset %>%
          getBetas
 ```
 
-Convert the $\beta$ values to Variant Allele Frequencies.
+Convert the beta values to Variant Allele Frequencies.
 ```{r}
 vafs <- betaToAF(betas)
 ```
