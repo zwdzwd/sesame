@@ -12,6 +12,7 @@ vignette: >
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(sesame)
+library(wheatmap)
 library(dplyr)
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
@@ -119,7 +120,8 @@ betas <- sset %>%
          getBetas
 ```
 
-Convert the beta values to Variant Allele Frequencies.
+Convert the beta values to Variant Allele Frequencies.  
+It should be noted that since variant allele frequency is not always measured in green for Infinium-II and M-allele for Infinium-I, one needs to flip the beta values for some probes to calculate variant allele frequency.
 ```{r}
 vafs <- betaToAF(betas)
 ```
@@ -128,4 +130,24 @@ Infer strain information for mouse array. This will return a list containing the
 ```{r}
 strain <- inferStrain(vafs)
 strain$pval
+```
+```{r echo=FALSE}
+library(ggplot2)
+df <- data.frame(strain=names(strain$probs), probs=strain$probs)
+ggplot(data = df,  aes(x = strain, y = log(probs))) +
+  geom_bar(stat = "identity", color="gray") +
+  ggtitle("strain probabilities") +
+  theme(axis.text.x = element_text(angle = 90), legend.position = "none")
+```
+
+## Contrast Data with Tissue References
+
+Let's load beta values from SeSAMeData
+```{r}
+betas <- sesameDataGet("MM285.10.tissue")$betas[,1:2]
+```
+
+Compare mouse array data with mouse tissue references. This will return a grid object that contrasts the traget sample with pre-build mouse tissue reference.
+```{r}
+compareMouseTissueReference(betas)
 ```
