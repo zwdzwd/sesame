@@ -45,5 +45,5 @@ head(betas1[grep('rs',names(betas1))]) # before deIdentify, the rs values will a
 head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be 0.5
 ```
 
-
+#reIdentify
 
