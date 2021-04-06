@@ -47,3 +47,18 @@ head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be
 
 #reIdentify
 
+Re-identify IDATs by restoring scrambled SNP intensities
+
+reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
+
+    res <- suppressWarnings(illuminaio::readIDAT(path))
+    platform <- inferPlatform(res)
+
+    if(is.null(out_path)) {
+        pfx <- sub('.idat(.gz)?$','', path)
+        if(grepl('_Grn$', pfx)) {
+            out_path <- paste0(sub('_Grn$','',pfx), '_reid_Grn.idat')
+        } else if (grepl('_Red$', pfx)) {
+            out_path <- paste0(sub('_Red$','',pfx), '_reid_Red.idat')
+        }
+    }
