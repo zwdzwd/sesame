@@ -45,10 +45,11 @@ head(betas1[grep('rs',names(betas1))]) # before deIdentify, the rs values will a
 head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be 0.5
 ```
 
-#reIdentify
+# reIdentify
 
 Re-identify IDATs by restoring scrambled SNP intensities
 
+```{r, eval=FALSE}
 reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
 
     res <- suppressWarnings(illuminaio::readIDAT(path))
@@ -61,4 +62,27 @@ reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
         } else if (grepl('_Red$', pfx)) {
             out_path <- paste0(sub('_Red$','',pfx), '_reid_Red.idat')
         }
-    }
+ ```
+    
+# formactVCF
+
+```{r, eval=FALSE}
+formatVCF <- function(
+    sset, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL) {
+
+    platform <- sset@platform
+
+    if (is.null(annoS)) annoS <- sesameDataPullVariantAnno_SNP(platform)
+    betas <- getBetas(sset)[names(annoS)]
+    vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
+    gts <- lapply(vafs, genotype)
+    GT <- vapply(gts, function(g) g$GT, character(1))
+    GS <- vapply(gts, function(g) g$GS, numeric(1))
+    vcflines_snp <- cbind(as.character(GenomicRanges::seqnames(annoS)),
+        as.character(end(annoS)),
+        names(annoS),
+        annoS$REF, annoS$ALT,
+        GS, ifelse(GS>20,'PASS','FAIL'),
+        sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
+```
+
