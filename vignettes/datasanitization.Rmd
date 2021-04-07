@@ -10,10 +10,8 @@ vignette: >
   %\VignetteEncoding{UTF-8} 
 ---
 
-Will need R package seSAMe
-De-Identify IDATs by masking SNP probe intensity mean by zero
-Modifies IDAT files in place so they can be released to public domain without privacy leak
-As a consequence, the allele frequency will be 0.5
+#' This requires the R package seSAMe
+#' De-Identify IDATs by masking SNP probe intensity mean by zero
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(sesame)
@@ -21,7 +19,7 @@ library(sesame)
 
 # sesameData
 
-Can find high-quality DNA methylation data on more than 10,000 human samples with the HM450 platform
+#' Find high-quality DNA methylation data on more than 10,000 human samples with the HM450 platform
 
 ```{r, eval=FALSE}
 dest_dir = tempdir()
@@ -31,7 +29,8 @@ res_red = sesameDataDownload("3999492009_R01C01_Red.idat", dest_dir=dest_dir)
                                                    
 # deIdentify
 
-DNA methylation readouts from these arrays are usually expressed in β values
+#' Modifies IDAT files in place so they can be released to public domain without privacy leak
+#' As a consequence, the allele frequency will be 0.5
 
 ```{r, eval=FALSE}
 
@@ -47,7 +46,7 @@ head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be
 
 # reIdentify
 
-Re-identify IDATs by restoring scrambled SNP intensities
+#' Re-identify IDATs by restoring scrambled SNP intensities
 
 ```{r, eval=FALSE}
 reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
@@ -65,6 +64,8 @@ reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
  ```
     
 # formactVCF
+
+#' Convert SNP from Infinium array to VCF file
 
 ```{r, eval=FALSE}
 formatVCF <- function(
