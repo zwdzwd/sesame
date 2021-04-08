@@ -4,10 +4,12 @@
 \alias{compareMouseTissueReference}
 \title{Compare mouse array data with mouse tissue references}
 \usage{
-compareMouseTissueReference(betas)
+compareMouseTissueReference(betas = NULL, color = "blueYellow")
 }
 \arguments{
 \item{betas}{matrix of betas for the target sample}
+
+\item{color}{either blueYellow or fullJet}
 }
 \value{
 grid object that contrast the target sample with
