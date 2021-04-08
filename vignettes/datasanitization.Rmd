@@ -85,5 +85,17 @@ formatVCF <- function(
         annoS$REF, annoS$ALT,
         GS, ifelse(GS>20,'PASS','FAIL'),
         sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
+        
+sesameDataPullVariantAnno_InfiniumI(
+  platform = c("EPIC"),
+  refversion = c("hg19", "hg38"),
+  version = "20200704"
+)
+
+sesameDataPullVariantAnno_SNP(
+  platform = c("EPIC"),
+  refversion = c("hg19", "hg38"),
+  version = "20200704"
+)
 ```
 
