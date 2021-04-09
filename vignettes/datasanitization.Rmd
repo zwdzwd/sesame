@@ -49,6 +49,13 @@ head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be
 Re-identify IDATs by restoring scrambled SNP intensities
 
 ```{r, eval=FALSE}
+
+reIdentify(res_grn$dest_file, sprintf("%s/reidentified_Grn.idat", dest_dir))
+reIdentify(res_red$dest_file, sprintf("%s/reidentified_Red.idat", dest_dir))
+
+betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
+betas2 = getBetas(readIDATpair(sprintf("%s/reidentified", dest_dir)))
+
 reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
 
     res <- suppressWarnings(illuminaio::readIDAT(path))
