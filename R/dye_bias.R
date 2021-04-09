@@ -28,7 +28,7 @@ getNormCtls <- function(sset, average = FALSE) {
         df$channel <- ifelse(grepl(
             'norm_(c|g)', tolower(rownames(df))), 'G', 'R')
     }
-   
+    
     if (average) {
         c(
             G=mean(df[df$channel=='G','G'], na.rm=TRUE), 

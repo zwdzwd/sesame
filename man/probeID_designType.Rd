@@ -13,10 +13,12 @@ probeID_designType(Probe_ID)
 }
 \value{
 a vector of '1' and '2' suggesting Infinium-I and Infinium-II
-probeID_designType("cg36609548_TC21")
 }
 \description{
 Extract the probe type field from probe ID
 This only works with the new probe ID system.
 See https://github.com/zhou-lab/InfiniumAnnotation for illustration
+}
+\examples{
+probeID_designType("cg36609548_TC21")
 }

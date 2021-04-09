@@ -5,6 +5,7 @@
 #'
 #' @param Probe_ID Probe ID
 #' @return a vector of '1' and '2' suggesting Infinium-I and Infinium-II
+#' @examples
 #' probeID_designType("cg36609548_TC21")
 #' @export
 probeID_designType <- function(Probe_ID) {

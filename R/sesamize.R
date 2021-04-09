@@ -33,19 +33,19 @@ sesamize <- function(
         ## are we working on an HDF5-backed RGChannelSet?
         HDF5 <- (class(assays(rgSet)[[1]])[1] == "DelayedMatrix")
     }
-    t1 =  bptry(bplapply(samples, function(sample) {
-            message("Sesamizing ", sample, "...")
-            sset <- RGChannelSet1ToSigSet(rgSet[,sample])
-            sset <- dyeBiasCorrTypeINorm(noob(sset))
-            SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
+    t1 = bptry(bplapply(samples, function(sample) {
+        message("Sesamizing ", sample, "...")
+        sset <- RGChannelSet1ToSigSet(rgSet[,sample])
+        sset <- dyeBiasCorrTypeINorm(noob(sset))
+        SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
     lk = vapply(t1, inherits, logical(1), "bperror")  # second try?
     if (any(lk)) {
-      t1 =  bptry(bplapply(samples, function(sample) {
+        t1 = bptry(bplapply(samples, function(sample) {
             message("Sesamizing ", sample, "...")
             sset <- RGChannelSet1ToSigSet(rgSet[,sample])
             sset <- dyeBiasCorrTypeINorm(noob(sset))
             SigSetToRatioSet(sset)}, BPREDO=t1, BPPARAM=BPPARAM))
-      }
+    }
 
     ratioSet <- do.call(
         SummarizedExperiment::cbind, t1
@@ -53,7 +53,7 @@ sesamize <- function(
     colnames(ratioSet) = colnames(rgSet)
     if (HDF5) {
         pkgTest('HDF5Array')
-        #td <- paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/")
+        ##td <- paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/")
         ratioSet <- HDF5Array::saveHDF5SummarizedExperiment(
             ratioSet, dir=HDF5SEdestination, replace=replace) #td, replace=TRUE)
     }
@@ -224,7 +224,7 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
     pkgTest('minfi')
     stopifnot(ncol(rgSet1) == 1)
     
-    # chipaddress/rownames are automatically the same
+                                        # chipaddress/rownames are automatically the same
     dm <- cbind(
         G=as.matrix(minfi::getGreen(rgSet1)),
         R=as.matrix(minfi::getRed(rgSet1)))
@@ -266,8 +266,8 @@ RGChannelSetToSigSets <- function(
     samples <- colnames(rgSet)
     setNames(bplapply(
         samples, function(sample) {
-        RGChannelSet1ToSigSet(rgSet[,sample], manifest=manifest)
-    }, BPPARAM=BPPARAM), samples)
+            RGChannelSet1ToSigSet(rgSet[,sample], manifest=manifest)
+        }, BPPARAM=BPPARAM), samples)
 }
 
 #' Convert one sesame::SigSet to minfi::RatioSet
