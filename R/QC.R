@@ -190,7 +190,8 @@ print.sesameQC <- function(x, ...) {
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' qc <- sesameQC(sset)
 #' df <- as.data.frame(qc)
-#' @exportS3Method as.data.frame sesameQC
+#' @method as.data.frame sesameQC
+#' @export
 as.data.frame.sesameQC <- function(
     x, row.names = NULL, optional = FALSE, ...) {
 

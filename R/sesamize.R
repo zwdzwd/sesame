@@ -13,13 +13,6 @@
 #' @note We employ BPREDO for a second chance if bplapply hits an error.
 #' @return a sesamized GenomicRatioSet
 #' @import BiocParallel
-#' @importFrom SummarizedExperiment start
-#' @importFrom SummarizedExperiment end
-#' @importFrom SummarizedExperiment rowRanges
-#' @importFrom SummarizedExperiment assays
-#' @importFrom SummarizedExperiment assays<-
-#' @importFrom SummarizedExperiment colData
-#' @importFrom SummarizedExperiment colData<-
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
 #'
@@ -38,7 +31,7 @@ sesamize <- function(
 
     if (is.null(HDF5)) {
         ## are we working on an HDF5-backed RGChannelSet?
-        HDF5 <- (class(assays(rgSet)[[1]])[1] == "DelayedMatrix")
+        HDF5 <- (class(SummarizedExperiment::assays(rgSet)[[1]])[1] == "DelayedMatrix")
     }
     t1 =  bptry(bplapply(samples, function(sample) {
             message("Sesamizing ", sample, "...")
@@ -88,8 +81,8 @@ sesamize <- function(
 
     ## SNP not adjusted in minfi, so keep them that way
     metadata(ratioSet)$SNPs <- minfi::getSnpBeta(rgSet)
-    assays(ratioSet)[["M"]] <- NULL 
-    colData(ratioSet) <- colData(rgSet)
+    SummarizedExperiment::assays(ratioSet)[["M"]] <- NULL 
+    SummarizedExperiment::colData(ratioSet) <- colData(rgSet)
     
     return(ratioSet[kept, ])
 }

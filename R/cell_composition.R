@@ -46,7 +46,6 @@ diffRefSet <- function(g) {
 #'
 #' @param cells reference cell types
 #' @param platform EPIC or HM450
-#' @import stats
 #' @return g, a 0/1 matrix with probes on the rows and specified cell types
 #' on the columns.
 #' @examples

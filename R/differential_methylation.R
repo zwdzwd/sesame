@@ -18,7 +18,6 @@
 #' @param cf.test factors to test (default to all factors in formula except
 #' intercept). Use "all" for all factors.
 #' @return cf - a list of coefficient tables for each factor
-#' @import stats
 #' @examples
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' cf <- DML(data$betas, data$sampleInfo, ~type)

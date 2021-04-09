@@ -16,7 +16,7 @@ reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
     if (!is.null(betas)) {          # query samples
         g = g + WHeatmap(betas[rownames(se),], RightOf("b1"),
             cmp=CMPar(stop.points=stop.points, dmin=0, dmax=1),
-            name="b2", xticklabels=T, xticklabels.n=ncol(betas))
+            name="b2", xticklabels=TRUE, xticklabels.n=ncol(betas))
         right = "b2"
     } else { # in case target is not given, plot just the reference
         right = "b1"
@@ -40,11 +40,13 @@ reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
 #' @param color either blueYellow or fullJet
 #' @return grid object that contrast the target sample with
 #' pre-built mouse tissue reference
-#' @import SummarizedExperiment
 #' @export
 #' @examples
 #' b = sesameDataGet("MM285.10.tissue")$betas[,1:2]
 #' compareMouseTissueReference(b)
+#' @importFrom SummarizedExperiment assay
+#' @importFrom SummarizedExperiment colData
+#' @importFrom SummarizedExperiment rowData
 compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
     se = sesameDataGet("MM285.tissueSignature")
     reference_plot_se(betas, se, color=color)
@@ -57,7 +59,7 @@ compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
 #' @return grid object that co-plots with a pre-built mouse blood reference
 #' @export
 #' @examples
-#' b = sesameDataGet("M285.10.tissue")$betas[,10]
+#' b = sesameDataGet("MM285.10.tissue")$betas[,10]
 #' compareMouseBloodReference(b)
 compareMouseBloodReference = function(betas=NULL, color="blueYellow") {
     se = sesameDataGet("MM285.bloodSignature")

@@ -74,7 +74,6 @@ openSesame <- function(
 #' @return a GenomicRatioSet
 reopenSesame <- function(x, naFrac=0.2) { 
     pkgTest('minfi')
-    pkgTest('SummarizedExperiment')
     stopifnot(is(x, "GenomicRatioSet"))
     if (!"Basename" %in% names(SummarizedExperiment::colData(x))) {
         stop("No column `Basename` in mcols(x)... cannot proceed.")

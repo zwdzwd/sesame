@@ -88,6 +88,7 @@ getBackgroundG <- function(sset, bgG = NULL) {
 #' @param bgR background red probes, if not given use all oobR
 #' @param bgG background grn probes, if not given use all oobG
 #' @return a new \code{SigSet} with noob background correction
+#' @import stats
 #' @examples
 #' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)
