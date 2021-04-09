@@ -15,7 +15,7 @@
 #' @import BiocParallel
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
-#'
+#' @importFrom SummarizedExperiment assays
 #' @export 
 sesamize <- function(
     rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL,
@@ -31,7 +31,7 @@ sesamize <- function(
 
     if (is.null(HDF5)) {
         ## are we working on an HDF5-backed RGChannelSet?
-        HDF5 <- (class(SummarizedExperiment::assays(rgSet)[[1]])[1] == "DelayedMatrix")
+        HDF5 <- (class(assays(rgSet)[[1]])[1] == "DelayedMatrix")
     }
     t1 =  bptry(bplapply(samples, function(sample) {
             message("Sesamizing ", sample, "...")
