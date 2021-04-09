@@ -44,7 +44,7 @@
 #' 
 #' mft <- readRDS('/mnt/isilon/zhoulab/labprojects/20201124_Horvath_mammal_array/mammal_array_manifest_original.rds')
 #' sset=readIDATpair(idats[1],manifest=mft, platform='mammal')
-#' # res=inferSpecies(sset,df_as)
+#' res=inferSpecies(sset,df_as)
 #' res=inferSpecies(sset,df_as,ret.max=F)
 #' result=do.call(cbind, mclapply(idats, function(x) {
 #' 		sset=readIDATpair(x,manifest=mft, platform='mammal')
@@ -69,50 +69,46 @@ inferSpecies <- function(sset,df_as=NULL,infer.human=T,topN=3000,ret.max=T) {
     neg_probes=sort(pvalue[pvalue > 0.2],decreasing=T)
     n_neg=length(neg_probes)
     if (infer.human & (n_neg / length(pvalue) < 0.1)){
-        return('Homo sapiens|9606')
-        }
+	    return('Homo sapiens|9606')
+    }
     if (length(pos_probes) > topN){
-        pos_probes <- pos_probes[1:topN]
-        }
+	    pos_probes <- pos_probes[1:topN]
+    }
     if (n_neg > topN){
-        neg_probes <- neg_probes[1:topN]
-        }
+	    neg_probes <- neg_probes[1:topN]
+    }
     #probes <- c(names(pos_probes),names(neg_probes))
     #y_true <- sapply(pvalue[probes],function(x) {if (x<0.01) {return(1)} else {return(0)}})
     y_true=structure(c(rep(1,length(pos_probes)),rep(0,length(neg_probes))),
-						names=c(names(pos_probes),names(neg_probes)))
-	df_as=df_as[c(names(pos_probes),names(neg_probes)),]
+		     names=c(names(pos_probes),names(neg_probes)))
+    df_as=df_as[c(names(pos_probes),names(neg_probes)),]
     if (length(y_true) == 0){
-        if (ret.max==T){
-            return(list(auc=NA,p.value=NA,species=NA,taxid=NA))
-            }
-        else {
-			return(as.data.frame(t(sapply(colnames(df_as),function(species) {
-					return(list(auc=NA,p.value=NA,species=NA,taxid=NA))
-				}))))
-            }
-        }
+	    if (ret.max==T){
+		    return(list(auc=NA,p.value=NA,species=NA,taxid=NA))
+	    }
+	    else {
+		    return(as.data.frame(t(sapply(colnames(df_as),function() {
+			    list(auc=NA,p.value=NA,species=NA,taxid=NA)
+		    }))))
+	    }
+    }
         
     
     res = as.data.frame(t(sapply(colnames(df_as),function(s) {
-			# x=df_as[,s]
-			# if(length(x) == 0){
-				# return(list(auc=NA,p.value=1,species=NA,taxid=NA))
-				# }
-			PRROC_obj <- roc.curve(scores.class0 = df_as[,s], weights.class0=y_true,curve=F)
-			p <- wilcox.test(df_as[names(pos_probes),s],df_as[names(neg_probes),s],alternative='greater')
-			return(list(auc=PRROC_obj$auc,p.value=p$p.value))
-		})))
+	    PRROC_obj <- roc.curve(scores.class0 = df_as[,s], weights.class0=y_true,curve=F)
+	    p <- wilcox.test(df_as[names(pos_probes),s],df_as[names(neg_probes),s],alternative='greater')
+	    return(list(auc=PRROC_obj$auc,p.value=p$p.value))
+    })))
         
 
     if (ret.max == T){
-		r=t(res[which.max(res$auc),])
-		l=r[,1]
-		l['species']=unlist(strsplit(colnames(r)[1],"\\|"))[1]
-		l['taxid']=unlist(strsplit(colnames(r)[1],"\\|"))[2]
-		return(l)
-        }
+	    r=t(res[which.max(res$auc),])
+	    l=r[,1]
+	    l['species']=unlist(strsplit(colnames(r)[1],"\\|"))[1]
+	    l['taxid']=unlist(strsplit(colnames(r)[1],"\\|"))[2]
+	    return(l)
+    }
     else {
-		return(res)
-        }
+	    return(res)
+    }
 }
