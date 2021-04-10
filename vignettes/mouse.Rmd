@@ -151,3 +151,17 @@ Compare mouse array data with mouse tissue references. This will return a grid o
 ```{r}
 compareMouseTissueReference(betas)
 ```
+
+## Infer Mouse Age
+
+Let's load beta values from SeSAMeData
+```{r}
+betas <- sesameDataGet('MM285.10.tissue')$betas
+```
+
+The age of the mouse can be predicted using the `predicMouseAgeInMonth` function. This looks for overlapping probes and estimates age using an aging model built from 321 MM285 probes. The function returns a numeric output of age in months.  
+The model is most accurate with SeSAMe preprocessing.
+Here's an example.
+```{r}
+predictMouseAgeInMonth(betas[,1])
+```
