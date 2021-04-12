@@ -10,8 +10,7 @@ vignette: >
   %\VignetteEncoding{UTF-8} 
 ---
 
-This requires the R package seSAMe
-De-Identify IDATs by masking SNP probe intensity mean by zero
+This function requires the R package seSAMe. The goal of data sanitization is to modifiy IDAT files in place, so they can be released to public domain without privacy leak. This will be achieved by deIdentification and reIdentification. 
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(sesame)
@@ -19,7 +18,7 @@ library(sesame)
 
 # sesameData
 
-Find high-quality DNA methylation data on more than 10,000 human samples with the HM450 platform
+One can find high-quality DNA methylation data on more than 10,000 human samples with the HM450 platform. 
 
 ```{r, eval=FALSE}
 dest_dir = tempdir()
@@ -31,8 +30,7 @@ res_red = sesameDataDownload("3999492009_R01C01_Red.idat", dest_dir=dest_dir)
 
 ##Method 1
 
-Modifies IDAT files in place so they can be released to public domain without privacy leak
-As a consequence, the allele frequency will be 0.5
+This first method of deIdentification masks SNP probe intensity mean by zero. As a consequence, the allele frequency will be 0.5. 
 
 ```{r, eval=FALSE}
 
@@ -48,39 +46,97 @@ head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be
 
 ##Method 2 
 
-Set randomize equal to true 
+This second method of deIdentification will scramble the intensities using a secret key to help formalize a random number. Therefore, randomize needs to be set to TRUE. 
 
 ```{r, eval=FALSE}
+
+deIdentify <- function(
+    path, out_path=NULL, snps=NULL, mft=NULL, randomize=FALSE) {
+
+    res <- suppressWarnings(illuminaio::readIDAT(path))
+    platform <- sesame:::inferPlatform(res)
+
+
+    if(is.null(out_path)) {
+        pfx <- sub('.idat(.gz)?$','', path)
+        if(grepl('_Grn$', pfx)) {
+            out_path <- paste0(sub('_Grn$','',pfx), '_noid_Grn.idat')
+        } else if (grepl('_Red$', pfx)) {
+            out_path <- paste0(sub('_Red$','',pfx), '_noid_Red.idat')
+        }
+    }
+
+    if (is.null(mft)) {
+        mft <- sesameDataGet(paste0(platform, '.address'))$ordering
+    }
+    if (is.null(snps))
+        snps <- grep("^rs", mft$Probe_ID, value=TRUE)
+    mft <- mft[mft$Probe_ID %in% snps,]
+    
+    snpsTango <- na.omit(c(mft$M, mft$U))
+    qt <- res$Quants
+    snpsIdx <- match(snpsTango, rownames(qt))
+
+    dt <- qt[,'Mean']
+    if (randomize) {
+        snpsIdx = snpsIdx[!is.na(snpsIdx)]
+        dt[snpsIdx] <- sample(dt[snpsIdx])
+       
+    } else {
+        dt[snpsIdx] <- 0
+    }
+    
+    if(grepl("\\.gz$", path)) {
+        con <- gzfile(path, "rb")
+    } else {
+        con <- file(path, "rb")
+    }
+    
+    con2 <- file(out_path, "wb")
+
+    ## before Mean section
+    writeBin(readBin(
+        con, "raw", n = res$fields["Mean", 'byteOffset']), con2)
+
+    ## write new Mean section
+    writeBin(as.integer(dt), con2, size=2, endian='little')
+
+    ## after Mean section
+    ## skip by reading..., seek might not work for gzfile
+    a <- readBin(con, "raw", n = res$nSNPsRead*2)
+    while (length(a <- readBin(con, 'raw', n=1))>0) writeBin(a, con2)
+
+    close(con)
+    close(con2)
+}
 
 my_secret <- 13412084
 set.seed(my_secret)
 
 deIdentify(res_grn$dest_file, sprintf("%s/deidentified_Grn.idat", dest_dir), randomize=TRUE)
+
+my_secret <- 13412084
+set.seed(my_secret)
 deIdentify(res_red$dest_file, sprintf("%s/deidentified_Red.idat", dest_dir), randomize=TRUE)
 
 betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
 betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", dest_dir)))
 
 head(betas1[grep('rs',names(betas1))]) # before deIdentify, the rs values will all be different 
-head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be 0.5
+head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be scrambled 
+
 ```
 
 # reIdentify
 
-Re-identify IDATs by restoring scrambled SNP intensities
+To restore order of the deIdentified intensities, one can re-identify IDATs. The reIdentify function can thus restore the scrambled SNP intensities. 
 
 ```{r, eval=FALSE}
-
-reIdentify(res_grn$dest_file, sprintf("%s/reidentified_Grn.idat", dest_dir))
-reIdentify(res_red$dest_file, sprintf("%s/reidentified_Red.idat", dest_dir))
-
-betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
-betas2 = getBetas(readIDATpair(sprintf("%s/reidentified", dest_dir)))
 
 reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
 
     res <- suppressWarnings(illuminaio::readIDAT(path))
-    platform <- inferPlatform(res)
+    platform <- sesame:::inferPlatform(res)
 
     if(is.null(out_path)) {
         pfx <- sub('.idat(.gz)?$','', path)
@@ -89,41 +145,61 @@ reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
         } else if (grepl('_Red$', pfx)) {
             out_path <- paste0(sub('_Red$','',pfx), '_reid_Red.idat')
         }
- ```
+    }
+
+    if (is.null(mft)) {
+        mft <- sesameDataGet(paste0(platform, '.address'))$ordering
+    }
+    if (is.null(snps))
+        snps <- grep("^rs", mft$Probe_ID, value=TRUE)
+    mft <- mft[mft$Probe_ID %in% snps,]
     
-# formactVCF
+    snpsTango <- na.omit(c(mft$M, mft$U))
+    qt <- res$Quants
+    snpsIdx <- match(snpsTango, rownames(qt))
+    dt <- qt[,'Mean']
+    snpsIdx = snpsIdx[!is.na(snpsIdx)]
+    idx <- seq_along(snpsIdx)
+    
+    dt[snpsIdx] <- dt[snpsIdx[match(idx, sample(idx))]]
+    
+    if(grepl("\\.gz$", path)) {
+        con <- gzfile(path, "rb")
+    } else {
+        con <- file(path, "rb")
+    }
+    
+    con2 <- file(out_path, "wb")
 
-Convert SNP from Infinium array to VCF file
+    ## before Mean section
+    writeBin(readBin(con, "raw", n = res$fields["Mean", 'byteOffset']), con2)
 
-```{r, eval=FALSE}
-formatVCF <- function(
-    sset, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL) {
+    ## write new Mean section
+    writeBin(as.integer(dt), con2, size=2, endian='little')
 
-    platform <- sset@platform
+    ## after Mean section
+    ## skip by reading..., seek might not work for gzfile
+    a <- readBin(con, "raw", n = res$nSNPsRead*2)
+    while (length(a <- readBin(con, 'raw', n=1))>0) writeBin(a, con2)
 
-    if (is.null(annoS)) annoS <- sesameDataPullVariantAnno_SNP(platform)
-    betas <- getBetas(sset)[names(annoS)]
-    vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
-    gts <- lapply(vafs, genotype)
-    GT <- vapply(gts, function(g) g$GT, character(1))
-    GS <- vapply(gts, function(g) g$GS, numeric(1))
-    vcflines_snp <- cbind(as.character(GenomicRanges::seqnames(annoS)),
-        as.character(end(annoS)),
-        names(annoS),
-        annoS$REF, annoS$ALT,
-        GS, ifelse(GS>20,'PASS','FAIL'),
-        sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
-        
-sesameDataPullVariantAnno_InfiniumI(
-  platform = c("EPIC"),
-  refversion = c("hg19", "hg38"),
-  version = "20200704"
-)
+    close(con)
+    close(con2)
+}
 
-sesameDataPullVariantAnno_SNP(
-  platform = c("EPIC"),
-  refversion = c("hg19", "hg38"),
-  version = "20200704"
-)
+my_secret <- 13412084
+set.seed(my_secret)
+
+reIdentify(sprintf("%s/deidentified_Grn.idat", dest_dir), sprintf("%s/reidentified_Grn.idat", dest_dir))
+
+my_secret <- 13412084
+set.seed(my_secret)
+reIdentify(sprintf("%s/deidentified_Red.idat", dest_dir), sprintf("%s/reidentified_Red.idat", dest_dir))
+
+betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
+betas2 = getBetas(readIDATpair(sprintf("%s/reidentified", dest_dir)))
+
+head(betas1[grep('rs',names(betas1))]) # before reIdentify, the values are different 
+head(betas2[grep('rs',names(betas2))]) # after reIdentify, the values are restored, the same as betas 1
+
 ```
-
+ 
