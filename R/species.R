@@ -7,6 +7,7 @@
 #' @param threshold.pos pvalue < threshold.pos are considered to be positive probes (default is 0.01).
 #' @param threshold.neg pvalue > threshold.neg are considered to be negative probes (default is 0.2).
 #' @param ret.max whether to return the species with maximal AUC.
+#' @param balance whether to banlance the postive and negative probes size (default is TRUE).
 #' @return a list of auc, pvalue, species (NCBI official species names) and taxid.
 #' We infer species based on probes pvalues and alignment score.
 #' AUC was calculated for each specie, y_true is 1 or 0 
@@ -26,7 +27,8 @@
 #' @export
 
 inferSpecies <- function(sset,df_as=NULL,infer.human=T,topN=3000,
-			threshold.pos=0.01,threshold.neg=0.2,ret.max=T) {
+			threshold.pos=0.01,threshold.neg=0.2,ret.max=T,
+			balance=T) {
     if (is.null(df_as)) {
     	df_as=sesameDataGet('df_as')
 	}
@@ -37,6 +39,9 @@ inferSpecies <- function(sset,df_as=NULL,infer.human=T,topN=3000,
     n_neg=length(neg_probes)
     if (infer.human & (n_neg / length(pvalue) < 0.1)){
 	    return('Homo sapiens|9606')
+    }
+    if (balance) {
+	    topN <- min(length(neg_probes),length(pos_probes))
     }
     if (length(pos_probes) > topN){
 	    pos_probes <- pos_probes[1:topN]
