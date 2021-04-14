@@ -2,7 +2,6 @@
 #'
 #' @param sset a \code{SigSet}
 #' @param df_as a data.frame of alignment score for each probe.
-#' @param infer.human whether to use the fraction of negative probes to infer human.
 #' @param topN Top n positive and negative probes used to infer species.
 #' @param threshold.pos pvalue < threshold.pos are considered to be positive probes (default is 0.01).
 #' @param threshold.neg pvalue > threshold.neg are considered to be negative probes (default is 0.2).
@@ -26,7 +25,7 @@
 #'    )
 #' @export
 
-inferSpecies <- function(sset,df_as=NULL,infer.human=T,topN=3000,
+inferSpecies <- function(sset,df_as=NULL,topN=3000,
 			threshold.pos=0.01,threshold.neg=0.2,ret.max=T,
 			balance=T) {
     if (is.null(df_as)) {
@@ -36,20 +35,15 @@ inferSpecies <- function(sset,df_as=NULL,infer.human=T,topN=3000,
     pvalue <- pvalue[intersect(names(pvalue),rownames(df_as))]
     pos_probes=sort(pvalue[pvalue < threshold.pos],decreasing=F)
     neg_probes=sort(pvalue[pvalue > threshold.neg],decreasing=T)
-    n_neg=length(neg_probes)
-    if (infer.human & (n_neg / length(pvalue) < 0.1)){
-	    return('Homo sapiens|9606')
-    }
     if (balance) {
 	    topN <- min(length(neg_probes),length(pos_probes))
     }
     if (length(pos_probes) > topN){
 	    pos_probes <- pos_probes[1:topN]
     }
-    if (n_neg > topN){
+    if (length(neg_probes) > topN){
 	    neg_probes <- neg_probes[1:topN]
     }
-    #probes <- c(names(pos_probes),names(neg_probes))
     #y_true <- sapply(pvalue[probes],function(x) {if (x<0.01) {return(1)} else {return(0)}})
     y_true=structure(c(rep(1,length(pos_probes)),rep(0,length(neg_probes))),
 		     names=c(names(pos_probes),names(neg_probes)))
