@@ -6,7 +6,7 @@
 #' @param threshold.pos pvalue < threshold.pos are considered to be positive probes (default is 0.01).
 #' @param threshold.neg pvalue > threshold.neg are considered to be negative probes (default is 0.2).
 #' @param ret.max whether to return the species with maximal AUC.
-#' @param balance whether to banlance the postive and negative probes size (default is TRUE).
+#' @param balance whether to balance the postive and negative probes size (default is TRUE).
 #' @return a list of auc, pvalue, species (NCBI official species names) and taxid.
 #' We infer species based on probes pvalues and alignment score.
 #' AUC was calculated for each specie, y_true is 1 or 0 
@@ -15,7 +15,7 @@
 #' Our function works on a single sample.
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' df_as <- sesameDataGet('df_as')
+#' df_as <- sesameDataGet('Mammal40.alignmentScore')
 #' res=inferSpecies(sset,df_as)
 #' res=inferSpecies(sset,df_as,ret.max=F)
 #' result=do.call(cbind, mclapply(idats, function(x) {
@@ -29,7 +29,7 @@ inferSpecies <- function(sset,df_as=NULL,topN=3000,
 			threshold.pos=0.01,threshold.neg=0.2,ret.max=T,
 			balance=T) {
     if (is.null(df_as)) {
-    	df_as=sesameDataGet('df_as')
+    	df_as=sesameDataGet('Mammal40.alignmentScore')
 	}
     pvalue=pval(sset)
     pvalue <- pvalue[intersect(names(pvalue),rownames(df_as))]
