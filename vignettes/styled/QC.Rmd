@@ -1,0 +1,129 @@
+---
+title: "Quality Controls"
+date: "`r BiocStyle::doc_date()`"
+package: sesame
+output: BiocStyle::html_document
+fig_width: 8
+fig_height: 6
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{1. Quality Controls}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Generation of Quality Controls
+
+SeSAMe provides a set of quality control steps.
+```{r, echo = FALSE, message = FALSE}
+library(sesame)
+library(FlowSorted.Blood.450k)
+options(rmarkdown.html_vignette.check_title = FALSE)
+
+ssets <- RGChannelSetToSigSets(FlowSorted.Blood.450k[,1:10])
+```
+
+The SeSAMe QC function returns an `sesameQC` object which can be
+directly printed onto the screen.
+```{r}
+sesameQC(ssets[[1]])
+```
+
+The `sesameQC` object can be coerced into data.frame and linked
+using the following code
+```{r}
+qc10 <- do.call(rbind, lapply(ssets, function(x)
+    as.data.frame(sesameQC(x))))
+qc10$sample_name <- names(ssets)
+
+qc10[,c('mean_beta_cg','frac_meth_cg','frac_unmeth_cg','sex','age')]
+```
+
+# Background
+
+The background level is given by `mean_oob_grn` and `mean_oob_red`
+```{r}
+library(ggplot2)
+ggplot(qc10,
+    aes(x = mean_oob_grn, y= mean_oob_red, label = sample_name)) +
+    geom_point() + geom_text(hjust = -0.1, vjust = 0.1) +
+    geom_abline(intercept = 0, slope = 1, linetype = 'dotted') +
+    xlab('Green Background') + ylab('Red Background') +
+    xlim(c(500,1200)) + ylim(c(500,1200))
+```
+
+# Mean Intensity
+
+The mean {M,U} intensity can be reached by `mean_intensity`.
+Similarly, the mean M+U intensity can be reached by
+`mean_intensity_total`. Low intensities are symptomatic of low
+input or poor hybridization.
+
+```{r warning = FALSE}
+library(wheatmap)
+p1 <- ggplot(qc10) +
+    geom_bar(aes(sample_name, mean_intensity), stat='identity') +
+    xlab('Sample Name') + ylab('Mean Intensity') +
+    ylim(0,18000) +
+    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+p2 <- ggplot(qc10) +
+    geom_bar(aes(sample_name, mean_intensity_total), stat='identity') +
+    xlab('Sample Name') + ylab('Mean M+U Intensity') +
+    ylim(0,18000) +
+    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+WGG(p1) + WGG(p2, RightOf())
+```
+
+# Fraction of color channel switch
+
+The fraction of color channel switch can be found in 
+`InfI_switch_G2R` and `InfI_switch_R2G`. These numbers are 
+symptomatic of how Infinium I probes are affected by SNP-induced
+color channel switching.
+```{r}
+ggplot(qc10) +
+    geom_point(aes(InfI_switch_G2R, InfI_switch_R2G))
+```
+
+# Fraction of NA
+
+The fraction of NAs are signs of masking due to variety of reasons
+including failed detection, high background, putative low quality
+probes etc. This number can be reached in `frac_na_cg` and 
+`num_na_cg` (the cg stands for CpG probes, so we also have
+`num_na_ch` and `num_na_rs`)
+```{r}
+p1 <- ggplot(qc10) +
+    geom_bar(aes(sample_name, num_na_cg), stat='identity') +
+    xlab('Sample Name') + ylab('Number of NAs') +
+    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+p2 <- ggplot(qc10) +
+    geom_bar(aes(sample_name, frac_na_cg), stat='identity') +
+    xlab('Sample Name') + ylab('Fraction of NAs (%)') +
+    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+WGG(p1) + WGG(p2, RightOf())
+```
+
+# Quality Ranking
+
+Sesame provide convenient function to compare your sample with
+public data sets processed with the same pipeline. All you need
+is a raw SigSet.
+```{r}
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+qualityRank(sset)
+```
+
+# Output explicit and Infinium-I-derived SNP to VCF
+
+```{r}
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+
+annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
+annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
+
+## output to console
+head(formatVCF(sset, annoS=annoS, annoI=annoI))
+```
+
+One can output to actual VCF file with a header by `formatVCF(sset,
+vcf=path_to_vcf)`.

@@ -1,0 +1,30 @@
+---
+title: "SeSAMe-Minfi interaction"
+date: "`r BiocStyle::doc_date()`"
+package: sesame
+output: BiocStyle::html_document
+fig_width: 8
+fig_height: 6
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{3. Minfi Interaction}
+  %\VignetteEncoding{UTF-8}
+---
+
+SeSAMe can be converted back and forth from Minfi RGChannelSet in multiple
+ways. One can sesamize a minfi `RGChannelSet` which returns a `GenomicRatioSet`.
+Here we are illustrating using the `FlowSorted.Blood.450k` object, which is 
+distributed in the `minfi::RGChannelSet`.
+```{r message = FALSE}
+library(sesame)
+library(FlowSorted.Blood.450k)
+options(rmarkdown.html_vignette.check_title = FALSE)
+
+```
+
+```{r}
+grSet <- sesamize(FlowSorted.Blood.450k[,1:4])
+grSet 
+
+```
+
