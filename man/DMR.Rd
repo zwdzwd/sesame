@@ -6,36 +6,36 @@
 \usage{
 DMR(
   betas,
-  sample.data = NULL,
   formula = NULL,
   cf = NULL,
   dist.cutoff = NULL,
+  meta = NULL,
   seg.per.locus = 0.5,
-  platform = c("EPIC", "HM450"),
-  refversion = c("hg38", "hg19"),
+  platform = NULL,
+  refversion = NULL,
   ...
 )
 }
 \arguments{
 \item{betas}{beta values for distance calculation}
 
-\item{sample.data}{data frame for sample information, column names
-are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
-and are referenced in formula. Rows are samples.}
-
 \item{formula}{formula}
 
 \item{cf}{coefficient table from diffMeth, when NULL will be computed from
-beta. If cf is given, sample.data and formula are ignored.}
+beta. If cf is given, meta and formula are ignored.}
 
 \item{dist.cutoff}{distance cutoff (default to use dist.cutoff.quantile)}
+
+\item{meta}{data frame for sample information, column names
+are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
+and are referenced in formula. Rows are samples.}
 
 \item{seg.per.locus}{number of segments per locus
 higher value leads to more segments}
 
-\item{platform}{EPIC or HM450}
+\item{platform}{EPIC, HM450, MM285, ...}
 
-\item{refversion}{hg38 or hg19}
+\item{refversion}{hg38, hg19, mm10, ...}
 
 \item{...}{additional parameters to DML}
 }
@@ -52,6 +52,6 @@ the segment.
 }
 \examples{
 data <- sesameDataGet('HM450.76.TCGA.matched')
-cf <- DMR(data$betas, data$sampleInfo, ~type)
+cf <- DMR(data$betas, ~type, meta=data$sampleInfo)
 
 }

@@ -6,21 +6,21 @@
 \usage{
 DML(
   betas,
-  sample.data,
   formula,
+  meta = NULL,
   se.lb = 0.06,
   balanced = FALSE,
   cf.test = NULL
 )
 }
 \arguments{
-\item{betas}{beta values}
-
-\item{sample.data}{data frame for sample information, column names
-are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
-and are referenced in formula. Rows are samples.}
+\item{betas}{beta values, matrix or SummarizedExperiment}
 
 \item{formula}{formula}
+
+\item{meta}{data frame for sample information, column names
+are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
+and are referenced in formula. Rows are samples.}
 
 \item{se.lb}{lower bound to standard error of slope, lower this to get
 more difference of small effect size.}
@@ -38,10 +38,10 @@ cf - a list of coefficient tables for each factor
 \description{
 The function takes a beta value matrix with probes on the rows and
 samples on the columns. It also takes a sample information data frame
-(sample.data) and formula for testing. The function outputs a list of
+(meta) and formula for testing. The function outputs a list of
 coefficient tables for each factor tested.
 }
 \examples{
 data <- sesameDataGet('HM450.76.TCGA.matched')
-cf <- DML(data$betas, data$sampleInfo, ~type)
+cf <- DML(data$betas, ~type, meta=data$sampleInfo)
 }

@@ -224,7 +224,7 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
     pkgTest('minfi')
     stopifnot(ncol(rgSet1) == 1)
     
-                                        # chipaddress/rownames are automatically the same
+    ## chipaddress/rownames are automatically the same
     dm <- cbind(
         G=as.matrix(minfi::getGreen(rgSet1)),
         R=as.matrix(minfi::getRed(rgSet1)))

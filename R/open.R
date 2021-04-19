@@ -36,14 +36,16 @@ openSesame <- function(
             x <- readIDATpair(
                 x, platform = platform, manifest = manifest)
             stopifnot(is(x, 'SigSet'))
-            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(qualityMask(detectionMask(x)))))
+            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(
+                qualityMask(detectionMask(x)))))
             if (what == 'beta') {
                 getBetas(x, ...)
             } else {
                 x
             }
         } else if (is(x, 'SigSet')) { # SigSet input
-            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(qualityMask(detectionMask(x)))))
+            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(
+                qualityMask(detectionMask(x)))))
             if (what == 'beta') {
                 getBetas(x, ...)
             } else {
