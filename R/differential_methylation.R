@@ -304,7 +304,7 @@ DMR <- function(
 
     ## combine p-value
     message("Combine p-values ... ")
-    dmr_combine_pval(cf, segs)
+    cf = dmr_combine_pval(cf, segs)
     message("Done.")
 
     cf
@@ -320,7 +320,7 @@ DMR <- function(
 #' @return coefficient table ordered by adjusted p-value of segments
 #' @examples
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' cf <- DMR(data$betas, data$sampleInfo, ~type)
+#' cf <- DMR(data$betas, ~type, meta=data$sampleInfo)
 #' topSegments(cf[[1]])
 #' @export
 topSegments <- function(cf1) {
@@ -340,7 +340,7 @@ topSegments <- function(cf1) {
 #' @return coefficient table ordered by p-value of each locus
 #' @examples
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' cf <- DMR(data$betas, data$sampleInfo, ~type)
+#' cf <- DMR(data$betas, ~type, meta=data$sampleInfo)
 #' topLoci(cf[[1]])
 #' @export
 topLoci <- function(cf1) {
@@ -357,7 +357,7 @@ topLoci <- function(cf1) {
 #' @return coefficient table from given segment
 #' @examples
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' cf <- DMR(data$betas, data$sampleInfo, ~type)
+#' cf <- DMR(data$betas, ~type, meta=data$sampleInfo)
 #' getSegment(cf[[1]], cf[[1]][['Seg.ID']][1])
 #' @export
 getSegment <- function(cf1, seg.id) {

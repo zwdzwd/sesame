@@ -20,6 +20,6 @@ targeting only the specified segment using segment ID.
 }
 \examples{
 data <- sesameDataGet('HM450.76.TCGA.matched')
-cf <- DMR(data$betas, data$sampleInfo, ~type)
+cf <- DMR(data$betas, ~type, meta=data$sampleInfo)
 getSegment(cf[[1]], cf[[1]][['Seg.ID']][1])
 }

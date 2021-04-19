@@ -19,6 +19,6 @@ table ordered by the sigificance of the locus.
 }
 \examples{
 data <- sesameDataGet('HM450.76.TCGA.matched')
-cf <- DMR(data$betas, data$sampleInfo, ~type)
+cf <- DMR(data$betas, ~type, meta=data$sampleInfo)
 topLoci(cf[[1]])
 }

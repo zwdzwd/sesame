@@ -6,7 +6,7 @@ fig_width: 8
 fig_height: 6
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{5. Mouse Array}
+  %\VignetteIndexEntry{6. Mouse Array}
   %\VignetteEncoding{UTF-8}
 ---
 
