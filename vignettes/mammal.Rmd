@@ -1,7 +1,8 @@
 ---
 title: "Working with Horvath Mammal (Mammal40) Array"
+date: "`r BiocStyle::doc_date()`"
 package: sesame
-output: rmarkdown::html_vignette
+output: BiocStyle::html_document
 fig_width: 8
 fig_height: 6
 vignette: >

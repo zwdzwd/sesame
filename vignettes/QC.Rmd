@@ -1,5 +1,6 @@
 ---
-title: "1. Quality Controls"
+title: "Quality Controls"
+date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: BiocStyle::html_document
 fig_width: 8

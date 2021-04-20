@@ -1,7 +1,8 @@
 ---
 title: "Working with Mouse (MM285) Array"
+date: "`r BiocStyle::doc_date()`"
 package: sesame
-output: rmarkdown::html_vignette
+output: BiocStyle::html_document
 fig_width: 8
 fig_height: 6
 vignette: >
@@ -131,14 +132,12 @@ Infer strain information for mouse array. This will return a list containing the
 strain <- inferStrain(vafs)
 strain$pval
 ```
-Let's visualize the probabilities of other strains.
-```{r fig.width=6, fig.height=5}
+```{r echo=FALSE}
 library(ggplot2)
 df <- data.frame(strain=names(strain$probs), probs=strain$probs)
 ggplot(data = df,  aes(x = strain, y = log(probs))) +
   geom_bar(stat = "identity", color="gray") +
   ggtitle("strain probabilities") +
-  scale_x_discrete(position = "top") +
   theme(axis.text.x = element_text(angle = 90), legend.position = "none")
 ```
 
@@ -150,7 +149,7 @@ betas <- sesameDataGet("MM285.10.tissue")$betas[,1:2]
 ```
 
 Compare mouse array data with mouse tissue references. This will return a grid object that contrasts the traget sample with pre-build mouse tissue reference.
-```{r fig.width=6, fig.height=5}
+```{r}
 compareMouseTissueReference(betas)
 ```
 
@@ -161,10 +160,9 @@ Let's load beta values from SeSAMeData
 betas <- sesameDataGet('MM285.10.tissue')$betas
 ```
 
-The age of the mouse can be predicted using the `predictMouseAgeInMonth` function. This looks for overlapping probes and estimates age using an aging model built from 347 MM285 probes. The function returns a numeric output of age in months.  
+The age of the mouse can be predicted using the `predicMouseAgeInMonth` function. This looks for overlapping probes and estimates age using an aging model built from 321 MM285 probes. The function returns a numeric output of age in months.  
 The model is most accurate with SeSAMe preprocessing.
 Here's an example.
 ```{r}
 predictMouseAgeInMonth(betas[,1])
 ```
-This indicates that this mouse is approximately 1.41 months old.
