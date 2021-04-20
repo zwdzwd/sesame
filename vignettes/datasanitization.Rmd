@@ -51,66 +51,6 @@ This second method of deIdentification will scramble the intensities using a sec
 
 ```{r, eval=FALSE}
 
-deIdentify <- function(
-    path, out_path=NULL, snps=NULL, mft=NULL, randomize=FALSE) {
-
-    res <- suppressWarnings(illuminaio::readIDAT(path))
-    platform <- sesame:::inferPlatform(res)
-
-
-    if(is.null(out_path)) {
-        pfx <- sub('.idat(.gz)?$','', path)
-        if(grepl('_Grn$', pfx)) {
-            out_path <- paste0(sub('_Grn$','',pfx), '_noid_Grn.idat')
-        } else if (grepl('_Red$', pfx)) {
-            out_path <- paste0(sub('_Red$','',pfx), '_noid_Red.idat')
-        }
-    }
-
-    if (is.null(mft)) {
-        mft <- sesameDataGet(paste0(platform, '.address'))$ordering
-    }
-    if (is.null(snps))
-        snps <- grep("^rs", mft$Probe_ID, value=TRUE)
-    mft <- mft[mft$Probe_ID %in% snps,]
-    
-    snpsTango <- na.omit(c(mft$M, mft$U))
-    qt <- res$Quants
-    snpsIdx <- match(snpsTango, rownames(qt))
-
-    dt <- qt[,'Mean']
-    if (randomize) {
-        snpsIdx = snpsIdx[!is.na(snpsIdx)]
-        dt[snpsIdx] <- sample(dt[snpsIdx])
-       
-    } else {
-        dt[snpsIdx] <- 0
-    }
-    
-    if(grepl("\\.gz$", path)) {
-        con <- gzfile(path, "rb")
-    } else {
-        con <- file(path, "rb")
-    }
-    
-    con2 <- file(out_path, "wb")
-
-    ## before Mean section
-    writeBin(readBin(
-        con, "raw", n = res$fields["Mean", 'byteOffset']), con2)
-
-    ## write new Mean section
-    writeBin(as.integer(dt), con2, size=2, endian='little')
-
-    ## after Mean section
-    ## skip by reading..., seek might not work for gzfile
-    a <- readBin(con, "raw", n = res$nSNPsRead*2)
-    while (length(a <- readBin(con, 'raw', n=1))>0) writeBin(a, con2)
-
-    close(con)
-    close(con2)
-}
-
 my_secret <- 13412084
 set.seed(my_secret)
 
@@ -133,59 +73,6 @@ head(betas2[grep('rs',names(betas2))]) # after deIdentify, all rs values will be
 To restore order of the deIdentified intensities, one can re-identify IDATs. The reIdentify function can thus restore the scrambled SNP intensities. 
 
 ```{r, eval=FALSE}
-
-reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
-
-    res <- suppressWarnings(illuminaio::readIDAT(path))
-    platform <- sesame:::inferPlatform(res)
-
-    if(is.null(out_path)) {
-        pfx <- sub('.idat(.gz)?$','', path)
-        if(grepl('_Grn$', pfx)) {
-            out_path <- paste0(sub('_Grn$','',pfx), '_reid_Grn.idat')
-        } else if (grepl('_Red$', pfx)) {
-            out_path <- paste0(sub('_Red$','',pfx), '_reid_Red.idat')
-        }
-    }
-
-    if (is.null(mft)) {
-        mft <- sesameDataGet(paste0(platform, '.address'))$ordering
-    }
-    if (is.null(snps))
-        snps <- grep("^rs", mft$Probe_ID, value=TRUE)
-    mft <- mft[mft$Probe_ID %in% snps,]
-    
-    snpsTango <- na.omit(c(mft$M, mft$U))
-    qt <- res$Quants
-    snpsIdx <- match(snpsTango, rownames(qt))
-    dt <- qt[,'Mean']
-    snpsIdx = snpsIdx[!is.na(snpsIdx)]
-    idx <- seq_along(snpsIdx)
-    
-    dt[snpsIdx] <- dt[snpsIdx[match(idx, sample(idx))]]
-    
-    if(grepl("\\.gz$", path)) {
-        con <- gzfile(path, "rb")
-    } else {
-        con <- file(path, "rb")
-    }
-    
-    con2 <- file(out_path, "wb")
-
-    ## before Mean section
-    writeBin(readBin(con, "raw", n = res$fields["Mean", 'byteOffset']), con2)
-
-    ## write new Mean section
-    writeBin(as.integer(dt), con2, size=2, endian='little')
-
-    ## after Mean section
-    ## skip by reading..., seek might not work for gzfile
-    a <- readBin(con, "raw", n = res$nSNPsRead*2)
-    while (length(a <- readBin(con, 'raw', n=1))>0) writeBin(a, con2)
-
-    close(con)
-    close(con2)
-}
 
 my_secret <- 13412084
 set.seed(my_secret)

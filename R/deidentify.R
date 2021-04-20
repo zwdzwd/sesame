@@ -49,6 +49,7 @@ deIdentify <- function(
     snpsIdx <- match(snpsTango, rownames(qt))
     dt <- qt[,'Mean']
     if (randomize) {
+    	snpsIdx = snpsIdx[!is.na(snpsIdx)]
         dt[snpsIdx] <- sample(dt[snpsIdx])
     } else {
         dt[snpsIdx] <- 0
@@ -123,6 +124,7 @@ reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
     qt <- res$Quants
     snpsIdx <- match(snpsTango, rownames(qt))
     dt <- qt[,'Mean']
+    snpsIdx = snpsIdx[!is.na(snpsIdx)]
     idx <- seq_along(snpsIdx)
     dt[snpsIdx] <- dt[snpsIdx[match(idx, sample(idx))]]
     
