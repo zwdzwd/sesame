@@ -20,6 +20,14 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 ## Load IDATs, preprocessing and masking
 
+### Cache mouse array annotation data
+
+To begin, we need to retrieve mouse annotation data from ExperimentHub.
+This only needs to be done once per sesame installation.
+```{r}
+sesameDataCache("MM285")
+```
+
 ### Read IDATs
 
 SeSAMe provides extensive native support for the Illumina mouse array
