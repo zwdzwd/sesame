@@ -1,7 +1,8 @@
 ---
 title: "Working with Mouse (MM285) Array"
+date: "`r BiocStyle::doc_date()`"
 package: sesame
-output: rmarkdown::html_vignette
+output: BiocStyle::html_document
 fig_width: 8
 fig_height: 6
 vignette: >
@@ -12,6 +13,7 @@ vignette: >
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(sesame)
+library(wheatmap)
 library(dplyr)
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
@@ -104,3 +106,66 @@ betas = sesameDataGet("MM285.10.tissue")$betas
 visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
 ```
 
+## Infer Strain Information
+
+Let's load a pre-built `SigSet` object from SeSAMeData
+```{r}
+sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
+```
+
+Calculate beta values using the following commands.
+```{r}
+betas <- sset %>%
+         noob %>%
+         dyeBiasCorrTypeINorm %>%
+         getBetas
+```
+
+Convert the beta values to Variant Allele Frequencies.  
+It should be noted that since variant allele frequency is not always measured in green for Infinium-II and M-allele for Infinium-I, one needs to flip the beta values for some probes to calculate variant allele frequency.
+```{r}
+vafs <- betaToAF(betas)
+```
+
+Infer strain information for mouse array. This will return a list containing the best guess, p-value of the best guess, and probabilities of all strains.
+```{r}
+strain <- inferStrain(vafs)
+strain$pval
+```
+Let's visualize the probabilities of other strains.
+```{r fig.width=6, fig.height=5}
+library(ggplot2)
+df <- data.frame(strain=names(strain$probs), probs=strain$probs)
+ggplot(data = df,  aes(x = strain, y = log(probs))) +
+  geom_bar(stat = "identity", color="gray") +
+  ggtitle("strain probabilities") +
+  scale_x_discrete(position = "top") +
+  theme(axis.text.x = element_text(angle = 90), legend.position = "none")
+```
+
+## Contrast Data with Tissue References
+
+Let's load beta values from SeSAMeData
+```{r}
+betas <- sesameDataGet("MM285.10.tissue")$betas[,1:2]
+```
+
+Compare mouse array data with mouse tissue references. This will return a grid object that contrasts the traget sample with pre-build mouse tissue reference.
+```{r fig.width=6, fig.height=5}
+compareMouseTissueReference(betas)
+```
+
+## Infer Mouse Age
+
+Let's load beta values from SeSAMeData
+```{r}
+betas <- sesameDataGet('MM285.10.tissue')$betas
+```
+
+The age of the mouse can be predicted using the `predictMouseAgeInMonth` function. This looks for overlapping probes and estimates age using an aging model built from 347 MM285 probes. The function returns a numeric output of age in months.  
+The model is most accurate with SeSAMe preprocessing.
+Here's an example.
+```{r}
+predictMouseAgeInMonth(betas[,1])
+```
+This indicates thaat this mouse is approximately 1.41 months old.

@@ -1,5 +1,6 @@
 reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
 
+    pkgTest("wheatmap")
     color = match.arg(color)
     if (color == "blueYellow") stop.points = c("blue","yellow")
     else stop.points = NULL
@@ -10,7 +11,7 @@ reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
     if (!is.null(betas) && is.null(dim(betas))) { # in case a vector
         betas = cbind(betas)
     }
-    
+
     g = WHeatmap(assay(se), cmp=CMPar(stop.points=stop.points,
         dmin=0, dmax=1), name="b1") # reference
     if (!is.null(betas)) {          # query samples
@@ -40,6 +41,7 @@ reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
 #' @param color either blueYellow or fullJet
 #' @return grid object that contrast the target sample with
 #' pre-built mouse tissue reference
+#' @import wheatmap
 #' @export
 #' @examples
 #' b = sesameDataGet("MM285.10.tissue")$betas[,1:2]
