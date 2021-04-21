@@ -1,6 +1,6 @@
 name: "SeSAMe"
 navbar:
-  title: '<a href="http://bioconductor.org/packages/release/bioc/html/sesame.html" class="navbar-left"><img src="./include/logo.png" height="100" width="100" vspace=10 hspace=10></a>'
+  title: '<a href="http://bioconductor.org/packages/release/bioc/html/sesame.html" class="navbar-left"><img src="./include/logo.png" height="50" width="50" vspace=5 hspace=10></a>'
   left:
     - text: "SeSAMe"
       icon: fa-home
