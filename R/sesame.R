@@ -123,6 +123,7 @@ SigSet <- function(...) new("SigSet", ...)
 #' @rdname show-methods
 #' @aliases show,SigSet-method
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' print(sset)
 setMethod(
@@ -152,6 +153,7 @@ setMethod(
 #' @param probes target probes
 #' @return another sset with probes specified
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' subsetSignal(sset, rownames(slot(sset, 'IR')))
 #' @export
@@ -178,6 +180,7 @@ negControls <- function(sset) {
 #' @param sset a \code{SigSet}
 #' @return a data frame of M and U columns
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' signalMU(sset)
 #' @export
@@ -311,6 +314,7 @@ getSexInfo <- function(sset) {
 #' @param sset a \code{SigSet}
 #' @return Karyotype string, with XCI
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' inferSexKaryotypes(sset)
 #' @export
@@ -368,6 +372,7 @@ inferSexKaryotypes <- function(sset) {
 #' @importFrom randomForest randomForest
 #' @import sesameData
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' inferSex(sset)
 #' @export
@@ -430,6 +435,7 @@ inferEthnicity <- function(sset) {
 #' @param mask whether to use mask
 #' @return a numeric vector, beta values
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getBetas(sset)
 #' @export
@@ -479,6 +485,7 @@ getBetas <- function(sset, mask=TRUE, sum.TypeI = FALSE) {
 #' @param known.ccs.only consider only known CCS probes
 #' @return beta values
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getAFTypeIbySumAlleles(sset)
 #' @export
@@ -776,6 +783,7 @@ chipAddressToSignal <- function(
 #' @param use.median use median to compute GCT instead of mean
 #' @return GCT score (the higher, the more incomplete conversion)
 #' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- makeExampleSeSAMeDataSet('HM450')
 #' bisConversionControl(sset)
 #'

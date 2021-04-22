@@ -6,6 +6,7 @@
 #' @param sset a \code{SigSet} object
 #' @return a sesameQC class object
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sesameQC(sset)
 #' @export
@@ -89,6 +90,7 @@ sesameQC <- function(sset) {
 #' @param ... extra parameter for print
 #' @return print sesameQC result on screen
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sesameQC(sset)
 #' @export
@@ -187,6 +189,7 @@ print.sesameQC <- function(x, ...) {
 #' @param ...        see as.data.frame
 #' @return           a data.frame
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' qc <- sesameQC(sset)
 #' df <- as.data.frame(qc)
@@ -214,6 +217,7 @@ as.data.frame.sesameQC <- function(
 #' 4. The higher the fraction, the better the sample.
 #' @examples
 #'
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' ranks <- qualityRank(sset)
 #' 

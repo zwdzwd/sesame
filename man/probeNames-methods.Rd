@@ -20,6 +20,7 @@ A char vector
 Get Probe Names of SigSet class
 }
 \examples{
+sesameDataCache("HM450") # if not done yet
 sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 head(probeNames(sset))
 }

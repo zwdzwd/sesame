@@ -22,6 +22,7 @@ a data.frame
 Coerce a sesameQC into a dataframe
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 qc <- sesameQC(sset)
 df <- as.data.frame(qc)

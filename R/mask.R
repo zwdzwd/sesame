@@ -4,6 +4,7 @@
 #' @param sset a \code{SigSet}
 #' @return a new \code{SigSet} with mask reset to empty
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.no.mask <- resetMask(sset)
 #' @export
@@ -19,6 +20,7 @@ resetMask <- function(sset) {
 #' @param to new mask name
 #' @return a new \code{SigSet} object
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset <- resetMask(sset)
 #' sset <- saveMask(sset)
@@ -36,6 +38,7 @@ saveMask <- function(sset, to='mask2') {
 #' @param from name of a previously saved mask
 #' @return a new \code{SigSet} object
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset <- resetMask(sset)
 #' sset <- saveMask(sset)
@@ -56,6 +59,7 @@ restoreMask <- function(sset, from='mask2') {
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @return a filtered \code{SigSet}
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.masked <- qualityMask(sset)
 #' @export 
@@ -100,6 +104,7 @@ qualityMask <- function(
 #' @param pval.threshold the p-value threshold
 #' @return a filtered \code{SigSet}
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.masked <- detectionMask(sset)
 #' @export

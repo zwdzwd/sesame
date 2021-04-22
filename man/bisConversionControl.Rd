@@ -20,6 +20,7 @@ takes a \code{SigSet} as input. The higher the GCT score, the more likely
 the incomplete conversion.
 }
 \examples{
+sesameDataCache("HM450") # if not done yet
 sset <- makeExampleSeSAMeDataSet('HM450')
 bisConversionControl(sset)
 

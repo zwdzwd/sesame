@@ -19,6 +19,7 @@ The function takes one single \code{SigSet} and returns a \code{SigSet}
 with dye bias corrected.
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.db <- dyeBiasCorrTypeINorm(sset)
 }

@@ -21,6 +21,7 @@ If no CCS probes exist in the \code{SigSet}, then an numeric(0) is
 returned.
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 betas <- getAFTypeIbySumAlleles(sset)
 }

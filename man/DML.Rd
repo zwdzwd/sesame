@@ -42,6 +42,7 @@ samples on the columns. It also takes a sample information data frame
 coefficient tables for each factor tested.
 }
 \examples{
+sesameDataCache("HM450") # in case not done yet
 data <- sesameDataGet('HM450.76.TCGA.matched')
 cf <- DML(data$betas, ~type, meta=data$sampleInfo)
 }

@@ -130,12 +130,15 @@ betas <- sset %>%
 ```
 
 Convert the beta values to Variant Allele Frequencies.  
-It should be noted that since variant allele frequency is not always measured in green for Infinium-II and M-allele for Infinium-I, one needs to flip the beta values for some probes to calculate variant allele frequency.
+It should be noted that since variant allele frequency is not always measured
+in green for Infinium-II and M-allele for Infinium-I, one needs to flip the
+beta values for some probes to calculate variant allele frequency.
 ```{r}
 vafs <- betaToAF(betas)
 ```
 
-Infer strain information for mouse array. This will return a list containing the best guess, p-value of the best guess, and probabilities of all strains.
+Infer strain information for mouse array. This will return a list containing
+the best guess, p-value of the best guess, and probabilities of all strains.
 ```{r}
 strain <- inferStrain(vafs)
 strain$pval
@@ -158,7 +161,8 @@ Let's load beta values from SeSAMeData
 betas <- sesameDataGet("MM285.10.tissue")$betas[,1:2]
 ```
 
-Compare mouse array data with mouse tissue references. This will return a grid object that contrasts the traget sample with pre-build mouse tissue reference.
+Compare mouse array data with mouse tissue references. This will return a grid
+object that contrasts the traget sample with pre-build mouse tissue reference.
 ```{r fig.width=6, fig.height=5}
 compareMouseTissueReference(betas)
 ```
@@ -170,8 +174,10 @@ Let's load beta values from SeSAMeData
 betas <- sesameDataGet('MM285.10.tissue')$betas
 ```
 
-The age of the mouse can be predicted using the `predictMouseAgeInMonth` function. This looks for overlapping probes and estimates age using an aging model built from 347 MM285 probes. The function returns a numeric output of age in months.  
-The model is most accurate with SeSAMe preprocessing.
+The age of the mouse can be predicted using the `predictMouseAgeInMonth`
+function. This looks for overlapping probes and estimates age using an aging
+model built from 347 MM285 probes. The function returns a numeric output of
+age in months. The model is most accurate with SeSAMe preprocessing.
 Here's an example.
 ```{r}
 predictMouseAgeInMonth(betas[,1])

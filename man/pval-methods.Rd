@@ -22,6 +22,8 @@ pval getter generic
 Get pval slot of SigSet class
 }
 \examples{
+
+sesameDataCache("HM450") # if not done yet
 sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 head(pval(sset))
 }

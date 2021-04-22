@@ -20,6 +20,7 @@ a filtered \code{SigSet}
 Mask Sigset by detection p-value
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.masked <- detectionMask(sset)
 }

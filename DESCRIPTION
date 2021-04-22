@@ -80,3 +80,4 @@ Collate:
     'utils.R'
     'vcf.R'
     'visualize.R'
+    'zzz.R'

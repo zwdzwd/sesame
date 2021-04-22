@@ -51,6 +51,8 @@ designating the segment ID and statistical significance (P-value) testing
 the segment.
 }
 \examples{
+
+sesameDataCache("HM450") # in case not done yet
 data <- sesameDataGet('HM450.76.TCGA.matched')
 cf <- DMR(data$betas, ~type, meta=data$sampleInfo)
 

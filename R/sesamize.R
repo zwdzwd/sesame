@@ -197,6 +197,7 @@ guessMinfiAnnotation <- function(platform, annotation = NA) {
 #' @import BiocParallel
 #' @examples
 #'
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' rgSet <- SigSetsToRGChannelSet(sset)
 #'
@@ -281,6 +282,7 @@ RGChannelSetToSigSets <- function(
 #' @return a minfi::RatioSet
 #' @examples
 #'
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' ratioSet <- SigSetToRatioSet(sset)
 #' 

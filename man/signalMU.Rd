@@ -16,6 +16,7 @@ a data frame of M and U columns
 report M and U for regular probes
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 signalMU(sset)
 }

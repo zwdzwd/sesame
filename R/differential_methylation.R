@@ -20,6 +20,7 @@
 #' @return cf - a list of coefficient tables for each factor
 #' @import stats
 #' @examples
+#' sesameDataCache("HM450") # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' cf <- DML(data$betas, ~type, meta=data$sampleInfo)
 #' @export
@@ -267,6 +268,8 @@ DMgetProbeInfo = function(platform, refversion) {
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @examples
+#'
+#' sesameDataCache("HM450") # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' cf <- DMR(data$betas, ~type, meta=data$sampleInfo)
 #' 

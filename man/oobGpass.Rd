@@ -18,6 +18,7 @@ Get oobG slot of SigSet class that passes mask
 This is the same as oobG() if there is no mask set
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 head(oobGpass(sset))
 }

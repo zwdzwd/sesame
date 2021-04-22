@@ -29,6 +29,7 @@ awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k2,2n"}'
 Convert SNP from Infinium array to VCF file
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 
 annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')

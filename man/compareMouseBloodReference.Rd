@@ -18,6 +18,7 @@ grid object that co-plots with a pre-built mouse blood reference
 Compare beta value against mouse blood reference
 }
 \examples{
+sesameDataCache("MM285") # if not done yet
 b = sesameDataGet("MM285.10.tissue")$betas[,10]
 compareMouseBloodReference(b)
 }

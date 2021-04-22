@@ -21,6 +21,7 @@ is set to the mean intensity of all the in-band signals. The function
 returns a \code{SigSet} with dye bias corrected.
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.db <- dyeBiasCorr(sset)
 }

@@ -26,6 +26,8 @@ seg.signals), the bin coordinates (
 bin.coords) and bin signals (bin.signals).
 }
 \examples{
+
+sesameDataCache("EPIC") # in case not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 ssets.normal <- sesameDataGet('EPIC.5.normal')
 seg <- cnSegmentation(sset, ssets.normal)
