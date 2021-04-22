@@ -19,6 +19,12 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 SeSAMe supports Mammal 40 array natively.
 
+## Cache Mammal40
+
+```{r}
+sesameDataCache("Mammal40")
+```
+
 ## Load Mammal40 array IDAT
 
 ```{r}
