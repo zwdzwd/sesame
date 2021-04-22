@@ -22,6 +22,7 @@ extra getter generic
 Get extra slot of SigSet class
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 head(extra(sset))
 }

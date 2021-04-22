@@ -20,6 +20,7 @@ Please provide a raw sigset (before any preprocessing). Usually
 directly from readIDATpair
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sesameQC(sset)
 }

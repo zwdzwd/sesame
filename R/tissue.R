@@ -44,6 +44,7 @@ reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
 #' @import wheatmap
 #' @export
 #' @examples
+#' sesameDataCache("MM285") # if not done yet
 #' b = sesameDataGet("MM285.10.tissue")$betas[,1:2]
 #' compareMouseTissueReference(b)
 #' @importFrom SummarizedExperiment assay
@@ -61,6 +62,7 @@ compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
 #' @return grid object that co-plots with a pre-built mouse blood reference
 #' @export
 #' @examples
+#' sesameDataCache("MM285") # if not done yet
 #' b = sesameDataGet("MM285.10.tissue")$betas[,10]
 #' compareMouseBloodReference(b)
 compareMouseBloodReference = function(betas=NULL, color="blueYellow") {

@@ -24,6 +24,7 @@ oobR replacement generic
 Replace oobR slot of SigSet class
 }
 \examples{
+sesameDataCache("HM450") # if not done yet
 sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 df <- oobR(sset)
 df[1,1] <- 10

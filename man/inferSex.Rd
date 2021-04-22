@@ -29,6 +29,7 @@ Our function works on a single sample.
 Infer Sex
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 inferSex(sset)
 }

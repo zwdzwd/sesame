@@ -23,6 +23,7 @@ and returns beta value except that Type-I in-band signal and out-of-band
 signal are combined. This prevents color-channel switching due to SNPs.
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 betas <- getBetas(sset)
 }

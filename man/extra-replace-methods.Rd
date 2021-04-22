@@ -24,6 +24,7 @@ extra replacement generic
 Replace extra slot of SigSet class
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 df <- extra(sset)
 extra(sset) <- list(pval=numeric(0))

@@ -19,6 +19,7 @@ The function takes a \code{SigSet} as input and output another
 \code{SigSet} with probes from the given probe selection.
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 subsetSignal(sset, rownames(slot(sset, 'IR')))
 }

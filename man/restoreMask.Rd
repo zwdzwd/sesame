@@ -18,6 +18,7 @@ a new \code{SigSet} object
 Save current mask
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset <- resetMask(sset)
 sset <- saveMask(sset)

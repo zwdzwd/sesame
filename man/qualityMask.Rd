@@ -20,6 +20,7 @@ a filtered \code{SigSet}
 Currently quality masking only supports three platforms
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.masked <- qualityMask(sset)
 }

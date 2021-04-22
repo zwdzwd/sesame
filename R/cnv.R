@@ -13,6 +13,8 @@
 #' @param refversion hg19 or hg38
 #' @return an object of \code{CNSegment}
 #' @examples
+#'
+#' sesameDataCache("EPIC") # in case not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' ssets.normal <- sesameDataGet('EPIC.5.normal')
 #' seg <- cnSegmentation(sset, ssets.normal)
@@ -226,6 +228,8 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
 #' @return plot graphics
 #' @examples
+#'
+#' sesameDataCache("EPIC") # in case not done yet
 #' seg <- sesameDataGet('EPIC.1.LNCaP')$seg
 #' 
 #' visualizeSegments(seg)

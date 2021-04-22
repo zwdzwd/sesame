@@ -24,6 +24,8 @@ pval replacement generic
 Replace pval slot of SigSet class
 }
 \examples{
+
+sesameDataCache("HM450") # if not done yet
 sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 df <- pval(sset)
 df[1] <- 0.01
