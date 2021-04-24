@@ -1,6 +1,6 @@
 ---
 title: "de-Identifier"
-shorttitle: "deIdentify
+shorttitle: "deIdentify"
 package: sesame
 output: rmarkdown::html_vignette
 fig_width: 8
