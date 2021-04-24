@@ -1,6 +1,6 @@
 ---
-title: "data sanitization"
-shorttitle: "de-Identify"
+title: "Data Sanitization"
+shorttitle: "Data Sanitization"
 package: sesame
 output: rmarkdown::html_vignette
 fig_width: 8
@@ -35,7 +35,7 @@ res_red = sesameDataDownload("3999492009_R01C01_Red.idat", dest_dir=dest_dir)
 
 This first method of deIdentification masks SNP probe intensity mean by zero. As a consequence, the allele frequency will be 0.5. 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 
 deIdentify(res_grn$dest_file, sprintf("%s/deidentified_Grn.idat", dest_dir))
 deIdentify(res_red$dest_file, sprintf("%s/deidentified_Red.idat", dest_dir))
@@ -53,7 +53,7 @@ Note that before deIdentify, the rs values will all be different. After deIdenti
 
 This second method of deIdentification will scramble the intensities using a secret key to help formalize a random number. Therefore, randomize needs to be set to TRUE. 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 
 my_secret <- 13412084
 set.seed(my_secret)
@@ -77,7 +77,7 @@ Note that the rs values are scrambled after deIdentify.
 
 To restore order of the deIdentified intensities, one can re-identify IDATs. The reIdentify function can thus restore the scrambled SNP intensities. 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 
 my_secret <- 13412084
 set.seed(my_secret)
