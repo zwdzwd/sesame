@@ -245,8 +245,8 @@ qualityRank <- function(
     }
     frac_nondt <- sum(pvals > 0.05)
     c(
-        n_compared = nrow(df),
-        rank_nondetection = 1-ecdf(df$frac_nondt)(frac_nondt),
-        rank_meanintensity = ecdf(df$mean_intensity)(mean_intensity))
+        n_sample_compared = nrow(df),
+        rank_probe_success_rate = 1-ecdf(df$frac_nondt)(frac_nondt),
+        rank_mean_intensity = ecdf(df$mean_intensity)(mean_intensity))
 }
 
