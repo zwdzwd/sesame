@@ -64,8 +64,8 @@ sesamize <- function(
     ## keep only probes surviving naFrac
     kept <- seq_len(nrow(ratioSet))
     if (naFrac < 1) { 
-        kept <- which((rowSums(is.na(minfi::getBeta(ratioSet))) / 
-                           ncol(ratioSet)) <= naFrac)
+        kept <- which((
+            rowSums(is.na(minfi::getBeta(ratioSet)))/ncol(ratioSet)) <= naFrac)
         if (length(kept) < 1) 
             stop("No probes survived with naFrac <= ",naFrac,".")
     } 
