@@ -37,7 +37,7 @@ formatVCF <- function(
     GT <- vapply(gts, function(g) g$GT, character(1))
     GS <- vapply(gts, function(g) g$GS, numeric(1))
     vcflines_snp <- cbind(as.character(GenomicRanges::seqnames(annoS)),
-        as.character(end(annoS)),
+        as.character(GenomicRanges::end(annoS)),
         names(annoS),
         annoS$REF, annoS$ALT,
         GS, ifelse(GS>20,'PASS','FAIL'),
@@ -56,7 +56,7 @@ formatVCF <- function(
     GT <- vapply(gts, function(g) g$GT, character(1))
     GS <- vapply(gts, function(g) g$GS, numeric(1))
     vcflines_typeI <- cbind(as.character(GenomicRanges::seqnames(annoI)),
-        as.character(end(annoI)),
+        as.character(GenomicRanges::end(annoI)),
         names(annoI),
         annoI$REF, annoI$ALT,
         GS, ifelse(GS>20,'PASS','FAIL'),

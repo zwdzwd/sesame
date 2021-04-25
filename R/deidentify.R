@@ -49,7 +49,7 @@ deIdentify <- function(
     snpsIdx <- match(snpsTango, rownames(qt))
     dt <- qt[,'Mean']
     if (randomize) {
-    	snpsIdx = snpsIdx[!is.na(snpsIdx)]
+        snpsIdx = snpsIdx[!is.na(snpsIdx)]
         dt[snpsIdx] <- sample(dt[snpsIdx])
     } else {
         dt[snpsIdx] <- 0
