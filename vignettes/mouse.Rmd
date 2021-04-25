@@ -183,3 +183,29 @@ Here's an example.
 predictMouseAgeInMonth(betas[,1])
 ```
 This indicates thaat this mouse is approximately 1.41 months old.
+
+## Differential Methylation
+
+```{r message=FALSE}
+library(SummarizedExperiment)
+```
+
+```{r message=FALSE}
+se = sesameDataGet("MM285.10.tissues")[1:100,]
+se_ok = (checkLevels(assay(se), colData(se)$sex) &
+    checkLevels(assay(se), colData(se)$tissue))
+se = se[se_ok,]
+```
+
+Test differential methyaltion on a model with tissue and sex as covariates.
+
+```{r}
+cf_list = summaryExtractCfList(DML(se, ~tissue + sex))
+```
+
+Testing sex-specific differential methylation yields chrX-linked probes.
+
+```{r}
+cf_list = DMR(se, cf_list$sexMale)
+topSegments(cf_list) %>% dplyr::filter(Seg.Pval.adj < 0.05)
+```

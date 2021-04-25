@@ -37,3 +37,10 @@ a sesamized GenomicRatioSet
 \note{
 We employ BPREDO for a second chance if bplapply hits an error.
 }
+\examples{
+if(FALSE) {
+    library(FlowSorted.CordBloodNorway.450k)
+    sesamize(FlowSorted.CordBloodNorway.450k[,1:2],
+        BPPARAM=MulticoreParam(2))
+}
+}

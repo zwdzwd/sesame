@@ -16,6 +16,12 @@
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
 #' @importFrom SummarizedExperiment assays
+#' @examples
+#' if(FALSE) {
+#'     library(FlowSorted.CordBloodNorway.450k)
+#'     sesamize(FlowSorted.CordBloodNorway.450k[,1:2],
+#'         BPPARAM=MulticoreParam(2))
+#' }
 #' @export 
 sesamize <- function(
     rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL,
