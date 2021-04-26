@@ -30,7 +30,10 @@ formatVCF <- function(
 
     platform <- sset@platform
 
-    if (is.null(annoS)) annoS <- sesameDataPullVariantAnno_SNP(platform)
+    if (is.null(annoS)) {
+        annoS <- sesameDataGetAnno(sprintf("%s/%s.%s.snp_overlap_b151.rds",
+            platform, platform, refversion))
+    }
     betas <- getBetas(sset)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
     gts <- lapply(vafs, genotype)
@@ -43,7 +46,10 @@ formatVCF <- function(
         GS, ifelse(GS>20,'PASS','FAIL'),
         sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
 
-    if (is.null(annoI)) annoI <- sesameDataPullVariantAnno_InfiniumI(platform)
+    if (is.null(annoI)) {
+        annoI <- sesameDataGetAnno(sprintf("%s/%s.%s.typeI_overlap_b151.rds",
+            platform, platform, refversion))
+    }
     af <- c(
         pmax(rowSums(oobR(sset)),1)/(
             pmax(rowSums(oobR(sset))+rowSums(IG(sset)),2)),
