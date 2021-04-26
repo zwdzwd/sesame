@@ -68,13 +68,13 @@ qualityMask <- function(
     mask.use.manifest = TRUE,
     mask.use.tcga = FALSE) {
 
-    if (!extraHas(sset, 'mask')) {
-        resetMask(sset);
+    if (!extraHas(sset, 'mask') || length(sset@extra$mask) == 0) {
+        sset <- resetMask(sset);
     }
 
     ## mask using manifest
     if (mask.use.manifest && extraHas(sset, "maskManifest")) {
-        if (!extraHas(sset, "mask")) {
+        if (!extraHas(sset, "mask") || length(sset@extra$mask) == 0) {
             sset@extra$mask = sset@extra$maskManifest
         } else {
             mask = sset@extra$maskManifest[names(sset@extra$mask)]
@@ -119,8 +119,8 @@ detectionMask <- function(
         pv <- sset@extra$pvals[[pval.method]]
     }
 
-    if (!extraHas(sset, 'mask')) {
-        resetMask(sset);
+    if (!extraHas(sset, 'mask') || length(sset@extra$mask) == 0) {
+        sset <- resetMask(sset);
     }
     sset@extra$mask[pv[names(sset@extra$mask)] > pval.threshold] <- TRUE
 
