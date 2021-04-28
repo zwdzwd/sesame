@@ -36,16 +36,18 @@ openSesame <- function(
             x <- readIDATpair(
                 x, platform = platform, manifest = manifest)
             stopifnot(is(x, 'SigSet'))
-            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(x)))
+            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(
+                qualityMask(detectionMask(x)))))
             if (what == 'beta') {
-                getBetas(qualityMask(detectionMask(x)), ...)
+                getBetas(x, ...)
             } else {
                 x
             }
         } else if (is(x, 'SigSet')) { # SigSet input
-            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(x)))
+            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(
+                qualityMask(detectionMask(x)))))
             if (what == 'beta') {
-                getBetas(qualityMask(detectionMask(x)), ...)
+                getBetas(x, ...)
             } else {
                 x
             }
@@ -74,7 +76,6 @@ openSesame <- function(
 #' @return a GenomicRatioSet
 reopenSesame <- function(x, naFrac=0.2) { 
     pkgTest('minfi')
-    pkgTest('SummarizedExperiment')
     stopifnot(is(x, "GenomicRatioSet"))
     if (!"Basename" %in% names(SummarizedExperiment::colData(x))) {
         stop("No column `Basename` in mcols(x)... cannot proceed.")

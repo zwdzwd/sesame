@@ -1,0 +1,211 @@
+---
+title: "Working with Mouse (MM285) Array"
+date: "`r BiocStyle::doc_date()`"
+package: sesame
+output: BiocStyle::html_document
+fig_width: 8
+fig_height: 6
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{6. Mouse Array}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(sesame)
+library(wheatmap)
+library(dplyr)
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
+## Load IDATs, preprocessing and masking
+
+### Cache mouse array annotation data
+
+To begin, we need to retrieve mouse annotation data from ExperimentHub.
+This only needs to be done once per sesame installation.
+```{r}
+sesameDataCache("MM285")
+```
+
+### Read IDATs
+
+SeSAMe provides extensive native support for the Illumina mouse array
+(referred to as the MM285 array).
+The MM285 contains ~285,000 probes covering over 20 design categories including
+gene promoters, enhancers, CpGs in synteny to human EPIC array as well as other
+biology. This documents describe the procedure to process the MM285 array.
+
+Let's download an example mouse array IDAT
+```{r eval=FALSE}
+res_grn = sesameDataDownload("204637490002_R05C01_Grn.idat")
+res_red = sesameDataDownload("204637490002_R05C01_Red.idat")
+pfx = sprintf("%s/204637490002_R05C01", res_red$dest_dir)
+```
+
+To load IDAT into `SigSet`, one needs the readIDATpair function,
+```{r eval=FALSE}
+sset = readIDATpair(pfx)
+```
+
+The default openSesame pipeline works for the mouse array
+```{r eval=FALSE}
+openSesame(idat_dir)
+```
+
+### Preprocessing
+
+Let's load a pre-built `SigSet` object
+```{r include=FALSE}
+sset = sesameDataGet('MM285.1.NOD.FrontalLobe')
+```
+
+Preprocess the sigset to produce beta values.
+The standard `noob`, `dyeBiasCorrTypeINorm` works as expected:
+```{r}
+sset_normalized = sset %>%
+                  noob %>%
+                  dyeBiasCorrTypeINorm
+```
+Retrieve beta values using the following commands
+```{r}
+betas = sset_normalized %>%
+        qualityMask %>%
+        detectionMask %>%
+        getBetas
+```
+
+By default the repeat and suboptimally designed probes are masked by `NA`.
+Starting from mouse array, the suboptimally designed probes take a new
+probe ID prefix ("uk") instead of the "cg"/"ch"/"rs" typically seen in
+the human array.
+```{r}
+sum(is.na(betas))
+head(betas[grep('uk', names(betas))])
+```
+
+To use these probes, one skip qualityMask:
+```{r}
+betas = sset_normalized %>%
+        detectionMask %>%
+        getBetas
+sum(is.na(betas))
+head(betas[grep('uk', names(betas))])
+```
+
+Note that probes can still be masked because of insignificant detection p-value
+One can completely turn off masking by skipping that
+```{r}
+betas = sset_normalized %>% getBetas
+sum(is.na(betas))
+```
+or use `mask=FALSE` in the `getBetas` function.
+```{r}
+betas = sset_normalized %>%
+        qualityMask %>%
+        detectionMask %>%
+        getBetas(mask = FALSE)
+sum(is.na(betas))
+```
+
+## Visualize mouse array betas
+```{r message=FALSE}
+betas = sesameDataGet("MM285.10.tissue")$betas
+visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
+```
+
+## Infer Strain Information
+
+Let's load a pre-built `SigSet` object from SeSAMeData
+```{r}
+sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
+```
+
+Calculate beta values using the following commands.
+```{r}
+betas <- sset %>%
+         noob %>%
+         dyeBiasCorrTypeINorm %>%
+         getBetas
+```
+
+Convert the beta values to Variant Allele Frequencies.  
+It should be noted that since variant allele frequency is not always measured
+in green for Infinium-II and M-allele for Infinium-I, one needs to flip the
+beta values for some probes to calculate variant allele frequency.
+```{r}
+vafs <- betaToAF(betas)
+```
+
+Infer strain information for mouse array. This will return a list containing
+the best guess, p-value of the best guess, and probabilities of all strains.
+```{r}
+strain <- inferStrain(vafs)
+strain$pval
+```
+Let's visualize the probabilities of other strains.
+```{r fig.width=6, fig.height=5}
+library(ggplot2)
+df <- data.frame(strain=names(strain$probs), probs=strain$probs)
+ggplot(data = df,  aes(x = strain, y = log(probs))) +
+  geom_bar(stat = "identity", color="gray") +
+  ggtitle("strain probabilities") +
+  scale_x_discrete(position = "top") +
+  theme(axis.text.x = element_text(angle = 90), legend.position = "none")
+```
+
+## Contrast Data with Tissue References
+
+Let's load beta values from SeSAMeData
+```{r}
+betas <- sesameDataGet("MM285.10.tissue")$betas[,1:2]
+```
+
+Compare mouse array data with mouse tissue references. This will return a grid
+object that contrasts the traget sample with pre-build mouse tissue reference.
+```{r fig.width=6, fig.height=5}
+compareMouseTissueReference(betas)
+```
+
+## Infer Mouse Age
+
+Let's load beta values from SeSAMeData
+```{r}
+betas <- sesameDataGet('MM285.10.tissue')$betas
+```
+
+The age of the mouse can be predicted using the `predictMouseAgeInMonth`
+function. This looks for overlapping probes and estimates age using an aging
+model built from 347 MM285 probes. The function returns a numeric output of
+age in months. The model is most accurate with SeSAMe preprocessing.
+Here's an example.
+```{r}
+predictMouseAgeInMonth(betas[,1])
+```
+This indicates thaat this mouse is approximately 1.41 months old.
+
+## Differential Methylation
+
+```{r message=FALSE}
+library(SummarizedExperiment)
+```
+
+```{r message=FALSE}
+se = sesameDataGet("MM285.10.tissues")[1:100,]
+se_ok = (checkLevels(assay(se), colData(se)$sex) &
+    checkLevels(assay(se), colData(se)$tissue))
+se = se[se_ok,]
+```
+
+Test differential methyaltion on a model with tissue and sex as covariates.
+
+```{r}
+cf_list = summaryExtractCfList(DML(se, ~tissue + sex))
+```
+
+Testing sex-specific differential methylation yields chrX-linked probes.
+
+```{r}
+cf_list = DMR(se, cf_list$sexMale)
+topSegments(cf_list) %>% dplyr::filter(Seg.Pval.adj < 0.05)
+```

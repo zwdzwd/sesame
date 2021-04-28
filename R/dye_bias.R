@@ -28,7 +28,7 @@ getNormCtls <- function(sset, average = FALSE) {
         df$channel <- ifelse(grepl(
             'norm_(c|g)', tolower(rownames(df))), 'G', 'R')
     }
-   
+    
     if (average) {
         c(
             G=mean(df[df$channel=='G','G'], na.rm=TRUE), 
@@ -49,6 +49,7 @@ getNormCtls <- function(sset, average = FALSE) {
 #' @param ref reference signal level
 #' @return a normalized \code{SigSet}
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.db <- dyeBiasCorr(sset)
 #' @export
@@ -117,6 +118,7 @@ dyeBiasCorrMostBalanced <- function(ssets) {
 #' @importFrom preprocessCore normalize.quantiles.use.target
 #' @importFrom stats approx
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.db <- dyeBiasCorrTypeINorm(sset)
 #' @export

@@ -4,6 +4,7 @@
 #' @param sset a \code{SigSet}
 #' @return a new \code{SigSet} with mask reset to empty
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.no.mask <- resetMask(sset)
 #' @export
@@ -19,6 +20,7 @@ resetMask <- function(sset) {
 #' @param to new mask name
 #' @return a new \code{SigSet} object
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset <- resetMask(sset)
 #' sset <- saveMask(sset)
@@ -36,6 +38,7 @@ saveMask <- function(sset, to='mask2') {
 #' @param from name of a previously saved mask
 #' @return a new \code{SigSet} object
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset <- resetMask(sset)
 #' sset <- saveMask(sset)
@@ -52,34 +55,44 @@ restoreMask <- function(sset, from='mask2') {
 #' Currently quality masking only supports three platforms
 #' 
 #' @param sset a \code{SigSet} object
+#' @param mask.use.manifest use manifest to mask probes
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @return a filtered \code{SigSet}
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.masked <- qualityMask(sset)
 #' @export 
 qualityMask <- function(
     sset,
+    mask.use.manifest = TRUE,
     mask.use.tcga = FALSE) {
-
-    if(!(sset@platform %in% c('HM27','HM450','EPIC'))) {
-        message(sprintf(
-            "Quality masking is not supported for %s.", sset@platform))
-        return(sset)
-    }
-        
-    
-    if (mask.use.tcga) {
-        stopifnot(sset@platform == 'HM450')
-        masked <- sesameDataGet('HM450.probeInfo')$mask.tcga
-    } else {
-        masked <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$mask
-    }
 
     if (!extraHas(sset, 'mask')) {
         resetMask(sset);
     }
-    sset@extra$mask[masked] <- TRUE
+
+    ## mask using manifest
+    if (mask.use.manifest && extraHas(sset, "maskManifest")) {
+        if (!extraHas(sset, "mask")) {
+            sset@extra$mask = sset@extra$maskManifest
+        } else {
+            mask = sset@extra$maskManifest[names(sset@extra$mask)]
+            sset@extra$mask[mask] = TRUE
+        }
+    }
+
+    ## mask HM450/HM27/EPIC using TCGA masking
+    if (mask.use.tcga) {
+        if(!(sset@platform %in% c('HM27','HM450','EPIC'))) {
+            message(sprintf(
+                "TCGA masking is not supported for %s.", sset@platform))
+            return(sset)
+        }
+        stopifnot(sset@platform == 'HM450')
+        masked <- sesameDataGet('HM450.probeInfo')$mask.tcga
+        sset@extra$mask[masked] = TRUE
+    }
 
     return(sset)
 }
@@ -91,6 +104,7 @@ qualityMask <- function(
 #' @param pval.threshold the p-value threshold
 #' @return a filtered \code{SigSet}
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sset.masked <- detectionMask(sset)
 #' @export

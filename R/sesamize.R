@@ -1,6 +1,8 @@
 #' "fix" an RGChannelSet (for which IDATs may be unavailable) with Sesame
 #' The input is an RGSet and the output is a sesamized minfi::GenomicRatioSet
 #' 
+#' \code{HDF5Array} package required.
+#' 
 #' @param rgSet an RGChannelSet, perhaps with colData of various flavors
 #' @param naFrac maximum NA fraction for a probe before it gets dropped (1)
 #' @param BPPARAM get parallel with MulticoreParam(n)
@@ -11,17 +13,15 @@
 #' @note We employ BPREDO for a second chance if bplapply hits an error.
 #' @return a sesamized GenomicRatioSet
 #' @import BiocParallel
-#' @importFrom HDF5Array saveHDF5SummarizedExperiment
-#' @importFrom SummarizedExperiment start
-#' @importFrom SummarizedExperiment end
-#' @importFrom SummarizedExperiment rowRanges
-#' @importFrom SummarizedExperiment assays
-#' @importFrom SummarizedExperiment assays<-
-#' @importFrom SummarizedExperiment colData
-#' @importFrom SummarizedExperiment colData<-
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
-#'
+#' @importFrom SummarizedExperiment assays
+#' @examples
+#' if(FALSE) {
+#'     library(FlowSorted.CordBloodNorway.450k)
+#'     sesamize(FlowSorted.CordBloodNorway.450k[,1:2],
+#'         BPPARAM=MulticoreParam(2))
+#' }
 #' @export 
 sesamize <- function(
     rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL,
@@ -39,19 +39,19 @@ sesamize <- function(
         ## are we working on an HDF5-backed RGChannelSet?
         HDF5 <- (class(assays(rgSet)[[1]])[1] == "DelayedMatrix")
     }
-    t1 =  bptry(bplapply(samples, function(sample) {
-            message("Sesamizing ", sample, "...")
-            sset <- RGChannelSet1ToSigSet(rgSet[,sample])
-            sset <- dyeBiasCorrTypeINorm(noob(sset))
-            SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
+    t1 = bptry(bplapply(samples, function(sample) {
+        message("Sesamizing ", sample, "...")
+        sset <- RGChannelSet1ToSigSet(rgSet[,sample])
+        sset <- dyeBiasCorrTypeINorm(noob(sset))
+        SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
     lk = vapply(t1, inherits, logical(1), "bperror")  # second try?
     if (any(lk)) {
-      t1 =  bptry(bplapply(samples, function(sample) {
+        t1 = bptry(bplapply(samples, function(sample) {
             message("Sesamizing ", sample, "...")
             sset <- RGChannelSet1ToSigSet(rgSet[,sample])
             sset <- dyeBiasCorrTypeINorm(noob(sset))
             SigSetToRatioSet(sset)}, BPREDO=t1, BPPARAM=BPPARAM))
-      }
+    }
 
     ratioSet <- do.call(
         SummarizedExperiment::cbind, t1
@@ -59,8 +59,8 @@ sesamize <- function(
     colnames(ratioSet) = colnames(rgSet)
     if (HDF5) {
         pkgTest('HDF5Array')
-        #td <- paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/")
-        ratioSet <- saveHDF5SummarizedExperiment(
+        ##td <- paste(tempdir(check=TRUE), "sesamize_HDF5_scratch", sep="/")
+        ratioSet <- HDF5Array::saveHDF5SummarizedExperiment(
             ratioSet, dir=HDF5SEdestination, replace=replace) #td, replace=TRUE)
     }
 
@@ -70,8 +70,8 @@ sesamize <- function(
     ## keep only probes surviving naFrac
     kept <- seq_len(nrow(ratioSet))
     if (naFrac < 1) { 
-        kept <- which((rowSums(is.na(minfi::getBeta(ratioSet))) / 
-                           ncol(ratioSet)) <= naFrac)
+        kept <- which((
+            rowSums(is.na(minfi::getBeta(ratioSet)))/ncol(ratioSet)) <= naFrac)
         if (length(kept) < 1) 
             stop("No probes survived with naFrac <= ",naFrac,".")
     } 
@@ -87,20 +87,11 @@ sesamize <- function(
 
     ## SNP not adjusted in minfi, so keep them that way
     metadata(ratioSet)$SNPs <- minfi::getSnpBeta(rgSet)
-    assays(ratioSet)[["M"]] <- NULL 
-    colData(ratioSet) <- colData(rgSet)
+    SummarizedExperiment::assays(ratioSet)[["M"]] <- NULL 
+    SummarizedExperiment::colData(ratioSet) <- colData(rgSet)
     
     return(ratioSet[kept, ])
 }
-
-## @examples
-## Takes about two minutes to process 48 samples on my 48-core desktop
-## \dontrun{
-##   if (require(FlowSorted.CordBloodNorway.450k)) {
-##       sesamize(
-##         FlowSorted.CordBloodNorway.450k[,1:2], BPPARAM=MulticoreParam(2))
-##     }
-## }
 
 platformMinfiToSm <- function(platform) {
     plf <- sub("HMEPIC", "EPIC", 
@@ -212,6 +203,7 @@ guessMinfiAnnotation <- function(platform, annotation = NA) {
 #' @import BiocParallel
 #' @examples
 #'
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' rgSet <- SigSetsToRGChannelSet(sset)
 #'
@@ -239,7 +231,7 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
     pkgTest('minfi')
     stopifnot(ncol(rgSet1) == 1)
     
-    # chipaddress/rownames are automatically the same
+    ## chipaddress/rownames are automatically the same
     dm <- cbind(
         G=as.matrix(minfi::getGreen(rgSet1)),
         R=as.matrix(minfi::getRed(rgSet1)))
@@ -254,7 +246,11 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
         controls <- df_address$controls
     }
 
-    pOOBAH(chipAddressToSignal(dm, manifest, controls))
+    sset = pOOBAH(chipAddressToSignal(dm, manifest, controls))
+    if (length(pval(sset)) == 0) {
+        pval(sset) <- extra(sset)[['pvals']][['pOOBAH']]
+    }
+    sset
 }
 
 #' Convert RGChannelSet (minfi) to a list of SigSet (SeSAMe)
@@ -281,8 +277,8 @@ RGChannelSetToSigSets <- function(
     samples <- colnames(rgSet)
     setNames(bplapply(
         samples, function(sample) {
-        RGChannelSet1ToSigSet(rgSet[,sample], manifest=manifest)
-    }, BPPARAM=BPPARAM), samples)
+            RGChannelSet1ToSigSet(rgSet[,sample], manifest=manifest)
+        }, BPPARAM=BPPARAM), samples)
 }
 
 #' Convert one sesame::SigSet to minfi::RatioSet
@@ -292,6 +288,7 @@ RGChannelSetToSigSets <- function(
 #' @return a minfi::RatioSet
 #' @examples
 #'
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' ratioSet <- SigSetToRatioSet(sset)
 #' 

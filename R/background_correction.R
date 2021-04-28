@@ -10,6 +10,7 @@
 #'
 #' @param sset a \code{SigSet}
 #' @return a new \code{SigSet} with noob background correction
+#' @examples
 #' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)
 #' sset.nb.scrub <- scrub(sset.nb)
@@ -43,6 +44,7 @@ noobSub <- function(sig, bg) {
 #'
 #' @param sset a \code{SigSet}
 #' @return a new \code{SigSet} with noob background correction
+#' @examples
 #' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)
 #' sset.nb.scrubSoft <- scrubSoft(sset.nb)
@@ -88,6 +90,7 @@ getBackgroundG <- function(sset, bgG = NULL) {
 #' @param bgR background red probes, if not given use all oobR
 #' @param bgG background grn probes, if not given use all oobG
 #' @return a new \code{SigSet} with noob background correction
+#' @import stats
 #' @examples
 #' sset <- makeExampleTinyEPICDataSet()
 #' sset.nb <- noob(sset)

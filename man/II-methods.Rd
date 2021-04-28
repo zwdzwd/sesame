@@ -22,6 +22,7 @@ II getter generic
 Get II slot of SigSet class
 }
 \examples{
+sesameDataCache("HM450") # if not done yet
 sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 head(II(sset))
 }

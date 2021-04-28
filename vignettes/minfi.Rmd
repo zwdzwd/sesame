@@ -1,7 +1,8 @@
 ---
 title: "SeSAMe-Minfi interaction"
+date: "`r BiocStyle::doc_date()`"
 package: sesame
-output: rmarkdown::html_vignette
+output: BiocStyle::html_document
 fig_width: 8
 fig_height: 6
 vignette: >

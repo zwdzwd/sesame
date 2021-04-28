@@ -15,6 +15,8 @@ vignette: >
 
 Probe masking is important to prevent data leakage. The goal of data sanitization is to modifiy IDAT files in place, so they can be released to public domain without privacy leak. This will be achieved by deIdentification. 
 
+Probe masking is important to prevent data leakage. The goal of data sanitization is to modifiy IDAT files in place, so they can be released to public domain without privacy leak. This will be achieved by deIdentification. 
+
 ## sesameData
 
 The following function requires the R package seSAMe. 
@@ -22,8 +24,8 @@ The following function requires the R package seSAMe.
 library(sesame)
 ```
 
-SeSAMe is designed to process Illumina Infinium DNA methylation data. Let's take data from the HM450 platform.   
-```{r, eval=FALSE}
+Let's take DNA methylation data from the HM450 platform.
+```{r, eval=TRUE}
 dest_dir = tempdir()
 res_grn = sesameDataDownload("3999492009_R01C01_Grn.idat", dest_dir=dest_dir)
 res_red = sesameDataDownload("3999492009_R01C01_Red.idat", dest_dir=dest_dir)
@@ -33,7 +35,8 @@ res_red = sesameDataDownload("3999492009_R01C01_Red.idat", dest_dir=dest_dir)
 
 ### Method 1
 
-This first method of deIdentification masks SNP probe intensity mean by zero. As a consequence, the allele frequency will be 0.5. 
+This first method of deIdentification masks SNP probe intensity mean by zero.
+As a consequence, the allele frequency will be 0.5. 
 
 ```{r, eval=TRUE}
 
@@ -44,7 +47,7 @@ betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
 betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", dest_dir)))
 
 head(betas1[grep('rs',names(betas1))]) 
-head(betas2[grep('rs',names(betas2))]) 
+head(betas2[grep('rs',names(betas2))])
 ```
 
 Note that before deIdentify, the rs values will all be different. After deIdentify, the rs values will all be masked at an intensity of 0.5. 
@@ -58,35 +61,40 @@ This second method of deIdentification will scramble the intensities using a sec
 my_secret <- 13412084
 set.seed(my_secret)
 
-deIdentify(res_grn$dest_file, sprintf("%s/deidentified_Grn.idat", dest_dir), randomize=TRUE)
+deIdentify(res_grn$dest_file,
+    sprintf("%s/deidentified_Grn.idat", dest_dir), randomize=TRUE)
 
 my_secret <- 13412084
 set.seed(my_secret)
-deIdentify(res_red$dest_file, sprintf("%s/deidentified_Red.idat", dest_dir), randomize=TRUE)
+deIdentify(res_red$dest_file,
+    sprintf("%s/deidentified_Red.idat", dest_dir), randomize=TRUE)
 
 betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
 betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", dest_dir)))
 
 head(betas1[grep('rs',names(betas1))]) 
-head(betas2[grep('rs',names(betas2))])  
+head(betas2[grep('rs',names(betas2))]) 
 
 ```
 Note that the rs values are scrambled after deIdentify.  
 
 ## reIdentify
 
-To restore order of the deIdentified intensities, one can re-identify IDATs. The reIdentify function can thus restore the scrambled SNP intensities. 
+To restore order of the deIdentified intensities, one can re-identify IDATs.
+The reIdentify function can thus restore the scrambled SNP intensities. 
 
 ```{r, eval=TRUE}
 
 my_secret <- 13412084
 set.seed(my_secret)
 
-reIdentify(sprintf("%s/deidentified_Grn.idat", dest_dir), sprintf("%s/reidentified_Grn.idat", dest_dir))
+reIdentify(sprintf("%s/deidentified_Grn.idat", dest_dir),
+    sprintf("%s/reidentified_Grn.idat", dest_dir))
 
 my_secret <- 13412084
 set.seed(my_secret)
-reIdentify(sprintf("%s/deidentified_Red.idat", dest_dir), sprintf("%s/reidentified_Red.idat", dest_dir))
+reIdentify(sprintf("%s/deidentified_Red.idat", dest_dir),
+    sprintf("%s/reidentified_Red.idat", dest_dir))
 
 betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
 betas2 = getBetas(readIDATpair(sprintf("%s/reidentified", dest_dir)))

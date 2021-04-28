@@ -11,9 +11,6 @@ scrub(sset)
 }
 \value{
 a new \code{SigSet} with noob background correction
-sset <- makeExampleTinyEPICDataSet()
-sset.nb <- noob(sset)
-sset.nb.scrub <- scrub(sset.nb)
 }
 \description{
 This function takes a \code{SigSet} and returns a modified \code{SigSet}
@@ -22,4 +19,9 @@ background median
 }
 \details{
 This function is meant to be used after noob.
+}
+\examples{
+sset <- makeExampleTinyEPICDataSet()
+sset.nb <- noob(sset)
+sset.nb.scrub <- scrub(sset.nb)
 }

@@ -1,8 +1,8 @@
 ---
 title: "SeSAMe User Guide"
-shorttitle: "sesame guide"
+date: "`r BiocStyle::doc_date()`"
 package: sesame
-output: rmarkdown::html_vignette
+output: BiocStyle::html_document
 fig_width: 8
 fig_height: 6
 vignette: >
@@ -16,7 +16,6 @@ library(sesame)
 library(dplyr)
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
-
 
 SeSAMe is designed to process Illumina Infinium DNA methylation data. It
 currently supports EPIC, HM450 and HM27 platforms.

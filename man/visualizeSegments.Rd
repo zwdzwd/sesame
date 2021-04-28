@@ -22,6 +22,8 @@ and plot the bin signals and segments (as horizontal lines).
 require ggplot2, scales
 }
 \examples{
+
+sesameDataCache("EPIC") # in case not done yet
 seg <- sesameDataGet('EPIC.1.LNCaP')$seg
 
 visualizeSegments(seg)

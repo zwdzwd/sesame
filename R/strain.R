@@ -6,6 +6,7 @@
 #' @return a list of best guess, p-value of the best guess
 #' and the probabilities of all strains
 #' @examples
+#' sesameDataCache("MM285") # if not done yet
 #' sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
 #' vafs <- betaToAF(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
 #' inferStrain(vafs)
@@ -36,6 +37,7 @@ inferStrain <- function(vafs, strain_snp_table = NULL) {
 #' @param betas beta value
 #' @return SNP variant allele frequency
 #' @examples
+#' sesameDataCache("MM285") # if not done yet
 #' sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
 #' vafs <- betaToAF(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
 #' @export

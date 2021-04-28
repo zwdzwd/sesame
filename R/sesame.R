@@ -123,6 +123,7 @@ SigSet <- function(...) new("SigSet", ...)
 #' @rdname show-methods
 #' @aliases show,SigSet-method
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' print(sset)
 setMethod(
@@ -152,6 +153,7 @@ setMethod(
 #' @param probes target probes
 #' @return another sset with probes specified
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' subsetSignal(sset, rownames(slot(sset, 'IR')))
 #' @export
@@ -178,6 +180,7 @@ negControls <- function(sset) {
 #' @param sset a \code{SigSet}
 #' @return a data frame of M and U columns
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' signalMU(sset)
 #' @export
@@ -311,6 +314,7 @@ getSexInfo <- function(sset) {
 #' @param sset a \code{SigSet}
 #' @return Karyotype string, with XCI
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' inferSexKaryotypes(sset)
 #' @export
@@ -368,6 +372,7 @@ inferSexKaryotypes <- function(sset) {
 #' @importFrom randomForest randomForest
 #' @import sesameData
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' inferSex(sset)
 #' @export
@@ -430,6 +435,7 @@ inferEthnicity <- function(sset) {
 #' @param mask whether to use mask
 #' @return a numeric vector, beta values
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getBetas(sset)
 #' @export
@@ -464,7 +470,8 @@ getBetas <- function(sset, mask=TRUE, sum.TypeI = FALSE) {
         betas[sset@extra$mask[names(betas)]] <- NA
     }
 
-    betas
+    ## make sure the order is always the same
+    betas[order(names(betas))]
 }
 
 #' Get allele frequency treating type I by summing alleles
@@ -478,6 +485,7 @@ getBetas <- function(sset, mask=TRUE, sum.TypeI = FALSE) {
 #' @param known.ccs.only consider only known CCS probes
 #' @return beta values
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' betas <- getAFTypeIbySumAlleles(sset)
 #' @export
@@ -511,6 +519,27 @@ inferPlatform <- function(res) {
     sig <- sesameDataGet('idatSignature')
     names(which.max(vapply(
         sig, function(x) sum(x %in% rownames(res$Quants)), integer(1))))
+}
+
+inferPlatformFromProbeIDs <- function(probeIDs) {
+    sig = sesameDataGet("probeIDSignature")
+    names(which.max(vapply(
+        sig, function(x) sum(probeIDs %in% x), integer(1))))
+}
+
+defaultAssembly <- function(platform) {
+    platform2build = c(
+        "HM27"="hg38",
+        "HM450"="hg38",
+        "EPIC"="hg38",
+        "MM285"="mm10",
+        "Mammal40"="hg38"
+    )
+    if (!(platform %in% names(platform2build))) {
+        stop(sprintf(
+            "Platform %s not supported. Try custom manifest?", platform))
+    }
+    platform2build[platform]
 }
 
 ## Import one IDAT file
@@ -729,14 +758,16 @@ chipAddressToSignal <- function(
 
     ## additional annotation in manifest
     if ('mask' %in% colnames(manifest)) {
-        sset <- extraSet(
-            sset, 'mask', setNames(manifest$mask, manifest$Probe_ID))
+        sset = extraSet(
+            sset, "maskManifest",
+            setNames(manifest$mask, manifest$Probe_ID))
     }
 
     ## backward support for mouse array, to remove in the future
     if ('mapUniq' %in% colnames(manifest)) {
-        sset <- extraSet(
-            sset, 'mask', setNames(!manifest$mapUniq, manifest$Probe_ID))
+        sset = extraSet(
+            sset, 'maskManifest',
+            setNames(!manifest$mapUniq, manifest$Probe_ID))
     }
     
     sset
@@ -752,6 +783,7 @@ chipAddressToSignal <- function(
 #' @param use.median use median to compute GCT instead of mean
 #' @return GCT score (the higher, the more incomplete conversion)
 #' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- makeExampleSeSAMeDataSet('HM450')
 #' bisConversionControl(sset)
 #'

@@ -16,6 +16,7 @@ a new \code{SigSet} with mask reset to empty
 Reset Masking
 }
 \examples{
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.no.mask <- resetMask(sset)
 }

@@ -1,5 +1,6 @@
 ---
-title: "1. Quality Controls"
+title: "Quality Controls"
+date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: BiocStyle::html_document
 fig_width: 8
@@ -13,10 +14,14 @@ vignette: >
 # Generation of Quality Controls
 
 SeSAMe provides a set of quality control steps.
+Be sure to pre-cache HM450 annotation data from ExperimentHub.
+This only needs to be done once per sesame installation.
 ```{r, echo = FALSE, message = FALSE}
 library(sesame)
 library(FlowSorted.Blood.450k)
 options(rmarkdown.html_vignette.check_title = FALSE)
+sesameDataCache("HM450")
+sesameDataCache("EPIC")
 
 ssets <- RGChannelSetToSigSets(FlowSorted.Blood.450k[,1:10])
 ```

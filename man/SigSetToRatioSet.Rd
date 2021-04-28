@@ -19,6 +19,7 @@ Convert one sesame::SigSet to minfi::RatioSet
 }
 \examples{
 
+sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 ratioSet <- SigSetToRatioSet(sset)
 

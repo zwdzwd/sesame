@@ -17,6 +17,7 @@ setGeneric("probeNames", function(x) {
 #' @return A char vector
 #' @aliases probeNames,SigSet-method
 #' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(probeNames(sset))
 setMethod("probeNames", "SigSet", function(x) {
@@ -45,7 +46,9 @@ setGeneric("pval<-", function(x, value) {
 #' @return a new \code{SigSet}
 #' @docType methods
 #' @aliases pval<-,SigSet-method
-#' @examples 
+#' @examples
+#'
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' df <- pval(sset)
 #' df[1] <- 0.01
@@ -68,7 +71,9 @@ setGeneric("pval", function(x) {
 #' @rdname pval-methods
 #' @return The pval slot of \code{SigSet}
 #' @aliases pval,SigSet-method
-#' @examples 
+#' @examples
+#'
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(pval(sset))
 setMethod("pval", "SigSet", function(x){ x@pval })
@@ -94,7 +99,9 @@ setGeneric("IG<-", function(x, value) {
 #' @return a new \code{SigSet}
 #' @docType methods
 #' @aliases IG<-,SigSet-method
-#' @examples 
+#' @examples
+#'
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' df <- IG(sset)
 #' df[1,1] <- 10
@@ -117,7 +124,9 @@ setGeneric("IG", function(x) {
 #' @rdname IG-methods
 #' @return The IG slot of \code{SigSet}
 #' @aliases IG,SigSet-method
-#' @examples 
+#' @examples
+#'
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(IG(sset))
 setMethod("IG", "SigSet", function(x){ x@IG })
@@ -128,6 +137,8 @@ setMethod("IG", "SigSet", function(x){ x@IG })
 #' @param sset SigSet object
 #' @return The IG slot that passes extra$mask filter
 #' @examples
+#'
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' head(IGpass(sset))
 #' @export
@@ -161,7 +172,8 @@ setGeneric("IR<-", function(x, value) {
 #' @return a new \code{SigSet}
 #' @docType methods
 #' @aliases IR<-,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' df <- IR(sset)
 #' df[1,1] <- 10
@@ -184,7 +196,8 @@ setGeneric("IR", function(x) {
 #' @rdname IR-methods
 #' @return The IR slot of \code{SigSet}
 #' @aliases IR,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(IR(sset))
 setMethod("IR", "SigSet", function(x){ x@IR })
@@ -195,6 +208,7 @@ setMethod("IR", "SigSet", function(x){ x@IR })
 #' @param sset SigSet object
 #' @return The IR slot that passes extra$mask filter
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' head(IRpass(sset))
 #' @export
@@ -228,7 +242,8 @@ setGeneric("II<-", function(x, value) {
 #' @return a new \code{SigSet}
 #' @docType methods
 #' @aliases II<-,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' df <- II(sset)
 #' df[1,1] <- 10
@@ -251,7 +266,8 @@ setGeneric("II", function(x) {
 #' @rdname II-methods
 #' @return The II slot of \code{SigSet}
 #' @aliases II,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(II(sset))
 setMethod("II", "SigSet", function(x){ x@II })
@@ -262,6 +278,7 @@ setMethod("II", "SigSet", function(x){ x@II })
 #' @param sset SigSet object
 #' @return The II slot that passes extra$mask filter
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' head(IIpass(sset))
 #' @export
@@ -295,7 +312,8 @@ setGeneric("oobG<-", function(x, value) {
 #' @return a new \code{SigSet}
 #' @docType methods
 #' @aliases oobG<-,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' df <- oobG(sset)
 #' df[1,1] <- 10
@@ -318,7 +336,8 @@ setGeneric("oobG", function(x) {
 #' @rdname oobG-methods
 #' @return The oobG slot of \code{SigSet}
 #' @aliases oobG,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(oobG(sset))
 setMethod("oobG", "SigSet", function(x){ x@oobG })
@@ -329,6 +348,7 @@ setMethod("oobG", "SigSet", function(x){ x@oobG })
 #' @param sset SigSet object
 #' @return The oobG slot that passes extra$mask filter
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' head(oobGpass(sset))
 #' @export
@@ -362,7 +382,8 @@ setGeneric("oobR<-", function(x, value) {
 #' @return a new \code{SigSet}
 #' @docType methods
 #' @aliases oobR<-,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' df <- oobR(sset)
 #' df[1,1] <- 10
@@ -385,7 +406,8 @@ setGeneric("oobR", function(x) {
 #' @rdname oobR-methods
 #' @return The oobR slot of \code{SigSet}
 #' @aliases oobR,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(oobR(sset))
 setMethod("oobR", "SigSet", function(x){ x@oobR })
@@ -396,6 +418,7 @@ setMethod("oobR", "SigSet", function(x){ x@oobR })
 #' @param sset SigSet object
 #' @return The oobR slot that passes extra$mask filter
 #' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' head(oobRpass(sset))
 #' @export
@@ -429,7 +452,8 @@ setGeneric("ctl<-", function(x, value) {
 #' @return a new \code{SigSet}
 #' @docType methods
 #' @aliases ctl<-,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' df <- ctl(sset)
 #' df[1,1] <- 10
@@ -452,7 +476,8 @@ setGeneric("ctl", function(x) {
 #' @rdname ctl-methods
 #' @return The ctl slot of \code{SigSet}
 #' @aliases ctl,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
 #' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
 #' head(ctl(sset))
 setMethod("ctl", "SigSet", function(x){ x@ctl })
@@ -478,7 +503,8 @@ setGeneric("extra<-", function(x, value) {
 #' @return a new \code{SigSet}
 #' @docType methods
 #' @aliases extra<-,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' df <- extra(sset)
 #' extra(sset) <- list(pval=numeric(0))
@@ -500,7 +526,8 @@ setGeneric("extra", function(x) {
 #' @rdname extra-methods
 #' @return The extra slot of \code{SigSet}
 #' @aliases extra,SigSet-method
-#' @examples 
+#' @examples
+#' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' head(extra(sset))
 setMethod("extra", "SigSet", function(x){ x@extra })
