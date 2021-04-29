@@ -13,7 +13,10 @@ vignette: >
 
 ## What is the purpose of Data Sanitization? 
 
-Probe masking is important to prevent privacy data leakage. The goal of data sanitization is to modifiy IDAT files in place, so they can be released to public domain without privacy leak. This will be achieved by deIdentification. The following function requires the R package seSAMe. 
+Probe masking is important to prevent privacy data leakage. The goal of
+data sanitization is to modifiy IDAT files in place, so they can be released
+to public domain without privacy leak. This will be achieved by
+deIdentification. The following function requires the R package seSAMe. 
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(sesame)
@@ -45,11 +48,14 @@ head(betas1[grep('rs',names(betas1))])
 head(betas2[grep('rs',names(betas2))])
 ```
 
-Note that before deIdentify, the rs values will all be different. After deIdentify, the rs values will all be masked at an intensity of 0.5. 
+Note that before deIdentify, the rs values will all be different. After
+deIdentify, the rs values will all be masked at an intensity of 0.5. 
 
 ### Method 2 
 
-This second method of deIdentification will scramble the intensities using a secret key to help formalize a random number. Therefore, randomize needs to be set to TRUE. 
+This second method of deIdentification will scramble the intensities using
+a secret key to help formalize a random number. Therefore, randomize needs
+to be set to TRUE. 
 
 ```{r, eval=TRUE}
 
@@ -98,5 +104,6 @@ head(betas1[grep('rs',names(betas1))])
 head(betas2[grep('rs',names(betas2))]) 
 
 ```
-Note that reIdentify restored the values. Subsequently, they are the same as beta 1. 
+Note that reIdentify restored the values. Subsequently, they are the same as
+betas1. 
 
