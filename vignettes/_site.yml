@@ -20,3 +20,7 @@ navbar:
     - text: "Quality Control"
       icon: fa-copy
       href: QC.html
+    - text: "Data Sanitization"
+      icon: fa-book
+      href: datasanitization.html
+
