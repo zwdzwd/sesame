@@ -12,3 +12,4 @@ html_document:
   includes:
     in_header: include/header.html
     after_body: include/after_body.html
+
