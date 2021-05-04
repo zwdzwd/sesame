@@ -18,5 +18,8 @@ Reset Masking
 \examples{
 sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sset.no.mask <- resetMask(sset)
+sum(mask(sset))
+sset <- addMask(sset, c("cg14057072", "cg22344912"))
+sum(mask(sset))
+sum(mask(resetMask(sset)))
 }

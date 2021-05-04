@@ -246,10 +246,7 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
         controls <- df_address$controls
     }
 
-    sset = pOOBAH(chipAddressToSignal(dm, manifest, controls))
-    if (length(pval(sset)) == 0) {
-        pval(sset) <- extra(sset)[['pvals']][['pOOBAH']]
-    }
+    sset = pOOBAH(qualityMask(chipAddressToSignal(dm, manifest, controls)))
     sset
 }
 

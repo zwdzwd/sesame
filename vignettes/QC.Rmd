@@ -114,7 +114,7 @@ public data sets processed with the same pipeline. All you need
 is a raw SigSet.
 ```{r}
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-qualityRank(sset)
+as.data.frame(qualityRank(sset))
 ```
 
 # Output explicit and Infinium-I-derived SNP to VCF

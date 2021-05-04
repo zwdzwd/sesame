@@ -4,15 +4,18 @@
 \alias{detectionPnegNorm}
 \title{Detection P-value based on normal fitting the negative controls}
 \usage{
-detectionPnegNorm(sset, force = FALSE)
+detectionPnegNorm(sset, pval.threshold = 0.05, return.pval = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
 
-\item{force}{force rerun even if result already exists}
+\item{pval.threshold}{minimum p-value to mask}
+
+\item{return.pval}{whether to return p-values, instead of a
+masked \code{SigSet}}
 }
 \value{
-detection p-value
+a \code{SigSet}, or a p-value vector if return.pval is TRUE
 }
 \description{
 The function takes a \code{SigSet} as input, computes detection p-value
@@ -25,7 +28,8 @@ probes-parameterized normal distribution. p-value is taken from the
 minimum of the p-value of the two alleles (color depends on probe design).
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
-sset <- detectionPnegNorm(sset)
-
+sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+sum(mask(sset))
+sset_with_mask <- detectionPnegNorm(sset)
+sum(mask(sset_with_mask))
 }

@@ -24,6 +24,35 @@ setMethod("probeNames", "SigSet", function(x) {
     c(rownames(x@II), rownames(x@IR), rownames(x@IG))
 })
 
+#' @include sesame.R
+
+#' mask generic
+#'
+#' @param x object of \code{Sigset}
+#'
+#' @rdname mask-methods
+#' @docType methods
+#' @export
+setGeneric("mask", function(x) {
+    standardGeneric("mask")
+})
+
+#' Get Probe Names of SigSet class
+#'
+#' @rdname mask-methods
+#' @return A char vector
+#' @aliases mask,SigSet-method
+#' @examples
+#' sesameDataCache("HM450") # if not done yet
+#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' head(mask(sset))
+setMethod("mask", "SigSet", function(x) {
+    if (!extraHas(x, "mask") || length(x@extra$mask) == 0) {
+        return(NULL)
+    }
+    setNames(x@extra$mask, probeNames(x))
+})
+
 ##############
 #### pval ####
 ##############
@@ -145,7 +174,8 @@ setMethod("IG", "SigSet", function(x){ x@IG })
 IGpass <- function(sset) {
     stopifnot(is(sset, "SigSet"))
     if (extraHas(sset, "mask")) {
-        sset@IG[!extraGet(sset,"mask")[rownames(sset@IG)],]
+        mask <- mask(sset)
+        sset@IG[!mask[rownames(sset@IG)],]
     } else {
         sset@IG
     }
@@ -215,7 +245,8 @@ setMethod("IR", "SigSet", function(x){ x@IR })
 IRpass <- function(sset) {
     stopifnot(is(sset, "SigSet"))
     if (extraHas(sset, "mask")) {
-        sset@IR[!extraGet(sset,"mask")[rownames(sset@IR)],]
+        mask <- mask(sset)
+        sset@IR[!mask[rownames(sset@IR)],]
     } else {
         sset@IR
     }
@@ -285,7 +316,8 @@ setMethod("II", "SigSet", function(x){ x@II })
 IIpass <- function(sset) {
     stopifnot(is(sset, "SigSet"))
     if (extraHas(sset, "mask")) {
-        sset@II[!extraGet(sset,"mask")[rownames(sset@II)],]
+        mask <- mask(sset)
+        sset@II[!mask[rownames(sset@II)],]
     } else {
         sset@II
     }
@@ -355,7 +387,8 @@ setMethod("oobG", "SigSet", function(x){ x@oobG })
 oobGpass <- function(sset) {
     stopifnot(is(sset, "SigSet"))
     if (extraHas(sset, "mask")) {
-        sset@oobG[!extraGet(sset,"mask")[rownames(sset@oobG)],]
+        mask <- mask(sset)
+        sset@oobG[!mask[rownames(sset@oobG)],]
     } else {
         sset@oobG
     }
@@ -425,7 +458,8 @@ setMethod("oobR", "SigSet", function(x){ x@oobR })
 oobRpass <- function(sset) {
     stopifnot(is(sset, "SigSet"))
     if (extraHas(sset, "mask")) {
-        sset@oobR[!extraGet(sset,"mask")[rownames(sset@oobR)],]
+        mask <- mask(sset)
+        sset@oobR[!mask[rownames(sset@oobR)],]
     } else {
         sset@oobR
     }

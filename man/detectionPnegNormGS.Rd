@@ -4,12 +4,15 @@
 \alias{detectionPnegNormGS}
 \title{Detection P-value emulating Genome Studio}
 \usage{
-detectionPnegNormGS(sset, force = FALSE)
+detectionPnegNormGS(sset, pval.threshold = 0.05, return.pval = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
 
-\item{force}{force rerun even if result already exists}
+\item{pval.threshold}{minimum p-value to mask}
+
+\item{return.pval}{whether to return p-values, instead of a
+masked \code{SigSet}}
 }
 \value{
 detection p-value
@@ -17,7 +20,7 @@ detection p-value
 \description{
 The function takes a \code{SigSet} as input, computes detection p-value
 using negative control probes parametrized in a normal distribution a la
-Genome Studio and returns a new \code{SigSet} with an updated pval slot.
+Genome Studio and returns a new \code{SigSet} with an updated mask slot.
 }
 \details{
 P-value is calculated using negative control probes as the estimate of
@@ -25,7 +28,8 @@ background where Grn channel and Red channel are merged. But when
 estimating p-value the Red and Grn are summed (non-ideal).
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
-sset <- detectionPnegNormGS(sset)
-
+sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+sum(mask(sset))
+sset_with_mask <- detectionPnegNormGS(sset)
+sum(mask(sset_with_mask))
 }

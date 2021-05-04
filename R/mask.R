@@ -1,3 +1,40 @@
+#' Add probes to mask. This function essentially merge existing probe masking
+#' with new prboes to mask
+#' 
+#' @param sset a \code{SigSet}
+#' @param probes a vector of probe IDs or a logical vector with TRUE
+#' representing masked probes
+#' @examples
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' sum(mask(sset))
+#' sum(mask(addMask(sset, c("cg14057072", "cg22344912"))))
+#' @export
+addMask <- function(sset, probes) {
+    if (!extraHas(sset, "mask") || length(sset@extra$mask) == 0) {
+        sset <- resetMask(sset)
+    }
+    if (is.logical(probes)) {
+        sset@extra$mask[probes[match(probeNames(sset), names(probes))]] = TRUE
+    } else {
+        sset@extra$mask[match(probes, probeNames(sset))] = TRUE
+    }
+    sset
+}
+
+#' Set mask to only the probes specified
+#'
+#' @param sset a \code{SigSet}
+#' @param probes a vector of probe IDs or a logical vector with TRUE
+#' representing masked probes
+#' @examples
+#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' sum(mask(sset))
+#' sum(mask(setMask(sset, "cg14959801")))
+#' sum(mask(setMask(sset, c("cg14057072", "cg22344912"))))
+#' @export
+setMask <- function(sset, probes) {
+    addMask(resetMask(sset), probes)
+}
 
 #' Reset Masking
 #'
@@ -6,11 +43,13 @@
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.no.mask <- resetMask(sset)
+#' sum(mask(sset))
+#' sset <- addMask(sset, c("cg14057072", "cg22344912"))
+#' sum(mask(sset))
+#' sum(mask(resetMask(sset)))
 #' @export
 resetMask <- function(sset) {
-    probes <- probeNames(sset)
-    sset@extra$mask <- setNames(rep(FALSE, length(probes)), probes)
+    sset@extra$mask <- rep(FALSE, length(probeNames(sset)))
     sset
 }
 
@@ -97,32 +136,3 @@ qualityMask <- function(
     return(sset)
 }
 
-#' Mask Sigset by detection p-value
-#'
-#' @param sset a \code{SigSet}
-#' @param pval.method which method to use in calculating p-values
-#' @param pval.threshold the p-value threshold
-#' @return a filtered \code{SigSet}
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.masked <- detectionMask(sset)
-#' @export
-detectionMask <- function(
-    sset, pval.method=NULL, pval.threshold=0.05) {
-    if (is.null(pval.method)) {
-        pv <- pval(sset)
-    } else {
-        stopifnot(
-            extraHas(sset, 'pvals') &&
-                pval.method %in% names(sset@extra$pvals))
-        pv <- sset@extra$pvals[[pval.method]]
-    }
-
-    if (!extraHas(sset, 'mask') || length(sset@extra$mask) == 0) {
-        sset <- resetMask(sset);
-    }
-    sset@extra$mask[pv[names(sset@extra$mask)] > pval.threshold] <- TRUE
-
-    sset
-}

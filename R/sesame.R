@@ -613,9 +613,10 @@ readIDATpair <- function(
         controls <- df_address$controls
     }
 
-    ## this is critical, sset must have default one p-value
-    sset <- pOOBAH(chipAddressToSignal(dm, manifest, controls))
-    pval(sset) <- extra(sset)[['pvals']][['pOOBAH']]
+    sset <- chipAddressToSignal(dm, manifest, controls)
+    ## no p-value is stored now
+    ## sset <- pOOBAH(sset)
+    ## pval(sset) <- extra(sset)[['pvals']][['pOOBAH']]
     sset
 }
 

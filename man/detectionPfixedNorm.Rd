@@ -10,7 +10,8 @@ detectionPfixedNorm(
   sdG = 200,
   muR = 500,
   sdR = 200,
-  force = FALSE
+  pval.threshold = 0.05,
+  return.pval = FALSE
 )
 }
 \arguments{
@@ -24,7 +25,10 @@ detectionPfixedNorm(
 
 \item{sdR}{SD of background in Red channel}
 
-\item{force}{force rerun even if result already exists}
+\item{pval.threshold}{minimum p-value to mask}
+
+\item{return.pval}{whether to return p-values, instead of a
+masked \code{SigSet}}
 }
 \value{
 detection p-value
@@ -40,7 +44,9 @@ distribution. p-value is taken from the minimum of the p-value of the
 two alleles (color depends on probe design).
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
-sset <- detectionPfixedNorm(sset)
+sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+sum(mask(sset))
+sset_with_mask <- detectionPfixedNorm(sset)
+sum(mask(sset_with_mask))
 
 }

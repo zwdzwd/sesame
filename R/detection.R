@@ -1,49 +1,25 @@
 
-#' Detection P-value set to all zero
-#'
-#' @param sset a \code{SigSet}
-#' @return detection p-value set to all zero
-#' @param force force rerun even if result already exists
-#' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- detectionZero(sset)
-#' 
-#' @export
-detectionZero <- function(sset, force=FALSE) {
-
-    stopifnot(is(sset, "SigSet"))
-    method <- "Zero"
-    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
-    
-    if (!extraHas(sset, 'pvals'))
-        extraSet(sset, 'pvals', list())
-    
-    nms <- probeNames(sset)
-    extra(sset)[['pvals']][[method]] <-
-        setNames(rep(0, times = length(nms)), nms)
-    
-    sset
-}
-
 #' Detection P-value based on ECDF of negative control
 #'
 #' The function takes a \code{SigSet} as input, computes detection p-value
 #' using negative control probes' empirical distribution and returns a new
-#' \code{SigSet} with an updated pval slot.
+#' \code{SigSet} with an updated mask slot.
 #'
 #' @param sset a \code{SigSet}
-#' @param force force rerun even if result already exists
-#' @return detection p-value
+#' @param pval.threshold minimum p-value to mask
+#' @param return.pval whether to return p-values, instead of a
+#' masked \code{SigSet}
+#' @return a \code{SigSet}, or a p-value vector if return.pval is TRUE
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- detectionPnegEcdf(sset)
+#' sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+#' sum(mask(sset))
+#' sset_with_mask <- detectionPnegEcdf(sset)
+#' sum(mask(sset_with_mask))
 #' @import methods
 #' @export
-detectionPnegEcdf <- function(sset, force=FALSE) {
+detectionPnegEcdf <- function(sset, return.pval = FALSE, pval.threshold=0.05) {
 
     stopifnot(is(sset, "SigSet"))
-    method <- "PnegEcdf"
-    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
 
     negctls <- negControls(sset)
     funcG <- ecdf(negctls$G)
@@ -58,13 +34,12 @@ detectionPnegEcdf <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
 
-    ## note: no sorting here
-    if (!extraHas(sset, 'pvals'))
-        extraSet(sset, 'pvals', list())
-    
-    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
+    pvals <- c(pIR,pIG,pII)
+    if (return.pval) {
+        return(pvals[order(names(pvals))])
+    }
 
-    sset
+    addMask(sset, pvals > pval.threshold)
 }
 
 #' Detection P-value based on ECDF of out-of-band signal
@@ -73,22 +48,23 @@ detectionPnegEcdf <- function(sset, force=FALSE) {
 #'
 #' The function takes a \code{SigSet} as input, computes detection p-value
 #' using out-of-band probes empirical distribution and returns a new
-#' \code{SigSet} with an updated pval slot.
+#' \code{SigSet} with an updated mask slot.
 #'
 #' @name detectionPoobEcdf
 #' @param sset a \code{SigSet}
-#' @param force force rerun even if result already exists
-#' @return detection p-value
+#' @param pval.threshold minimum p-value to mask
+#' @param return.pval whether to return p-values, instead of a
+#' masked \code{SigSet}
+#' @return a \code{SigSet}, or a p-value vector if return.pval is TRUE
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- detectionPoobEcdf(sset)
-#' 
+#' sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+#' sum(mask(sset))
+#' sset_with_mask <- detectionPoobEcdf(sset)
+#' sum(mask(sset_with_mask))
 #' @export
-detectionPoobEcdf <- function(sset, force=FALSE) {
+detectionPoobEcdf <- function(sset, return.pval = FALSE, pval.threshold=0.05) {
 
     stopifnot(is(sset, "SigSet"))
-    method <- "pOOBAH"
-    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
 
     funcG <- ecdf(oobG(sset))
     funcR <- ecdf(oobR(sset))
@@ -102,13 +78,12 @@ detectionPoobEcdf <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
 
-    ## should have PoobEcdf aliased
-    if (!extraHas(sset, 'pvals'))
-        extraSet(sset, 'pvals', list())
+    pvals <- c(pIR,pIG,pII)
+    if (return.pval) {
+        return(pvals[order(names(pvals))])
+    }
 
-    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
-    
-    sset
+    addMask(sset, pvals > pval.threshold)
 }
 
 #' Detection P-value based on ECDF of out-of-band signal
@@ -117,7 +92,7 @@ detectionPoobEcdf <- function(sset, force=FALSE) {
 #'
 #' The function takes a \code{SigSet} as input, computes detection p-value
 #' using out-of-band probes empirical distribution and returns a new
-#' \code{SigSet} with an updated pval slot.
+#' \code{SigSet} with an updated mask slot.
 #'
 #' The difference between this function and the original pOOBAH
 #' is that pOOBAH2 is based on background-subtracted and dyebias
@@ -125,18 +100,19 @@ detectionPoobEcdf <- function(sset, force=FALSE) {
 #'
 #' @name detectionPoobEcdf2
 #' @param sset a \code{SigSet}
-#' @param force force rerun even if result already exists
-#' @return detection p-value
+#' @param pval.threshold minimum p-value to mask
+#' @param return.pval whether to return p-values, instead of a
+#' masked \code{SigSet}
+#' @return a \code{SigSet}, or a p-value vector if return.pval is TRUE
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- detectionPoobEcdf(sset)
-#' 
+#' sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+#' sum(mask(sset))
+#' sset_with_mask <- detectionPoobEcdf(sset)
+#' sum(mask(sset_with_mask))
 #' @export
-detectionPoobEcdf2 <- function(sset, force=FALSE) {
+detectionPoobEcdf2 <- function(sset, return.pval = FALSE, pval.threshold=0.05){
 
     stopifnot(is(sset, "SigSet"))
-    method <- "pOOBAH2"
-    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
 
     func <- ecdf(c(oobG(sset), oobR(sset)))
 
@@ -149,27 +125,30 @@ detectionPoobEcdf2 <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
 
-    ## should have PoobEcdf aliased
-    if (!extraHas(sset, 'pvals'))
-        extraSet(sset, 'pvals', list())
+    pvals <- c(pIR,pIG,pII)
+    if (return.pval) {
+        return(pvals[order(names(pvals))])
+    }
 
-    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
-    
-    sset
+    addMask(sset, pvals > pval.threshold)
 }
 
 #' @rdname detectionPoobEcdf
 #' @export
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- pOOBAH(sset)
+#' sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+#' sum(mask(sset))
+#' sset_with_mask <- pOOBAH(sset)
+#' sum(mask(sset_with_mask))
 pOOBAH <- detectionPoobEcdf
 
 #' @rdname detectionPoobEcdf2
 #' @export
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- pOOBAH2(sset)
+#' sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+#' sum(mask(sset))
+#' sset_with_mask <- pOOBAH2(sset)
+#' sum(mask(sset_with_mask))
 pOOBAH2 <- detectionPoobEcdf2
 
 #################################################
@@ -187,31 +166,28 @@ pOOBAH2 <- detectionPoobEcdf2
 #' minimum of the p-value of the two alleles (color depends on probe design).
 #'
 #' @param sset a \code{SigSet}
-#' @param force force rerun even if result already exists
-#' @return detection p-value
+#' @param pval.threshold minimum p-value to mask
+#' @param return.pval whether to return p-values, instead of a
+#' masked \code{SigSet}
+#' @return a \code{SigSet}, or a p-value vector if return.pval is TRUE
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- detectionPnegNorm(sset)
-#' 
+#' sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+#' sum(mask(sset))
+#' sset_with_mask <- detectionPnegNorm(sset)
+#' sum(mask(sset_with_mask))
 #' @export
-detectionPnegNorm <- function(sset, force=FALSE) {
+detectionPnegNorm <- function(sset,
+    pval.threshold=0.05, return.pval = FALSE) {
 
     stopifnot(is(sset, "SigSet"))
-    method <- "PnegNorm"
-    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
     negctls <- negControls(sset)
     muG <- median(negctls$G)
     sdG <- sd(negctls$G)
     muR <- median(negctls$R)
     sdR <- sd(negctls$R)
-    sset <- detectionPfixedNorm(sset, muG, sdG, muR, sdR)
-
-    if (!extraHas(sset, 'pvals'))
-        extraSet(sset, 'pvals', list())
-    
-    extra(sset)[['pvals']][[method]] <- extra(sset)[['pvals']][['PfixNorm']]
-    sset
+    detectionPfixedNorm(sset, muG, sdG, muR, sdR,
+        return.pval = return.pval, pval.threshold = 0.05)
 }
 
 #' Detection P-value based on normal fitting with gived parameters
@@ -225,24 +201,26 @@ detectionPnegNorm <- function(sset, force=FALSE) {
 #' two alleles (color depends on probe design).
 #'
 #' @param sset a \code{SigSet}
-#' @param force force rerun even if result already exists
 #' @param sdG SD of background in Grn channel
 #' @param muG mean of background in Grn channel
 #' @param sdR SD of background in Red channel
 #' @param muR mean of background in Red channel
+#' @param pval.threshold minimum p-value to mask
+#' @param return.pval whether to return p-values, instead of a
+#' masked \code{SigSet}
 #' @return detection p-value
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- detectionPfixedNorm(sset)
+#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' sum(mask(sset))
+#' sset_with_mask <- detectionPfixedNorm(sset)
+#' sum(mask(sset_with_mask))
 #' 
 #' @export
 detectionPfixedNorm <- function(
     sset, muG = 500, sdG = 200, muR = 500, sdR = 200,
-    force = FALSE) {
+    pval.threshold=0.05, return.pval = FALSE) {
     
     stopifnot(is(sset, "SigSet"))
-    method <- "PfixedNorm"
-    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
     pIR <- 1 - pnorm(
         pmax(IR(sset)[,'M'], IR(sset)[,'U']), mean=muR, sd=sdR)
@@ -256,36 +234,39 @@ detectionPfixedNorm <- function(
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    if (!extraHas(sset, 'pvals'))
-        extraSet(sset, 'pvals', list())
-    
-    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
-    sset
+    pvals <- c(pIR,pIG,pII)
+    if (return.pval) {
+        return(pvals[order(names(pvals))])
+    }
+
+    addMask(sset, pvals > pval.threshold)
 }
 
 #' Detection P-value emulating Genome Studio
 #'
 #' The function takes a \code{SigSet} as input, computes detection p-value
 #' using negative control probes parametrized in a normal distribution a la
-#' Genome Studio and returns a new \code{SigSet} with an updated pval slot.
+#' Genome Studio and returns a new \code{SigSet} with an updated mask slot.
 #' 
 #' P-value is calculated using negative control probes as the estimate of
 #' background where Grn channel and Red channel are merged. But when
 #' estimating p-value the Red and Grn are summed (non-ideal).
 #'
 #' @param sset a \code{SigSet}
-#' @param force force rerun even if result already exists
+#' @param pval.threshold minimum p-value to mask
+#' @param return.pval whether to return p-values, instead of a
+#' masked \code{SigSet}
 #' @return detection p-value
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- detectionPnegNormGS(sset)
-#' 
+#' sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+#' sum(mask(sset))
+#' sset_with_mask <- detectionPnegNormGS(sset)
+#' sum(mask(sset_with_mask))
 #' @export
-detectionPnegNormGS <- function(sset, force=FALSE) {
+detectionPnegNormGS <- function(sset,
+    pval.threshold=0.05, return.pval = FALSE) {
     
     stopifnot(is(sset, "SigSet"))
-    method <- "PnegNormGS"
-    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
     negctls <- negControls(sset)
     BGsd <- sd(c(negctls$G, negctls$R))
@@ -297,12 +278,12 @@ detectionPnegNormGS <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    if (!extraHas(sset, 'pvals'))
-        extraSet(sset, 'pvals', list())
-    
-    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
-    sset
-    
+    pvals <- c(pIR,pIG,pII)
+    if (return.pval) {
+        return(pvals[order(names(pvals))])
+    }
+
+    addMask(sset, pvals > pval.threshold)
 }
 
 #' Detection P-value based on normal fitting the negative controls,
@@ -311,23 +292,25 @@ detectionPnegNormGS <- function(sset, force=FALSE) {
 #' The function takes a \code{SigSet} as input, computes detection p-value
 #' using negative control probes parametrized in a normal distribution with
 #' the two channels summed first and returns a new \code{SigSet} with an
-#' updated pval slot. The SD is summed to emulate the SD of the summed
+#' updated mask slot. The SD is summed to emulate the SD of the summed
 #' signal (not the most accurate treatment).
 #'
 #' @param sset a \code{SigSet}
-#' @param force force rerun even if result already exists
+#' @param pval.threshold minimum p-value to mask
+#' @param return.pval whether to return p-values, instead of a
+#' masked \code{SigSet}
 #' @return detection p-value
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' sset <- detectionPnegNormTotal(sset)
-#' 
+#' sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+#' sum(mask(sset))
+#' sset_with_mask <- detectionPnegNormTotal(sset)
+#' sum(mask(sset_with_mask))
 #' @export
-detectionPnegNormTotal <- function(sset, force=FALSE) {
+detectionPnegNormTotal <- function(sset,
+    pval.threshold=0.05,  return.pval = FALSE) {
     
     ## sort of how minfi does it (sd instead of MAD)
     stopifnot(is(sset, "SigSet"))
-    method <- "PnegNormTotal"
-    if (!force && method %in% names(extra(sset)$pvals)) return(sset)
     
     negctls <- negControls(sset)
     sdG <- sd(negctls$G)
@@ -341,10 +324,11 @@ detectionPnegNormTotal <- function(sset, force=FALSE) {
     names(pIG) <- rownames(IG(sset))
     names(pII) <- rownames(II(sset))
     
-    if (!extraHas(sset, 'pvals'))
-        extraSet(sset, 'pvals', list())
-    
-    extra(sset)[['pvals']][[method]] <- c(pIR,pIG,pII)
-    sset
+    pvals <- c(pIR,pIG,pII)
+    if (return.pval) {
+        return(pvals[order(names(pvals))])
+    }
+
+    addMask(sset, pvals > pval.threshold)
 }
 

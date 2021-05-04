@@ -5,17 +5,20 @@
 \alias{pOOBAH}
 \title{Detection P-value based on ECDF of out-of-band signal}
 \usage{
-detectionPoobEcdf(sset, force = FALSE)
+detectionPoobEcdf(sset, return.pval = FALSE, pval.threshold = 0.05)
 
-pOOBAH(sset, force = FALSE)
+pOOBAH(sset, return.pval = FALSE, pval.threshold = 0.05)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
 
-\item{force}{force rerun even if result already exists}
+\item{return.pval}{whether to return p-values, instead of a
+masked \code{SigSet}}
+
+\item{pval.threshold}{minimum p-value to mask}
 }
 \value{
-detection p-value
+a \code{SigSet}, or a p-value vector if return.pval is TRUE
 }
 \description{
 aka pOOBAH (p-vals by Out-Of-Band Array Hybridization)
@@ -23,12 +26,15 @@ aka pOOBAH (p-vals by Out-Of-Band Array Hybridization)
 \details{
 The function takes a \code{SigSet} as input, computes detection p-value
 using out-of-band probes empirical distribution and returns a new
-\code{SigSet} with an updated pval slot.
+\code{SigSet} with an updated mask slot.
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
-sset <- detectionPoobEcdf(sset)
-
-sset <- makeExampleSeSAMeDataSet()
-sset <- pOOBAH(sset)
+sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+sum(mask(sset))
+sset_with_mask <- detectionPoobEcdf(sset)
+sum(mask(sset_with_mask))
+sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+sum(mask(sset))
+sset_with_mask <- pOOBAH(sset)
+sum(mask(sset_with_mask))
 }

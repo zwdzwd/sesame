@@ -37,7 +37,7 @@ openSesame <- function(
                 x, platform = platform, manifest = manifest)
             stopifnot(is(x, 'SigSet'))
             x <- dyeBiasCorrTypeINorm(noob(pOOBAH(
-                qualityMask(detectionMask(x)))))
+                qualityMask(x))))
             if (what == 'beta') {
                 getBetas(x, ...)
             } else {
@@ -45,7 +45,7 @@ openSesame <- function(
             }
         } else if (is(x, 'SigSet')) { # SigSet input
             x <- dyeBiasCorrTypeINorm(noob(pOOBAH(
-                qualityMask(detectionMask(x)))))
+                qualityMask(x))))
             if (what == 'beta') {
                 getBetas(x, ...)
             } else {

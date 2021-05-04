@@ -50,14 +50,14 @@ sesameQC <- function(sset) {
         qc[[paste0('InfI_switch_', nm)]] <- unname(res[nm])
     }
 
-    betas <- getBetas(qualityMask(detectionMask(
-        dyeBiasCorrTypeINorm(noob(sset)))))
+    betas <- getBetas(
+        dyeBiasCorrTypeINorm(noob(pOOBAH(qualityMask(sset)))))
 
     qc$num_probes <- length(betas)
     qc$num_na <- sum(is.na(betas))
     num_ok <- qc$num_probes - qc$num_na
     qc$frac_na <- qc$num_na / qc$num_probes
-    qc$num_nondt <- sum(pval(sset) > 0.05)
+    qc$num_nondt <- sum(pOOBAH(sset, return.pval=TRUE) > 0.05)
     qc$frac_nondt <- qc$num_nondt / qc$num_probes
     qc$mean_beta <- mean(betas, na.rm = TRUE)
     qc$median_beta <- median(betas, na.rm = TRUE)
@@ -238,13 +238,9 @@ qualityRank <- function(
     if (raw) return (df);
 
     mean_intensity <- meanIntensity(sset)
-    if (is.null(sset@extra$pvals[['pOOBAH']])) {
-        pvals <- pval(sset)
-    } else {
-        pvals <- sset@extra$pvals[['pOOBAH']]
-    }
-    frac_nondt <- sum(pvals > 0.05)
-    c(
+    pvals <- pOOBAH(sset, return.pval = TRUE)
+    frac_nondt <- sum(pvals > 0.05) / length(pvals)
+    list(
         n_sample_compared = nrow(df),
         rank_probe_success_rate = 1-ecdf(df$frac_nondt)(frac_nondt),
         rank_mean_intensity = ecdf(df$mean_intensity)(mean_intensity))

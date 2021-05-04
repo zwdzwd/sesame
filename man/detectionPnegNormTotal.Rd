@@ -5,12 +5,15 @@
 \title{Detection P-value based on normal fitting the negative controls,
 channels are first summed}
 \usage{
-detectionPnegNormTotal(sset, force = FALSE)
+detectionPnegNormTotal(sset, pval.threshold = 0.05, return.pval = FALSE)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
 
-\item{force}{force rerun even if result already exists}
+\item{pval.threshold}{minimum p-value to mask}
+
+\item{return.pval}{whether to return p-values, instead of a
+masked \code{SigSet}}
 }
 \value{
 detection p-value
@@ -19,11 +22,12 @@ detection p-value
 The function takes a \code{SigSet} as input, computes detection p-value
 using negative control probes parametrized in a normal distribution with
 the two channels summed first and returns a new \code{SigSet} with an
-updated pval slot. The SD is summed to emulate the SD of the summed
+updated mask slot. The SD is summed to emulate the SD of the summed
 signal (not the most accurate treatment).
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
-sset <- detectionPnegNormTotal(sset)
-
+sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+sum(mask(sset))
+sset_with_mask <- detectionPnegNormTotal(sset)
+sum(mask(sset_with_mask))
 }
