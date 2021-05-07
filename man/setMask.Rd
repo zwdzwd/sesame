@@ -12,6 +12,9 @@ setMask(sset, probes)
 \item{probes}{a vector of probe IDs or a logical vector with TRUE
 representing masked probes}
 }
+\value{
+a \code{SigSet} with added mask
+}
 \description{
 Set mask to only the probes specified
 }

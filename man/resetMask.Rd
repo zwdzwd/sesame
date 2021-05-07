@@ -10,7 +10,7 @@ resetMask(sset)
 \item{sset}{a \code{SigSet}}
 }
 \value{
-a new \code{SigSet} with mask reset to empty
+a new \code{SigSet} with mask reset to all FALSE
 }
 \description{
 Reset Masking

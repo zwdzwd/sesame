@@ -1,9 +1,12 @@
-#' Add probes to mask. This function essentially merge existing probe masking
+#' Add probes to mask
+#'
+#' This function essentially merge existing probe masking
 #' with new prboes to mask
 #' 
 #' @param sset a \code{SigSet}
 #' @param probes a vector of probe IDs or a logical vector with TRUE
 #' representing masked probes
+#' @return a \code{SigSet} with added mask
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sum(mask(sset))
@@ -26,6 +29,7 @@ addMask <- function(sset, probes) {
 #' @param sset a \code{SigSet}
 #' @param probes a vector of probe IDs or a logical vector with TRUE
 #' representing masked probes
+#' @return a \code{SigSet} with added mask
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sum(mask(sset))
@@ -39,7 +43,7 @@ setMask <- function(sset, probes) {
 #' Reset Masking
 #'
 #' @param sset a \code{SigSet}
-#' @return a new \code{SigSet} with mask reset to empty
+#' @return a new \code{SigSet} with mask reset to all FALSE
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset

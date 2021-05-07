@@ -2,8 +2,7 @@
 % Please edit documentation in R/mask.R
 \name{addMask}
 \alias{addMask}
-\title{Add probes to mask. This function essentially merge existing probe masking
-with new prboes to mask}
+\title{Add probes to mask}
 \usage{
 addMask(sset, probes)
 }
@@ -13,8 +12,11 @@ addMask(sset, probes)
 \item{probes}{a vector of probe IDs or a logical vector with TRUE
 representing masked probes}
 }
+\value{
+a \code{SigSet} with added mask
+}
 \description{
-Add probes to mask. This function essentially merge existing probe masking
+This function essentially merge existing probe masking
 with new prboes to mask
 }
 \examples{
