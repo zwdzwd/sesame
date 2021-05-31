@@ -262,7 +262,8 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
 #' @import BiocParallel
 #' @examples
 #'
-#' if (require(FlowSorted.Blood.450k)) {
+#' if (FALSE) {
+#'     library(FlowSorted.Blood.450k)
 #'     rgSet <- FlowSorted.Blood.450k[,1:2]
 #'     ssets <- RGChannelSetToSigSets(rgSet)
 #' }
