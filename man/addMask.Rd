@@ -21,6 +21,6 @@ with new prboes to mask
 }
 \examples{
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sum(mask(sset))
-sum(mask(addMask(sset, c("cg14057072", "cg22344912"))))
+sum(sesame::mask(sset))
+sum(sesame::mask(addMask(sset, c("cg14057072", "cg22344912"))))
 }

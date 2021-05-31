@@ -189,6 +189,13 @@ dyeBiasCorrTypeINorm <- function(sset) {
     sset
 }
 
+#' @rdname dyeBiasCorrTypeINorm
+#' @export
+#' @examples
+#' sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+#' sset <- dyeBiasNL(sset)
+dyeBiasNL <- dyeBiasCorrTypeINorm
+
 ## the following three functions are retired since 1.9.1
 ## dyeBiasCorrTypeINormMpU, dyeBiasCorrTypeINormG2R, dyeBiasCorrTypeINormR2G
 

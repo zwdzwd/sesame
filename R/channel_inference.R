@@ -35,7 +35,7 @@ inferTypeIChannel <- function(
         red_idx0 <- red_idx0[no_na]
         if (verbose) {
             message(
-                'Warning! ', sum(!no_na),
+                sum(!no_na),
                 ' Infinium I probes are excluded for having NA intensity.')
         }
     }

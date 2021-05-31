@@ -9,8 +9,8 @@
 #' @return a \code{SigSet} with added mask
 #' @examples
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sum(mask(sset))
-#' sum(mask(addMask(sset, c("cg14057072", "cg22344912"))))
+#' sum(sesame::mask(sset))
+#' sum(sesame::mask(addMask(sset, c("cg14057072", "cg22344912"))))
 #' @export
 addMask <- function(sset, probes) {
     if (!extraHas(sset, "mask") || length(sset@extra$mask) == 0) {
@@ -20,6 +20,15 @@ addMask <- function(sset, probes) {
         sset@extra$mask[probes[match(probeNames(sset), names(probes))]] = TRUE
     } else {
         sset@extra$mask[match(probes, probeNames(sset))] = TRUE
+    }
+    sset
+}
+
+## all new versions should run this while initializing sset
+initializeMask <- function(sset) {
+    if (is.null(sset@extra[["mask"]])) {
+        pnames <- probeNames(sset)
+        sset@extra$mask <- setNames(rep(FALSE, length(pnames)), pnames)
     }
     sset
 }
@@ -53,7 +62,8 @@ setMask <- function(sset, probes) {
 #' sum(mask(resetMask(sset)))
 #' @export
 resetMask <- function(sset) {
-    sset@extra$mask <- rep(FALSE, length(probeNames(sset)))
+    pnames <- probeNames(sset)
+    sset@extra$mask <- setNames(rep(FALSE, length(pnames)), pnames)
     sset
 }
 
@@ -99,29 +109,35 @@ restoreMask <- function(sset, from='mask2') {
 #' 
 #' @param sset a \code{SigSet} object
 #' @param mask.use.manifest use manifest to mask probes
+#' @param manifest the manifest file that contains mask column
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @return a filtered \code{SigSet}
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' sum(mask(sset))
 #' sset.masked <- qualityMask(sset)
+#' sum(mask(sset.masked))
 #' @export 
 qualityMask <- function(
     sset,
     mask.use.manifest = TRUE,
+    manifest = NULL,
     mask.use.tcga = FALSE) {
 
+    ## shouldn't have to run this for lastest sigsets
     if (!extraHas(sset, 'mask') || length(sset@extra$mask) == 0) {
         sset <- resetMask(sset);
     }
 
     ## mask using manifest
-    if (mask.use.manifest && extraHas(sset, "maskManifest")) {
-        if (!extraHas(sset, "mask") || length(sset@extra$mask) == 0) {
-            sset@extra$mask = sset@extra$maskManifest
-        } else {
-            mask = sset@extra$maskManifest[names(sset@extra$mask)]
-            sset@extra$mask[mask] = TRUE
+    if (mask.use.manifest) {
+        if (is.null(manifest)) {
+            manifest <- sesameDataGet(paste0(
+                sset@platform, '.address'))$ordering
+        }
+        if ("mask" %in% colnames(manifest)) {
+            sset <- addMask(sset, setNames(manifest$mask, manifest$Probe_ID))
         }
     }
 

@@ -31,33 +31,20 @@ sesameQC <- function(sset) {
     qc$mean_oob_grn <- mean(oobG(sset))
     qc$mean_oob_red <- mean(oobR(sset))
 
-    ## inferences
-    if (sset@platform %in% c("EPIC","HM450")) {
-        qc$sex <- inferSex(sset)
-        qc$ethnicity <- inferEthnicity(sset)
-        qc$GCT <- bisConversionControl(sset)
-        ## assuming no preprocessing
-        qc$age <- predictAgeHorvath353(getBetas(sset, mask=FALSE))
-    } else {
-        qc$sex <- "na"
-        qc$ethnicity <- "na"
-        qc$GCT <- "na"
-        qc$age <- "na"
-    }
-
     res <- inferTypeIChannel(sset, summary = TRUE)
     for (nm in names(res)) {
         qc[[paste0('InfI_switch_', nm)]] <- unname(res[nm])
     }
 
-    betas <- getBetas(
-        dyeBiasCorrTypeINorm(noob(pOOBAH(qualityMask(sset)))))
+    pvals = pOOBAH(sset, return.pval=TRUE)
+    betas <- getBetas(addMask(
+        dyeBiasCorrTypeINorm(noob(sset)), pvals > 0.05))
 
     qc$num_probes <- length(betas)
     qc$num_na <- sum(is.na(betas))
     num_ok <- qc$num_probes - qc$num_na
     qc$frac_na <- qc$num_na / qc$num_probes
-    qc$num_nondt <- sum(pOOBAH(sset, return.pval=TRUE) > 0.05)
+    qc$num_nondt <- sum(pvals > 0.05)
     qc$frac_nondt <- qc$num_nondt / qc$num_probes
     qc$mean_beta <- mean(betas, na.rm = TRUE)
     qc$median_beta <- median(betas, na.rm = TRUE)
@@ -83,6 +70,20 @@ sesameQC <- function(sset) {
     
     qc
 }
+
+## ## inferences
+## if (sset@platform %in% c("EPIC","HM450")) {
+##     qc$sex <- inferSex(sset)
+##     qc$ethnicity <- inferEthnicity(sset)
+##     qc$GCT <- bisConversionControl(sset)
+##     ## assuming no preprocessing
+##     qc$age <- predictAgeHorvath353(getBetas(sset, mask=FALSE))
+## } else {
+##     qc$sex <- "na"
+##     qc$ethnicity <- "na"
+##     qc$GCT <- "na"
+##     qc$age <- "na"
+## }
 
 #' Print sesameQC object
 #'

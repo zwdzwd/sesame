@@ -2,9 +2,12 @@
 % Please edit documentation in R/dye_bias.R
 \name{dyeBiasCorrTypeINorm}
 \alias{dyeBiasCorrTypeINorm}
+\alias{dyeBiasNL}
 \title{Dye bias correction by matching green and red to mid point}
 \usage{
 dyeBiasCorrTypeINorm(sset)
+
+dyeBiasNL(sset)
 }
 \arguments{
 \item{sset}{a \code{SigSet}}
@@ -22,4 +25,6 @@ with dye bias corrected.
 sesameDataCache("EPIC") # if not done yet
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 sset.db <- dyeBiasCorrTypeINorm(sset)
+sset <- sesameDataGet("HM450.1.TCGA.PAAD")$sset
+sset <- dyeBiasNL(sset)
 }

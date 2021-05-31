@@ -129,19 +129,19 @@ SigSet <- function(...) new("SigSet", ...)
 setMethod(
     "show", "SigSet",
     function(object) {
-        cat("SigSet", object@platform, "\n - @IG probes:",
+        cat("SigSet", object@platform, "\n - @IG Probes:",
             nrow(object@IG), '-', as.numeric(head(object@IG, n=3)),
-            "...\n - @IR probes:", nrow(object@IR),
+            "...\n - @IR Probes:", nrow(object@IR),
             '-', as.numeric(head(object@IR, n=3)),
-            "...\n - @II probes:", nrow(object@II),
+            "...\n - @II Probes:", nrow(object@II),
             '-', as.numeric(head(object@II, n=3)),
-            "...\n - @oobG probes:", nrow(object@oobG),
+            "...\n - @oobG Probes:", nrow(object@oobG),
             '-', as.numeric(head(object@oobG, n=3)),
-            "...\n - @oobR probes:", nrow(object@oobR),
+            "...\n - @oobR Probes:", nrow(object@oobR),
             '-', as.numeric(head(object@oobR, n=3)),
-            "...\n - @ctl probes:", nrow(object@ctl),
-            "...\n - @pval:", length(object@pval),
-            "-", as.numeric(head(object@pval, n=3)), "...\n")
+            "...\n - Control Probes:", nrow(object@ctl),
+            "...\n - Number of Masked Probes:", sum(object@extra$mask),
+            "\n")
     })
 
 #' Select a subset of probes
@@ -757,21 +757,9 @@ chipAddressToSignal <- function(
         ctl(sset) <- ctl
     }
 
-    ## additional annotation in manifest
-    if ('mask' %in% colnames(manifest)) {
-        sset = extraSet(
-            sset, "maskManifest",
-            setNames(manifest$mask, manifest$Probe_ID))
-    }
-
-    ## backward support for mouse array, to remove in the future
-    if ('mapUniq' %in% colnames(manifest)) {
-        sset = extraSet(
-            sset, 'maskManifest',
-            setNames(!manifest$mapUniq, manifest$Probe_ID))
-    }
-    
-    sset
+    ## initialize mask
+    resetMask(sset)
+    qualityMask(sset, manifest = manifest)
 }
 
 #' Compute internal bisulfite conversion control
