@@ -42,14 +42,14 @@ sesamize <- function(
     t1 = bptry(bplapply(samples, function(sample) {
         message("Sesamizing ", sample, "...")
         sset <- RGChannelSet1ToSigSet(rgSet[,sample])
-        sset <- dyeBiasCorrTypeINorm(noob(sset))
+        sset <- dyeBiasNL(noob(sset))
         SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
     lk = vapply(t1, inherits, logical(1), "bperror")  # second try?
     if (any(lk)) {
         t1 = bptry(bplapply(samples, function(sample) {
             message("Sesamizing ", sample, "...")
             sset <- RGChannelSet1ToSigSet(rgSet[,sample])
-            sset <- dyeBiasCorrTypeINorm(noob(sset))
+            sset <- dyeBiasNL(noob(sset))
             SigSetToRatioSet(sset)}, BPREDO=t1, BPPARAM=BPPARAM))
     }
 

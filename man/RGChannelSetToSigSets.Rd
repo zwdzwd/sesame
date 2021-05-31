@@ -22,7 +22,8 @@ anyway.
 }
 \examples{
 
-if (FALSE && require(FlowSorted.Blood.450k)) {
+if (FALSE) {
+    library(FlowSorted.Blood.450k)
     rgSet <- FlowSorted.Blood.450k[,1:2]
     ssets <- RGChannelSetToSigSets(rgSet)
 }

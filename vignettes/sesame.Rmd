@@ -1,5 +1,5 @@
 ---
-title: "SeSAMe User Guide"
+title: "SeSAMe Basic Usage"
 date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: BiocStyle::html_document
@@ -7,7 +7,7 @@ fig_width: 8
 fig_height: 6
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{"0. SeSAMe User Guide"}
+  %\VignetteIndexEntry{"0. Basic Usage"}
   %\VignetteEncoding{UTF-8}
 ---
 
@@ -17,10 +17,7 @@ library(dplyr)
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
-SeSAMe is designed to process Illumina Infinium DNA methylation data. It
-currently supports EPIC, HM450 and HM27 platforms.
-
-# Install SeSAMe
+# Installation
 
 From Bioconductor
 ```{r, eval=FALSE}
@@ -35,79 +32,294 @@ BiocManager::install('zwdzwd/sesameData')
 BiocManager::install('zwdzwd/sesame')
 ```
 
-# The openSesame Pipeline
-
-The openSesame pipeline is composed of noob, nonlinear dye bias correction
-and pOOBAH, achieved through:
-```{r message = FALSE, warning = FALSE}
-idat_dir <- system.file("extdata/", package = "sesameData")
-betas <- openSesame(idat_dir)
+**CRITICAL:** After a new installation, one needs to cache the associated
+annotation data using the following command.
+This needs to be done only once per SeSAMe installation.
+```{r eval=FALSE}
+sesameDataCacheAll()
 ```
-where `idat_dir` is the directory containing all the IDAT files (they can be
-present under nested sub-directories). This is meant for tha quick start
-default.
-
-But if you want to have more granuality of control (like provide parameters in
-each step), openSesame is equivalent to
-```{r message = FALSE, warning = FALSE, eval = FALSE}
-betas <- do.call(cbind, lapply(searchIDATprefixes(idat_dir), function(pfx) {
-    pfx %>%
-        readIDATpair %>%
-        qualityMask %>%            # mask probes with design flaw
-        pOOBAH %>%                 # mask detection p-value
-        noob %>%                   # background subtraction
-        dyeBiasCorrTypeINorm %>%   # dye bias correction
-        getBetas
-}))
-```
-behind the scene.
-
-## How/Why Probes Are Masked?
-
-The `openSesame` command also takes the arguments to turn on/off probe masking (
-when probe beta value measurements are replaced with NA) and adjust for
-stringency in detection calling. The current probe masking is constituted by two
-major parts:
-
-1) Low intensity-based detection calling achieved by `pOOBAH`: This sets the
-p-value for each probe
-([Zhou et al. 2018](https://www.ncbi.nlm.nih.gov/pubmed/30085201)). Probes with
-p-value higher than a threshold (default: 0.05) are masked. The default
-threshold can be adjusted to say, 0.1, by `pval.threshold = 0.1` in 
-`pOOBAH`.
-
-2) Probes masked for putative design issues designated in
-`sesameDataGet('HM450.probeInfo')$mask` (
-[Zhou et al. 2017](https://www.ncbi.nlm.nih.gov/pubmed/27924034)): This masking
-only supports EPIC, HM450 and HM27 and is turned on by default and achieved in
-the function `qualityMask`.
-
-## Specify Your Own Manifest
-
-Instead of working with HM450, EPIC etc, SeSAMe also works with customed array.
-
-```{r eval = FALSE}
-openSesame(idat_dir, 'custom_array_name', manifest_file)
+This function caches the needed SeSAMe annotation for all the supported
+platforms. One optionally caches only one specific platform (e.g., EPIC)
+by calling
+```{r eval=FALSE}
+sesameDataCache("EPIC")
 ```
 
-In this case, one needs to provide a `platform` string, which can be any string
-used to reference the platform, and a `manifest_file` which is a data frame (
-or tibble) with a minimum of four columns (`Probe_ID`, `M`, `U` and `col`).
+SeSAMe annotation data is managed by the
+[sesameData](https://bioconductor.org/packages/release/
+data/experiment/html/sesameData.html) package which is based on the
+[ExperimentHub](https://bioconductor.org/packages/release/
+bioc/html/ExperimentHub.html) package. You can find the path of
+the annotation data storage on your local computer using
+`tools::R_user_dir("ExperimentHub", which="cache")`.
+
+# Beta Value Extraction
+
+The raw Infinium BeadChip data are stored in IDAT files. Each sample has
+two IDAT files and they correspond to the red and green signal respectively.
+Green and red files for the same samples should always share the same sample
+name prefix.
+For example, `204529320035_R06C01_Red.idat` and
+`204529320035_R06C01_Grn.idat` correspond to the red and green signal
+of one sample. In SeSAMe, we will use the common prefix,
+i.e. 204529320035_R06C01, to refer to that sample.
+Sesame recognize both the raw idat as well as gzipped idats which are common
+in data stored in [GEO](https://www.ncbi.nlm.nih.gov/geo/).
+For example, in addition to the example above, SeSAMe also recognizes
+`GSM2178224_Red.idat.gz` and `GSM2178224_Grn.idat.gz`.
+
+The function `readIDATpair` function reads in the signal intensity data from
+the IDAT pairs. The function takes the **common prefix** as input and outputs
+a `SigSet`. Using the two examples above, one would run the following
+commands.
+```{r eval=FALSE}
+sset = readIDAT("GSM2178224")
+# or
+sset = readIDAT("204529320035_R06C01")
 ```
-  Probe_ID          M        U col
-  <chr>         <dbl>    <dbl> <chr>
-1 cg14361672  7743487 51800947 R
-2 cg21784030       NA 29783926 NA
-3 cg13417420 27786954  5613976 G
-4 cg12480843 19684581 16692916 R
-5 cg05493344       NA 58754149 NA
-6 cg10136773       NA  3699389 NA
+Note that SeSAMe automatically detects and matches up the green and red signal
+files for the same sample.
+We will get back to the structure of `SigSet` below.
+
+DNA methylation level (aka beta values) are defined as
+`methylated signal`/(`methylated signal` + `unmethylated signal`).
+It can be retrieved using the `getBetas` function on the `SigSet`. 
+The output is a named vector with probe ID as names.
+For example, the following commands reads in one
+sample and convert it to beta values.
+```{r eval=FALSE}
+sset = readIDAT("GSM2178224")
+betas = getBetas(sset)
+```
+Please note that `getBetas` takes a single `SigSet`
+object instead of a list of them. To have it process many `SigSet`s, you
+should combine that with looping functions `lapply` or `mclapply`s, or using
+the `openSesame` pipeline (see below).
+
+## Search IDAT Prefixes
+
+Most often we will be working with a folder that contains many IDATs. Here is
+where the `searchIDATprefixes` function comes in handy. It lets us search all
+the IDATs in a folder and its subfolders recursively. Combine this with the
+R looping functions lets you process many IDATs without having to specify
+all IDAT names. `searchIDATprefixes` returns a named vector of prefixes with
+associated `Red` and `Grn` files, for `readIDATpair`:
+```{r}
+ssets = lapply(
+    searchIDATprefixes(system.file("extdata/", package = "sesameData")),
+    readIDATpair)
+```
+A simple list of "SigSet"s are returned.
+
+## Custom-made Array
+
+If you need to deal with a custom-made array instead of the standard
+array (MM285, EPIC, HM450 etc) supported natively by SeSAMe, you would need
+to provide a manifest that describe the probe information. You should be
+able to obtain that from the Illumina support website.
+The manifest should be made into a simple data frame with a minimum of
+four columns: `Probe_ID`, `M`, `U` and `col`.
+The easiest way to make the the manifest compatible with SeSAMe is by
+following internal manifests for a SeSAME-supported platform. They can be
+retrieved with the `sesameDataGet` function:
+```{r}
+mft = sesameDataGet("MM285.address")$ordering
 ```
 
 The `col` is either `G` (stand for Green) or `R` (stand for Red) or `NA` (
 stand for both in the case of Infinium II design).
+For Infinium-II probes, the `M` column and `col` column is left to be `NA`.
+For example, one can check that both `M` and `col` columns are filled with
+the Infinium-I probes:
+```{r}
+head(mft[!is.na(mft$col),])
+```
+The last column `mask` is a logical vector that defines the default masking
+behavior of SeSAMe for the platform (see below for discussion of NA-masking).
 
-# Data Structure for Signal Intensity
+With the manifest, your data can be processed using
+```{r eval = FALSE}
+sset = readIDATpair("your_sample_name", manifest = mft)
+betas = getBetas(sset)
+```
+
+## Sum Two-channels
+
+Beta values for Infinium-I probes can also be obtained by summing up the two
+in-band channel and out-of-band channel. This rescues probes with SNP hitting
+the extension base and hence switching color channel. More details can be
+found in
+[Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
+```{r}
+library(sesame)
+## show case using an example without mask, then add mask with qualityMask
+sset = qualityMask(sesameDataGet('EPIC.1.LNCaP')$sset)
+betas = getBetas(sset, sum.TypeI = TRUE)
+```
+
+For color-channel-switching probes, extra SNP allele frequencies can be obtained
+by summing up methylated and umethylated alleles:
+```{r}
+extraSNPAFs = getAFTypeIbySumAlleles(sset)
+```
+
+# NA-Masking
+
+If you call getBetas as is, you may notice that some of the beta values
+show up having NA values. This NA-masking is controlled internally using
+a `mask` attribute in `SigSet`. E.g.,
+```{r message = FALSE}
+betas = getBetas(sset)
+head(betas)
+```
+
+To check probes to be NA-masked in a `SigSet`, one can use the `mask`
+function
+```{r}
+head(mask(sset))
+sum(mask(sset))   # number of probes to be NA-masked
+sum(is.na(betas)) # should be the same as above
+```
+
+Please be noted that `mask` in `SigSet` does not actually remove the probe
+reading but only specify how SeSAMe currently views the measurement. One can
+add more probes to the mask with the `addMask` function. Other functions
+such as the detection p-value calculation, also modifies `mask`. NA-masking
+influences other normalization and preprocessing functions. Therefore one
+should set it carefully. If one does not do any explicit masking, one simply
+gets the masking specified in the `mask` column of the manifest. This defines
+the default masking behavior of SeSAMe. For more details of masking, one can
+refer to
+[Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
+One can override this masking by the `resetMask` function
+```{r}
+sum(mask(sset))  # before resetting
+sum(mask(resetMask(sset)))  # after resetting, expect 0
+```
+The `getBetas` function can also ignore NA-masking while extracting beta
+values:
+```{r}
+sum(is.na(getBetas(sset, mask=FALSE)))  # expect 0
+```
+
+We recommend two types of probe masking:
+
+1) Experiment-dependent masking based on signal detection p-value
+([Zhou et al. 2018](https://www.ncbi.nlm.nih.gov/pubmed/30085201)). Probes with
+p-value higher than a threshold (default: 0.05) are masked (see following for
+detection p-value calculation using the `pOOBAH` method).
+
+2) Experiment-independent probe masking due to design issues. This is typically
+designated in the `mask` column of the manifest (see 
+[Zhou et al. 2017](https://www.ncbi.nlm.nih.gov/pubmed/27924034)): This masking
+supports EPIC, MM285, HM450 and HM27 and is turned on by default and can also be
+explicitly added by the function `qualityMask`.
+
+# Preprocessing
+
+## Detection p-value
+
+As mentioned above, experiment-dependent masking based on signal detection
+p-values is effective in excluding artifactual methylation level reading
+and probes with too much influence from signal background. We recommend the
+`pOOBAH` algorithm that was based on Infinium-I probe out-of-band signal for
+calibrating the distribution of the signal background:
+```{r}
+sum(mask(sset))  # before pOOBAH
+sum(mask(pOOBAH(sset))) # after pOOBAH, expect more probes
+sum(mask(pOOBAH(resetMask(sset)))) # pOOBAH-only masking
+```
+
+Sometimes one would want to calculation detection p-value without creating
+masking like in the case of having to upload the p-value to GEO. In those cases
+one can use the `return.pval` option and add pvalue-based mask later.
+```{r}
+pvals = pOOBAH(sset, return.pval=TRUE)
+sset2 = addMask(sset, pvals > 0.05) # default, recommend between 0.05 and 0.2
+```
+
+## Background Subtraction
+
+SeSAMe implements the
+background subtraction based on normal-exponential deconvolution using
+out-of-band probes `noob`
+([Triche et al. 2013](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3627582/))
+and optionally with extra bleed-through subtraction. Signal bleed-through
+happens when measurement from one channel affects the measurement in the other
+channel. SeSAMe's `noob` further removes residual background by regressing
+out the green-to-red and red-to-green relationship using Type-I probes.
+```{r}
+sset.nb = noob(sset)          # noob background subtraction
+sset.sb = scrub(sset)         # more aggressive background subtraction
+```
+
+One can use following beta to total signal intensity to check the effect of
+background subtraction.
+```{r}
+sesamePlotIntensVsBetas(sset)
+sesamePlotIntensVsBetas(sset.nb) # with noob
+sesamePlotIntensVsBetas(sset.sb) # with scrub
+```
+
+## Dye Bias Correction
+
+Dye bias refers to the difference in signal intensity between the two color
+channel. SeSAMe offers two flavors of dye bias correction: linear scaling
+(`dyeBiasCorr`) and nonlinear scaling (`dyeBiasCorrTypeINorm`). Linear scaling
+equalize the mean of all probes from the two color channel.
+```{r}
+library(sesame)
+sset.dbLinear = dyeBiasCorr(sset)
+sesamePlotRedGrnQQ(sset.dbLinear)
+```
+
+Residual dye bias can be corrected using nonlinear quantile interpolation with
+Type-I probes.
+```{r}
+sset.dbNonlinear = dyeBiasCorrTypeINorm(sset)
+```
+Under this correction, Infinium-I Red probes and
+Infinium-I Grn probes have the same distribution of signal.
+```{r}
+sesamePlotRedGrnQQ(sset.dbNonlinear)
+```
+
+Note that linear scaling does not shift beta values of Type-I probes while
+nonlinear scaling does shift beta values of Type-I probes.
+
+## Channel Inference
+Sometimes Infinium-I channel spec is inaccurate in the manifest. We can
+infer the channel using data.
+```{r}
+sset.InfICorrected = inferTypeIChannel(sset, verbose=TRUE)
+```
+# The openSesame Pipeline
+
+We have discussed noob, nonlinear dye bias correction and pOOBAH. Put
+together, this can be implemented as follows
+```{r eval = FALSE}
+idat_dir = system.file("extdata/", package = "sesameData")
+betas = do.call(cbind, mclapply(searchIDATprefixes(idat_dir), function(pfx) {
+    getBetas(dyeBiasNL(noob(pOOBAH(readIDATpair(pfx)))))
+}), mc.cores=2)
+```
+Here we use two cores with `mc.cores=2`.
+
+Equivalently, sesame provides the **openSesame** pipeline
+```{r eval = FALSE}
+idat_dir = system.file("extdata/", package = "sesameData")
+betas = openSesame(idat_dir, BPPARAM=BiocParallel::MulticoreParam(2))
+```
+as a quickstart default. Here `idat_dir` is the directory containing all
+the IDAT files.
+Like readIDATpair, `openSesame` also works with custom-made array with a
+manifest file (see above):
+
+```{r eval = FALSE}
+betas = openSesame(idat_dir, manifest = manifest)
+```
+
+# The SigSet Class
 
 SeSAMe design includes alight-weight full exposure of internal signal
 intensities (essential information for users of Illumina methylation array data,
@@ -134,27 +346,12 @@ Reference class, `SignalSet`. The current S4 implementation in `SigSet`
 complies with Bioconductor guidelines, and for backwards compatibility, the
 `signalR6toS4` function transforms a `SignalSet` to a `SigSet`.
 
-```{r, echo = FALSE, message = FALSE}
-library(sesameData)
-library(sesame)
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-```
-
 For example, printing the SigSet directly shows its content
 ```{r}
 sset
+head(II(sset)) # or sset@II
+head(ctl(sset)) # the last column: the type of the control.
 ```
-
-## Infinium I/II Probes
-
-Infinium-II probe signal can be accessed using the slot function `sset@II` or
-via the getter function
-
-```{r}
-head(II(sset))
-```
-
-## Infinium I Out-of-band Signal
 
 Similarly, signals for Type-I probes can be accessed from `sset@IR` and
 `sset@IG` and out-of-band signals from `sset@oobG` and `sset@oobR`.
@@ -163,223 +360,20 @@ probe names (row names) of `oobG` (and vice versa). This is because the
 out-of-band probe signal for red channel probes is in green channel
 (and vice versa). 
 
-## Control Probes
+## Interaction with Minfi
 
-Lastly, Control probes are represented in a data frame with the last column
-holding the type of the control.
-
-```{r}
-head(ctl(sset))
-```
-
-## Number of Beads
-
-# Functionalities
-
-SeSAMe implements stricter QC and preprocessing standards: comprehensive
-probe quality masking, bleed-through correction in background subtraction,
-nonlinear dye bias correction, stricter nondetection calling and control for
-bisulfite conversion based on C/T-extension probes. The package also provides
-convenient, performant implementations of typical analysis steps, such as the
-inference of gender, age, ethnicity (based on both internal SNP probes and
-channel-switching Type-I probes) directly from the data. This allows users to
-infer these common covariates if such information is not provided, and to 
-check for potential sample swaps when it is provided.  SeSAMe also provides
-functionality for calling differential methylation and segmented copy number.
-
-### Read IDATs into SigSet list
-```{r}
-ssets <- lapply(
-    searchIDATprefixes(system.file("extdata/", package = "sesameData")),
-    readIDATpair)
-```
-
-A simple list of "SigSet"s are returned. One can also just provide a vector
-of file paths prefixes (excluding `_Red.idat` and `_Grn.idat`, one prefix for
-a pair of IDATs) and call `readIDATpair` directly.
-
-### Background subtraction
-
-Like many other Infinium Methylation-targeted software, SeSAMe implements the
-background subtraction based on normal-exponential deconvolution using
-out-of-band probes `noob`
-([Triche et al. 2013](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3627582/))
-and optionally with extra bleed-through subtraction. Signal bleed-through
-happens when measurement from one channel affects the measurement in the other
-channel. SeSAMe's `noobsb` further removes residual background by regressing
-out the green-to-red and red-to-green relationship using Type-I probes.
-```{r}
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sset.nb <- noob(sset)
-sset.nb <- noobsb(sset)
-```
-
-### Type-I channel inference
-Sometimes Type-I channel spec is inaccurate in the manifest. We can infer the
-channel using data.
-```{r}
-sset.TypeICorrected <- inferTypeIChannel(sset)
-```
-
-### Dye bias correction
-
-Dye bias refers to the difference in signal intensity between the two color
-channel. SeSAMe offers two flavors of dye bias correction: linear scaling
-(`dyeBiasCorr`) and nonlinear scaling (`dyeBiasCorrTypeINorm`). Linear scaling
-equalize the mean of all probes from the two color channel.
-```{r}
+`SigSet` can be converted back and forth from Minfi `RGChannelSet` in multiple
+ways. One can sesamize a minfi `RGChannelSet` which returns a `GenomicRatioSet`.
+Here we are illustrating using the `FlowSorted.Blood.450k` object, which is 
+distributed in the `minfi::RGChannelSet`.
+```{r message = FALSE}
 library(sesame)
-sset.dbLinear <- dyeBiasCorr(sset)
-qqplot(
-    slot(sset.dbLinear, 'IR'), slot(sset.dbLinear, 'IG'),
-    xlab='Type-I Red Signal', ylab='Type-I Grn Signal',
-    main='Linear Correction', cex=0.5)
-abline(0,1,lty='dashed')
+library(FlowSorted.Blood.450k)
+options(rmarkdown.html_vignette.check_title = FALSE)
+
 ```
 
-Residual dye bias can be corrected using nonlinear quantile interpolation with
-Type-I probes.
 ```{r}
-sset.dbNonlinear <- dyeBiasCorrTypeINorm(sset)
-```
-
-Under this correction, Type-I Red probes and Type-I Grn probes have the same
-distribution of signal.
-```{r}
-qqplot(
-    slot(sset.dbNonlinear, 'IR'), slot(sset.dbNonlinear, 'IG'),
-    xlab='Type-I Red Signal', ylab='Type-I Grn Signal',
-    main='Nonlinear Correction', cex=0.5)
-abline(0,1,lty='dashed')
-```
-
-Note that linear scaling does not shift beta values of Type-I probes while
-nonlinear scaling does shift beta values of Type-I probes.
-
-### Get betas
-
-Beta values are defined as `methylated signal`/(`methylated signal`
-+ `unmethylated signal`). It can be computed using `getBetas` function.
-The output is a named vector with probe ID as name.  There are two options
-for `getBetas` that affects probe masking. The first is
-`quality.mask=TRUE/FALSE` which switches probe quality masking. The quality
-masking includes mapping issues, SNPs and non-uniqueness, and is described
-in [Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
-`nondetection.mask = TRUE/FALSE` is used to switch masking of nondetection
-based on detection P-value. Both masks are recommended to ensure data quality
-and defaulted to TRUE.
-```{r}
-betas <- getBetas(sset)
-head(betas)
-```
-
-Beta values for Type-I probes can also be obtained by summing up the two
-in-band channel and out-of-band channel. This rescues probes with SNP hitting
-the extension base and hence switching color channel. More details can be
-found in
-[Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
-```{r}
-betas <- getBetas(sset, sum.TypeI = TRUE)
-```
-
-For such probes, extra SNP allele frequencies can be derived by summing up
-methylated and umethylated alleles.
-```{r}
-extraSNPAFs <- getAFTypeIbySumAlleles(sset)
-```
-
-### Sample/experiment QC
-
-SeSAMe implements inference of sex, age, ethnicity. These are valuable
-information for checking the integrity of the experiment and detecting sample
-swaps.
-
-#### Sex
-
-Sex is inferred based on our curated X-linked probes and Y chromosome probes
-excluding pseudo-autosomal regions.
-```{r}
-inferSex(sset)
-inferSexKaryotypes(sset)
-```
-
-#### Ethnicity
-
-Ethnicity is inferred using a random forest model trained based on both the
-built-in SNPs (`rs` probes) and channel-switching Type-I probes.
-```{r}
-inferEthnicity(sset)
-```
-
-#### Age
-
-SeSAMe provides age regression a la the Horvath 353 model.
-```{r}
-betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-predictAgeHorvath353(betas)
-```
-
-#### Mean intensity
-
-The mean intensity of all the probes characterize the quantity of input DNA
-and efficiency of probe hybridization.
-```{r}
-meanIntensity(sset)
-```
-
-#### Bisulfite conversion control using GCT scores
-
-Infinium platforms are intrinsically robust to incomplete bisulfite conversion
-as non-converted probes would fail to hybridize to the target. Residual
-incomplete bisulfite conversion can be quantified using GCT score based on
-C/T-extension probes. Details of this method can be found in
-[Zhou et al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
-The closer the score to 1.0, the more complete the bisulfite conversion.
-```{r}
-bisConversionControl(sset)
-```
-
-### Probe retrieval and $\beta$-value visualization
-
-To visualize all probes from a gene
-```{r, message=FALSE, fig.width=6, fig.height=5}
-betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
-visualizeGene('DNMT1', betas, platform='HM450')
-```
-
-To visualize probes from arbitrary region
-```{r, message=FALSE, fig.width=6, fig.height=5}
-visualizeRegion(
-    'chr19',10260000,10380000, betas, platform='HM450',
-    show.probeNames = FALSE)
-```
-
-To visualize by probe names
-```{r, message=FALSE, fig.width=6}
-visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
-```
-
-### CNV
-
-SeSAMe performs copy number variation in three steps: 1) normalizes the signal
-intensity using a copy-number-normal data set; 2) groups adjacent probes into
-bins; 3) runs DNAcopy internally to group bins into segments.
-```{r, message=FALSE, fig.width=6}
-ssets.normal <- sesameDataGet('EPIC.5.normal')
-segs <- cnSegmentation(sset, ssets.normal)
-```
-
-To visualize segmentation in SeSAMe,
-```{r, message=FALSE, fig.width=6}
-visualizeSegments(segs)
-```
-
-### Cell Composition Deconvolution
-
-SeSAMe estimates leukocyte fraction using a two-component model.This function
-works for samples whose targeted cell-of-origin is not related to white blood
-cells.
-```{r, message=FALSE}
-betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-estimateLeukocyte(betas.tissue)
+grSet <- sesamize(FlowSorted.Blood.450k[,1:4])
+grSet
 ```

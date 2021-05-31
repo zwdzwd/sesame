@@ -143,7 +143,7 @@ sesameQC <- function(sset) {
 
     pvals = pOOBAH(sset, return.pval=TRUE)
     betas <- getBetas(addMask(
-        dyeBiasCorrTypeINorm(noob(sset)), pvals > 0.05))
+        dyeBiasNL(noob(sset)), pvals > 0.05))
 
     qc$num_probes <- length(betas)
     qc$num_na <- sum(is.na(betas))

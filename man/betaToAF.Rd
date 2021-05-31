@@ -18,5 +18,5 @@ convert betas to variant allele frequency
 \examples{
 sesameDataCache("MM285") # if not done yet
 sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
-vafs <- betaToAF(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
+vafs <- betaToAF(getBetas(dyeBiasNL(noob(sset))))
 }

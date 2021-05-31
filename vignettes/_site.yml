@@ -2,24 +2,18 @@ name: "SeSAMe"
 navbar:
   title: '<a href="http://bioconductor.org/packages/release/bioc/html/sesame.html" class="navbar-left"><img src="./include/logo.png" height="50" width="50" vspace=5 hspace=10></a>'
   left:
-    - text: "SeSAMe"
+    - text: "Basics"
       icon: fa-home
       href: sesame.html
+    - text: "Quality Control"
+      icon: fa-copy
+      href: QC.html
     - text: "Mammal 40"
       icon: fa-paw
       href: mammal.html
     - text: "Mouse Array"
       icon: fa-paw
       href: mouse.html
-    - text: "Large Data"
-      icon: fa-database
-      href: largeData.html
-    - text: "Minfi Interaction"
-      icon: fa-barcode
-      href: minfi.html
-    - text: "Quality Control"
-      icon: fa-copy
-      href: QC.html
     - text: "Data Sanitization"
       icon: fa-book
       href: datasanitization.html
