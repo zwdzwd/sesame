@@ -1,0 +1,76 @@
+---
+title: "Modeling"
+date: "`r BiocStyle::doc_date()`"
+package: sesame
+output: BiocStyle::html_document
+fig_width: 8
+fig_height: 6
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{3. Modeling}
+  %\VignetteEncoding{UTF-8}
+---
+
+# Differential Methylation
+
+SeSAMe implements stricter QC and preprocessing standards: comprehensive
+probe quality masking, bleed-through correction in background subtraction,
+nonlinear dye bias correction, stricter nondetection calling and control for
+bisulfite conversion based on C/T-extension probes. The package also provides
+convenient, performant implementations of typical analysis steps, such as the
+inference of gender, age, ethnicity (based on both internal SNP probes and
+channel-switching Type-I probes) directly from the data. This allows users to
+infer these common covariates if such information is not provided, and to 
+check for potential sample swaps when it is provided.  SeSAMe also provides
+functionality for calling differential methylation and segmented copy number.
+
+```{r message=FALSE}
+library(sesame)
+library(SummarizedExperiment)
+```
+
+```{r message=FALSE}
+se = sesameDataGet("MM285.10.tissues")[1:100,]
+se_ok = (checkLevels(assay(se), colData(se)$sex) &
+    checkLevels(assay(se), colData(se)$tissue))
+se = se[se_ok,]
+```
+
+Test differential methyaltion on a model with tissue and sex as covariates.
+
+```{r}
+cf_list = summaryExtractCfList(DML(se, ~tissue + sex))
+```
+
+Testing sex-specific differential methylation yields chrX-linked probes.
+
+```{r}
+cf_list = DMR(se, cf_list$sexMale)
+topSegments(cf_list) %>% dplyr::filter(Seg.Pval.adj < 0.05)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(sesame)
+library(dplyr)
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
+# Track View
+
+To visualize all probes from a gene
+```{r, message=FALSE, fig.width=6, fig.height=5}
+betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
+visualizeGene('DNMT1', betas, platform='HM450')
+```
+
+To visualize probes from arbitrary region
+```{r, message=FALSE, fig.width=6, fig.height=5}
+visualizeRegion(
+    'chr19',10260000,10380000, betas, platform='HM450',
+    show.probeNames = FALSE)
+```
+
+To visualize by probe names
+```{r, message=FALSE, fig.width=6}
+visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
+```

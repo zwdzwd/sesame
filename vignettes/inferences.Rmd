@@ -1,0 +1,79 @@
+---
+title: "Data Inference"
+shorttitle: "Data Sanitization"
+package: sesame
+output: rmarkdown::html_vignette
+fig_width: 6
+fig_height: 6
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{"4. Data Inference"}
+  %\VignetteEncoding{UTF-8} 
+---
+
+SeSAMe implements inference of sex, age, ethnicity. These are valuable
+information for checking the integrity of the experiment and detecting sample
+swaps.
+
+```{r echo=FALSE, message=FALSE}
+library(sesame)
+```
+
+# Sex
+
+Sex is inferred based on our curated X-linked probes and Y chromosome probes
+excluding pseudo-autosomal regions.
+```{r}
+sset = sesameDataGet('EPIC.1.LNCaP')$sset
+inferSex(sset)
+inferSexKaryotypes(sset)
+```
+
+# Ethnicity
+
+Ethnicity is inferred using a random forest model trained based on both the
+built-in SNPs (`rs` probes) and channel-switching Type-I probes.
+```{r}
+inferEthnicity(sset)
+```
+
+# Age
+
+SeSAMe provides age regression a la the Horvath 353 model.
+```{r}
+betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
+predictAgeHorvath353(betas)
+```
+
+# Mean intensity
+
+The mean intensity of all the probes characterize the quantity of input DNA
+and efficiency of probe hybridization.
+```{r}
+meanIntensity(sset)
+```
+
+# Copy Number
+
+SeSAMe performs copy number variation in three steps: 1) normalizes the signal
+intensity using a copy-number-normal data set; 2) groups adjacent probes into
+bins; 3) runs DNAcopy internally to group bins into segments.
+```{r, message=FALSE, fig.width=6}
+ssets.normal <- sesameDataGet('EPIC.5.normal')
+segs <- cnSegmentation(sset, ssets.normal)
+```
+
+To visualize segmentation in SeSAMe,
+```{r, message=FALSE, fig.width=6}
+visualizeSegments(segs)
+```
+
+# Cell Composition Deconvolution
+
+SeSAMe estimates leukocyte fraction using a two-component model.This function
+works for samples whose targeted cell-of-origin is not related to white blood
+cells.
+```{r, message=FALSE}
+betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
+estimateLeukocyte(betas.tissue)
+```

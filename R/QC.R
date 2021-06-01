@@ -274,14 +274,14 @@ print.sesameQC <- function(x, ...) {
             x[[paste0('frac_meth_', pt)]]))
     }
 
-    cat('\n')
-    cat('=======================\n')
-    cat('=      Inferences     =\n')
-    cat('=======================\n')
-    cat('Sex:                           ', x$sex, '\n')
-    cat('Ethnicity:                     ', x$ethnicity, '\n')
-    cat('Age:                           ', x$age, '\n')
-    cat('Bisulfite Conversion (GCT):    ', x$GCT, '\n')
+    ## cat('\n')
+    ## cat('=======================\n')
+    ## cat('=      Inferences     =\n')
+    ## cat('=======================\n')
+    ## cat('Sex:                           ', x$sex, '\n')
+    ## cat('Ethnicity:                     ', x$ethnicity, '\n')
+    ## cat('Age:                           ', x$age, '\n')
+    ## cat('Bisulfite Conversion (GCT):    ', x$GCT, '\n')
     
     cat('\n')
 }

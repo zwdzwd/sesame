@@ -1,29 +1,40 @@
 ---
-title: "Quality Controls"
+title: "Quality Control"
 date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: BiocStyle::html_document
-fig_width: 8
+fig_width: 6
 fig_height: 6
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{1. Quality Controls}
+  %\VignetteIndexEntry{1. Quality Control}
   %\VignetteEncoding{UTF-8}
 ---
 
-# Generation of Quality Controls
+# Quality Ranking
+
+```{r echo=FALSE, message=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+library(sesame)
+```
+
+Sesame provide convenient function to compare your sample with
+public data sets processed with the same pipeline. All you need
+is a raw SigSet.
+```{r}
+sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+as.data.frame(qualityRank(sset))
+```
+
+# Quality Metrics
 
 SeSAMe provides a set of quality control steps.
 Be sure to pre-cache HM450 annotation data from ExperimentHub.
 This only needs to be done once per sesame installation.
-```{r, echo = FALSE, message = FALSE}
-library(sesame)
-library(FlowSorted.Blood.450k)
-options(rmarkdown.html_vignette.check_title = FALSE)
-sesameDataCache("HM450")
-sesameDataCache("EPIC")
-
-ssets <- RGChannelSetToSigSets(FlowSorted.Blood.450k[,1:10])
+```{r echo = FALSE, message = FALSE}
+# library(FlowSorted.Blood.450k)
+# ssets <- RGChannelSetToSigSets(FlowSorted.Blood.450k[,1:10])
+ssets = sesameDataGet("EPIC.5.normal")
 ```
 
 The SeSAMe QC function returns an `sesameQC` object which can be
@@ -35,19 +46,19 @@ sesameQC(ssets[[1]])
 The `sesameQC` object can be coerced into data.frame and linked
 using the following code
 ```{r}
-qc10 <- do.call(rbind, lapply(ssets, function(x)
+qc5 <- do.call(rbind, lapply(ssets, function(x)
     as.data.frame(sesameQC(x))))
-qc10$sample_name <- names(ssets)
+qc5$sample_name <- names(ssets)
 
-qc10[,c('mean_beta_cg','frac_meth_cg','frac_unmeth_cg','sex','age')]
+qc5[,c('mean_beta_cg','frac_meth_cg','frac_unmeth_cg')]
 ```
 
-# Background
+## Signal Background
 
 The background level is given by `mean_oob_grn` and `mean_oob_red`
 ```{r}
 library(ggplot2)
-ggplot(qc10,
+ggplot(qc5,
     aes(x = mean_oob_grn, y= mean_oob_red, label = sample_name)) +
     geom_point() + geom_text(hjust = -0.1, vjust = 0.1) +
     geom_abline(intercept = 0, slope = 1, linetype = 'dotted') +
@@ -55,7 +66,7 @@ ggplot(qc10,
     xlim(c(500,1200)) + ylim(c(500,1200))
 ```
 
-# Mean Intensity
+## Mean Intensity
 
 The mean {M,U} intensity can be reached by `mean_intensity`.
 Similarly, the mean M+U intensity can be reached by
@@ -64,12 +75,12 @@ input or poor hybridization.
 
 ```{r warning = FALSE}
 library(wheatmap)
-p1 <- ggplot(qc10) +
+p1 <- ggplot(qc5) +
     geom_bar(aes(sample_name, mean_intensity), stat='identity') +
     xlab('Sample Name') + ylab('Mean Intensity') +
     ylim(0,18000) +
     theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-p2 <- ggplot(qc10) +
+p2 <- ggplot(qc5) +
     geom_bar(aes(sample_name, mean_intensity_total), stat='identity') +
     xlab('Sample Name') + ylab('Mean M+U Intensity') +
     ylim(0,18000) +
@@ -77,18 +88,7 @@ p2 <- ggplot(qc10) +
 WGG(p1) + WGG(p2, RightOf())
 ```
 
-# Fraction of color channel switch
-
-The fraction of color channel switch can be found in 
-`InfI_switch_G2R` and `InfI_switch_R2G`. These numbers are 
-symptomatic of how Infinium I probes are affected by SNP-induced
-color channel switching.
-```{r}
-ggplot(qc10) +
-    geom_point(aes(InfI_switch_G2R, InfI_switch_R2G))
-```
-
-# Fraction of NA
+## Probe Success Rate
 
 The fraction of NAs are signs of masking due to variety of reasons
 including failed detection, high background, putative low quality
@@ -96,34 +96,51 @@ probes etc. This number can be reached in `frac_na_cg` and
 `num_na_cg` (the cg stands for CpG probes, so we also have
 `num_na_ch` and `num_na_rs`)
 ```{r}
-p1 <- ggplot(qc10) +
+p1 <- ggplot(qc5) +
     geom_bar(aes(sample_name, num_na_cg), stat='identity') +
     xlab('Sample Name') + ylab('Number of NAs') +
     theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-p2 <- ggplot(qc10) +
+p2 <- ggplot(qc5) +
     geom_bar(aes(sample_name, frac_na_cg), stat='identity') +
     xlab('Sample Name') + ylab('Fraction of NAs (%)') +
     theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
 WGG(p1) + WGG(p2, RightOf())
 ```
 
-# Quality Ranking
+## Color Channel Switch
 
-Sesame provide convenient function to compare your sample with
-public data sets processed with the same pipeline. All you need
-is a raw SigSet.
+The fraction of color channel switch can be found in 
+`InfI_switch_G2R` and `InfI_switch_R2G`. These numbers are 
+symptomatic of how Infinium I probes are affected by SNP-induced
+color channel switching.
 ```{r}
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-as.data.frame(qualityRank(sset))
+ggplot(qc5) +
+    geom_point(aes(InfI_switch_G2R, InfI_switch_R2G))
 ```
 
-# Output explicit and Infinium-I-derived SNP to VCF
+## Bisulfite Conversion
 
+Infinium platforms are intrinsically robust to incomplete bisulfite conversion
+as non-converted probes would fail to hybridize to the target. Residual
+incomplete bisulfite conversion can be quantified using GCT score based on
+C/T-extension probes. Details of this method can be found in
+[Zhou et al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
+The closer the score to 1.0, the more complete the bisulfite conversion.
 ```{r}
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+bisConversionControl(sset)
+```
 
-annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
-annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
+# Extract Genotypes
+
+SeSAMe can output explicit and Infinium-I-derived SNP to VCF.
+This information can be used to identify sample swaps.
+
+```{r}
+# annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
+# annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
+annoS = sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
+annoI = sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
 
 ## output to console
 head(formatVCF(sset, annoS=annoS, annoI=annoI))
