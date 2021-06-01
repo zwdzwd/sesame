@@ -116,12 +116,9 @@ This information can be used to identify sample swaps.
 
 ```{r}
 sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-
-annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
-annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
-
-## output to console
-head(formatVCF(sset, annoS=annoS, annoI=annoI))
+annoS = sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
+annoI = sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
+head(formatVCF(sset, annoS=annoS, annoI=annoI)) # output to console
 ```
 
 One can output to actual VCF file with a header by `formatVCF(sset,

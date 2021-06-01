@@ -1,4 +1,18 @@
+## very simple genotyper
+genotyper <- function(x, model_background=0.1, model_nbeads=40) {
 
+    GL <- vapply(
+        c(model_background, 0.5, 1-model_background),
+        function(af) {
+            stats::dbinom(
+                round(x*model_nbeads),
+                size=model_nbeads, prob=af)}, numeric(1))
+        
+    ind <- which.max(GL)
+    GT <- c('0/0','0/1','1/1')[ind]
+    GS <- floor(-log10(1-GL[ind] / sum(GL))*10) # assuming equal prior
+    list(GT=GT, GS=GS)
+}
 
 #' Convert SNP from Infinium array to VCF file
 #'
@@ -29,21 +43,18 @@ formatVCF <- function(
     sset, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL) {
 
     platform <- sset@platform
-
     if (is.null(annoS)) {
         annoS <- sesameDataGetAnno(sprintf("%s/%s.%s.snp_overlap_b151.rds",
             platform, platform, refversion))
     }
     betas <- getBetas(sset)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
-    gts <- lapply(vafs, genotype)
+    gts <- lapply(vafs, genotyper)
     GT <- vapply(gts, function(g) g$GT, character(1))
     GS <- vapply(gts, function(g) g$GS, numeric(1))
     vcflines_snp <- cbind(as.character(GenomicRanges::seqnames(annoS)),
         as.character(GenomicRanges::end(annoS)),
-        names(annoS),
-        annoS$REF, annoS$ALT,
-        GS, ifelse(GS>20,'PASS','FAIL'),
+        names(annoS), annoS$REF, annoS$ALT, GS, ifelse(GS>20,'PASS','FAIL'),
         sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
 
     if (is.null(annoI)) {
@@ -58,7 +69,7 @@ formatVCF <- function(
 
     af <- af[names(annoI)]
     vafs <- ifelse(annoI$In.band == 'REF', af, 1-af)
-    gts <- lapply(vafs, genotype)
+    gts <- lapply(vafs, genotyper)
     GT <- vapply(gts, function(g) g$GT, character(1))
     GS <- vapply(gts, function(g) g$GS, numeric(1))
     vcflines_typeI <- cbind(as.character(GenomicRanges::seqnames(annoI)),
@@ -77,17 +88,13 @@ formatVCF <- function(
             'Description="Pseudo Variant Frequency">'),
         paste0('##INFO=<ID=GT,Number=1,Type=String,',
             'Description="Genotype">'),
-        paste0(
-            '##INFO=<ID=GS,Number=1,Type=Integer,',
+        paste0('##INFO=<ID=GS,Number=1,Type=Integer,',
             'Description="Genotyping score from 7 to 85">')
         )
     
-    out <- data.frame(rbind(
-        vcflines_snp, vcflines_typeI))
-    colnames(out) <- c(
-        "#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO")
-    rownames(out) <- out$ID
-    ## out <- out[with(out, order(`#CHROM`,as.numeric(`POS`))),]
+    out <- data.frame(rbind(vcflines_snp, vcflines_typeI))
+    colnames(out) <- c("#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO")
+    rownames(out) <- out[["ID"]]
     out <- out[order(out[['#CHROM']], as.numeric(out[['POS']])),]
     
     if(is.null(vcf)) {
@@ -100,18 +107,3 @@ formatVCF <- function(
     }
 }
 
-## very simple genotyper
-genotype <- function(x, model_background=0.1, model_nbeads=40) {
-
-    GL <- vapply(
-        c(model_background, 0.5, 1-model_background),
-        function(af) {
-            dbinom(
-                round(x*model_nbeads),
-                size=model_nbeads, prob=af)}, numeric(1))
-        
-    ind <- which.max(GL)
-    GT <- c('0/0','0/1','1/1')[ind]
-    GS <- floor(-log10(1-GL[ind] / sum(GL))*10) # assuming equal prior
-    list(GT=GT, GS=GS)
-}

@@ -5,6 +5,7 @@ package: sesame
 output: BiocStyle::html_document
 fig_width: 6
 fig_height: 6
+author: "Wanding Zhou"
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{1. Quality Control}
@@ -31,7 +32,7 @@ as.data.frame(qualityRank(sset))
 SeSAMe provides a set of quality control steps.
 Be sure to pre-cache HM450 annotation data from ExperimentHub.
 This only needs to be done once per sesame installation.
-```{r echo = FALSE, message = FALSE}
+```{r message = FALSE}
 # library(FlowSorted.Blood.450k)
 # ssets <- RGChannelSetToSigSets(FlowSorted.Blood.450k[,1:10])
 ssets = sesameDataGet("EPIC.5.normal")
@@ -63,7 +64,7 @@ ggplot(qc5,
     geom_point() + geom_text(hjust = -0.1, vjust = 0.1) +
     geom_abline(intercept = 0, slope = 1, linetype = 'dotted') +
     xlab('Green Background') + ylab('Red Background') +
-    xlim(c(500,1200)) + ylim(c(500,1200))
+    xlim(c(200,600)) + ylim(c(200,600))
 ```
 
 ## Mean Intensity
@@ -137,13 +138,9 @@ SeSAMe can output explicit and Infinium-I-derived SNP to VCF.
 This information can be used to identify sample swaps.
 
 ```{r}
-# annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
-# annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
-annoS = sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
-annoI = sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
-
-## output to console
-head(formatVCF(sset, annoS=annoS, annoI=annoI))
+annoS = sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
+annoI = sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
+vcf = formatVCF(sset, annoS=annoS, annoI=annoI)
 ```
 
 One can output to actual VCF file with a header by `formatVCF(sset,
