@@ -57,6 +57,7 @@ qualityRank <- function(
 #' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' sesamePlotIntensVsBetas(sset)
 #' @import graphics
+#' @import KernSmooth
 #' @importFrom grDevices colorRampPalette
 #' @export
 sesamePlotIntensVsBetas <- function(sset, mask=TRUE, intens.range=c(5,15)) {
