@@ -7,6 +7,7 @@
 #' @param threshold.neg pvalue > threshold.neg are considered to be negative probes (default is 0.2).
 #' @param ret.max whether to return the species with maximal AUC.
 #' @param balance whether to balance the postive and negative probes size (default is TRUE).
+#' @param threshold.sucess.rate threshold of success rate to determine mouse species.
 #' @return a list of auc, pvalue, species (NCBI official species names) and taxid.
 #' We infer species based on probes pvalues and alignment score.
 #' AUC was calculated for each specie, y_true is 1 or 0 
@@ -26,15 +27,19 @@
 #' @export
 
 inferSpecies <- function(sset,df_as=NULL,topN=3000,
-			threshold.pos=0.01,threshold.neg=0.2,ret.max=T,
-			balance=T) {
+			threshold.pos=0.01,threshold.neg=0.1,ret.max=T,
+			balance=T,threshold.sucess.rate = 0.8) {
     if (is.null(df_as)) {
-    	df_as=sesameDataGet('Mammal40.alignmentScore')
+    	df_as=sesameDataGet(paste(sset@platform,'alignmentScore',sep='.'))
 	}
     pvalue=pval(sset)
     pvalue <- pvalue[intersect(names(pvalue),rownames(df_as))]
-    pos_probes=sort(pvalue[pvalue < threshold.pos],decreasing=F)
-    neg_probes=sort(pvalue[pvalue > threshold.neg],decreasing=T)
+    pos_probes=sort(pvalue[pvalue <= threshold.pos],decreasing=F)
+    neg_probes=sort(pvalue[pvalue >= threshold.neg],decreasing=T)
+	success.rate = length(pvalue[pvalue<=0.05]) / length(pvalue)
+	if (success.rate >= threshold.sucess.rate && sset@platform=='Mouse') {
+		return(list(auc=1,taxid='10090',species='Mus musculus'))
+	}
     if (balance) {
 	    topN <- min(length(neg_probes),length(pos_probes))
     }
@@ -44,24 +49,23 @@ inferSpecies <- function(sset,df_as=NULL,topN=3000,
     if (length(neg_probes) > topN){
 	    neg_probes <- neg_probes[1:topN]
     }
-    #y_true <- sapply(pvalue[probes],function(x) {if (x<0.01) {return(1)} else {return(0)}})
     y_true=structure(c(rep(1,length(pos_probes)),rep(0,length(neg_probes))),
 		     names=c(names(pos_probes),names(neg_probes)))
     df_as=df_as[c(names(pos_probes),names(neg_probes)),]
     if (length(y_true) == 0){
 	    if (ret.max==T){
-		    return(list(auc=NA,p.value=NA,species=NA,taxid=NA))
+		    return(list(auc=NA,species=NA,taxid=NA))
 	    }
 	    else {
 		    return(as.data.frame(t(sapply(colnames(df_as),function() {
-			    list(auc=NA,p.value=NA,species=NA,taxid=NA)
+			    list(auc=NA,species=NA,taxid=NA)
 		    }))))
 	    }
     }
         
     
-    res = as.data.frame(t(sapply(colnames(df_as),function(s) {
-            labels <- as.logical(y_true)
+    auc = sapply(colnames(df_as),function(s) {
+		labels <- as.logical(y_true)
 	    n1 <- sum(labels)
 	    n2 <- sum(!labels)
 	    R1 <- sum(rank(df_as[,s])[labels])
@@ -69,19 +73,18 @@ inferSpecies <- function(sset,df_as=NULL,topN=3000,
 	    auc <- U1/(n1 * n2)
 	    #z <- (R1 - n1*(n1+n2+1)/2) / sqrt(n1*n2*(n1+n2+1))
 	    #p1 <- pnorm(z, lower.tail=FALSE)
-	    p <- wilcox.test(df_as[names(pos_probes),s],df_as[names(neg_probes),s],alternative='greater')
-	    return(list(auc=auc,p.value=p$p.value))
-    })))
+	    #p <- wilcox.test(df_as[names(pos_probes),s],df_as[names(neg_probes),s],alternative='greater')
+	    return(auc) #p.value=p$p.value
+    })
         
-
     if (ret.max == T){
-	    r=t(res[which.max(res$auc),])
-	    l=r[,1]
-	    l['species']=unlist(strsplit(colnames(r)[1],"\\|"))[1]
-	    l['taxid']=unlist(strsplit(colnames(r)[1],"\\|"))[2]
+	    l=as.list(auc[which.max(auc)])
+	    l['species']=unlist(strsplit(names(l)[1],"\\|"))[1]
+	    l['taxid']=unlist(strsplit(names(l)[1],"\\|"))[2]
+		names(l)[1] <- 'auc'
 	    return(l)
     }
     else {
-	    return(res)
+	    return(auc)
     }
 }
