@@ -31,9 +31,7 @@ res_grn = sesameDataDownload("3999492009_R01C01_Grn.idat", dest_dir=dest_dir)
 res_red = sesameDataDownload("3999492009_R01C01_Red.idat", dest_dir=dest_dir)
 ```
                                                    
-## deIdentify 
-
-### Method 1
+## De-identify by Masking
 
 This first method of deIdentification masks SNP probe intensity mean by zero.
 As a consequence, the allele frequency will be 0.5. 
@@ -53,7 +51,7 @@ head(betas2[grep('rs',names(betas2))])
 Note that before deIdentify, the rs values will all be different. After
 deIdentify, the rs values will all be masked at an intensity of 0.5. 
 
-### Method 2 
+## De-identify by Scrambling
 
 This second method of deIdentification will scramble the intensities using
 a secret key to help formalize a random number. Therefore, randomize needs
@@ -81,7 +79,7 @@ head(betas2[grep('rs',names(betas2))])
 ```
 Note that the rs values are scrambled after deIdentify.  
 
-## reIdentify
+## Re-identify
 
 To restore order of the deIdentified intensities, one can re-identify IDATs.
 The reIdentify function can thus restore the scrambled SNP intensities. 
@@ -126,7 +124,7 @@ vcf=path_to_vcf)`.
 
 # The FileSet
 
-## Preprocessing IDATs Directly to Files
+## Preprocessing IDATs to FileSets
 
 When a large number of samples are being analyzed, it is desirable to have
 random access to specific CpG methylation without loading all the data.
@@ -153,6 +151,7 @@ fset <- openSesameToFile('mybetas',
 ```
 
 ## Introduction to fileSet
+
 When printed to console, the number of samples and the number of probes are 
 shown.
 ```{r}

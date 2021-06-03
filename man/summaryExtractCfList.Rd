@@ -2,7 +2,9 @@
 % Please edit documentation in R/dm.R
 \name{summaryExtractCfList}
 \alias{summaryExtractCfList}
-\title{Extract slope information from DMLSummary}
+\title{Extract Coefficient Table List from DMLSummary
+This function returns a list of coefficients for each variable
+tested.}
 \usage{
 summaryExtractCfList(smry)
 }
@@ -13,7 +15,9 @@ summaryExtractCfList(smry)
 a list of coefficients for each tested factor
 }
 \description{
-Extract slope information from DMLSummary
+Extract Coefficient Table List from DMLSummary
+This function returns a list of coefficients for each variable
+tested.
 }
 \examples{
 sesameDataCache("HM450") # in case not done yet

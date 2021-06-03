@@ -1,6 +1,6 @@
 ---
 title: "Data Inference"
-shorttitle: "Data Sanitization"
+date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: rmarkdown::html_vignette
 fig_width: 6

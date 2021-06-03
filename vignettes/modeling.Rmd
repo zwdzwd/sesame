@@ -13,38 +13,134 @@ vignette: >
 
 # Differential Methylation
 
-SeSAMe implements stricter QC and preprocessing standards: comprehensive
-probe quality masking, bleed-through correction in background subtraction,
-nonlinear dye bias correction, stricter nondetection calling and control for
-bisulfite conversion based on C/T-extension probes. The package also provides
-convenient, performant implementations of typical analysis steps, such as the
-inference of gender, age, ethnicity (based on both internal SNP probes and
-channel-switching Type-I probes) directly from the data. This allows users to
-infer these common covariates if such information is not provided, and to 
-check for potential sample swaps when it is provided.  SeSAMe also provides
-functionality for calling differential methylation and segmented copy number.
-
+Here I will try to address the analysis workflow of studying DNA methylation
+with one or more independent variable, be it tissue, cell type, sex, age,
+tumor/normal, treatment/control or a combination of these factors.
+The `DML` (short for Differential Methylation Locus) function models beta
+values (DNA methylation levels) on known co-variates (e.g., case vs control)
+using linear modeling. This general supervised learning framework
+identifies CpG loci whose differential methylation is associated with known
+co-variates. Let's first load needed packages
 ```{r message=FALSE}
 library(sesame)
+library(tidyr)
 library(SummarizedExperiment)
 ```
 
+In the following, we will use 10 mouse array samples as our example dataset.
+This dataset contains mouse samples
+from different tissues and individuals of different ages and sexes.
+The dataset is stored
+in a `SummarizedExperiment` object, which contains a data matrix combined
+with column-wise metadata accessible with `colData`:
 ```{r message=FALSE}
 se = sesameDataGet("MM285.10.tissues")[1:100,]
+colData(se)
+```
+
+**CRITICAL:** If your data is NA-masked (see the Basic Usage tutorial), it is
+critical to preclude CpGs with missing levels. For example, if a CpG does
+not contain any non-NA values for all male mice, one cannot assess
+sex-specific DNA methylation for this CpG. One needs to preclude
+such CpGs from the modeling of sex-specific differential methylation.
+This can be done using the `checkLevels` function.
+In the following, we will test for both sex and
+tissue as co-variates using the `checkLevels` function:
+```{r}
 se_ok = (checkLevels(assay(se), colData(se)$sex) &
     checkLevels(assay(se), colData(se)$tissue))
 se = se[se_ok,]
 ```
 
-Test differential methyaltion on a model with tissue and sex as covariates.
-
-```{r}
-cf_list = summaryExtractCfList(DML(se, ~tissue + sex))
+**NOTE:** If your model include discrete contrast variables like tissue and
+sex as in the current example, you should consider explicitly turning it into a
+factor variable with a reference level (`treatment coding`, see
+[different coding systems](
+https://stats.idre.ucla.edu/r/library/r-library-contrast-coding-systems-
+for-categorical-variables/)).
+For example, to use `Colon` as the
+reference tissue and `Female` as the reference sex, one can do the following
+```
+colData(se) = colData(se) %>% mutate(
+    tissue = relevel(factor(tissue), "Colon"),
+    sex = relevel(factor(tissue), "Female")
 ```
 
-Testing sex-specific differential methylation yields chrX-linked probes.
+Then we will model DNA methylation variation
+treating tissue and sex as covariates. To do that we will call the `DML`
+function and specify the R formula
+`~tissue + sex`. This function fits DNA methylation reading to a linear
+model and perform the
+corresponding slope test and goodness-of-fit test (F-test holding out each
+contrast variable). All these results are returned in an
+object of class `DMLSummary`;
+```{r}
+smry = DML(se, ~tissue + sex)
+smry
+```
+The `DMLSummary` object is a list of expanded `summary.lm` objects from the
+linear model (as would be returned by `summary(lm())`. The
+`summaryExtractTest` function abstracts a `DMLSummary` object
+into a data frame with rows corresponding to CpGs/loci and columns containing
+the slopes and p-values of each variable.
+```{r}
+test_result = summaryExtractTest(smry)
+test_result
+```
+
+With the exception of the `Intercept`, there are four groups of columns, each
+starting with "Est_", "Pval_", "FPval_", and "Eff_" as prefix. Here are what
+they represent:
+
+1. **Est_**: slope estimate (beta). Methylation difference of the current level
+with respect to the reference level for nominal contrast variables. Each suffix
+is concatenated from the contrast variable name (e.g., tissue, sex) and the
+level name if the contrast variable is discrete (e.g, Cecum, Esophagus, Fat).
+For example, "Est_tissueFat" should be interpreted as the
+estimated delta beta value of Fat compared to the reference tissue (which is
+`Colon` as set above. If reference is not set, the first level in alphabetic
+order is used as the reference).
+2. **Pval_**: the t-test p-value of the slope (statistical
+significance of the difference). There are two special columns named
+"Est_`(Intercept)`" and "Pval_`(Intercept)`". They correspond to the
+methylation level of the reference level (in this case a Female Colon sample).
+3. **FPval_**: the p-value of the F-test contrasting the full model with the
+reduced model with the labeled contrasting held out. Note that "Pval_" and
+"FPval_" are equivalent when the contrast variable is a 2-level factor, i.e.,
+it is a pairwise comparison.
+4. **Eff_**: the effect size of each normial contrast variable. This is
+equivalent to the maximum slope subtracted by the minimum level including the
+reference level (0).
+
+## Goodness of fit
+
+One may want to ask a question like whether the methylation of the probe is
+tissue-specific rather than the methylation of the probe is specifically
+hypermethylated in fat. The former question ask about the contrast variable
+as a whole instead of a specific level of the contrast variable. To answer
+this question, we can use a F-test contasting the full model with a reduced
+model with the target contrast variable held out. This information is captured
+in the **FPval_** columns. For example, to get all CpGs that are methylated
+specific to sex,
 
 ```{r}
+test_result %>% dplyr::filter(FPval_sex < 0.05, Eff_sex > 0.1) %>%
+    select(Pval_sexMale, Eff_sex)
+```
+
+
+
+## Continuous Variable
+
+## Pairwise Comparison
+
+A special case of the linear regression is pairwise comparison.
+
+# DMR
+
+Testing sex-specific differential methylation yields chrX-linked probes.
+```{r}
+cf_list = summaryExtractCfList(smry)
 cf_list = DMR(se, cf_list$sexMale)
 topSegments(cf_list) %>% dplyr::filter(Seg.Pval.adj < 0.05)
 ```

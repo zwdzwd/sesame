@@ -16,9 +16,14 @@ are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
 and are referenced in formula. Rows are samples.}
 
 \item{mc.cores}{number of cores for parallel processing}
+
+\item{coding}{contr.sum or contr.treatment
+in deviation coding (contr.sum), the intercept is the -grand sum
+in treatment coding (contr.treatment), the intercept is the reference
+level estimate.}
 }
 \value{
-a list of test summaries
+a list of test summaries, summary.lm objects
 }
 \description{
 The function takes a beta value matrix with probes on the rows and
@@ -29,6 +34,6 @@ coefficient tables for each factor tested.
 \examples{
 sesameDataCache("HM450") # in case not done yet
 data <- sesameDataGet('HM450.76.TCGA.matched')
-smry <- summaryExtractSlope(DML(
-    data$betas[1:1000,], ~type, meta=data$sampleInfo))
+smry <- DML(
+    data$betas[1:1000,], ~type, meta=data$sampleInfo)
 }

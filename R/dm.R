@@ -29,14 +29,18 @@ checkLevels = function(betas, fc) {
 #' @param meta data frame for sample information, column names
 #' are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
 #' and are referenced in formula. Rows are samples.
+#' @param coding contr.sum or contr.treatment
+#' in deviation coding (contr.sum), the intercept is the -grand sum
+#' in treatment coding (contr.treatment), the intercept is the reference
+#' level estimate.
 #' @param mc.cores number of cores for parallel processing
-#' @return a list of test summaries
+#' @return a list of test summaries, summary.lm objects
 #' @import stats
 #' @examples
 #' sesameDataCache("HM450") # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- summaryExtractSlope(DML(
-#'     data$betas[1:1000,], ~type, meta=data$sampleInfo))
+#' smry <- DML(
+#'     data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' @export
 DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 
@@ -45,14 +49,49 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
         betas = assay(betas0)
         meta = colData(betas0)
     }
-    
+
     mm = model.matrix(fm, meta)
+
+    contr2lvs = setNames(lapply(names(attr(mm, "contrasts")), function(cont) {
+        levels(factor(meta[[cont]])) }), names(attr(mm, "contrasts")))
+    
+    ## prepare holdout models
+    mm_holdout = lapply(names(contr2lvs), function(cont) {
+        mm[, !(colnames(mm) %in% paste0(cont, contr2lvs[[cont]]))] })
+    names(mm_holdout) = names(contr2lvs)
     smry = mclapply(seq_len(nrow(betas)), function(i) {
-        summary(lm(betas[i,]~.+0, data=as.data.frame(mm)))
+        m0 = lm(betas[i,]~.+0, data=as.data.frame(mm))
+        sm = summary(lm(betas[i,]~.+0, data=as.data.frame(mm)))
+        sm$Ftest = do.call(cbind, lapply(mm_holdout, function(mm_) {
+            m1 = lm(betas[i,]~.+0, data=as.data.frame(mm_))
+            anv = anova(m1, m0)
+            c(stat = anv[["F"]][2], pval = anv[["Pr(>F)"]][2])
+        }))
+        sm
     }, mc.cores=mc.cores)
     names(smry) = rownames(betas)
     class(smry) = "DMLSummary"
+    attr(smry, "model.matrix") = mm
+    attr(smry, "contr2lvs") = contr2lvs
     smry
+}
+
+#' Print DMLSummary object
+#'
+#' @param x a DMLSummary object
+#' @param ... extra parameter for print
+#' @return print DMLSummary result on screen
+#' @examples
+#' sesameDataCache("HM450") # in case not done yet
+#' data <- sesameDataGet('HM450.76.TCGA.matched')
+#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' smry
+#' @export
+print.DMLSummary <- function(smry, ...) {
+    mm = attr(smry, "model.matrix")
+    cat(sprintf("DMLSummary Object with %d Loci, %d samples.\n",
+        length(smry), nrow(mm)))
+    cat("Contrasts: ", names(attr(mm, "contrasts")), "\n")
 }
 
 #' Extract slope information from DMLSummary
@@ -60,11 +99,11 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 #' @return a table of slope and p-value
 #' @examples
 #' sesameDataCache("HM450") # in case not done yet
-#' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
-#' slopes <- summaryExtractSlope(smry)
+#' data = sesameDataGet('HM450.76.TCGA.matched')
+#' smry = DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' slopes = summaryExtractTest(smry)
 #' @export
-summaryExtractSlope = function(smry) {
+summaryExtractTest = function(smry) {
     est = as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
         x$coefficients[,'Estimate']; }))))
     rownames(est) <- names(smry)
@@ -72,11 +111,25 @@ summaryExtractSlope = function(smry) {
     pvals = as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
         x$coefficients[,"Pr(>|t|)"] }))))
     rownames(pvals) = names(smry)
-    colnames(pvals) = paste0("pval_", colnames(pvals))
-    cbind(est, pvals)
+    colnames(pvals) = paste0("Pval_", colnames(pvals))
+    f_pvals = do.call(rbind, lapply(smry, function(x) {
+        x$Ftest["pval",,drop=FALSE] }))
+    rownames(f_pvals) = names(smry)
+    colnames(f_pvals) = paste0("FPval_", colnames(f_pvals))
+    contr2lvs = attr(smry, "contr2lvs")
+    effsize = do.call(cbind, lapply(names(contr2lvs), function(cont) {
+        lvs = contr2lvs[[cont]]
+        lvs = lvs[2:length(lvs)]
+        apply(est[, paste0("Est_", cont, lvs),drop=FALSE], 1, function(x) {
+            max(x,0) - min(x,0) }) }))
+    colnames(effsize) = paste0("Eff_", names(contr2lvs))
+    cbind(est, pvals, f_pvals, effsize)
 }
 
-#' Extract slope information from DMLSummary
+#' Extract Coefficient Table List from DMLSummary
+#' This function returns a list of coefficients for each variable
+#' tested.
+#' 
 #' @param smry DMLSummary from DML command
 #' @return a list of coefficients for each tested factor
 #' @examples
@@ -99,6 +152,8 @@ summaryExtractCfList = function(smry) {
     names(cf_list) = tests
     cf_list
 }
+
+
 
 dmr_merge_cpgs <- function(betas, probe.coords, dist.cutoff, seg.per.locus) {
 
