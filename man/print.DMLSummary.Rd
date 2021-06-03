@@ -4,12 +4,12 @@
 \alias{print.DMLSummary}
 \title{Print DMLSummary object}
 \usage{
-\method{print}{DMLSummary}(smry, ...)
+\method{print}{DMLSummary}(x, ...)
 }
 \arguments{
-\item{...}{extra parameter for print}
-
 \item{x}{a DMLSummary object}
+
+\item{...}{extra parameter for print}
 }
 \value{
 print DMLSummary result on screen

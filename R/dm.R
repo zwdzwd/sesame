@@ -29,10 +29,6 @@ checkLevels = function(betas, fc) {
 #' @param meta data frame for sample information, column names
 #' are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
 #' and are referenced in formula. Rows are samples.
-#' @param coding contr.sum or contr.treatment
-#' in deviation coding (contr.sum), the intercept is the -grand sum
-#' in treatment coding (contr.treatment), the intercept is the reference
-#' level estimate.
 #' @param mc.cores number of cores for parallel processing
 #' @return a list of test summaries, summary.lm objects
 #' @import stats
@@ -87,11 +83,11 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' smry
 #' @export
-print.DMLSummary <- function(smry, ...) {
-    mm = attr(smry, "model.matrix")
+print.DMLSummary <- function(x, ...) {
+    mm = attr(x, "model.matrix")
     cat(sprintf("DMLSummary Object with %d Loci, %d samples.\n",
-        length(smry), nrow(mm)))
-    cat("Contrasts: ", names(attr(mm, "contrasts")), "\n")
+        length(x), nrow(mm)))
+    cat("Contrasts:", names(attr(mm, "contrasts")), "\n")
 }
 
 #' Extract slope information from DMLSummary
