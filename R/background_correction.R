@@ -106,34 +106,44 @@ noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
             sum(oobR > 0, na.rm=TRUE) < 100) { return(sdf) }
     oobR[oobR == 0] = 1
     oobG[oobG == 0] = 1
-
-    ## grn channel: IG and oobG
-    idx_mg = sdf$col == "G"
-    idx_ug = sdf$col == "G" | sdf$col == "2"
-    ibG = c(sdf$MG[idx_mg], sdf$UG[idx_ug])
+    ibG = c(IG(sdf)$MG, IG(sdf)$UG, II(sdf)$UG)
+    ibR = c(IR(sdf)$MR, IR(sdf)$UR, II(sdf)$UR)
     ibG[ibG == 0] = 1 # set signal to 1 if 0
-    idx_r = sdf$col == "R"
-    oob_g = c(sdf$MG[idx_r], sdf$UG[idx_r])
-    oob_g[oob_g == 0] = 1
-    out = .backgroundCorrectionNoobCh1(ibG, oob_g, controls(sdf)$G, oobG, offset=offset)
-    sdf$MG[idx_mg] = out$i[1:sum(idx_mg)]
-    sdf$UG[idx_ug] = out$i[(sum(idx_mg)+1):length(out$i)]
-    sdf$MG[idx_r] = out$o[1:sum(idx_r)]
-    sdf$UG[idx_r] = out$o[(sum(idx_r)+1):length(out$o)]
-
-    ## red channel: IR and oobR
-    idx_mr = sdf$col == "R"
-    idx_ur = sdf$col == "R" | sdf$col == "2"
-    ibR = c(sdf$MR[idx_mr], sdf$UR[idx_ur])
     ibR[ibR == 0] = 1 # set signal to 1 if 0
-    idx_g = sdf$col == "G"
-    oob_r = c(sdf$MR[idx_g], sdf$UR[idx_g])
-    oob_r[oob_r == 0] = 1
-    out = .backgroundCorrectionNoobCh1(ibR, oob_r, controls(sdf)$R, oobR, offset=offset)
-    sdf$MR[idx_mr] = out$i[1:sum(idx_mr)]
-    sdf$UR[idx_ur] = out$i[(sum(idx_mr)+1):length(out$i)]
-    sdf$MR[idx_g] = out$o[1:sum(idx_g)]
-    sdf$UR[idx_g] = out$o[(sum(idx_g)+1):length(out$o)]
+    fitG = backgroundCorrectionNoobFit(ibG, oobG)
+    sdf$MG = normExpSignal(fitG, sdf$MG) + 15
+    sdf$UG = normExpSignal(fitG, sdf$UG) + 15
+    fitR = backgroundCorrectionNoobFit(ibR, oobR)
+    sdf$MR = normExpSignal(fitR, sdf$MR) + 15
+    sdf$UR = normExpSignal(fitR, sdf$UR) + 15
+
+    ## ## grn channel: IG and oobG
+    ## idx_mg = sdf$col == "G"
+    ## idx_ug = sdf$col == "G" | sdf$col == "2"
+    ## ibG = c(sdf$MG[idx_mg], sdf$UG[idx_ug])
+    ## ibG[ibG == 0] = 1 # set signal to 1 if 0
+    ## idx_r = sdf$col == "R"
+    ## oob_g = c(sdf$MG[idx_r], sdf$UG[idx_r])
+    ## oob_g[oob_g == 0] = 1
+    ## out = .backgroundCorrectionNoobCh1(ibG, oob_g, controls(sdf)$G, oobG, offset=offset)
+    ## sdf$MG[idx_mg] = out$i[1:sum(idx_mg)]
+    ## sdf$UG[idx_ug] = out$i[(sum(idx_mg)+1):length(out$i)]
+    ## sdf$MG[idx_r] = out$o[1:sum(idx_r)]
+    ## sdf$UG[idx_r] = out$o[(sum(idx_r)+1):length(out$o)]
+
+    ## ## red channel: IR and oobR
+    ## idx_mr = sdf$col == "R"
+    ## idx_ur = sdf$col == "R" | sdf$col == "2"
+    ## ibR = c(sdf$MR[idx_mr], sdf$UR[idx_ur])
+    ## ibR[ibR == 0] = 1 # set signal to 1 if 0
+    ## idx_g = sdf$col == "G"
+    ## oob_r = c(sdf$MR[idx_g], sdf$UR[idx_g])
+    ## oob_r[oob_r == 0] = 1
+    ## out = .backgroundCorrectionNoobCh1(ibR, oob_r, controls(sdf)$R, oobR, offset=offset)
+    ## sdf$MR[idx_mr] = out$i[1:sum(idx_mr)]
+    ## sdf$UR[idx_ur] = out$i[(sum(idx_mr)+1):length(out$i)]
+    ## sdf$MR[idx_g] = out$o[1:sum(idx_g)]
+    ## sdf$UR[idx_g] = out$o[(sum(idx_g)+1):length(out$o)]
 
     ## x2 = .backgroundCorrectionNoobCh1(x, ibR, oobR, offset=offset)
     ## sdf$MR[idx_g] = x2[1:length(idx_g)]
@@ -192,35 +202,37 @@ noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
 ## ctl control probe signals
 ## offset padding for normalized signal
 ## return normalized in-band signal
-.backgroundCorrectionNoobCh1 <- function(ib, oob, ctl, bg, offset=15) {
+backgroundCorrectionNoobFit <- function(ib, bg) {
 
-    e <- MASS::huber(bg)
-    mu <- e$mu
-    sigma <- e$s
-    alpha <- pmax(MASS::huber(ib)$mu-mu, 10)
-    list(
-        i=offset+.normExpSignal(mu, sigma, alpha, ib),
-        c=offset+.normExpSignal(mu, sigma, alpha, ctl),
-        o=offset+.normExpSignal(mu, sigma, alpha, oob))
+    e = MASS::huber(bg)
+    mu = e$mu
+    sigma = e$s
+    alpha = pmax(MASS::huber(ib)$mu-mu, 10)
+    list(mu = mu, sigma = sigma, alpha = alpha)
+    ## list(
+    ##     i=offset+.normExpSignal(mu, sigma, alpha, ib),
+    ##     c=offset+.normExpSignal(mu, sigma, alpha, ctl),
+    ##     o=offset+.normExpSignal(mu, sigma, alpha, oob))
 }
+
 
 ## the following is adapted from Limma
 ## normal-exponential deconvolution (conditional expectation of
 ## xs|xf; WEHI code)
-.normExpSignal <- function (mu, sigma, alpha, x)  {
+normExpSignal <- function(ft, x)  {
 
-    sigma2 <- sigma * sigma
+    sigma2 <- ft$sigma * ft$sigma
 
-    if (alpha <= 0)
+    if (ft$alpha <= 0)
         stop("alpha must be positive")
-    if (sigma <= 0)
+    if (ft$sigma <= 0)
         stop("sigma must be positive")
     
-    mu.sf <- x - mu - sigma2/alpha
+    mu.sf <- x - ft$mu - sigma2/ft$alpha
     signal <- mu.sf + sigma2 * exp(
-        dnorm(0, mean = mu.sf, sd = sigma, log = TRUE) -
+        dnorm(0, mean = mu.sf, sd = ft$sigma, log = TRUE) -
             pnorm(
-                0, mean = mu.sf, sd = sigma,
+                0, mean = mu.sf, sd = ft$sigma,
                 lower.tail = FALSE, log.p = TRUE))
     
     o <- !is.na(signal)
