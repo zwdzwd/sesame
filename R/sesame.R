@@ -277,17 +277,17 @@ getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
     if (sum.TypeI) {
         betas = c(
             with(sdf[sdf$col != "2",],
-                setNames(pmax(MG+MR+1) / pmax(MG+MR+UG+UR, 2), Probe_ID)),
+                setNames(pmax(MG+MR,1) / pmax(MG+MR+UG+UR,2), Probe_ID)),
             with(sdf[sdf$col == "2",],
-                setNames(pmax(UG+1) / pmax(UG+UR, 2), Probe_ID)))
+                setNames(pmax(UG,1) / pmax(UG+UR,2), Probe_ID)))
     } else {
         betas = c(
             with(sdf[sdf$col == "G",],
-                setNames(pmax(MG+1) / pmax(MG+UG, 2), Probe_ID)),
+                setNames(pmax(MG,1) / pmax(MG+UG,2), Probe_ID)),
             with(sdf[sdf$col == "R",],
-                setNames(pmax(MR+1) / pmax(MR+UR, 2), Probe_ID)),
+                setNames(pmax(MR,1) / pmax(MR+UR,2), Probe_ID)),
             with(sdf[sdf$col == "2",],
-                setNames(pmax(UG+1) / pmax(UG+UR, 2), Probe_ID)))
+                setNames(pmax(UG,1) / pmax(UG+UR,2), Probe_ID)))
     }
 
     betas = betas[match(sdf$Probe_ID, names(betas))] # always use the original order

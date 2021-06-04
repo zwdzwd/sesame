@@ -97,34 +97,50 @@ getBackgroundG <- function(sdf, bgG = NULL) {
 #' @export
 noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
 
-    ## skip if all oob signals are nil (likely the
-    ## entire chip failed)
-    if (all(oobG(sdf) == 0) || all(oobR(sdf) == 0)) {
-        return (sdf)
-    }
+    ## if no Infinium-I probes
+    if (nrow(IG(sdf)) == 0 && nrow(IR(sdf)) == 0) { return(sdf) }
+    ## if not enough out-of-band signal
+    oobG = oobG(noMask(sdf))
+    oobR = oobR(noMask(sdf))
+    if (sum(oobG > 0, na.rm=TRUE) < 100 ||
+            sum(oobR > 0, na.rm=TRUE) < 100) { return(sdf) }
+    oobR[oobR == 0] = 1
+    oobG[oobG == 0] = 1
 
-    ## sort signal based on channel
-    ibR = c(with(IR(sdf), c(MR, UR)), with(II(sdf), UR)) # in-band red signal
-    ibG = c(with(IG(sdf), c(MG, UG)), with(II(sdf), UG)) # in-band green signal
+    ## grn channel: IG and oobG
+    idx_mg = sdf$col == "G"
+    idx_ug = sdf$col == "G" | sdf$col == "2"
+    ibG = c(sdf$MG[idx_mg], sdf$UG[idx_ug])
+    ibG[ibG == 0] = 1 # set signal to 1 if 0
+    idx_r = sdf$col == "R"
+    oob_g = c(sdf$MG[idx_r], sdf$UG[idx_r])
+    oob_g[oob_g == 0] = 1
+    out = .backgroundCorrectionNoobCh1(ibG, oob_g, controls(sdf)$G, oobG, offset=offset)
+    sdf$MG[idx_mg] = out$i[1:sum(idx_mg)]
+    sdf$UG[idx_ug] = out$i[(sum(idx_mg)+1):length(out$i)]
+    sdf$MG[idx_r] = out$o[1:sum(idx_r)]
+    sdf$UG[idx_r] = out$o[(sum(idx_r)+1):length(out$o)]
 
-    ## set signal to 1 if 0
-    ibR[ibR==0] <- 1
-    ibG[ibG==0] <- 1
+    ## red channel: IR and oobR
+    idx_mr = sdf$col == "R"
+    idx_ur = sdf$col == "R" | sdf$col == "2"
+    ibR = c(sdf$MR[idx_mr], sdf$UR[idx_ur])
+    ibR[ibR == 0] = 1 # set signal to 1 if 0
+    idx_g = sdf$col == "G"
+    oob_r = c(sdf$MR[idx_g], sdf$UR[idx_g])
+    oob_r[oob_r == 0] = 1
+    out = .backgroundCorrectionNoobCh1(ibR, oob_r, controls(sdf)$R, oobR, offset=offset)
+    sdf$MR[idx_mr] = out$i[1:sum(idx_mr)]
+    sdf$UR[idx_ur] = out$i[(sum(idx_mr)+1):length(out$i)]
+    sdf$MR[idx_g] = out$o[1:sum(idx_g)]
+    sdf$UR[idx_g] = out$o[(sum(idx_g)+1):length(out$o)]
 
-    ## oobG and oobR are untouched besides the 0>1 switch
-    oobR(sdf)[oobR(sdf)==0] <- 1
-    oobG(sdf)[oobG(sdf)==0] <- 1
-
-    ## do background correction in each channel
-    ibR = xx
-    bgR = xx
-    ibG = xx
-    bgG = xx
-
-    sdf$MG = .backgroundCorrectionNoobCh1(sdf$MG, ibG, bgG, offset=offset)
-    sdf$UG = .backgroundCorrectionNoobCh1(sdf$UG, ibG, bgG, offset=offset)
-    sdf$MR = .backgroundCorrectionNoobCh1(sdf$MR, ibR, bgR, offset=offset)
-    sdf$UR = .backgroundCorrectionNoobCh1(sdf$UR, ibR, bgR, offset=offset)
+    ## x2 = .backgroundCorrectionNoobCh1(x, ibR, oobR, offset=offset)
+    ## sdf$MR[idx_g] = x2[1:length(idx_g)]
+    ## sdf$UR[idx_g] = x2[(length(idx_g)+1):2*length(idx_g)]
+    ## x2 = .backgroundCorrectionNoobCh1(x, ibG, oobG, offset=offset)
+    ## sdf$MG[idx_r] = x2[1:length(idx_r)]
+    ## sdf$UG[idx_r] = x2[(length(idx_r)+1):2*length(idx_r)]
         
     ## ibR.nl <- .backgroundCorrectionNoobCh1(
     ##     ibR, oobR(sdf), controls(sdf)$R, getBackgroundR(sdf, bgR), offset=offset)
@@ -176,13 +192,16 @@ noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
 ## ctl control probe signals
 ## offset padding for normalized signal
 ## return normalized in-band signal
-.backgroundCorrectionNoobCh1 <- function(x, ib, bg, offset=15) {
+.backgroundCorrectionNoobCh1 <- function(ib, oob, ctl, bg, offset=15) {
 
     e <- MASS::huber(bg)
     mu <- e$mu
     sigma <- e$s
     alpha <- pmax(MASS::huber(ib)$mu-mu, 10)
-    offset+.normExpSignal(mu, sigma, alpha, x)
+    list(
+        i=offset+.normExpSignal(mu, sigma, alpha, ib),
+        c=offset+.normExpSignal(mu, sigma, alpha, ctl),
+        o=offset+.normExpSignal(mu, sigma, alpha, oob))
 }
 
 ## the following is adapted from Limma
