@@ -4,10 +4,10 @@
 \alias{inferSex}
 \title{Infer Sex}
 \usage{
-inferSex(sset)
+inferSex(sdf)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 }
 \value{
 'F' or 'M'
@@ -30,6 +30,6 @@ Infer Sex
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-inferSex(sset)
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+inferSex(sdf)
 }

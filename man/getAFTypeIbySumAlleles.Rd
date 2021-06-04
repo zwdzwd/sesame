@@ -4,10 +4,10 @@
 \alias{getAFTypeIbySumAlleles}
 \title{Get allele frequency treating type I by summing alleles}
 \usage{
-getAFTypeIbySumAlleles(sset, known.ccs.only = TRUE)
+getAFTypeIbySumAlleles(sdf, known.ccs.only = TRUE)
 }
 \arguments{
-\item{sset}{\code{SigSet}}
+\item{sdf}{\code{SigDF}}
 
 \item{known.ccs.only}{consider only known CCS probes}
 }
@@ -15,13 +15,13 @@ getAFTypeIbySumAlleles(sset, known.ccs.only = TRUE)
 beta values
 }
 \description{
-Takes a \code{SigSet} as input and returns a numeric vector containing
+Takes a \code{SigDF} as input and returns a numeric vector containing
 extra allele frequencies based on Color-Channel-Switching (CCS) probes.
-If no CCS probes exist in the \code{SigSet}, then an numeric(0) is
+If no CCS probes exist in the \code{SigDF}, then an numeric(0) is
 returned.
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-betas <- getAFTypeIbySumAlleles(sset)
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+betas <- getAFTypeIbySumAlleles(sdf)
 }

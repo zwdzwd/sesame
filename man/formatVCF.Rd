@@ -4,10 +4,10 @@
 \alias{formatVCF}
 \title{Convert SNP from Infinium array to VCF file}
 \usage{
-formatVCF(sset, vcf = NULL, refversion = "hg19", annoS = NULL, annoI = NULL)
+formatVCF(s, vcf = NULL, refversion = "hg19", annoS = NULL, annoI = NULL)
 }
 \arguments{
-\item{sset}{SigSet}
+\item{s}{SigDF}
 
 \item{vcf}{output VCF file path, if NULL output to console}
 
@@ -30,11 +30,11 @@ Convert SNP from Infinium array to VCF file
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+s <- sesameDataGet('EPIC.1.LNCaP')$s
 
 annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
 annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
 ## output to console
-head(formatVCF(sset, annoS=annoS, annoI=annoI))
+head(formatVCF(s, annoS=annoS, annoI=annoI))
 
 }

@@ -4,23 +4,23 @@
 \alias{addMask}
 \title{Add probes to mask}
 \usage{
-addMask(sset, probes)
+addMask(sdf, probes)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 
 \item{probes}{a vector of probe IDs or a logical vector with TRUE
 representing masked probes}
 }
 \value{
-a \code{SigSet} with added mask
+a \code{SigDF} with added mask
 }
 \description{
 This function essentially merge existing probe masking
 with new prboes to mask
 }
 \examples{
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sum(mask(sset))
-sum(mask(addMask(sset, c("cg14057072", "cg22344912"))))
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+sum(sesame::mask(sdf))
+sum(sesame::mask(addMask(sdf, c("cg14057072", "cg22344912"))))
 }

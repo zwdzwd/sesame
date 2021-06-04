@@ -3,11 +3,11 @@
 #' This function is a simple wrapper of noob + nonlinear dye bias 
 #' correction + pOOBAH masking.
 #' 
-#' If the input is an IDAT prefix or a \code{SigSet}, the output is
+#' If the input is an IDAT prefix or a \code{SigDF}, the output is
 #' the beta value numerics. If the input is a minfi GenomicRatioSet
 #' or RGChannelSet, the output is the sesamized GenomicRatioSet.
 #' 
-#' @param x SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
+#' @param x SigDF(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
 #' or RGChannelSet(s)
 #' @param platform optional platform string
 #' @param manifest optional dynamic manifest
@@ -17,7 +17,7 @@
 #' @return a numeric vector for processed beta values
 #' @import BiocParallel
 #' @examples
-#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' sdf <- sesameDataGet('HM450.1.TCGA.PAAD')$sdf
 #' IDATprefixes <- searchIDATprefixes(
 #'     system.file("extdata", "", package = "sesameData"))
 #' betas <- openSesame(IDATprefixes)
@@ -35,17 +35,15 @@ openSesame <- function(
         if (is(x, 'character')) { # IDAT prefix
             x <- readIDATpair(
                 x, platform = platform, manifest = manifest)
-            stopifnot(is(x, 'SigSet'))
-            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(
-                qualityMask(x))))
+            stopifnot(is(x, 'SigDF'))
+            x <- dyeBiasNL(noob(pOOBAH(x)))
             if (what == 'beta') {
                 getBetas(x, ...)
             } else {
                 x
             }
-        } else if (is(x, 'SigSet')) { # SigSet input
-            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(
-                qualityMask(x))))
+        } else if (is(x, 'SigDF')) { # SigDF input
+            x <- dyeBiasNL(noob(pOOBAH(qualityMask(x))))
             if (what == 'beta') {
                 getBetas(x, ...)
             } else {

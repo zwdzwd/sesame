@@ -4,10 +4,10 @@
 \alias{getBetas}
 \title{Get beta Values}
 \usage{
-getBetas(sset, mask = TRUE, sum.TypeI = FALSE)
+getBetas(sdf, mask = TRUE, sum.TypeI = FALSE)
 }
 \arguments{
-\item{sset}{\code{SigSet}}
+\item{sdf}{\code{SigDF}}
 
 \item{mask}{whether to use mask}
 
@@ -18,12 +18,12 @@ a numeric vector, beta values
 }
 \description{
 sum.typeI is used for rescuing beta values on
-Color-Channel-Switching CCS probes. The function takes a \code{SigSet}
+Color-Channel-Switching CCS probes. The function takes a \code{SigDF}
 and returns beta value except that Type-I in-band signal and out-of-band
 signal are combined. This prevents color-channel switching due to SNPs.
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-betas <- getBetas(sset)
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+betas <- getBetas(sdf)
 }

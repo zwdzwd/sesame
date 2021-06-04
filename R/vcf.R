@@ -2,7 +2,7 @@
 
 #' Convert SNP from Infinium array to VCF file
 #'
-#' @param sset SigSet
+#' @param s SigDF
 #' @param vcf output VCF file path, if NULL output to console
 #' @param refversion reference version, currently only support
 #' @param annoS SNP variant annotation, download if not given
@@ -17,24 +17,23 @@
 #' 
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+#' s <- sesameDataGet('EPIC.1.LNCaP')$s
 #'
 #' annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
 #' annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
 #' ## output to console
-#' head(formatVCF(sset, annoS=annoS, annoI=annoI))
+#' head(formatVCF(s, annoS=annoS, annoI=annoI))
 #' 
 #' @export
 formatVCF <- function(
-    sset, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL) {
+    s, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL) {
 
-    platform <- sset@platform
-
+    platform <- s@platform
     if (is.null(annoS)) {
         annoS <- sesameDataGetAnno(sprintf("%s/%s.%s.snp_overlap_b151.rds",
             platform, platform, refversion))
     }
-    betas <- getBetas(sset)[names(annoS)]
+    betas <- getBetas(s)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
     gts <- lapply(vafs, genotype)
     GT <- vapply(gts, function(g) g$GT, character(1))
@@ -50,12 +49,7 @@ formatVCF <- function(
         annoI <- sesameDataGetAnno(sprintf("%s/%s.%s.typeI_overlap_b151.rds",
             platform, platform, refversion))
     }
-    af <- c(
-        pmax(rowSums(oobR(sset)),1)/(
-            pmax(rowSums(oobR(sset))+rowSums(IG(sset)),2)),
-        pmax(rowSums(oobG(sset)),1)/(
-            pmax(rowSums(oobG(sset))+rowSums(IR(sset)),2)))
-
+    af = getAFTypeIbySumAlleles(s)
     af <- af[names(annoI)]
     vafs <- ifelse(annoI$In.band == 'REF', af, 1-af)
     gts <- lapply(vafs, genotype)

@@ -204,18 +204,6 @@ bSubComplete <- function(betas) {
     }
 }
 
-extraHas <- function(sset, k) {
-    k %in% names(extra(sset))
-}
-
-extraGet <- function(sset, k) {
-    extra(sset)[[k]]
-}
-
-extraSet <- function(sset, k, v) {
-    extra(sset)[[k]] <- v
-    sset
-}
 
 
 

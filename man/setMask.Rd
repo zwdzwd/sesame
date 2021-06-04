@@ -4,23 +4,23 @@
 \alias{setMask}
 \title{Set mask to only the probes specified}
 \usage{
-setMask(sset, probes)
+setMask(sdf, probes)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 
 \item{probes}{a vector of probe IDs or a logical vector with TRUE
 representing masked probes}
 }
 \value{
-a \code{SigSet} with added mask
+a \code{SigDF} with added mask
 }
 \description{
 Set mask to only the probes specified
 }
 \examples{
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sum(mask(sset))
-sum(mask(setMask(sset, "cg14959801")))
-sum(mask(setMask(sset, c("cg14057072", "cg22344912"))))
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+sum(mask(sdf))
+sum(mask(setMask(sdf, "cg14959801")))
+sum(mask(setMask(sdf, c("cg14057072", "cg22344912"))))
 }

@@ -4,10 +4,10 @@
 \alias{getNormCtls}
 \title{get normalization control signal}
 \usage{
-getNormCtls(sset, average = FALSE)
+getNormCtls(sdf, average = FALSE)
 }
 \arguments{
-\item{sset}{a SigSet}
+\item{sdf}{a SigDF}
 
 \item{average}{whether to average}
 }
@@ -15,13 +15,13 @@ getNormCtls(sset, average = FALSE)
 a data frame of normalization control signals
 }
 \description{
-get normalization control signal from SigSet. 
+get normalization control signal from SigDF. 
 The function optionally takes mean for each channel.
 }
 \examples{
-sset <- readIDATpair(file.path(system.file(
+sdf <- readIDATpair(file.path(system.file(
     'extdata','',package='sesameData'), '4207113116_B'))
 
-df.ctl <- getNormCtls(sset)
+df.ctl <- getNormCtls(sdf)
 
 }

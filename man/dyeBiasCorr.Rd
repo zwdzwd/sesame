@@ -4,24 +4,24 @@
 \alias{dyeBiasCorr}
 \title{Correct dye bias in by linear scaling.}
 \usage{
-dyeBiasCorr(sset, ref = NULL)
+dyeBiasCorr(sdf, ref = NULL)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 
 \item{ref}{reference signal level}
 }
 \value{
-a normalized \code{SigSet}
+a normalized \code{SigDF}
 }
 \description{
-The function takes a \code{SigSet} as input and scale both the Grn and Red
+The function takes a \code{SigDF} as input and scale both the Grn and Red
 signal to a reference (ref) level. If the reference level is not given, it
 is set to the mean intensity of all the in-band signals. The function
-returns a \code{SigSet} with dye bias corrected.
+returns a \code{SigDF} with dye bias corrected.
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sset.db <- dyeBiasCorr(sset)
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+sdf.db <- dyeBiasCorr(sdf)
 }

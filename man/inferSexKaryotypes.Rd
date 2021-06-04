@@ -4,22 +4,22 @@
 \alias{inferSexKaryotypes}
 \title{Infer Sex Karyotype}
 \usage{
-inferSexKaryotypes(sset)
+inferSexKaryotypes(sdf)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 }
 \value{
 Karyotype string, with XCI
 }
 \description{
-The function takes a \code{SigSet} and infers the sex chromosome Karyotype
+The function takes a \code{SigDF} and infers the sex chromosome Karyotype
 and presence/absence of X-chromosome inactivation (XCI). chrX, chrY and XCI
 are inferred relatively independently. This function gives a more detailed
 look of potential sex chromosome aberrations.
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-inferSexKaryotypes(sset)
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+inferSexKaryotypes(sdf)
 }

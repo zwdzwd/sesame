@@ -4,16 +4,16 @@
 \alias{scrubSoft}
 \title{SCRUB background correction}
 \usage{
-scrubSoft(sset)
+scrubSoft(sdf)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 }
 \value{
-a new \code{SigSet} with noob background correction
+a new \code{SigDF} with noob background correction
 }
 \description{
-This function takes a \code{SigSet} and returns a modified \code{SigSet}
+This function takes a \code{SigDF} and returns a modified \code{SigDF}
 with background subtracted. scrubSoft subtracts residual background using a
 noob-like procedure.
 }
@@ -21,7 +21,7 @@ noob-like procedure.
 This function is meant to be used after noob.
 }
 \examples{
-sset <- makeExampleTinyEPICDataSet()
-sset.nb <- noob(sset)
-sset.nb.scrubSoft <- scrubSoft(sset.nb)
+sdf <- makeExampleTinyEPICDataSet()
+sdf.nb <- noob(sdf)
+sdf.nb.scrubSoft <- scrubSoft(sdf.nb)
 }

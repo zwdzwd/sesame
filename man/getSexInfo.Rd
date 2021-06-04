@@ -4,22 +4,23 @@
 \alias{getSexInfo}
 \title{Get sex-related information}
 \usage{
-getSexInfo(sset)
+getSexInfo(sdf)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 }
 \value{
 medianY and medianX, fraction of XCI, methylated and unmethylated X
 probes, median intensities of auto-chromosomes.
 }
 \description{
-The function takes a \code{SigSet} and returns a vector of three
+The function takes a \code{SigDF} and returns a vector of three
 numerics: the median intensity of chrY probes; the median intensity of
 chrX probes; and fraction of intermediate chrX probes. chrX and chrY
 probes excludes pseudo-autosomal probes.
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
-getSexInfo(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+getSexInfo(sdf)
 }

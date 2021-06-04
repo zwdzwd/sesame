@@ -4,17 +4,12 @@
 \alias{inferTypeIChannel}
 \title{Infer and reset color channel for Type-I probes instead of
 using what is specified in manifest. The results are stored to
-sset@extra$IGG and sset@extra$IRR slot.}
+sdf@extra$IGG and sdf@extra$IRR slot.}
 \usage{
-inferTypeIChannel(
-  sset,
-  switch_failed = FALSE,
-  verbose = FALSE,
-  summary = FALSE
-)
+inferTypeIChannel(sdf, switch_failed = FALSE, verbose = FALSE, summary = FALSE)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 
 \item{switch_failed}{whether to switch failed probes (default to FALSE)}
 
@@ -23,7 +18,7 @@ inferTypeIChannel(
 \item{summary}{return summarized numbers only.}
 }
 \value{
-a \code{SigSet}, or numerics if summary == TRUE
+a \code{SigDF}, or numerics if summary == TRUE
 }
 \description{
 IGG => Type-I green that is inferred to be green
@@ -31,7 +26,7 @@ IRR => Type-I red that is inferred to be red
 }
 \examples{
 
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-inferTypeIChannel(sset)
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+inferTypeIChannel(sdf)
 
 }

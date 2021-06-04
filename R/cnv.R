@@ -1,28 +1,28 @@
 #' Perform copy number segmentation
 #'
 #' Perform copy number segmentation using the signals in the signal set.
-#' The function takes a \code{SigSet} for the target sample and a set of
-#' normal \code{SigSet} for the normal samples. An optional arguments specifies
+#' The function takes a \code{SigDF} for the target sample and a set of
+#' normal \code{SigDF} for the normal samples. An optional arguments specifies
 #' the version of genome build that the inference will operate on. The function
 #' outputs an object of class \code{CNSegment} with signals for the segments (
 #' seg.signals), the bin coordinates (
 #' bin.coords) and bin signals (bin.signals).
 #'
-#' @param sset \code{SigSet}
-#' @param ssets.normal \code{SigSet} for normalization
+#' @param sdf \code{SigDF}
+#' @param sdfs.normal \code{SigDF} for normalization
 #' @param refversion hg19 or hg38
 #' @return an object of \code{CNSegment}
 #' @examples
 #'
 #' sesameDataCache("EPIC") # in case not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' ssets.normal <- sesameDataGet('EPIC.5.normal')
-#' seg <- cnSegmentation(sset, ssets.normal)
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdfs.normal <- sesameDataGet('EPIC.5.normal')
+#' seg <- cnSegmentation(sdf, sdfs.normal)
 #' 
 #' @export
-cnSegmentation <- function(sset, ssets.normal, refversion=c('hg19','hg38')) {
+cnSegmentation <- function(sdf, sdfs.normal, refversion=c('hg19','hg38')) {
 
-    stopifnot(is(sset, "SigSet"))
+    stopifnot(is(sdf, "SigDF"))
     pkgTest('GenomicRanges')
     refversion <- match.arg(refversion)
     
@@ -30,12 +30,12 @@ cnSegmentation <- function(sset, ssets.normal, refversion=c('hg19','hg38')) {
     seqInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$seqInfo
     gapInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$gapInfo
     probe.coords <- sesameDataGet(paste0(
-        sset@platform, '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
+        platform(sdf), '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
     
     ## extract intensities
-    target.intens <- totalIntensities(sset)
-    normal.intens <- do.call(cbind, lapply(ssets.normal, function(sset) {
-        totalIntensities(sset) }))
+    target.intens <- totalIntensities(sdf)
+    normal.intens <- do.call(cbind, lapply(sdfs.normal, function(sdf) {
+        totalIntensities(sdf) }))
 
     ## find overlapping probes
     pb <- intersect(rownames(normal.intens), names(target.intens))

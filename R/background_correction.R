@@ -2,28 +2,28 @@
 
 #' SCRUB background correction
 #'
-#' This function takes a \code{SigSet} and returns a modified \code{SigSet}
+#' This function takes a \code{SigDF} and returns a modified \code{SigDF}
 #' with background subtracted. scrub subtracts residual background using
 #' background median
 #'
 #' This function is meant to be used after noob.
 #'
-#' @param sset a \code{SigSet}
-#' @return a new \code{SigSet} with noob background correction
+#' @param sdf a \code{SigDF}
+#' @return a new \code{SigDF} with noob background correction
 #' @examples
-#' sset <- makeExampleTinyEPICDataSet()
-#' sset.nb <- noob(sset)
-#' sset.nb.scrub <- scrub(sset.nb)
+#' sdf <- makeExampleTinyEPICDataSet()
+#' sdf.nb <- noob(sdf)
+#' sdf.nb.scrub <- scrub(sdf.nb)
 #' @export
-scrub <- function(sset) {
-    bG <- median(oobGpass(sset))
-    bR <- median(oobRpass(sset))
-    sset@IR <- pmax(sset@IR - bR,1)
-    sset@IG <- pmax(sset@IG - bG,1)
-    sset@II <- cbind(M=pmax(sset@II[,'M'] - bG,1), U=pmax(sset@II[,'U'] - bR,1))
-    sset@oobR <- pmax(sset@oobR - bR,1) # subtract oobR itself
-    sset@oobG <- pmax(sset@oobG - bG,1) # subtract oobG itself
-    sset
+scrub <- function(sdf) {
+    bG <- median(oobGpass(sdf))
+    bR <- median(oobRpass(sdf))
+    sdf@IR <- pmax(sdf@IR - bR,1)
+    sdf@IG <- pmax(sdf@IG - bG,1)
+    sdf@II <- cbind(M=pmax(sdf@II[,'M'] - bG,1), U=pmax(sdf@II[,'U'] - bR,1))
+    sdf@oobR <- pmax(sdf@oobR - bR,1) # subtract oobR itself
+    sdf@oobG <- pmax(sdf@oobG - bG,1) # subtract oobG itself
+    sdf
 }
 
 noobSub <- function(sig, bg) {
@@ -36,128 +36,138 @@ noobSub <- function(sig, bg) {
 
 #' SCRUB background correction
 #'
-#' This function takes a \code{SigSet} and returns a modified \code{SigSet}
+#' This function takes a \code{SigDF} and returns a modified \code{SigDF}
 #' with background subtracted. scrubSoft subtracts residual background using a
 #' noob-like procedure.
 #'
 #' This function is meant to be used after noob.
 #'
-#' @param sset a \code{SigSet}
-#' @return a new \code{SigSet} with noob background correction
+#' @param sdf a \code{SigDF}
+#' @return a new \code{SigDF} with noob background correction
 #' @examples
-#' sset <- makeExampleTinyEPICDataSet()
-#' sset.nb <- noob(sset)
-#' sset.nb.scrubSoft <- scrubSoft(sset.nb)
+#' sdf <- makeExampleTinyEPICDataSet()
+#' sdf.nb <- noob(sdf)
+#' sdf.nb.scrubSoft <- scrubSoft(sdf.nb)
 #' @export
-scrubSoft <- function(sset) {
-    oobR1 <- oobRpass(sset)
-    oobG1 <- oobGpass(sset)
-    sset@IR <- noobSub(sset@IR, oobR1)
-    sset@IG <- noobSub(sset@IG, oobG1)
-    sset@II <- cbind(
-        M=noobSub(sset@II[,'M'], oobG1),
-        U=noobSub(sset@II[,'U'], oobR1))
-    sset@oobR <- noobSub(oobR(sset), oobR1) # subtract oobR itself
-    sset@oobG <- noobSub(oobG(sset), oobG1) # subtract oobG itself
-    sset
+scrubSoft <- function(sdf) {
+    oobR1 <- oobRpass(sdf)
+    oobG1 <- oobGpass(sdf)
+    sdf@IR <- noobSub(sdf@IR, oobR1)
+    sdf@IG <- noobSub(sdf@IG, oobG1)
+    sdf@II <- cbind(
+        M=noobSub(sdf@II[,'M'], oobG1),
+        U=noobSub(sdf@II[,'U'], oobR1))
+    sdf@oobR <- noobSub(oobR(sdf), oobR1) # subtract oobR itself
+    sdf@oobG <- noobSub(oobG(sdf), oobG1) # subtract oobG itself
+    sdf
 }
 
-getBackgroundR <- function(sset, bgR = NULL) {
+getBackgroundR <- function(sdf, bgR = NULL) {
     if (!is.null(bgR)) {
-        oobR(sset)[bgR,]
+        oobR(sdf)[bgR,]
     } else {
-        oobRpass(sset)
+        oobRpass(sdf)
     }
 }
 
-getBackgroundG <- function(sset, bgG = NULL) {
+getBackgroundG <- function(sdf, bgG = NULL) {
     if (!is.null(bgG)) {
-        oobG(sset)[bgG,]
+        oobG(sdf)[bgG,]
     } else {
-        oobGpass(sset)
+        oobGpass(sdf)
     }
 }
 
 #' Noob background correction
 #'
-#' The function takes a \code{SigSet} and returns a modified \code{SigSet}
+#' The function takes a \code{SigDF} and returns a modified \code{SigDF}
 #' with background subtracted. Background was modelled in a normal distribution
 #' and true signal in an exponential distribution. The Norm-Exp deconvolution
 #' is parameterized using Out-Of-Band (oob) probes
 #' 
-#' @param sset a \code{SigSet}
+#' @param sdf a \code{SigDF}
 #' @param offset offset
 #' @param bgR background red probes, if not given use all oobR
 #' @param bgG background grn probes, if not given use all oobG
-#' @return a new \code{SigSet} with noob background correction
+#' @return a new \code{SigDF} with noob background correction
 #' @import stats
 #' @examples
-#' sset <- makeExampleTinyEPICDataSet()
-#' sset.nb <- noob(sset)
+#' sdf <- makeExampleTinyEPICDataSet()
+#' sdf.nb <- noob(sdf)
 #' @export
-noob <- function(sset, bgR = NULL, bgG = NULL, offset=15) {
+noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
 
     ## skip if all oob signals are nil (likely the
     ## entire chip failed)
-    if (all(oobG(sset) == 0) || all(oobR(sset) == 0)) {
-        return (sset)
+    if (all(oobG(sdf) == 0) || all(oobR(sdf) == 0)) {
+        return (sdf)
     }
 
     ## sort signal based on channel
-    ibR <- c(IR(sset), II(sset)[,'U'])    # in-band red signal
-    ibG <- c(IG(sset), II(sset)[,'M'])    # in-band green signal
+    ibR = c(with(IR(sdf), c(MR, UR)), with(II(sdf), UR)) # in-band red signal
+    ibG = c(with(IG(sdf), c(MG, UG)), with(II(sdf), UG)) # in-band green signal
 
     ## set signal to 1 if 0
     ibR[ibR==0] <- 1
     ibG[ibG==0] <- 1
 
     ## oobG and oobR are untouched besides the 0>1 switch
-    oobR(sset)[oobR(sset)==0] <- 1
-    oobG(sset)[oobG(sset)==0] <- 1
+    oobR(sdf)[oobR(sdf)==0] <- 1
+    oobG(sdf)[oobG(sdf)==0] <- 1
 
     ## do background correction in each channel
-    ibR.nl <- .backgroundCorrectionNoobCh1(
-        ibR, oobR(sset), ctl(sset)$R, getBackgroundR(sset, bgR), offset=offset)
-    ibG.nl <- .backgroundCorrectionNoobCh1(
-        ibG, oobG(sset), ctl(sset)$G, getBackgroundG(sset, bgG), offset=offset)
+    ibR = xx
+    bgR = xx
+    ibG = xx
+    bgG = xx
 
-    ## build back the list
-    ## type IG
-    if (length(IG(sset))>0)
-        IG(sset) <- matrix(
-            ibG.nl$i[seq_along(IG(sset))],
-            nrow=nrow(IG(sset)), dimnames=dimnames(IG(sset)))
-    else
-        IG(sset) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    sdf$MG = .backgroundCorrectionNoobCh1(sdf$MG, ibG, bgG, offset=offset)
+    sdf$UG = .backgroundCorrectionNoobCh1(sdf$UG, ibG, bgG, offset=offset)
+    sdf$MR = .backgroundCorrectionNoobCh1(sdf$MR, ibR, bgR, offset=offset)
+    sdf$UR = .backgroundCorrectionNoobCh1(sdf$UR, ibR, bgR, offset=offset)
+        
+    ## ibR.nl <- .backgroundCorrectionNoobCh1(
+    ##     ibR, oobR(sdf), controls(sdf)$R, getBackgroundR(sdf, bgR), offset=offset)
+    ## ibG.nl <- .backgroundCorrectionNoobCh1(
+    ##     ibG, oobG(sdf), controls(sdf)$G, getBackgroundG(sdf, bgG), offset=offset)
 
-    ## type IR
-    if (length(IR(sset))>0) {
-        IR(sset) <- matrix(
-            ibR.nl$i[seq_along(IR(sset))],
-            nrow=nrow(IR(sset)), dimnames=dimnames(IR(sset)))
-    } else {
-        IR(sset) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
-    }
+    ## ## build back the list
+    ## ## type IG
+    ## if (length(IG(sdf))>0)
+    ##     IG(sdf) <- matrix(
+    ##         ibG.nl$i[seq_along(IG(sdf))],
+    ##         nrow=nrow(IG(sdf)), dimnames=dimnames(IG(sdf)))
+    ## else
+    ##     IG(sdf) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
 
-    ## type II
-    if (nrow(II(sset)) > 0) {
-        II(sset) <- as.matrix(data.frame(
-            M=ibG.nl$i[(length(IG(sset))+1):length(ibG)],
-            U=ibR.nl$i[(length(IR(sset))+1):length(ibR)],
-            row.names=rownames(II(sset))))
-    } else {
-        II(sset) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
-    }
+    ## ## type IR
+    ## if (length(IR(sdf))>0) {
+    ##     IR(sdf) <- matrix(
+    ##         ibR.nl$i[seq_along(IR(sdf))],
+    ##         nrow=nrow(IR(sdf)), dimnames=dimnames(IR(sdf)))
+    ## } else {
+    ##     IR(sdf) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    ## }
 
-    ## controls
-    ctl(sset)$G <- ibG.nl$c
-    ctl(sset)$R <- ibR.nl$c
+    ## ## type II
+    ## if (nrow(II(sdf)) > 0) {
+    ##     II(sdf) <- as.matrix(data.frame(
+    ##         M=ibG.nl$i[(length(IG(sdf))+1):length(ibG)],
+    ##         U=ibR.nl$i[(length(IR(sdf))+1):length(ibR)],
+    ##         row.names=rownames(II(sdf))))
+    ## } else {
+    ##     II(sdf) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
+    ## }
 
-    ## out-of-band
-    oobR(sset) <- ibR.nl$o
-    oobG(sset) <- ibG.nl$o
+    ## ## controls
+    ## ctl(sdf)$G <- ibG.nl$c
+    ## ctl(sdf)$R <- ibR.nl$c
 
-    sset
+    ## ## out-of-band
+    ## oobR(sdf) <- ibR.nl$o
+    ## oobG(sdf) <- ibG.nl$o
+
+    sdf
 }
 
 ## Noob background correction for one channel
@@ -166,16 +176,13 @@ noob <- function(sset, bgR = NULL, bgG = NULL, offset=15) {
 ## ctl control probe signals
 ## offset padding for normalized signal
 ## return normalized in-band signal
-.backgroundCorrectionNoobCh1 <- function(ib, oob, ctl, bg, offset=15) {
+.backgroundCorrectionNoobCh1 <- function(x, ib, bg, offset=15) {
 
     e <- MASS::huber(bg)
     mu <- e$mu
     sigma <- e$s
     alpha <- pmax(MASS::huber(ib)$mu-mu, 10)
-    list(
-        i=offset+.normExpSignal(mu, sigma, alpha, ib),
-        c=offset+.normExpSignal(mu, sigma, alpha, ctl),
-        o=offset+.normExpSignal(mu, sigma, alpha, oob))
+    offset+.normExpSignal(mu, sigma, alpha, x)
 }
 
 ## the following is adapted from Limma
@@ -205,106 +212,6 @@ to small value")
         signal[o] <- pmax(signal[o], 1e-06)
     }
     signal
-}
-
-#' Background subtraction with bleeding-through subtraction
-#'
-#' The function takes a \code{SigSet} and returns a modified \code{SigSet}
-#' with background subtracted. Signal bleed-through was modelled using a
-#' linear model with error estimated from cross-channel regression.
-#' Norm-Exp deconvolution using Out-Of-Band (oob) probes.
-#' 
-#' @param sset a \code{SigSet}
-#' @param offset offset
-#' @param detailed if TRUE, return a list of \code{SigSet}
-#' and regression function
-#' @return a modified \code{SigSet} with background correction
-#' @examples
-#' sset <- makeExampleSeSAMeDataSet('HM450')
-#' sset.nb <- noobsb(sset)
-#' @export
-noobsb <- function(sset, offset=15, detailed=FALSE) {
-
-    ## sanitize
-    ## sort signal based on channel
-    ibR <- c(IR(sset), II(sset)[,'U'])    # in-band red signal
-    ibR.other.channel <- c(oobG(sset), II(sset)[,'M'])
-    ibG <- c(IG(sset), II(sset)[,'M'])    # in-band green signal
-    ibG.other.channel <- c(oobR(sset), II(sset)[,'U'])
-    ## set signal to 1 if 0
-    ibR[ibR==0] <- 1
-    ibG[ibG==0] <- 1
-    
-    ## oobG and oobR are untouched besides the 0>1 switch
-    oobR(sset)[oobR(sset)==0] <- 1
-    oobG(sset)[oobG(sset)==0] <- 1
-
-    ## background correction Red
-    ## use the other channel to predict background mean
-    bg.GpredictR <- train.model.lm(IG(sset), oobR(sset))
-    pp.bg.ibR <- bg.GpredictR(ibR.other.channel)
-    pp.bg.oobR <- bg.GpredictR(IG(sset))
-    pp.bg.ctlR <- bg.GpredictR(ctl(sset)$G)
-    ## parameter estimation
-    ## sigma.bgR <- MASS::huber(oobR(sset))$s # for now, use the global variance
-    alphaR <- pmax(MASS::huber(ibR - pp.bg.ibR$mu)$mu, 10) # in-band variance
-    ## correction
-    ibR <- .backgroundCorrCh1(ibR, pp.bg.ibR, alphaR, offset=offset)
-    oobR <- .backgroundCorrCh1(oobR(sset), pp.bg.oobR, alphaR, offset=offset)
-    ctlR <- .backgroundCorrCh1(ctl(sset)$R, pp.bg.ctlR, alphaR, offset=offset)
-    
-    ## background correction Grn
-    ## use the other channel to predict background mean
-    bg.RpredictG <- train.model.lm(IR(sset), oobG(sset))
-    pp.bg.ibG <- bg.RpredictG(ibG.other.channel)
-    pp.bg.oobG <- bg.RpredictG(IR(sset))
-    pp.bg.ctlG <- bg.RpredictG(ctl(sset)$R)
-    ## parameter estimation
-    ## sigma.bgG <- MASS::huber(oobG(sset))$s # for now, use the global variance
-    alphaG <- pmax(MASS::huber(ibG - pp.bg.ibG$mu)$mu, 10) # in-band variance
-    ## correction
-    ibG <- .backgroundCorrCh1(ibG, pp.bg.ibG, alphaG, offset=offset)
-    oobG <- .backgroundCorrCh1(oobG(sset), pp.bg.oobG, alphaG, offset=offset)
-    ctlG <- .backgroundCorrCh1(ctl(sset)$G, pp.bg.ctlG, alphaG, offset=offset)
-
-    ## build back the list
-    ## type IG
-    if (length(IG(sset))>0)
-        IG(sset) <- matrix(
-            ibG[seq_along(IG(sset))],
-            nrow=nrow(IG(sset)), dimnames=dimnames(IG(sset)))
-    else
-        IG(sset) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
-
-    ## type IR
-    if (length(IR(sset))>0)
-        IR(sset) <- matrix(
-            ibR[seq_along(IR(sset))],
-            nrow=nrow(IR(sset)), dimnames=dimnames(IR(sset)))
-    else
-        IR(sset) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
-
-    ## type II
-    if (nrow(II(sset)) > 0)
-        II(sset) <- as.matrix(data.frame(
-            M=ibG[(length(IG(sset))+1):length(ibG)],
-            U=ibR[(length(IR(sset))+1):length(ibR)],
-            row.names=rownames(II(sset))))
-    else
-        II(sset) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
-
-    ## controls
-    ctl(sset)$G <- ctlG
-    ctl(sset)$R <- ctlR
-
-    ## out-of-band
-    oobR(sset) <- oobR
-    oobG(sset) <- oobG
-
-    if (detailed)
-        list(sset=sset, bg.RpredictG=bg.RpredictG, bg.GpredictR=bg.GpredictR)
-    else
-        sset
 }
 
 ## Noob background correction for one channel

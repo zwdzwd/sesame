@@ -17,282 +17,116 @@
 ## @seealso To appear
 #' @examples
 #'
-#' sset <- readIDATpair(sub('_Grn.idat','',system.file(
+#' sdf <- readIDATpair(sub('_Grn.idat','',system.file(
 #'     'extdata','4207113116_A_Grn.idat',package='sesameData')))
 #'
 #' ## The OpenSesame pipeline
-#' betas <- openSesame(sset)
+#' betas <- openSesame(sdf)
 #'
 #' @keywords DNAMethylation Microarray QualityControl
 #'
 "_PACKAGE"
 
-#' SigSet class
-#'
-#' This is the main data class for SeSAMe. The class holds different
-#' classes of signal intensities.
-#'
-#' @slot IG intensity table for type I probes in green channel
-#' @slot IR intensity table for type I probes in red channel
-#' @slot II intensity table for type II probes
-#' @slot oobG out-of-band probes in green channel
-#' @slot oobR out-of-band probes in red channel
-#' @slot ctl all the control probe intensities
-#' @slot pval named numeric vector of p-values
-#' @slot extra extra data, currently,
-#' IGG => Type-I green that is inferred to be green
-#' IRR => Type-I red that is inferred to be red
-#' pvals => list of other pvals
-#' @slot platform "EPIC", "HM450" or "HM27"
-#' @return a \code{SigSet} object
-#'
-#' @name SigSet-class
-#' @rdname SigSet-class
-#' @examples
-#' ## Create an empty EPIC object.
-#' SigSet("EPIC")
-#' @exportClass SigSet
-setClass(
-    "SigSet",
-    representation(
-        IG = 'matrix',
-        IR = 'matrix',
-        II = 'matrix',
-        oobG = 'matrix',
-        oobR = 'matrix',
-        ctl = 'data.frame',
-        pval = 'numeric',
-        extra = 'list', # extra data, extended to allow additional data
-        platform = 'character'))
-
-## update old SigSet without slot extra
-updateSigSet <- function(sset) {
-    sset2 <- SigSet(sset@platform)
-    for(sname in c(
-        "IG", "IR", "II", "oobG", "oobR",
-        "ctl", "pval", "extra", "platform")) {
-        if (sname == 'extra')
-            slot(sset2, sname) <- list()
-        else
-            slot(sset2, sname) <- slot(sset, sname)
-    }
-    sset2
-}
-
-#' Constructor method of SigSet class.
-#'
-#' The function takes a string describing the platform of the data. It can be
-#' one of "HM27", "HM450" or "EPIC".
-#'
-#' @name SigSet
-#' @param .Object target object
-#' @param platform "EPIC", "HM450", "HM27" or other strings for custom arrays
-#' @rdname SigSet-class
-#' @return a \code{SigSet} object
-#' @aliases initialize,SigSet-method
-setMethod(
-    "initialize", "SigSet",
-    function(.Object, platform, ...)  {
-        .Object <- callNextMethod()
-        .Object@extra <- list()
-        .Object@platform <- platform # match.arg(platform)
-        .Object
-    })
-
-#' Wrapper function for building a new \code{SigSet}
-#'
-#' The function takes a string describing the platform of the data. It can be
-#' one of "HM27", "HM450" or "EPIC".
-#'
-#' @param ... additional arguments
-#' @name SigSet
-#' @rdname SigSet-class
-#' @examples
-#' SigSet('EPIC')
-#' @import methods
-#' @export
-SigSet <- function(...) new("SigSet", ...)
-
-#' The display method for SigSet
-#'
-#' The function outputs the number of probes in each category and the first
-#' few signal measurements.
-#'
-#' @param object displayed object
-#' @return message of number of probes in each category.
-#' @rdname show-methods
-#' @aliases show,SigSet-method
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' print(sset)
-setMethod(
-    "show", "SigSet",
-    function(object) {
-        cat("SigSet", object@platform, "\n - @IG probes:",
-            nrow(object@IG), '-', as.numeric(head(object@IG, n=3)),
-            "...\n - @IR probes:", nrow(object@IR),
-            '-', as.numeric(head(object@IR, n=3)),
-            "...\n - @II probes:", nrow(object@II),
-            '-', as.numeric(head(object@II, n=3)),
-            "...\n - @oobG probes:", nrow(object@oobG),
-            '-', as.numeric(head(object@oobG, n=3)),
-            "...\n - @oobR probes:", nrow(object@oobR),
-            '-', as.numeric(head(object@oobR, n=3)),
-            "...\n - @ctl probes:", nrow(object@ctl),
-            "...\n - @pval:", length(object@pval),
-            "-", as.numeric(head(object@pval, n=3)), "...\n")
-    })
-
-#' Select a subset of probes
-#'
-#' The function takes a \code{SigSet} as input and output another
-#' \code{SigSet} with probes from the given probe selection.
-#'
-#' @param sset a \code{SigSet}
-#' @param probes target probes
-#' @return another sset with probes specified
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' subsetSignal(sset, rownames(slot(sset, 'IR')))
-#' @export
-subsetSignal <- function(sset, probes) {
-    stopifnot(is(sset, "SigSet"))
-    IR(sset) <- IR(sset)[rownames(IR(sset)) %in% probes,,drop=FALSE]
-    IG(sset) <- IG(sset)[rownames(IG(sset)) %in% probes,,drop=FALSE]
-    II(sset) <- II(sset)[rownames(II(sset)) %in% probes,,drop=FALSE]
-    oobR(sset) <- oobR(sset)[rownames(oobR(sset)) %in% probes,,drop=FALSE]
-    oobG(sset) <- oobG(sset)[rownames(oobG(sset)) %in% probes,,drop=FALSE]
-    sset
-}
-
-## get negative control probes
-negControls <- function(sset) {
-    stopifnot(is(sset, "SigSet"))
-    negctls <- ctl(sset)[grep('negative', tolower(rownames(ctl(sset)))),]
-    negctls <- subset(negctls, col!=-99)
-    negctls
-}
-
 #' report M and U for regular probes
 #'
-#' @param sset a \code{SigSet}
+#' @param sdf a \code{SigDF}
+#' @param mask whether to apply mask
 #' @return a data frame of M and U columns
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' signalMU(sset)
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' signalMU(sdf)
 #' @export
-signalMU <- function(sset) {
-    rbind(IR(sset), IG(sset), II(sset))
+signalMU <- function(sdf, mask = TRUE) {
+    s2 = rbind(
+        with(sdf[sdf$col=="G",], data.frame(M=MG, U=UG, Probe_ID=Probe_ID)),
+        with(sdf[sdf$col=="R",], data.frame(M=MR, U=UR, Probe_ID=Probe_ID)),
+        with(sdf[sdf$col=="2",], data.frame(M=UG, U=UR, Probe_ID=Probe_ID)))
+    s2 = s2[match(sdf$Probe_ID, s2$Probe_ID),]
+    if (mask) { s2 = s2[!sdf$mask,] }
+    rownames(s2) = NULL
+    s2
 }
 
 #' Mean Intensity
 #'
-#' The function takes one single \code{SigSet} and computes mean
+#' The function takes one single \code{SigDF} and computes mean
 #' intensity of all the in-band measurements. This includes all Type-I
 #' in-band measurements and all Type-II probe measurements. Both methylated
 #' and unmethylated alleles are considered. This function outputs a single
 #' numeric for the mean.
 #'
-#' @param sset a \code{SigSet}
-#' @param mask.use.manifest use mask column in the manifest to filter probes
-#' attributes set in extra(sset)
+#' @param sdf a \code{SigDF}
+#' @param mask whether to mask probes using mask column
+#' 
 #' @return mean of all intensities
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' meanIntensity(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' meanIntensity(sdf)
 #' @export
-meanIntensity <- function(sset, mask.use.manifest = TRUE) {
-    stopifnot(is(sset, "SigSet"))
-    IGset <- IG(sset)
-    IRset <- IR(sset)
-    IIset <- II(sset)
-    if (mask.use.manifest && extraHas(sset, 'mask')) {
-        pmask <- extraGet(sset, 'mask')
-        IGset <- IGset[!pmask[rownames(IGset)],]
-        IRset <- IRset[!pmask[rownames(IRset)],]
-        IIset <- IIset[!pmask[rownames(IIset)],]
-    }
-    
-    mean(c(IGset, IRset, IIset), na.rm=TRUE)
+meanIntensity <- function(sdf, mask = TRUE) {
+    stopifnot(is(sdf, "SigDF"))
+    with(signalMU(sdf, mask = mask), mean(c(M,U), na.rm=TRUE))
 }
 
 #' M+U Intensities for All Probes
 #'
-#' The function takes one single \code{SigSet} and computes total
+#' The function takes one single \code{SigDF} and computes total
 #' intensity of all the in-band measurements by summing methylated and
 #' unmethylated alleles. This function outputs a single numeric for the mean.
-#' @param sset a \code{SigSet}
+#' @param sdf a \code{SigDF}
 #' @return a vector of M+U signal for each probe
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' intensities <- totalIntensities(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' intensities <- totalIntensities(sdf)
 #' @export
-totalIntensities <- function(sset) {
-    rowSums(rbind(IG(sset), IR(sset), II(sset)))
+totalIntensities <- function(sdf, mask = TRUE) {
+    with(signalMU(sdf), M+U)
 }
 
-#' Calculate intensity Z-score
-#'
-#' This function compute intensity Z-score with respect to the mean.
-#' Log10 transformation is done first. Probes of each design type are
-#' grouped before Z-scores are computed.
-#'
-#' @param sset a \code{SigSet}
-#' @return a vector of Z-score for each probe
-#' @examples
-#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
-#' head(totalIntensityZscore(sset))
-#' @export
-totalIntensityZscore <- function(sset) {
-    Zscore <- rbind(
-        scale(log10(1+rowSums(IG(sset)))),
-        scale(log10(1+rowSums(IR(sset)))),
-        scale(log10(1+rowSums(II(sset)))))[,1]
-    Zscore[sort(names(Zscore))]
+subset_vec <- function(vec, vecnames) {
+    vec[names(vec) %in% vecnames]
 }
 
 #' Get sex-related information
 #'
-#' The function takes a \code{SigSet} and returns a vector of three
+#' The function takes a \code{SigDF} and returns a vector of three
 #' numerics: the median intensity of chrY probes; the median intensity of
 #' chrX probes; and fraction of intermediate chrX probes. chrX and chrY
 #' probes excludes pseudo-autosomal probes.
 #'
-#' @param sset a \code{SigSet}
+#' @param sdf a \code{SigDF}
 #' @return medianY and medianX, fraction of XCI, methylated and unmethylated X
 #' probes, median intensities of auto-chromosomes.
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet()
-#' getSexInfo(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' getSexInfo(sdf)
 #' @export
-getSexInfo <- function(sset) {
+getSexInfo <- function(sdf) {
 
-    if (is(sset, "SigSetList"))
-        return(do.call(cbind, lapply(sset, getSexInfo)))
-    
-    stopifnot(is(sset, "SigSet"))
+    stopifnot(is(sdf, "SigDF"))
 
-    cleanY <- sesameDataGet(paste0(
-        sset@platform,'.probeInfo'))$chrY.clean
+    cleanY = sesameDataGet(paste0(
+        platform(sdf),'.probeInfo'))$chrY.clean
 
-    xLinked <- sesameDataGet(paste0(
-        sset@platform,'.probeInfo'))$chrX.xlinked
+    xLinked = sesameDataGet(paste0(
+        platform(sdf),'.probeInfo'))$chrX.xlinked
 
-    probe2chr <- sesameDataGet(paste0(
-        sset@platform,'.probeInfo'))$probe2chr.hg19
+    probe2chr = sesameDataGet(paste0(
+        platform(sdf),'.probeInfo'))$probe2chr.hg19
 
-    xLinkedBeta <- getBetas(subsetSignal(sset, xLinked), mask=FALSE)
-    intens <- totalIntensities(sset)
-    probes <- intersect(names(intens), names(probe2chr))
-    intens <- intens[probes]
-    probe2chr <- probe2chr[probes]
+    xLinkedBeta = getBetas(sdf, mask=FALSE)[xLinked]
+    intens = totalIntensities(sdf)
+    probes = intersect(names(intens), names(probe2chr))
+    intens = intens[probes]
+    probe2chr = probe2chr[probes]
 
     c(
-        medianY=median(totalIntensities(subsetSignal(sset, cleanY))),
-        medianX=median(totalIntensities(subsetSignal(sset, xLinked))),
+        medianY=median(subsetvec(intens, cleanY)),
+        medianX=median(subsetvec(intens, xLinked)),
         fracXlinked=(sum(
             xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) /
                 sum(!(is.na(xLinkedBeta)))),
@@ -306,21 +140,21 @@ getSexInfo <- function(sset) {
 
 #' Infer Sex Karyotype
 #'
-#' The function takes a \code{SigSet} and infers the sex chromosome Karyotype
+#' The function takes a \code{SigDF} and infers the sex chromosome Karyotype
 #' and presence/absence of X-chromosome inactivation (XCI). chrX, chrY and XCI
 #' are inferred relatively independently. This function gives a more detailed
 #' look of potential sex chromosome aberrations.
 #'
-#' @param sset a \code{SigSet}
+#' @param sdf a \code{SigDF}
 #' @return Karyotype string, with XCI
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' inferSexKaryotypes(sset)
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' inferSexKaryotypes(sdf)
 #' @export
-inferSexKaryotypes <- function(sset) {
-    stopifnot(is(sset, "SigSet"))
-    sex.info <- getSexInfo(sset)
+inferSexKaryotypes <- function(sdf) {
+    stopifnot(is(sdf, "SigDF"))
+    sex.info <- getSexInfo(sdf)
     auto.median <- median(sex.info[paste0('chr',seq_len(22))], na.rm=TRUE)
     XdivAuto <- sex.info['medianX'] / auto.median
     YdivAuto <- sex.info['medianY'] / auto.median
@@ -354,7 +188,7 @@ inferSexKaryotypes <- function(sset) {
 
 #' Infer Sex
 #'
-#' @param sset a \code{SigSet}
+#' @param sdf a \code{SigDF}
 #' @return 'F' or 'M'
 #' We established our sex calling based on the median intensity of
 #' chromosome X, Y and the fraction of intermediately methylated probes
@@ -373,13 +207,13 @@ inferSexKaryotypes <- function(sset) {
 #' @import sesameData
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' inferSex(sset)
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' inferSex(sdf)
 #' @export
-inferSex <- function(sset) {
-    stopifnot(is(sset, "SigSet"))
-    stopifnot(sset@platform %in% c('EPIC','HM450'))
-    sex.info <- getSexInfo(sset)[seq_len(3)]
+inferSex <- function(sdf) {
+    stopifnot(is(sdf, "SigDF"))
+    stopifnot(platform(sdf) %in% c('EPIC','HM450'))
+    sex.info <- getSexInfo(sdf)[seq_len(3)]
     as.character(predict(
         sesameDataGet('sex.inference'), sex.info))
 }
@@ -389,36 +223,33 @@ inferSex <- function(sset) {
 #' This function uses both the built-in rsprobes as well as the type I
 #' Color-Channel-Switching probes to infer ethnicity.
 #'
-#' sset better be background subtracted and dyebias corrected for
+#' s better be background subtracted and dyebias corrected for
 #' best accuracy
 #'
-#' Please note: the betas should come from sigset *without*
+#' Please note: the betas should come from SigDF *without*
 #' channel inference.
 #'
-#' @param sset a \code{SigSet}
+#' @param sdf a \code{SigDF}
 #' @return string of ethnicity
 #' @importFrom randomForest randomForest
 #' @import sesameData
 #' @examples
-#' sset <- makeExampleSeSAMeDataSet("HM450")
-#' inferEthnicity(sset)
+#' sdf <- makeExampleSeSAMeDataSet("HM450")
+#' inferEthnicity(sdf)
 #' @export
-inferEthnicity <- function(sset) {
+inferEthnicity <- function(sdf) {
 
-    if (is(sset, "SigSetList"))
-        return(vapply(sset, inferEthnicity, character(1)))
-    
-    stopifnot(is(sset, 'SigSet'))
-    stopifnot(sset@platform %in% c('EPIC','HM450'))
+    stopifnot(is(sdf, 'SigDF'))
+    stopifnot(platform(sdf) %in% c('EPIC','HM450'))
 
     ethnicity.inference <- sesameDataGet('ethnicity.inference')
     ccsprobes <- ethnicity.inference$ccs.probes
     rsprobes <- ethnicity.inference$rs.probes
     ethnicity.model <- ethnicity.inference$model
     af <- c(
-        getBetas(sset, mask=FALSE)[rsprobes],
+        getBetas(sdf, mask=FALSE)[rsprobes],
         getAFTypeIbySumAlleles(
-            subsetSignal(sset, ccsprobes)))
+            subsetSignal(sdf, ccsprobes)))
 
     as.character(predict(ethnicity.model, af))
 }
@@ -426,91 +257,77 @@ inferEthnicity <- function(sset) {
 #' Get beta Values
 #'
 #' sum.typeI is used for rescuing beta values on
-#' Color-Channel-Switching CCS probes. The function takes a \code{SigSet}
+#' Color-Channel-Switching CCS probes. The function takes a \code{SigDF}
 #' and returns beta value except that Type-I in-band signal and out-of-band
 #' signal are combined. This prevents color-channel switching due to SNPs.
 #' 
-#' @param sset \code{SigSet}
+#' @param sdf \code{SigDF}
 #' @param sum.TypeI whether to sum type I channels
 #' @param mask whether to use mask
 #' @return a numeric vector, beta values
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' betas <- getBetas(sset)
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' betas <- getBetas(sdf)
 #' @export
-getBetas <- function(sset, mask=TRUE, sum.TypeI = FALSE) {
+getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
 
-    if (is(sset, "SigSetList")) {
-        return(do.call(cbind, lapply(
-            sset, getBetas, mask=mask, sum.TypeI=sum.TypeI)))
-    }
-    
-    stopifnot(is(sset, "SigSet"))
+    stopifnot(is(sdf, "SigDF"))
 
-    IGs <- IG(sset)
-    IRs <- IR(sset)
-
-    ## optionally summing channels protects
-    ## against channel misspecification
     if (sum.TypeI) {
-        IGs <- IGs + oobR2(sset)
-        IRs <- IRs + oobG2(sset)
-    } else if (!is.null(sset@extra$IGG) && !is.null(sset@extra$IRR)) {
-        IGs[!sset@extra$IGG,] <- sset@oobR[!sset@extra$IGG,]
-        IRs[!sset@extra$IRR,] <- sset@oobG[!sset@extra$IRR,]
+        betas = c(
+            with(sdf[sdf$col != "2",],
+                setNames(pmax(MG+MR+1) / pmax(MG+MR+UG+UR, 2), Probe_ID)),
+            with(sdf[sdf$col == "2",],
+                setNames(pmax(UG+1) / pmax(UG+UR, 2), Probe_ID)))
+    } else {
+        betas = c(
+            with(sdf[sdf$col == "G",],
+                setNames(pmax(MG+1) / pmax(MG+UG, 2), Probe_ID)),
+            with(sdf[sdf$col == "R",],
+                setNames(pmax(MR+1) / pmax(MR+UR, 2), Probe_ID)),
+            with(sdf[sdf$col == "2",],
+                setNames(pmax(UG+1) / pmax(UG+UR, 2), Probe_ID)))
     }
 
-    betas <- c(
-        pmax(IGs[,'M'],1) / pmax(IGs[,'M']+IGs[,'U'],2),
-        pmax(IRs[,'M'],1) / pmax(IRs[,'M']+IRs[,'U'],2),
-        pmax(II(sset)[,'M'],1) / pmax(II(sset)[,'M']+II(sset)[,'U'],2))
-
+    betas = betas[match(sdf$Probe_ID, names(betas))] # always use the original order
     if (mask) {
-        betas[sset@extra$mask[names(betas)]] <- NA
+        betas[sdf$mask] = NA
     }
-
-    ## make sure the order is always the same
-    betas[order(names(betas))]
+    betas
 }
 
 #' Get allele frequency treating type I by summing alleles
 #'
-#' Takes a \code{SigSet} as input and returns a numeric vector containing
+#' Takes a \code{SigDF} as input and returns a numeric vector containing
 #' extra allele frequencies based on Color-Channel-Switching (CCS) probes.
-#' If no CCS probes exist in the \code{SigSet}, then an numeric(0) is
+#' If no CCS probes exist in the \code{SigDF}, then an numeric(0) is
 #' returned.
 #'
-#' @param sset \code{SigSet}
+#' @param sdf \code{SigDF}
 #' @param known.ccs.only consider only known CCS probes
 #' @return beta values
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' betas <- getAFTypeIbySumAlleles(sset)
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' betas <- getAFTypeIbySumAlleles(sdf)
 #' @export
-getAFTypeIbySumAlleles <- function(sset, known.ccs.only = TRUE) {
+getAFTypeIbySumAlleles <- function(sdf, known.ccs.only = TRUE) {
 
-    stopifnot(is(sset, "SigSet"))
+    stopifnot(is(sdf, "SigDF"))
 
-    if (any(rownames(oobR(sset)) != rownames(IG(sset))))
-        stop("oobR-IG not matched. Likely a malformed sset.");
-    if (any(rownames(oobG(sset)) != rownames(IR(sset))))
-        stop("oobG-IR not matched. Likely a malformed sset.");
+    af = c(
+        with(sdf[sdf$col == "G",],
+            setNames(pmax(MR+UR,1) / pmax(MR+UR+MG+UG,2), Probe_ID)),
+        with(sdf[sdf$col == "R",],
+            setNames(pmax(MG+UG,1) / pmax(MR+UR+MG+UG,2), Probe_ID)))
 
-    ## .oobG <- oobG[rownames(IR),]
-    af <- c(
-        pmax(rowSums(oobR(sset)),1)/(
-            pmax(rowSums(oobR(sset))+rowSums(IG(sset)),2)),
-        pmax(rowSums(oobG(sset)),1)/(
-            pmax(rowSums(oobG(sset))+rowSums(IR(sset)),2)))
-
-    if (known.ccs.only)
-        af <- af[intersect(
-            names(af),
-            sesameDataGet('ethnicity.inference')$ccs.probes)]
-
-    af[order(names(af))]
+    if (known.ccs.only) {
+        af = af[intersect(
+            names(af), sesameDataGet('ethnicity.inference')$ccs.probes)]
+    }
+    
+    af[order(names(af))] # TODO: avoid sorting
 }
 
 ## res is the output of illuminaio::readIDAT
@@ -566,7 +383,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #' Import a pair of IDATs from one sample
 #'
 #' The function takes a prefix string that are shared with _Grn.idat
-#' and _Red.idat. The function returns a \code{SigSet}.
+#' and _Red.idat. The function returns a \code{SigDF}.
 #'
 #' @param prefix.path sample prefix without _Grn.idat and _Red.idat
 #' @param manifest optional design manifest file
@@ -574,10 +391,10 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #' @param verbose     be verbose?  (FALSE)
 #' @param platform EPIC, HM450 and HM27 etc.
 #' 
-#' @return a \code{SigSet}
+#' @return a \code{SigDF}
 #' 
 #' @examples
-#' sset <- readIDATpair(sub('_Grn.idat','',system.file(
+#' sdf <- readIDATpair(sub('_Grn.idat','',system.file(
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
 readIDATpair <- function(
@@ -613,11 +430,19 @@ readIDATpair <- function(
         controls <- df_address$controls
     }
 
-    sset <- chipAddressToSignal(dm, manifest, controls)
-    ## no p-value is stored now
-    ## sset <- pOOBAH(sset)
-    ## pval(sset) <- extra(sset)[['pvals']][['pOOBAH']]
-    sset
+    sdf = chipAddressToSignal(dm, manifest)
+    if (!is.null(controls)) {
+        attr(sdf, "controls") = readControls(dm, controls)
+    }
+    sdf
+}
+
+readControls <- function(dm, controls) {
+    ctl <- as.data.frame(dm[match(controls$Address, rownames(dm)),])
+    rownames(ctl) <- make.names(controls$Name, unique=TRUE)
+    ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
+    colnames(ctl) <- c('G','R','col','type')
+    ctl
 }
 
 #' Identify IDATs from a directory
@@ -688,123 +513,38 @@ searchIDATprefixes <- function(dir.name,
 #' using the other channel.
 #'
 #' @param dm data frame in chip address, 2 columns: cy3/Grn and cy5/Red
-#' @param manifest a data frame with columns Probe_ID, M, U and col
-#' @param controls a data frame with columns Address and Name. This is optional
-#' but might be necessary for some preprocessing methods that depends on these
-#' control probes. This is left for backward compatibility. Updated version
-#' should have controls consolidated into manifest.
-#' @return a SigSet, indexed by probe ID address
-chipAddressToSignal <- function(
-    dm, manifest, controls = NULL) {
+#' @param mft a data frame with columns Probe_ID, M, U and col
+#' @return a SigDF, indexed by probe ID address
+chipAddressToSignal <- function(dm, mft) {
 
-    sset <- SigSet(attr(dm, 'platform'))
+    mft1 = mft[!is.na(mft$col),]
+    tmpM = dm[match(mft1$M, rownames(dm)),]
+    tmpU = dm[match(mft1$U, rownames(dm)),]
+    sdf = data.frame(
+        Probe_ID=mft1$Probe_ID,
+        MG=tmpM[,"G"], MR=tmpM[,"R"], UG=tmpU[,"G"], UR=tmpU[,"R"],
+        col=mft1$col, mask=FALSE)
+    if ("mask" %in% colnames(mft1)) { sdf$mask = mft1$mask; }
 
-    ## Infinium I green channel / oob red channel
-    IordG <- manifest[(!is.na(manifest$col))&(manifest$col=='G'),]
-    ## 2-channel for green probes' M allele
-    IuG2ch <- dm[match(IordG$U, rownames(dm)),]
-    ## 2-channel for green probes' U allele
-    ImG2ch <- dm[match(IordG$M, rownames(dm)),]
-    oobR(sset) <- as.matrix(
-        data.frame(M=ImG2ch[,'R'], U=IuG2ch[,'R'], row.names=IordG$Probe_ID))
-    IG(sset) <- as.matrix(data.frame(
-        M = ImG2ch[,'G'], U = IuG2ch[,'G'],
-        row.names = IordG$Probe_ID))
-
-    ## Infinium I red channel / oob green channel
-    IordR <- manifest[(!is.na(manifest$col))&(manifest$col=='R'),]
-    ## 2-channel for red probes' m allele
-    IuR2ch <- dm[match(IordR$U, rownames(dm)),]
-    ## 2-channel for red probes' u allele
-    ImR2ch <- dm[match(IordR$M, rownames(dm)),]
-    oobG(sset) <- as.matrix(
-        data.frame(M=ImR2ch[,'G'], U=IuR2ch[,'G'], row.names=IordR$Probe_ID))
-    IR(sset) <- as.matrix(data.frame(
-        M = ImR2ch[,'R'], U = IuR2ch[,'R'],
-        row.names = IordR$Probe_ID))
-    IR(sset)[rowSums(is.na(IR(sset))) > 0] <- 0
-    
-    ## Infinium II
-    if (isUniqProbeID(manifest$Probe_ID)) { # mouse array probe ID
-        is.InfII <- probeID_designType(manifest$Probe_ID) == '2'
-    } else { # traditional probe ID with just the cg number
-        is.InfII <- is.na(manifest$col)
+    mft2 = mft[is.na(mft$col),]
+    if (nrow(mft2) > 0) {
+        tmp = dm[match(mft2$U, rownames(dm)),]
+        s2 = data.frame(
+            Probe_ID=mft2$Probe_ID,
+            MG=NA, MR=NA, UG=tmp[,"G"], UR=tmp[,"R"], col="2", mask=FALSE)
+        if ("mask" %in% colnames(mft2)) { s2$mask = mft2$mask; }
+        sdf = rbind(sdf, s2)
     }
-    IIord <- manifest[is.InfII,]
-    signal.II <- dm[match(IIord$U, rownames(dm)),c('G','R')]
-    colnames(signal.II) <- c('M', 'U')
-    rownames(signal.II) <- IIord$Probe_ID
-    II(sset) <- signal.II
-
-    ## control probes
-    ctl_idx <- grep('^ctl',manifest$Probe_ID)
-    if (length(ctl_idx) > 0) { # control probes are included in manifest
-        ctl_ord <- manifest[ctl_idx,]
-        ctl <- as.data.frame(dm[match(ctl_ord$U, rownames(dm)),])
-        ctl <- cbind(ctl, ctl_ord$col, ctl_ord$Probe_ID)
-        rownames(ctl) <- ctl_ord$Probe_ID
-        colnames(ctl) <- c('G','R','col','type')
-        ctl(sset) <- ctl
-    } else if (
-        !is.null(controls) && nrow(controls) > 0 &&
-            !('M' %in% colnames(controls))) {
-        
-        ## TODO: fix the control probe panel
-        ctl <- as.data.frame(dm[match(controls$Address, rownames(dm)),])
-        rownames(ctl) <- make.names(controls$Name, unique=TRUE)
-        ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
-        colnames(ctl) <- c('G','R','col','type')
-        ctl(sset) <- ctl
-    }
-
-    ## additional annotation in manifest
-    if ('mask' %in% colnames(manifest)) {
-        sset = extraSet(
-            sset, "maskManifest",
-            setNames(manifest$mask, manifest$Probe_ID))
-    }
-
-    ## backward support for mouse array, to remove in the future
-    if ('mapUniq' %in% colnames(manifest)) {
-        sset = extraSet(
-            sset, 'maskManifest',
-            setNames(!manifest$mapUniq, manifest$Probe_ID))
-    }
-    
-    sset
+    sdf$col = factor(sdf$col, levels=c("G","R","2"))
+    sdf = sdf[match(mft$Probe_ID, sdf$Probe_ID),] # always use the manifest order
+    sdf = structure(sdf, class=c("SigDF", "data.frame"))
+    attr(sdf, "platform") = attr(dm, 'platform')
+    rownames(sdf) = NULL
+    sdf
 }
 
-#' Compute internal bisulfite conversion control
-#'
-#' Compute GCT score for internal bisulfite conversion control. The function
-#' takes a \code{SigSet} as input. The higher the GCT score, the more likely
-#' the incomplete conversion.
-#'
-#' @param sset signal set
-#' @param use.median use median to compute GCT instead of mean
-#' @return GCT score (the higher, the more incomplete conversion)
-#' @examples
-#' sesameDataCache("HM450") # if not done yet
-#' sset <- makeExampleSeSAMeDataSet('HM450')
-#' bisConversionControl(sset)
-#'
-#' @export
-bisConversionControl <- function(sset, use.median=FALSE) {
-
-    stopifnot(sset@platform %in% c('EPICplus','EPIC','HM450'))
-    extC <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extC
-    extT <- sesameDataGet(paste0(sset@platform, '.probeInfo'))$typeI.extT
-    prbs <- rownames(oobG(sset))
-    extC <- intersect(prbs, extC)
-    extT <- intersect(prbs, extT)
-    if (use.median) {
-        median(oobG(sset)[extC,], na.rm=TRUE) /
-            median(oobG(sset)[extT,], na.rm=TRUE)
-    } else {
-        mean(oobG(sset)[extC,], na.rm=TRUE) /
-            mean(oobG(sset)[extT,], na.rm=TRUE)
-    }
-}
-
-## R6 utility functions deleted after 1.5.0
-
+## retired functions:
+## after 1.10.5
+## bisConversionControl, SigSet class, updateSigSet, subsetSignal, makeExampleSeSAMeDataSet, makeExampleTinyEPICDataSet, saveMask, restoreMask, buildControlMatrix450k, detectionPoobEcdf2, detectionPnegNormTotal, detectionPnegNormGS, detectionPfixedNorm, detectionPnegNorm, noobsb, IG2,IGR2,oobG2, oobR2，SigSetMethod, SigSetList, SigSetsToRGChannelSet, RGChannelSetToSigSets, SigSetToRatioSet, parseGEOSignalABFile
+## after 1.5.0
+## R6 utility functions

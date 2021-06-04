@@ -1,27 +1,27 @@
 #' get normalization control signal
 #' 
-#' get normalization control signal from SigSet. 
+#' get normalization control signal from SigDF. 
 #' The function optionally takes mean for each channel.
 #' 
-#' @param   sset a SigSet
+#' @param   sdf a SigDF
 #' @param   average whether to average
 #' @return a data frame of normalization control signals
 #' @examples 
-#' sset <- readIDATpair(file.path(system.file(
+#' sdf <- readIDATpair(file.path(system.file(
 #'     'extdata','',package='sesameData'), '4207113116_B'))
 #' 
-#' df.ctl <- getNormCtls(sset)
+#' df.ctl <- getNormCtls(sdf)
 #' 
 #' @export
-getNormCtls <- function(sset, average = FALSE) {
-    df <- ctl(sset)
+getNormCtls <- function(sdf, average = FALSE) {
+    df <- controls(sdf)
     df <- df[grep('norm(_|\\.)', tolower(rownames(df))),]
 
     ## stop if no control probes
     if (nrow(df) == 0)
         stop("No normalization control probes found!")
 
-    if (sset@platform == 'HM27') {
+    if (platform(sdf) == 'HM27') {
         df$channel <- ifelse(grepl(
             'norm\\.green', tolower(rownames(df))), 'G', 'R')
     } else {
@@ -40,98 +40,89 @@ getNormCtls <- function(sset, average = FALSE) {
 
 #' Correct dye bias in by linear scaling.
 #'
-#' The function takes a \code{SigSet} as input and scale both the Grn and Red
+#' The function takes a \code{SigDF} as input and scale both the Grn and Red
 #' signal to a reference (ref) level. If the reference level is not given, it
 #' is set to the mean intensity of all the in-band signals. The function
-#' returns a \code{SigSet} with dye bias corrected.
+#' returns a \code{SigDF} with dye bias corrected.
 #' 
-#' @param sset a \code{SigSet}
+#' @param sdf a \code{SigDF}
 #' @param ref reference signal level
-#' @return a normalized \code{SigSet}
+#' @return a normalized \code{SigDF}
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.db <- dyeBiasCorr(sset)
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf.db <- dyeBiasCorr(sdf)
 #' @export
-dyeBiasCorr <- function(sset, ref=NULL) {
+dyeBiasCorr <- function(sdf, ref=NULL) {
 
-    stopifnot(is(sset, "SigSet"))
+    stopifnot(is(sdf, "SigDF"))
     if (is.null(ref)) {
-        ref <- meanIntensity(sset)
+        ref <- meanIntensity(sdf)
     }
     
-    normctl <- getNormCtls(sset, average=TRUE)
+    normctl <- getNormCtls(sdf, average=TRUE)
     fR <- ref/normctl['R']
     fG <- ref/normctl['G']
 
-    IG(sset) <- matrix(
-        c(fG*IG(sset)[,'M'], fG*IG(sset)[,'U']),
-        nrow=nrow(IG(sset)), ncol=ncol(IG(sset)), dimnames=dimnames(IG(sset)))
-    
-    IR(sset) <- matrix(
-        c(fR*IR(sset)[,'M'], fR*IR(sset)[,'U']),
-        nrow=nrow(IR(sset)), ncol=ncol(IR(sset)), dimnames=dimnames(IR(sset)))
-    
-    II(sset) <- matrix(
-        c(fG*II(sset)[,'M'], fR*II(sset)[,'U']),
-        nrow=nrow(II(sset)), ncol=ncol(II(sset)), dimnames=dimnames(II(sset)))
-    
-    ctl(sset)$G <- fG*ctl(sset)$G
-    ctl(sset)$R <- fR*ctl(sset)$R
-    oobG(sset) <- fG*oobG(sset)
-    oobR(sset) <- fR*oobR(sset)
-    sset
+    sdf$MG = sdf$MG * fG
+    sdf$UG = sdf$UG * fG
+    sdf$MR = sdf$MR * fR
+    sdf$UR = sdf$UR * fR
+
+    sdf
 }
 
 #' Correct dye bias using most balanced sample as the reference
 #'
-#' The function chose the reference signal level from a list of \code{SigSet}.
+#' The function chose the reference signal level from a list of \code{SigDF}.
 #' The chosen sample has the smallest difference in Grn and Red signal
 #' intensity as measured using the normalization control probes. In practice,
 #' it doesn't matter which sample is chosen as long as the reference level
-#' does not deviate much. The function returns a list of \code{SigSet}s with
+#' does not deviate much. The function returns a list of \code{SigDF}s with
 #' dye bias corrected.
 #' 
-#' @param ssets a list of normalized \code{SigSet}s
-#' @return a list of normalized \code{SigSet}s
+#' @param sdfs a list of normalized \code{SigDF}s
+#' @return a list of normalized \code{SigDF}s
 #' @examples
-#' ssets <- sesameDataGet('HM450.10.TCGA.BLCA.normal')
-#' ssets.db <- dyeBiasCorrMostBalanced(ssets)
+#' sdfs <- sesameDataGet('HM450.10.TCGA.BLCA.normal')
+#' sdfs.db <- dyeBiasCorrMostBalanced(sdfs)
 #' @export
-dyeBiasCorrMostBalanced <- function(ssets) {
+dyeBiasCorrMostBalanced <- function(sdfs) {
 
-    normctls <- vapply(ssets, getNormCtls, numeric(2), average=TRUE)
+    normctls <- vapply(sdfs, getNormCtls, numeric(2), average=TRUE)
     most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
     ref <- mean(normctls[,most.balanced], na.rm=TRUE)
-    lapply(ssets, function(sset) dyeBiasCorr(sset, ref))
+    lapply(sdfs, function(sdf) dyeBiasCorr(sdf, ref))
 }
 
 #' Dye bias correction by matching green and red to mid point
 #'
 #' This function compares the Type-I Red probes and Type-I Grn probes and
 #' generates and mapping to correct signal of the two channels to the middle.
-#' The function takes one single \code{SigSet} and returns a \code{SigSet}
+#' The function takes one single \code{SigDF} and returns a \code{SigDF}
 #' with dye bias corrected.
 #' 
-#' @param sset a \code{SigSet}
-#' @return a \code{SigSet} after dye bias correction.
+#' @param sdf a \code{SigDF}
+#' @return a \code{SigDF} after dye bias correction.
 #' @importFrom preprocessCore normalize.quantiles.use.target
 #' @importFrom stats approx
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.db <- dyeBiasCorrTypeINorm(sset)
+#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf.db <- dyeBiasCorrTypeINorm(sdf)
 #' @export
-dyeBiasCorrTypeINorm <- function(sset) {
+dyeBiasCorrTypeINorm <- function(sdf) {
 
-    stopifnot(is(sset, "SigSet"))
+    stopifnot(is(sdf, "SigDF"))
 
-    IG0 <- IGpass(sset); IR0 <- IRpass(sset)
+    
+    IG0 <- with(IG(sdf), c(MG, UG))
+    IR0 <- with(IR(sdf), c(MR, UR))
     
     maxIG <- max(IG0, na.rm = TRUE); minIG <- min(IG0, na.rm = TRUE)
     maxIR <- max(IR0, na.rm = TRUE); minIR <- min(IR0, na.rm = TRUE)
 
-    if (maxIG <= 0 || maxIR <= 0) { return(sset); }
+    if (maxIG <= 0 || maxIR <= 0) { return(sdf); }
 
     IR1 <- sort(as.numeric(IR0))
     IR2 <- sort(as.vector(normalize.quantiles.use.target(
@@ -167,27 +158,19 @@ dyeBiasCorrTypeINorm <- function(sset) {
         data
     }
 
-    ## fit type II
-    II(sset)[,'U'] <- fitfunRed(II(sset)[,'U'])
-    II(sset)[,'M'] <- fitfunGrn(II(sset)[,'M'])
-
-    ## IR
-    IR(sset) <- fitfunRed(IR(sset))
-    ## IG
-    IG(sset) <- fitfunGrn(IG(sset))
-
-    ## fit control
-    if (nrow(ctl(sset)) > 0) {
-        ctl(sset)[,'R'] <- fitfunRed(ctl(sset)[,'R'])
-        ctl(sset)[,'G'] <- fitfunGrn(ctl(sset)[,'G'])
-    }
-
-    ## fit oob
-    oobR(sset) <- fitfunRed(oobR(sset))
-    oobG(sset) <- fitfunGrn(oobG(sset))
-
-    sset
+    sdf$MR = fitfunRed(sdf$MR)
+    sdf$UR = fitfunRed(sdf$UR)
+    sdf$MG = fitfunGrn(sdf$MG)
+    sdf$UG = fitfunGrn(sdf$UG)
+    sdf
 }
+
+#' @rdname dyeBiasCorrTypeINorm
+#' @export
+#' @examples
+#' sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
+#' sdf <- dyeBiasNL(sdf)
+dyeBiasNL <- dyeBiasCorrTypeINorm
 
 ## the following three functions are retired since 1.9.1
 ## dyeBiasCorrTypeINormMpU, dyeBiasCorrTypeINormG2R, dyeBiasCorrTypeINormR2G

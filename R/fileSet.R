@@ -17,12 +17,12 @@
 openSesameToFile <- function(
     map_path, idat_dir, BPPARAM=SerialParam(), inc = 4) {
     samples <- basename(searchIDATprefixes(idat_dir))
-    sset <- readIDATpair(file.path(idat_dir, samples[1]))
+    sdf <- readIDATpair(file.path(idat_dir, samples[1]))
 
-    fset <- initFileSet(map_path, sset@platform, samples, inc = inc)
+    fset <- initFileSet(map_path, platform(sdf), samples, inc = inc)
     
     message(
-        'Mapping ', length(samples), ' ', sset@platform,
+        'Mapping ', length(samples), ' ', platform(sdf),
         ' samples to ', map_path, '.')
     
     returned <- bplapply(samples, function(sample) {
@@ -46,7 +46,7 @@ openSesameToFile <- function(
 #' initialize a fileSet class by allocating appropriate storage
 #'
 #' @param map_path path of file to map
-#' @param platform EPIC, HM450 or HM27, consistent with sset@platform
+#' @param platform EPIC, HM450 or HM27, consistent with platform(sdf)
 #' @param samples sample names
 #' @param probes probe names
 #' @param inc bytes per unit data storage

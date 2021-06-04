@@ -7,8 +7,8 @@
 #' and the probabilities of all strains
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
-#' sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
-#' vafs <- betaToAF(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
+#' sdf <- sesameDataGet('MM285.1.NOD.FrontalLobe')
+#' vafs <- betaToAF(getBetas(dyeBiasNL(noob(sdf))))
 #' inferStrain(vafs)
 #' @import tibble
 #' @export
@@ -38,8 +38,8 @@ inferStrain <- function(vafs, strain_snp_table = NULL) {
 #' @return SNP variant allele frequency
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
-#' sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
-#' vafs <- betaToAF(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
+#' sdf <- sesameDataGet('MM285.1.NOD.FrontalLobe')
+#' vafs <- betaToAF(getBetas(dyeBiasNL(noob(sdf))))
 #' @export
 betaToAF <- function(betas) {
 

@@ -4,10 +4,10 @@
 \alias{noob}
 \title{Noob background correction}
 \usage{
-noob(sset, bgR = NULL, bgG = NULL, offset = 15)
+noob(sdf, bgR = NULL, bgG = NULL, offset = 15)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 
 \item{bgR}{background red probes, if not given use all oobR}
 
@@ -16,15 +16,15 @@ noob(sset, bgR = NULL, bgG = NULL, offset = 15)
 \item{offset}{offset}
 }
 \value{
-a new \code{SigSet} with noob background correction
+a new \code{SigDF} with noob background correction
 }
 \description{
-The function takes a \code{SigSet} and returns a modified \code{SigSet}
+The function takes a \code{SigDF} and returns a modified \code{SigDF}
 with background subtracted. Background was modelled in a normal distribution
 and true signal in an exponential distribution. The Norm-Exp deconvolution
 is parameterized using Out-Of-Band (oob) probes
 }
 \examples{
-sset <- makeExampleTinyEPICDataSet()
-sset.nb <- noob(sset)
+sdf <- makeExampleTinyEPICDataSet()
+sdf.nb <- noob(sdf)
 }

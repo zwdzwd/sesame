@@ -4,23 +4,30 @@
 \alias{qualityMask}
 \title{Mask beta values by design quality}
 \usage{
-qualityMask(sset, mask.use.manifest = TRUE, mask.use.tcga = FALSE)
+qualityMask(
+  sdf,
+  mask.use.manifest = TRUE,
+  manifest = NULL,
+  mask.use.tcga = FALSE
+)
 }
 \arguments{
-\item{sset}{a \code{SigSet} object}
+\item{sdf}{a \code{SigDF} object}
 
 \item{mask.use.manifest}{use manifest to mask probes}
 
 \item{mask.use.tcga}{whether to use TCGA masking, only applies to HM450}
 }
 \value{
-a filtered \code{SigSet}
+a filtered \code{SigDF}
 }
 \description{
 Currently quality masking only supports three platforms
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sset.masked <- qualityMask(sset)
+sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+sum(mask(sdf))
+sdf.masked <- qualityMask(sdf)
+sum(mask(sdf.masked))
 }
