@@ -28,8 +28,8 @@ bin.coords) and bin signals (bin.signals).
 \examples{
 
 sesameDataCache("EPIC") # in case not done yet
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-sdfs.normal <- sesameDataGet('EPIC.5.normal')
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
 seg <- cnSegmentation(sdf, sdfs.normal)
 
 }

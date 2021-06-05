@@ -19,10 +19,9 @@ negControls <- function(sdf) {
 #' masked \code{SigDF}
 #' @return a \code{SigDF}, or a p-value vector if return.pval is TRUE
 #' @examples
-#' sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
-#' sum(mask(sdf))
-#' sdf_with_mask <- detectionPnegEcdf(sdf)
-#' sum(mask(sdf_with_mask))
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' sum(sdf$mask)
+#' sum(detectionPnegEcdf(sdf)$mask)
 #' @import methods
 #' @export
 detectionPnegEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
@@ -58,10 +57,10 @@ detectionPnegEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 #' masked \code{SigDF}
 #' @return a \code{SigDF}, or a p-value vector if return.pval is TRUE
 #' @examples
-#' sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
-#' sum(mask(sdf))
-#' sdf_with_mask <- detectionPoobEcdf(sdf)
-#' sum(mask(sdf_with_mask))
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' sum(sdf$mask)
+#' sum(detectionPoobEcdf(sdf)$mask)
+#' 
 #' @export
 detectionPoobEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 
@@ -99,10 +98,10 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 #' masked \code{SigDF}
 #' @return a \code{SigDF}, or a p-value vector if return.pval is TRUE
 #' @examples
-#' sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
-#' sum(mask(sdf))
-#' sdf_with_mask <- detectionPoobEcdf(sdf)
-#' sum(mask(sdf_with_mask))
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' sum(sdf$mask)
+#' sdf <- detectionPoobEcdf(sdf)
+#' sum(sdf$mask)
 #' @export
 detectionPoobEcdf2 <- function(sdf, return.pval = FALSE, pval.threshold=0.05){
 
@@ -125,17 +124,17 @@ detectionPoobEcdf2 <- function(sdf, return.pval = FALSE, pval.threshold=0.05){
 #' @rdname detectionPoobEcdf
 #' @export
 #' @examples
-#' sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
-#' sum(mask(sdf))
-#' sdf_with_mask <- pOOBAH(sdf)
-#' sum(mask(sdf_with_mask))
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' sum(sdf$mask)
+#' sum(resetMask(sdf)$mask)
+#' sum(pOOBAH(sdf, pval.threshold=0.2)$mask)
 pOOBAH <- detectionPoobEcdf
 
 #' @rdname detectionPoobEcdf2
 #' @export
 #' @examples
-#' sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
-#' sum(mask(sdf))
-#' sdf_with_mask <- pOOBAH2(sdf)
-#' sum(mask(sdf_with_mask))
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' sum(sdf$mask)
+#' sdf <- pOOBAH2(sdf)
+#' sum(sdf$mask)
 pOOBAH2 <- detectionPoobEcdf2

@@ -19,8 +19,8 @@ a \code{SigDF} with added mask
 Set mask to only the probes specified
 }
 \examples{
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-sum(mask(sdf))
-sum(mask(setMask(sdf, "cg14959801")))
-sum(mask(setMask(sdf, c("cg14057072", "cg22344912"))))
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sum(sdf$mask)
+sum(setMask(sdf, "cg14959801")$mask)
+sum(setMask(sdf, c("cg14057072", "cg22344912"))$mask)
 }

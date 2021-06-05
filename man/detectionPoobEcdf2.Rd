@@ -33,12 +33,12 @@ is that pOOBAH2 is based on background-subtracted and dyebias
 corrected signal and do not distinguish the color channel difference.
 }
 \examples{
-sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
-sum(mask(sdf))
-sdf_with_mask <- detectionPoobEcdf(sdf)
-sum(mask(sdf_with_mask))
-sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
-sum(mask(sdf))
-sdf_with_mask <- pOOBAH2(sdf)
-sum(mask(sdf_with_mask))
+sdf <- sesameDataGet("EPIC.1.SigDF")
+sum(sdf$mask)
+sdf <- detectionPoobEcdf(sdf)
+sum(sdf$mask)
+sdf <- sesameDataGet("EPIC.1.SigDF")
+sum(sdf$mask)
+sdf <- pOOBAH2(sdf)
+sum(sdf$mask)
 }

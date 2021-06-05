@@ -15,7 +15,7 @@
 #' @examples
 #'
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' ranks <- qualityRank(sdf)
 #' 
 #' @export
@@ -54,7 +54,7 @@ qualityRank <- function(
 #' @examples
 #' sesameDataCache("EPIC")
 #' sdf <- # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesamePlotIntensVsBetas(sdf)
 #' @import graphics
 #' @import KernSmooth
@@ -83,29 +83,6 @@ sesamePlotIntensVsBetas <- function(sdf, mask=TRUE, intens.range=c(5,15)) {
     lines(log2(x + bG + bG), (x + bG) / (x + bG + 0 + bG), col='green')
 }
 
-#' Plot red-green QQ-Plot using Infinium-I Probes
-#'
-#' @param sdf a \code{SigDF}
-#' @return create a qqplot
-#' @examples
-#' sesameDataCache("EPIC")
-#' sdf <- # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-#' sesamePlotRedGrnQQ(sdf)
-#' @import graphics
-#' @export
-sesamePlotRedGrnQQ <- function(sdf) {
-    m = max(
-        with(IR(sdf), max(c(MR,UR), na.rm=TRUE)),
-        with(IG(sdf), max(c(MG,UG), na.rm=TRUE)))
-    qqplot(
-        with(IR(sdf), c(MR,UR)), with(IG(sdf), c(MG,UG)),
-        xlab = 'Infinium-I Red Signal', ylab = 'Infinium-I Grn Signal',
-        main = 'Red-Green QQ-Plot', cex = 0.5,
-        xlim = c(0,m), ylim = c(0,m))
-    abline(0,1,lty = 'dashed')
-}
-
 #' Generate summary numbers that indicative of experiment quality
 #' Please provide a raw SigDF(before any preprocessing). Usually
 #' directly from readIDATpair
@@ -114,7 +91,7 @@ sesamePlotRedGrnQQ <- function(sdf) {
 #' @return a sesameQC class object
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesameQC(sdf)
 #' @export
 sesameQC <- function(sdf) {
@@ -185,7 +162,7 @@ sesameQC <- function(sdf) {
 #' @return print sesameQC result on screen
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesameQC(sdf)
 #' @export
 print.sesameQC <- function(x, ...) {
@@ -263,15 +240,6 @@ print.sesameQC <- function(x, ...) {
     }
 
     cat('\n')
-    cat('=======================\n')
-    cat('=      Inferences     =\n')
-    cat('=======================\n')
-    cat('Sex:                           ', x$sex, '\n')
-    cat('Ethnicity:                     ', x$ethnicity, '\n')
-    cat('Age:                           ', x$age, '\n')
-    cat('Bisulfite Conversion (GCT):    ', x$GCT, '\n')
-    
-    cat('\n')
 }
 
 
@@ -284,7 +252,7 @@ print.sesameQC <- function(x, ...) {
 #' @return           a data.frame
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' qc <- sesameQC(sdf)
 #' df <- as.data.frame(qc)
 #' @method as.data.frame sesameQC
@@ -312,7 +280,7 @@ as.data.frame.sesameQC <- function(
 #' @examples
 #'
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' ranks <- qualityRank(sdf)
 #' 
 #' @export

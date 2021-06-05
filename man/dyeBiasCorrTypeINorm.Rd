@@ -23,8 +23,8 @@ with dye bias corrected.
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+sdf <- sesameDataGet('EPIC.1.SigDF')
 sdf.db <- dyeBiasCorrTypeINorm(sdf)
-sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
+sdf <- sesameDataGet('EPIC.1.SigDF')
 sdf <- dyeBiasNL(sdf)
 }

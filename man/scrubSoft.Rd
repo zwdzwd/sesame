@@ -21,7 +21,7 @@ noob-like procedure.
 This function is meant to be used after noob.
 }
 \examples{
-sdf <- makeExampleTinyEPICDataSet()
+sdf <- sesameDataGet('EPIC.1.SigDF')
 sdf.nb <- noob(sdf)
 sdf.nb.scrubSoft <- scrubSoft(sdf.nb)
 }

@@ -20,7 +20,7 @@ This function essentially merge existing probe masking
 with new prboes to mask
 }
 \examples{
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-sum(sesame::mask(sdf))
-sum(sesame::mask(addMask(sdf, c("cg14057072", "cg22344912"))))
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sum(sdf$mask)
+sum(addMask(sdf, c("cg14057072", "cg22344912"))$mask)
 }

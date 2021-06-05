@@ -14,35 +14,35 @@
 #' @return a \code{SigDF}, or numerics if summary == TRUE
 #' @examples
 #'
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' inferTypeIChannel(sdf)
 #' 
 #' @export
 inferTypeIChannel <- function(
     sdf, switch_failed = FALSE, verbose = FALSE, summary = FALSE) {
     
-    red_channel <- rbind(IR(sdf), oobR(sdf))
-    grn_channel <- rbind(oobG(sdf), IG(sdf))
-    n_red <- nrow(IR(sdf))
-    red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sdf)) # old red index
+    ## red_channel <- rbind(IR(sdf), oobR(sdf))
+    ## grn_channel <- rbind(oobG(sdf), IG(sdf))
+    ## n_red <- nrow(IR(sdf))
+    ## red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sdf)) # old red index
 
-    ## If there are NA in the probe intensity, exclude these probes.
-    ## This is rare and usually occurred when manifest is not complete
-    no_na <- complete.cases(cbind(red_channel, grn_channel))
-    if (!all(no_na)) {
-        red_channel <- red_channel[no_na,]
-        grn_channel <- grn_channel[no_na,]
-        red_idx0 <- red_idx0[no_na]
-        if (verbose) {
-            message(
-                'Warning! ', sum(!no_na),
-                ' Infinium I probes are excluded for having NA intensity.')
-        }
-    }
+    ## ## If there are NA in the probe intensity, exclude these probes.
+    ## ## This is rare and usually occurred when manifest is not complete
+    ## no_na <- complete.cases(cbind(red_channel, grn_channel))
+    ## if (!all(no_na)) {
+    ##     red_channel <- red_channel[no_na,]
+    ##     grn_channel <- grn_channel[no_na,]
+    ##     red_idx0 <- red_idx0[no_na]
+    ##     if (verbose) {
+    ##         message(
+    ##             'Warning! ', sum(!no_na),
+    ##             ' Infinium I probes are excluded for having NA intensity.')
+    ##     }
+    ## }
     
-    red_max <- rowMaxs(red_channel)
-    grn_max <- rowMaxs(grn_channel)
-    red_idx <- red_max > grn_max # new red index
+    ## red_max <- rowMaxs(red_channel)
+    ## grn_max <- rowMaxs(grn_channel)
+    ## red_idx <- red_max > grn_max # new red index
 
 
     inf1_idx = which(sdf$col != "2")
@@ -51,14 +51,14 @@ inferTypeIChannel <- function(
     grn_max = with(sdf1, pmax(MG, UG))
     new_col = ifelse(red_max > grn_max, "R", "G")
     bg_max = quantile(c(
-        with(sdf1[new_col == "R"], c(MG,UG)),
-        with(sdf1[new_col == "G"], c(MR,UR))), 0.95)
+        with(sdf1[new_col == "R",], c(MG,UG)),
+        with(sdf1[new_col == "G",], c(MR,UR))), 0.95)
     
     if (!switch_failed) {
         idx = pmax(red_max, grn_max) < bg_max
         new_col[idx] = sdf1$col[idx]
     }
-    sdf$col[inf1_idx] = new_col
+    sdf$col[inf1_idx] = factor(new_col, levels=c("G","R","2"))
     
 
     ## ## stop inference when in-band signal is lower than a minimum

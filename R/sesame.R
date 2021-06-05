@@ -34,8 +34,8 @@
 #' @return a data frame of M and U columns
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-#' signalMU(sdf)
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' head(signalMU(sdf))
 #' @export
 signalMU <- function(sdf, mask = TRUE) {
     s2 = rbind(
@@ -62,7 +62,7 @@ signalMU <- function(sdf, mask = TRUE) {
 #' @return mean of all intensities
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' meanIntensity(sdf)
 #' @export
 meanIntensity <- function(sdf, mask = TRUE) {
@@ -79,14 +79,14 @@ meanIntensity <- function(sdf, mask = TRUE) {
 #' @return a vector of M+U signal for each probe
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' intensities <- totalIntensities(sdf)
 #' @export
 totalIntensities <- function(sdf, mask = TRUE) {
-    with(signalMU(sdf), M+U)
+    with(signalMU(sdf), setNames(M+U, Probe_ID))
 }
 
-subset_vec <- function(vec, vecnames) {
+subsetvec <- function(vec, vecnames) {
     vec[names(vec) %in% vecnames]
 }
 
@@ -102,7 +102,7 @@ subset_vec <- function(vec, vecnames) {
 #' probes, median intensities of auto-chromosomes.
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' getSexInfo(sdf)
 #' @export
 getSexInfo <- function(sdf) {
@@ -149,7 +149,7 @@ getSexInfo <- function(sdf) {
 #' @return Karyotype string, with XCI
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' inferSexKaryotypes(sdf)
 #' @export
 inferSexKaryotypes <- function(sdf) {
@@ -207,7 +207,7 @@ inferSexKaryotypes <- function(sdf) {
 #' @import sesameData
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' inferSex(sdf)
 #' @export
 inferSex <- function(sdf) {
@@ -234,7 +234,7 @@ inferSex <- function(sdf) {
 #' @importFrom randomForest randomForest
 #' @import sesameData
 #' @examples
-#' sdf <- makeExampleSeSAMeDataSet("HM450")
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' inferEthnicity(sdf)
 #' @export
 inferEthnicity <- function(sdf) {
@@ -248,8 +248,7 @@ inferEthnicity <- function(sdf) {
     ethnicity.model <- ethnicity.inference$model
     af <- c(
         getBetas(sdf, mask=FALSE)[rsprobes],
-        getAFTypeIbySumAlleles(
-            subsetSignal(sdf, ccsprobes)))
+        getAFTypeIbySumAlleles(sdf, known.ccs.only = FALSE)[ccsprobes])
 
     as.character(predict(ethnicity.model, af))
 }
@@ -267,7 +266,7 @@ inferEthnicity <- function(sdf) {
 #' @return a numeric vector, beta values
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' betas <- getBetas(sdf)
 #' @export
 getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
@@ -309,8 +308,8 @@ getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
 #' @return beta values
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-#' betas <- getAFTypeIbySumAlleles(sdf)
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' af <- getAFTypeIbySumAlleles(sdf)
 #' @export
 getAFTypeIbySumAlleles <- function(sdf, known.ccs.only = TRUE) {
 
@@ -536,15 +535,43 @@ chipAddressToSignal <- function(dm, mft) {
         sdf = rbind(sdf, s2)
     }
     sdf$col = factor(sdf$col, levels=c("G","R","2"))
-    sdf = sdf[match(mft$Probe_ID, sdf$Probe_ID),] # always use the manifest order
+    sdf = sdf[match(mft$Probe_ID, sdf$Probe_ID),] # always the mft order
     sdf = structure(sdf, class=c("SigDF", "data.frame"))
     attr(sdf, "platform") = attr(dm, 'platform')
     rownames(sdf) = NULL
     sdf
 }
 
+SigSetToSigDF = function(sset) {
+    df = rbind(
+        data.frame(
+            Probe_ID = rownames(sset@IG),
+            MG = sset@IG[,"M"], MR = sset@oobR[,"M"],
+            UG = sset@IG[,"U"], UR = sset@oobR[,"U"], col="G", mask=FALSE),
+        data.frame(
+            Probe_ID = rownames(sset@IR),
+            MG = sset@oobG[,"M"], MR = sset@IR[,"M"],
+            UG = sset@oobG[,"U"], UR = sset@IR[,"U"], col="R", mask=FALSE),
+        data.frame(
+            Probe_ID = rownames(sset@II),
+            MG = NA, MR = NA,
+            UG = sset@II[,"M"], UR = sset@II[,"U"], col="2", mask=FALSE))
+    sdf = structure(df, class=c("SigDF", "data.frame"))
+    sdf$col = factor(sdf$col, levels=c("G","R","2"))
+    attr(sdf, "platform") = sset@platform
+    attr(sdf, "controls") = sset@ctl
+    rownames(sdf) = NULL
+    sdf
+}
+
 ## retired functions:
 ## after 1.10.5
-## bisConversionControl, SigSet class, updateSigSet, subsetSignal, makeExampleSeSAMeDataSet, makeExampleTinyEPICDataSet, saveMask, restoreMask, buildControlMatrix450k, detectionPoobEcdf2, detectionPnegNormTotal, detectionPnegNormGS, detectionPfixedNorm, detectionPnegNorm, noobsb, IG2,IGR2,oobG2, oobR2，SigSetMethod, SigSetList, SigSetsToRGChannelSet, RGChannelSetToSigSets, SigSetToRatioSet, parseGEOSignalABFile
+## bisConversionControl, SigSet class, updateSigSet, subsetSignal,
+## makeExampleSeSAMeDataSet, makeExampleTinyEPICDataSet, saveMask, 
+## restoreMask, buildControlMatrix450k, detectionPoobEcdf2,
+## detectionPnegNormTotal, detectionPnegNormGS, detectionPfixedNorm,
+## detectionPnegNorm, noobsb, IG2,IGR2,oobG2, oobR2，SigSetMethod,
+## SigSetList, SigSetsToRGChannelSet, RGChannelSetToSigSets,
+## SigSetToRatioSet, parseGEOSignalABFile
 ## after 1.5.0
 ## R6 utility functions

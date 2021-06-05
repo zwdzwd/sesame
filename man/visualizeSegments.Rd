@@ -24,7 +24,9 @@ require ggplot2, scales
 \examples{
 
 sesameDataCache("EPIC") # in case not done yet
-seg <- sesameDataGet('EPIC.1.LNCaP')$seg
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
+seg <- cnSegmentation(sdf, sdfs.normal)
 
 visualizeSegments(seg)
 

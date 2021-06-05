@@ -23,8 +23,7 @@ using negative control probes' empirical distribution and returns a new
 \code{SigDF} with an updated mask slot.
 }
 \examples{
-sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
-sum(mask(sdf))
-sdf_with_mask <- detectionPnegEcdf(sdf)
-sum(mask(sdf_with_mask))
+sdf <- sesameDataGet("EPIC.1.SigDF")
+sum(sdf$mask)
+sum(detectionPnegEcdf(sdf)$mask)
 }

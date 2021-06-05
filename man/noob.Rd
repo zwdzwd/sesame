@@ -25,6 +25,6 @@ and true signal in an exponential distribution. The Norm-Exp deconvolution
 is parameterized using Out-Of-Band (oob) probes
 }
 \examples{
-sdf <- makeExampleTinyEPICDataSet()
+sdf <- sesameDataGet('EPIC.1.SigDF')
 sdf.nb <- noob(sdf)
 }

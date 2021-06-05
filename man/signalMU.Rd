@@ -19,6 +19,6 @@ report M and U for regular probes
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-signalMU(sdf)
+sdf <- sesameDataGet('EPIC.1.SigDF')
+head(signalMU(sdf))
 }

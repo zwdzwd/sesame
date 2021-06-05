@@ -24,6 +24,6 @@ signal are combined. This prevents color-channel switching due to SNPs.
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+sdf <- sesameDataGet('EPIC.1.SigDF')
 betas <- getBetas(sdf)
 }

@@ -24,6 +24,6 @@ Please note: the betas should come from SigDF *without*
 channel inference.
 }
 \examples{
-sdf <- makeExampleSeSAMeDataSet("HM450")
+sdf <- sesameDataGet('EPIC.1.SigDF')
 inferEthnicity(sdf)
 }

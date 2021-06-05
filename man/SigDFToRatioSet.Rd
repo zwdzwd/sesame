@@ -20,7 +20,7 @@ Convert one sesame::SigDF to minfi::RatioSet
 \examples{
 
 sesameDataCache("EPIC") # if not done yet
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+sdf <- sesameDataGet('EPIC.1.SigDF')
 ratioSet <- SigDFToRatioSet(sdf)
 
 }

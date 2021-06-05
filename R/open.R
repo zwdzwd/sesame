@@ -24,46 +24,29 @@
 #' @export
 openSesame <- function(
     x, platform = '', manifest = NULL,
-    what = 'beta', BPPARAM=SerialParam(), ...) {
+    BPPARAM=SerialParam(), ...) {
 
     ## expand if a directory
     if (length(x) == 1 && is(x, 'character') && dir.exists(x)) {
         x <- searchIDATprefixes(x)
     }
     
-    if (length(x) == 1) {
-        if (is(x, 'character')) { # IDAT prefix
-            x <- readIDATpair(
-                x, platform = platform, manifest = manifest)
-            stopifnot(is(x, 'SigDF'))
-            x <- dyeBiasNL(noob(pOOBAH(x)))
-            if (what == 'beta') {
-                getBetas(x, ...)
-            } else {
-                x
-            }
-        } else if (is(x, 'SigDF')) { # SigDF input
-            x <- dyeBiasNL(noob(pOOBAH(qualityMask(x))))
-            if (what == 'beta') {
-                getBetas(x, ...)
-            } else {
-                x
-            }
-        }
+    if (is(x, "SigDF")) {
+        getBetas(dyeBiasNL(noob(pOOBAH(qualityMask(x)))))
     } else if (is(x, "GenomicRatioSet")) {
         reopenSesame(x)
     } else if (is(x, "RGChannelSet")) {
         sesamize(x)
-    } else { # multiple IDAT prefixes / sigsets
-        if (what == 'beta') {
+    } else if (is(x, 'character')) {
+        if (length(x) == 1) {
+            getBetas(dyeBiasNL(noob(pOOBAH(readIDATpair(
+                x, platform = platform, manifest = manifest)
+            ))))
+        } else { # multiple IDAT prefixes / sigsets
             do.call(
                 cbind, bplapply(x, openSesame,
                     platform = platform,
                     manifest = manifest, BPPARAM=BPPARAM, ...))
-        } else {
-            bplapply(x, openSesame, what='sigset',
-                platform = platform,
-                manifest = manifest, BPPARAM=BPPARAM, ...)
         }
     }
 }

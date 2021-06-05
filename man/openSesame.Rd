@@ -4,14 +4,7 @@
 \alias{openSesame}
 \title{The openSesame pipeline}
 \usage{
-openSesame(
-  x,
-  platform = "",
-  manifest = NULL,
-  what = "beta",
-  BPPARAM = SerialParam(),
-  ...
-)
+openSesame(x, platform = "", manifest = NULL, BPPARAM = SerialParam(), ...)
 }
 \arguments{
 \item{x}{SigDF(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
@@ -21,11 +14,11 @@ or RGChannelSet(s)}
 
 \item{manifest}{optional dynamic manifest}
 
-\item{what}{either 'sigset' or 'beta'}
-
 \item{BPPARAM}{get parallel with MulticoreParam(n)}
 
 \item{...}{parameters to getBetas}
+
+\item{what}{either 'sigset' or 'beta'}
 }
 \value{
 a numeric vector for processed beta values

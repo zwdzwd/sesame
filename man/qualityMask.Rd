@@ -26,8 +26,7 @@ Currently quality masking only supports three platforms
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-sum(mask(sdf))
-sdf.masked <- qualityMask(sdf)
-sum(mask(sdf.masked))
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sum(sdf$mask)
+sum(qualityMask(sdf)$mask)
 }

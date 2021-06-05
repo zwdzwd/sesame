@@ -11,18 +11,17 @@
 #' @param sdf a \code{SigDF}
 #' @return a new \code{SigDF} with noob background correction
 #' @examples
-#' sdf <- makeExampleTinyEPICDataSet()
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.nb <- noob(sdf)
 #' sdf.nb.scrub <- scrub(sdf.nb)
 #' @export
 scrub <- function(sdf) {
-    bG <- median(oobGpass(sdf))
-    bR <- median(oobRpass(sdf))
-    sdf@IR <- pmax(sdf@IR - bR,1)
-    sdf@IG <- pmax(sdf@IG - bG,1)
-    sdf@II <- cbind(M=pmax(sdf@II[,'M'] - bG,1), U=pmax(sdf@II[,'U'] - bR,1))
-    sdf@oobR <- pmax(sdf@oobR - bR,1) # subtract oobR itself
-    sdf@oobG <- pmax(sdf@oobG - bG,1) # subtract oobG itself
+    bG <- median(oobG(noMask(sdf)), na.rm=TRUE)
+    bR <- median(oobR(noMask(sdf)), na.rm=TRUE)
+    sdf$MG = pmax(sdf$MG - bG, 1)
+    sdf$MR = pmax(sdf$MR - bR, 1)
+    sdf$UG = pmax(sdf$UG - bG, 1)
+    sdf$UR = pmax(sdf$UR - bR, 1)
     sdf
 }
 
@@ -31,7 +30,7 @@ noobSub <- function(sig, bg) {
     mu <- e$mu
     sigma <- e$s
     alpha <- pmax(MASS::huber(sig)$mu-mu, 10)
-    .normExpSignal(mu, sigma, alpha, sig)
+    normExpSignal(mu, sigma, alpha, sig)
 }
 
 #' SCRUB background correction
@@ -45,37 +44,19 @@ noobSub <- function(sig, bg) {
 #' @param sdf a \code{SigDF}
 #' @return a new \code{SigDF} with noob background correction
 #' @examples
-#' sdf <- makeExampleTinyEPICDataSet()
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.nb <- noob(sdf)
 #' sdf.nb.scrubSoft <- scrubSoft(sdf.nb)
 #' @export
 scrubSoft <- function(sdf) {
-    oobR1 <- oobRpass(sdf)
-    oobG1 <- oobGpass(sdf)
-    sdf@IR <- noobSub(sdf@IR, oobR1)
-    sdf@IG <- noobSub(sdf@IG, oobG1)
-    sdf@II <- cbind(
-        M=noobSub(sdf@II[,'M'], oobG1),
-        U=noobSub(sdf@II[,'U'], oobR1))
-    sdf@oobR <- noobSub(oobR(sdf), oobR1) # subtract oobR itself
-    sdf@oobG <- noobSub(oobG(sdf), oobG1) # subtract oobG itself
+    bgR <- oobR(noMask(sdf))
+    bgG <- oobG(noMask(sdf))
+
+    sdf$MG = noobSub(sdf$MG, bgG)
+    sdf$MR = noobSub(sdf$MR, bgR)
+    sdf$UG = noobSub(sdf$UG, bgG)
+    sdf$UR = noobSub(sdf$UR, bgR)
     sdf
-}
-
-getBackgroundR <- function(sdf, bgR = NULL) {
-    if (!is.null(bgR)) {
-        oobR(sdf)[bgR,]
-    } else {
-        oobRpass(sdf)
-    }
-}
-
-getBackgroundG <- function(sdf, bgG = NULL) {
-    if (!is.null(bgG)) {
-        oobG(sdf)[bgG,]
-    } else {
-        oobGpass(sdf)
-    }
 }
 
 #' Noob background correction
@@ -92,107 +73,39 @@ getBackgroundG <- function(sdf, bgG = NULL) {
 #' @return a new \code{SigDF} with noob background correction
 #' @import stats
 #' @examples
-#' sdf <- makeExampleTinyEPICDataSet()
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.nb <- noob(sdf)
 #' @export
 noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
 
     ## if no Infinium-I probes
     if (nrow(IG(sdf)) == 0 && nrow(IR(sdf)) == 0) { return(sdf) }
-    ## if not enough out-of-band signal
+
+    ## background
     oobG = oobG(noMask(sdf))
     oobR = oobR(noMask(sdf))
+    ## if not enough out-of-band signal
     if (sum(oobG > 0, na.rm=TRUE) < 100 ||
             sum(oobR > 0, na.rm=TRUE) < 100) { return(sdf) }
     oobR[oobR == 0] = 1
     oobG[oobG == 0] = 1
+
+    ## foreground
     ibG = c(IG(sdf)$MG, IG(sdf)$UG, II(sdf)$UG)
     ibR = c(IR(sdf)$MR, IR(sdf)$UR, II(sdf)$UR)
     ibG[ibG == 0] = 1 # set signal to 1 if 0
     ibR[ibR == 0] = 1 # set signal to 1 if 0
+
+    ## grn channel
     fitG = backgroundCorrectionNoobFit(ibG, oobG)
-    sdf$MG = normExpSignal(fitG, sdf$MG) + 15
-    sdf$UG = normExpSignal(fitG, sdf$UG) + 15
+    sdf$MG = normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + 15
+    sdf$UG = normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + 15
+
+    ## red channel
     fitR = backgroundCorrectionNoobFit(ibR, oobR)
-    sdf$MR = normExpSignal(fitR, sdf$MR) + 15
-    sdf$UR = normExpSignal(fitR, sdf$UR) + 15
-
-    ## ## grn channel: IG and oobG
-    ## idx_mg = sdf$col == "G"
-    ## idx_ug = sdf$col == "G" | sdf$col == "2"
-    ## ibG = c(sdf$MG[idx_mg], sdf$UG[idx_ug])
-    ## ibG[ibG == 0] = 1 # set signal to 1 if 0
-    ## idx_r = sdf$col == "R"
-    ## oob_g = c(sdf$MG[idx_r], sdf$UG[idx_r])
-    ## oob_g[oob_g == 0] = 1
-    ## out = .backgroundCorrectionNoobCh1(ibG, oob_g, controls(sdf)$G, oobG, offset=offset)
-    ## sdf$MG[idx_mg] = out$i[1:sum(idx_mg)]
-    ## sdf$UG[idx_ug] = out$i[(sum(idx_mg)+1):length(out$i)]
-    ## sdf$MG[idx_r] = out$o[1:sum(idx_r)]
-    ## sdf$UG[idx_r] = out$o[(sum(idx_r)+1):length(out$o)]
-
-    ## ## red channel: IR and oobR
-    ## idx_mr = sdf$col == "R"
-    ## idx_ur = sdf$col == "R" | sdf$col == "2"
-    ## ibR = c(sdf$MR[idx_mr], sdf$UR[idx_ur])
-    ## ibR[ibR == 0] = 1 # set signal to 1 if 0
-    ## idx_g = sdf$col == "G"
-    ## oob_r = c(sdf$MR[idx_g], sdf$UR[idx_g])
-    ## oob_r[oob_r == 0] = 1
-    ## out = .backgroundCorrectionNoobCh1(ibR, oob_r, controls(sdf)$R, oobR, offset=offset)
-    ## sdf$MR[idx_mr] = out$i[1:sum(idx_mr)]
-    ## sdf$UR[idx_ur] = out$i[(sum(idx_mr)+1):length(out$i)]
-    ## sdf$MR[idx_g] = out$o[1:sum(idx_g)]
-    ## sdf$UR[idx_g] = out$o[(sum(idx_g)+1):length(out$o)]
-
-    ## x2 = .backgroundCorrectionNoobCh1(x, ibR, oobR, offset=offset)
-    ## sdf$MR[idx_g] = x2[1:length(idx_g)]
-    ## sdf$UR[idx_g] = x2[(length(idx_g)+1):2*length(idx_g)]
-    ## x2 = .backgroundCorrectionNoobCh1(x, ibG, oobG, offset=offset)
-    ## sdf$MG[idx_r] = x2[1:length(idx_r)]
-    ## sdf$UG[idx_r] = x2[(length(idx_r)+1):2*length(idx_r)]
-        
-    ## ibR.nl <- .backgroundCorrectionNoobCh1(
-    ##     ibR, oobR(sdf), controls(sdf)$R, getBackgroundR(sdf, bgR), offset=offset)
-    ## ibG.nl <- .backgroundCorrectionNoobCh1(
-    ##     ibG, oobG(sdf), controls(sdf)$G, getBackgroundG(sdf, bgG), offset=offset)
-
-    ## ## build back the list
-    ## ## type IG
-    ## if (length(IG(sdf))>0)
-    ##     IG(sdf) <- matrix(
-    ##         ibG.nl$i[seq_along(IG(sdf))],
-    ##         nrow=nrow(IG(sdf)), dimnames=dimnames(IG(sdf)))
-    ## else
-    ##     IG(sdf) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
-
-    ## ## type IR
-    ## if (length(IR(sdf))>0) {
-    ##     IR(sdf) <- matrix(
-    ##         ibR.nl$i[seq_along(IR(sdf))],
-    ##         nrow=nrow(IR(sdf)), dimnames=dimnames(IR(sdf)))
-    ## } else {
-    ##     IR(sdf) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
-    ## }
-
-    ## ## type II
-    ## if (nrow(II(sdf)) > 0) {
-    ##     II(sdf) <- as.matrix(data.frame(
-    ##         M=ibG.nl$i[(length(IG(sdf))+1):length(ibG)],
-    ##         U=ibR.nl$i[(length(IR(sdf))+1):length(ibR)],
-    ##         row.names=rownames(II(sdf))))
-    ## } else {
-    ##     II(sdf) <- matrix(ncol=2, nrow=0, dimnames=list(NULL,c('M','U')))
-    ## }
-
-    ## ## controls
-    ## ctl(sdf)$G <- ibG.nl$c
-    ## ctl(sdf)$R <- ibR.nl$c
-
-    ## ## out-of-band
-    ## oobR(sdf) <- ibR.nl$o
-    ## oobG(sdf) <- ibG.nl$o
-
+    sdf$MR = normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + 15
+    sdf$UR = normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + 15
+    
     sdf
 }
 
@@ -203,36 +116,31 @@ noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
 ## offset padding for normalized signal
 ## return normalized in-band signal
 backgroundCorrectionNoobFit <- function(ib, bg) {
-
     e = MASS::huber(bg)
     mu = e$mu
     sigma = e$s
     alpha = pmax(MASS::huber(ib)$mu-mu, 10)
     list(mu = mu, sigma = sigma, alpha = alpha)
-    ## list(
-    ##     i=offset+.normExpSignal(mu, sigma, alpha, ib),
-    ##     c=offset+.normExpSignal(mu, sigma, alpha, ctl),
-    ##     o=offset+.normExpSignal(mu, sigma, alpha, oob))
 }
 
 
 ## the following is adapted from Limma
 ## normal-exponential deconvolution (conditional expectation of
 ## xs|xf; WEHI code)
-normExpSignal <- function(ft, x)  {
+normExpSignal <- function(mu, sigma, alpha, x)  {
 
-    sigma2 <- ft$sigma * ft$sigma
+    sigma2 <- sigma * sigma
 
-    if (ft$alpha <= 0)
+    if (alpha <= 0)
         stop("alpha must be positive")
-    if (ft$sigma <= 0)
+    if (sigma <= 0)
         stop("sigma must be positive")
     
-    mu.sf <- x - ft$mu - sigma2/ft$alpha
+    mu.sf <- x - mu - sigma2/alpha
     signal <- mu.sf + sigma2 * exp(
-        dnorm(0, mean = mu.sf, sd = ft$sigma, log = TRUE) -
+        dnorm(0, mean = mu.sf, sd = sigma, log = TRUE) -
             pnorm(
-                0, mean = mu.sf, sd = ft$sigma,
+                0, mean = mu.sf, sd = sigma,
                 lower.tail = FALSE, log.p = TRUE))
     
     o <- !is.na(signal)

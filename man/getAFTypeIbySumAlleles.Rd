@@ -22,6 +22,6 @@ returned.
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-betas <- getAFTypeIbySumAlleles(sdf)
+sdf <- sesameDataGet('EPIC.1.SigDF')
+af <- getAFTypeIbySumAlleles(sdf)
 }

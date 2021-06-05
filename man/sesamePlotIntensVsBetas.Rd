@@ -26,6 +26,6 @@ and dye bias.
 \examples{
 sesameDataCache("EPIC")
 sdf <- # if not done yet
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+sdf <- sesameDataGet('EPIC.1.SigDF')
 sesamePlotIntensVsBetas(sdf)
 }

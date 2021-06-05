@@ -8,12 +8,16 @@
 #' representing masked probes
 #' @return a \code{SigDF} with added mask
 #' @examples
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-#' sum(sesame::mask(sdf))
-#' sum(sesame::mask(addMask(sdf, c("cg14057072", "cg22344912"))))
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sum(sdf$mask)
+#' sum(addMask(sdf, c("cg14057072", "cg22344912"))$mask)
 #' @export
 addMask <- function(sdf, probes) {
-    sdf$mask[match(probes, sdf$Probe_ID)] = TRUE
+    if (is.logical(probes)) {
+        sdf$mask[probes[sdf$Probe_ID]] = TRUE
+    } else {
+        sdf$mask[match(probes, sdf$Probe_ID)] = TRUE
+    }
     sdf
 }
 
@@ -24,10 +28,10 @@ addMask <- function(sdf, probes) {
 #' representing masked probes
 #' @return a \code{SigDF} with added mask
 #' @examples
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-#' sum(mask(sdf))
-#' sum(mask(setMask(sdf, "cg14959801")))
-#' sum(mask(setMask(sdf, c("cg14057072", "cg22344912"))))
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sum(sdf$mask)
+#' sum(setMask(sdf, "cg14959801")$mask)
+#' sum(setMask(sdf, c("cg14057072", "cg22344912"))$mask)
 #' @export
 setMask <- function(sdf, probes) {
     addMask(resetMask(sdf), probes)
@@ -39,11 +43,11 @@ setMask <- function(sdf, probes) {
 #' @return a new \code{SigDF} with mask reset to all FALSE
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-#' sum(mask(sdf))
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sum(sdf$mask)
 #' sdf <- addMask(sdf, c("cg14057072", "cg22344912"))
-#' sum(mask(sdf))
-#' sum(mask(resetMask(sdf)))
+#' sum(sdf$mask)
+#' sum(resetMask(sdf)$mask)
 #' @export
 resetMask <- function(sdf) {
     sdf$mask = FALSE
@@ -60,10 +64,9 @@ resetMask <- function(sdf) {
 #' @return a filtered \code{SigDF}
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
-#' sum(mask(sdf))
-#' sdf.masked <- qualityMask(sdf)
-#' sum(mask(sdf.masked))
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sum(sdf$mask)
+#' sum(qualityMask(sdf)$mask)
 #' @export 
 qualityMask <- function(
     sdf, mask.use.manifest = TRUE,

@@ -26,7 +26,7 @@ IRR => Type-I red that is inferred to be red
 }
 \examples{
 
-sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+sdf <- sesameDataGet('EPIC.1.SigDF')
 inferTypeIChannel(sdf)
 
 }

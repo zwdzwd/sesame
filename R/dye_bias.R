@@ -3,8 +3,8 @@
 #' get normalization control signal from SigDF. 
 #' The function optionally takes mean for each channel.
 #' 
-#' @param   sdf a SigDF
-#' @param   average whether to average
+#' @param sdf a SigDF
+#' @param average whether to average
 #' @return a data frame of normalization control signals
 #' @examples 
 #' sdf <- readIDATpair(file.path(system.file(
@@ -50,7 +50,7 @@ getNormCtls <- function(sdf, average = FALSE) {
 #' @return a normalized \code{SigDF}
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.db <- dyeBiasCorr(sdf)
 #' @export
 dyeBiasCorr <- function(sdf, ref=NULL) {
@@ -84,7 +84,8 @@ dyeBiasCorr <- function(sdf, ref=NULL) {
 #' @param sdfs a list of normalized \code{SigDF}s
 #' @return a list of normalized \code{SigDF}s
 #' @examples
-#' sdfs <- sesameDataGet('HM450.10.TCGA.BLCA.normal')
+#' sesameDataCache("HM450") # if not done yet
+#' sdfs <- sesameDataGet('HM450.10.SigDFs')
 #' sdfs.db <- dyeBiasCorrMostBalanced(sdfs)
 #' @export
 dyeBiasCorrMostBalanced <- function(sdfs) {
@@ -108,16 +109,15 @@ dyeBiasCorrMostBalanced <- function(sdfs) {
 #' @importFrom stats approx
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.LNCaP')$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.db <- dyeBiasCorrTypeINorm(sdf)
 #' @export
 dyeBiasCorrTypeINorm <- function(sdf) {
 
     stopifnot(is(sdf, "SigDF"))
 
-    
-    IG0 <- with(IG(sdf), c(MG, UG))
-    IR0 <- with(IR(sdf), c(MR, UR))
+    IG0 <- with(IG(noMask(sdf)), c(MG, UG))
+    IR0 <- with(IR(noMask(sdf)), c(MR, UR))
     
     maxIG <- max(IG0, na.rm = TRUE); minIG <- min(IG0, na.rm = TRUE)
     maxIR <- max(IR0, na.rm = TRUE); minIR <- min(IR0, na.rm = TRUE)
@@ -168,10 +168,33 @@ dyeBiasCorrTypeINorm <- function(sdf) {
 #' @rdname dyeBiasCorrTypeINorm
 #' @export
 #' @examples
-#' sdf <- sesameDataGet("HM450.1.TCGA.PAAD")$sdf
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf <- dyeBiasNL(sdf)
 dyeBiasNL <- dyeBiasCorrTypeINorm
 
 ## the following three functions are retired since 1.9.1
 ## dyeBiasCorrTypeINormMpU, dyeBiasCorrTypeINormG2R, dyeBiasCorrTypeINormR2G
 
+
+#' Plot red-green QQ-Plot using Infinium-I Probes
+#'
+#' @param sdf a \code{SigDF}
+#' @return create a qqplot
+#' @examples
+#' sesameDataCache("EPIC")
+#' sdf <- # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sesamePlotRedGrnQQ(sdf)
+#' @import graphics
+#' @export
+sesamePlotRedGrnQQ <- function(sdf) {
+    m = max(
+        with(IR(sdf), max(c(MR,UR), na.rm=TRUE)),
+        with(IG(sdf), max(c(MG,UG), na.rm=TRUE)))
+    qqplot(
+        with(IR(sdf), c(MR,UR)), with(IG(sdf), c(MG,UG)),
+        xlab = 'Infinium-I Red Signal', ylab = 'Infinium-I Grn Signal',
+        main = 'Red-Green QQ-Plot', cex = 0.5,
+        xlim = c(0,m), ylim = c(0,m))
+    abline(0,1,lty = 'dashed')
+}
