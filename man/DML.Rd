@@ -18,7 +18,7 @@ and are referenced in formula. Rows are samples.}
 \item{mc.cores}{number of cores for parallel processing}
 }
 \value{
-a list of test summaries
+a list of test summaries, summary.lm objects
 }
 \description{
 The function takes a beta value matrix with probes on the rows and
@@ -29,6 +29,6 @@ coefficient tables for each factor tested.
 \examples{
 sesameDataCache("HM450") # in case not done yet
 data <- sesameDataGet('HM450.76.TCGA.matched')
-smry <- summaryExtractSlope(DML(
-    data$betas[1:1000,], ~type, meta=data$sampleInfo))
+smry <- DML(
+    data$betas[1:1000,], ~type, meta=data$sampleInfo)
 }
