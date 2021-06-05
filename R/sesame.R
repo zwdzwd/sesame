@@ -421,7 +421,6 @@ readIDATpair <- function(
     }
 
     dm <- readIDAT1(grn.name, red.name, platform=platform)
-
     if (is.null(manifest)) { # pre-built platforms, EPIC, HM450, HM27 etc
         df_address <- sesameDataGet(paste0(
             attr(dm, 'platform'), '.address'))
@@ -430,7 +429,7 @@ readIDATpair <- function(
     }
 
     sdf = chipAddressToSignal(dm, manifest)
-    if (!is.null(controls)) {
+    if (!is.null(controls) && nrow(controls) > 0) {
         attr(sdf, "controls") = readControls(dm, controls)
     }
     sdf
@@ -564,8 +563,36 @@ SigSetToSigDF = function(sset) {
     sdf
 }
 
+#' Compute internal bisulfite conversion control
+#'
+#' Compute GCT score for internal bisulfite conversion control. The function
+#' takes a \code{SigSet} as input. The higher the GCT score, the more likely
+#' the incomplete conversion.
+#'
+#' @param sdf a SigDF
+#' @param use.median use median to compute GCT instead of mean
+#' @return GCT score (the higher, the more incomplete conversion)
+#' @examples
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' bisConversionControl(sdf)
+#'
+#' @export
+bisConversionControl <- function(sdf) {
+
+    stopifnot(platform(sdf) %in% c('EPICplus','EPIC','HM450'))
+    extC <- sesameDataGet(paste0(platform(sdf), '.probeInfo'))$typeI.extC
+    extT <- sesameDataGet(paste0(platform(sdf), '.probeInfo'))$typeI.extT
+    ## prbs <- rownames(oobG(sset))
+    df = IR(sdf)
+    extC = intersect(df$Probe_ID, extC)
+    extT = intersect(df$Probe_ID, extT)
+    with(df[match(extC, df$Probe_ID),], mean(c(MG, UG), na.rm=TRUE)) /
+        with(df[match(extT, df$Probe_ID),], mean(c(MG, UG), na.rm=TRUE))
+}
+
 ## retired functions:
-## after 1.10.5
+## after 1.11
 ## bisConversionControl, SigSet class, updateSigSet, subsetSignal,
 ## makeExampleSeSAMeDataSet, makeExampleTinyEPICDataSet, saveMask, 
 ## restoreMask, buildControlMatrix450k, detectionPoobEcdf2,

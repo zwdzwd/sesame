@@ -53,7 +53,7 @@ openSesame(idat_dir)
 
 Let's load a pre-built `SigSet` object
 ```{r include=FALSE}
-sset = sesameDataGet('MM285.1.NOD.FrontalLobe')
+sset = sesameDataGet('MM285.1.SigDF')
 ```
 
 Preprocess the sigset to produce beta values.
@@ -112,7 +112,7 @@ visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
 
 Let's load a pre-built `SigSet` object from SeSAMeData
 ```{r}
-sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
+sset <- sesameDataGet("MM285.1.SigDF")
 ```
 
 Calculate beta values using the following commands.
@@ -193,16 +193,17 @@ sesameDataCache("Mammal40")
 ```{r}
 res_grn = sesameDataDownload("GSM4411982_Grn.idat.gz")
 res_red = sesameDataDownload("GSM4411982_Red.idat.gz")
-sset = readIDATpair(sprintf("%s/GSM4411982", res_red$dest_dir))
+sdf = readIDATpair(sprintf("%s/GSM4411982", res_red$dest_dir))
 ```
 
 Preprocess the sigset to produce beta values.
 The standard `noob`, `dyeBiasCorrTypeINorm` works as expected:
 ```{r}
-sset_normalized = dyeBiasCorrTypeINorm(noob(pOOBAH(qualityMask(sset))))
+sdf_normalized = dyeBiasCorrTypeINorm(noob(pOOBAH(qualityMask(sdf))))
 ```
 Retrieve beta values using the following commands
 ```{r}
-betas = getBetas(sset_normalized)
+betas = getBetas(sdf_normalized)
+head(betas)
 ```
 
