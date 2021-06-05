@@ -186,7 +186,7 @@ sliceFileSet <- function(
     sample_indices <- match(samples, fset$samples)
     if (any(is.na(sample_indices))) {
         message(
-            'Warning: ', sum(is.na(sample_indices)),
+            sum(is.na(sample_indices)),
             ' sample(s) are nonexistent')
         samples <- samples[!is.na(sample_indices)]
         sample_indices <- sample_indices[!is.na(sample_indices)]
@@ -195,7 +195,7 @@ sliceFileSet <- function(
     probe_indices <- match(probes, fset$probes)
     if (any(is.na(probe_indices))) {
         message(
-            'Warning: ', sum(is.na(probe_indices)),
+            sum(is.na(probe_indices)),
             ' probe(s) are nonexistent')
         probes <- probes[!is.na(probe_indices)]
         probe_indices <- probe_indices[!is.na(probe_indices)]

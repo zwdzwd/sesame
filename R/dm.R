@@ -32,6 +32,7 @@ checkLevels = function(betas, fc) {
 #' @param mc.cores number of cores for parallel processing
 #' @return a list of test summaries, summary.lm objects
 #' @import stats
+#' @import parallel
 #' @examples
 #' sesameDataCache("HM450") # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
@@ -55,7 +56,7 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
     mm_holdout = lapply(names(contr2lvs), function(cont) {
         mm[, !(colnames(mm) %in% paste0(cont, contr2lvs[[cont]]))] })
     names(mm_holdout) = names(contr2lvs)
-    smry = mclapply(seq_len(nrow(betas)), function(i) {
+    smry = parallel::mclapply(seq_len(nrow(betas)), function(i) {
         m0 = lm(betas[i,]~.+0, data=as.data.frame(mm))
         sm = summary(lm(betas[i,]~.+0, data=as.data.frame(mm)))
         sm$Ftest = do.call(cbind, lapply(mm_holdout, function(mm_) {

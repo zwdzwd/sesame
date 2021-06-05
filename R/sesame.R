@@ -289,7 +289,8 @@ getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
                 setNames(pmax(UG,1) / pmax(UG+UR,2), Probe_ID)))
     }
 
-    betas = betas[match(sdf$Probe_ID, names(betas))] # always use the original order
+    ## always use the original order
+    betas = betas[match(sdf$Probe_ID, names(betas))]
     if (mask) {
         betas[sdf$mask] = NA
     }
