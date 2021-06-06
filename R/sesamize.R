@@ -123,26 +123,23 @@ SigDFToRGChannel <- function(sdf, manifest = NULL, controls = NULL) {
         controls <- dfAddress$controls
     }
 
+    d1 = InfI(sdf)
     SSRed <- c(
-        with(sdf[sdf$col!="2",],
-            setNames(MR, manifest$M[match(Probe_ID, manifest$Probe_ID)])),
-        with(sdf,
-            setNames(UR, manifest$U[match(Probe_ID, manifest$Probe_ID)])))
+        setNames(d1$MR, manifest$M[match(d1$Probe_ID, manifest$Probe_ID)]),
+        setNames(sdf$UR, manifest$U[match(sdf$Probe_ID, manifest$Probe_ID)]))
     SSGrn <- c(
-        with(sdf[sdf$col!="2",],
-            setNames(MG, manifest$M[match(Probe_ID, manifest$Probe_ID)])),
-        with(sdf,
-            setNames(UG, manifest$U[match(Probe_ID, manifest$Probe_ID)])))
+        setNames(d1$MG, manifest$M[match(d1$Probe_ID, manifest$Probe_ID)]),
+        setNames(sdf$UG, manifest$U[match(sdf$Probe_ID, manifest$Probe_ID)]))
     
     ## controls
     if (!is.null(controls)) {
         ctl = controls(sdf)
         control.names <- make.names(controls$Name, unique = TRUE)
         SSGrn <- c(SSGrn, setNames(ctl[match(
-            control.names, rownames(ctl)),'G'], 
+            control.names, rownames(ctl)),'G'],
             as.character(controls$Address)))
         SSRed <- c(SSRed, setNames(ctl[match(
-            control.names, rownames(ctl)),'R'], 
+            control.names, rownames(ctl)),'R'],
             as.character(controls$Address)))
     } ## else TODO controls obtained from manifest
     

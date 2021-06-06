@@ -38,14 +38,15 @@
 #' head(signalMU(sdf))
 #' @export
 signalMU <- function(sdf, mask = TRUE) {
-    s2 = rbind(
-        with(sdf[sdf$col=="G",], data.frame(M=MG, U=UG, Probe_ID=Probe_ID)),
-        with(sdf[sdf$col=="R",], data.frame(M=MR, U=UR, Probe_ID=Probe_ID)),
-        with(sdf[sdf$col=="2",], data.frame(M=UG, U=UR, Probe_ID=Probe_ID)))
-    s2 = s2[match(sdf$Probe_ID, s2$Probe_ID),]
-    if (mask) { s2 = s2[!sdf$mask,] }
-    rownames(s2) = NULL
-    s2
+    dG = InfIG(sdf); dR = InfIR(sdf); d2 = InfII(sdf)
+    sdf2 = rbind(
+        data.frame(M = dG$MG, U = dG$UG, Probe_ID=dG$Probe_ID),
+        data.frame(M = dR$MG, U = dR$UG, Probe_ID=dR$Probe_ID),
+        data.frame(M = d2$MG, U = d2$UG, Probe_ID=d2$Probe_ID))
+    sdf2 = sdf2[match(sdf$Probe_ID, sdf2$Probe_ID),]
+    if (mask) { sdf2 = sdf2[!sdf$mask,] }
+    rownames(sdf2) = NULL
+    sdf2
 }
 
 #' Mean Intensity
@@ -58,7 +59,6 @@ signalMU <- function(sdf, mask = TRUE) {
 #'
 #' @param sdf a \code{SigDF}
 #' @param mask whether to mask probes using mask column
-#' 
 #' @return mean of all intensities
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
@@ -67,7 +67,8 @@ signalMU <- function(sdf, mask = TRUE) {
 #' @export
 meanIntensity <- function(sdf, mask = TRUE) {
     stopifnot(is(sdf, "SigDF"))
-    with(signalMU(sdf, mask = mask), mean(c(M,U), na.rm=TRUE))
+    s = signalMU(sdf, mask = mask)
+    mean(c(s$M,s$U), na.rm=TRUE)
 }
 
 #' M+U Intensities for All Probes
@@ -76,14 +77,17 @@ meanIntensity <- function(sdf, mask = TRUE) {
 #' intensity of all the in-band measurements by summing methylated and
 #' unmethylated alleles. This function outputs a single numeric for the mean.
 #' @param sdf a \code{SigDF}
+#' @param mask whether to mask probes using mask column
 #' @return a vector of M+U signal for each probe
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' intensities <- totalIntensities(sdf)
 #' @export
-totalIntensities <- function(sdf, mask = TRUE) {
-    with(signalMU(sdf), setNames(M+U, Probe_ID))
+totalIntensities <- function(sdf, mask = FALSE) {
+    stopifnot(is(sdf, "SigDF"))
+    s = signalMU(sdf, mask = mask)
+    setNames(s$M+s$U, s$Probe_ID)
 }
 
 subsetvec <- function(vec, vecnames) {
@@ -274,21 +278,19 @@ getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
     stopifnot(is(sdf, "SigDF"))
 
     if (sum.TypeI) {
+        d1 = InfI(sdf); d2 = InfII(sdf)
         betas = c(
-            with(sdf[sdf$col != "2",],
-                setNames(pmax(MG+MR,1) / pmax(MG+MR+UG+UR,2), Probe_ID)),
-            with(sdf[sdf$col == "2",],
-                setNames(pmax(UG,1) / pmax(UG+UR,2), Probe_ID)))
+            setNames(pmax(d1$MG+d1$MR,1) /
+                         pmax(d1$MG+d1$MR+d1$UG+d1$UR,2), d1$Probe_ID),
+            setNames(pmax(d2$UG,1) / pmax(d2$UG+d2$UR,2), d2$Probe_ID))
     } else {
+        dG = InfIG(sdf); dR = InfIR(sdf); d2 = InfII(sdf)
         betas = c(
-            with(sdf[sdf$col == "G",],
-                setNames(pmax(MG,1) / pmax(MG+UG,2), Probe_ID)),
-            with(sdf[sdf$col == "R",],
-                setNames(pmax(MR,1) / pmax(MR+UR,2), Probe_ID)),
-            with(sdf[sdf$col == "2",],
-                setNames(pmax(UG,1) / pmax(UG+UR,2), Probe_ID)))
+            setNames(pmax(dG$MG,1) / pmax(dG$MG+dG$UG,2), dG$Probe_ID),
+            setNames(pmax(dR$MR,1) / pmax(dR$MR+dR$UR,2), dR$Probe_ID),
+            setNames(pmax(d2$UG,1) / pmax(d2$UG+d2$UR,2), d2$Probe_ID))
     }
-
+    
     ## always use the original order
     betas = betas[match(sdf$Probe_ID, names(betas))]
     if (mask) {
@@ -316,11 +318,12 @@ getAFTypeIbySumAlleles <- function(sdf, known.ccs.only = TRUE) {
 
     stopifnot(is(sdf, "SigDF"))
 
+    dG = InfIG(sdf); dR = InfIR(sdf)
     af = c(
-        with(sdf[sdf$col == "G",],
-            setNames(pmax(MR+UR,1) / pmax(MR+UR+MG+UG,2), Probe_ID)),
-        with(sdf[sdf$col == "R",],
-            setNames(pmax(MG+UG,1) / pmax(MR+UR+MG+UG,2), Probe_ID)))
+        setNames(pmax(dG$MR+dG$UR,1) /
+                     pmax(dG$MR+dG$UR+dG$MG+dG$UG,2), dG$Probe_ID),
+        setNames(pmax(dR$MG+dR$UG,1) /
+                     pmax(dR$MR+dR$UR+dR$MG+dR$UG,2), dR$Probe_ID))
 
     if (known.ccs.only) {
         af = af[intersect(
@@ -571,7 +574,6 @@ SigSetToSigDF = function(sset) {
 #' the incomplete conversion.
 #'
 #' @param sdf a SigDF
-#' @param use.median use median to compute GCT instead of mean
 #' @return GCT score (the higher, the more incomplete conversion)
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
@@ -585,11 +587,12 @@ bisConversionControl <- function(sdf) {
     extC <- sesameDataGet(paste0(platform(sdf), '.probeInfo'))$typeI.extC
     extT <- sesameDataGet(paste0(platform(sdf), '.probeInfo'))$typeI.extT
     ## prbs <- rownames(oobG(sset))
-    df = IR(sdf)
+    df = InfIR(sdf)
     extC = intersect(df$Probe_ID, extC)
     extT = intersect(df$Probe_ID, extT)
-    with(df[match(extC, df$Probe_ID),], mean(c(MG, UG), na.rm=TRUE)) /
-        with(df[match(extT, df$Probe_ID),], mean(c(MG, UG), na.rm=TRUE))
+    dC = df[match(extC, df$Probe_ID),]
+    dT = df[match(extT, df$Probe_ID),]
+    mean(c(dC$MG, dC$UG), na.rm=TRUE) / mean(c(dT$MG, dT$UG), na.rm=TRUE)
 }
 
 ## retired functions:

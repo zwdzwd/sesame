@@ -116,8 +116,9 @@ dyeBiasCorrTypeINorm <- function(sdf) {
 
     stopifnot(is(sdf, "SigDF"))
 
-    IG0 <- with(IG(noMask(sdf)), c(MG, UG))
-    IR0 <- with(IR(noMask(sdf)), c(MR, UR))
+    dG = InfIG(noMask(sdf)); dR = InfIR(noMask(sdf))
+    IG0 <- c(dG$MG, dG$UG)
+    IR0 <- c(dR$MR, dR$UR)
     
     maxIG <- max(IG0, na.rm = TRUE); minIG <- min(IG0, na.rm = TRUE)
     maxIR <- max(IR0, na.rm = TRUE); minIR <- min(IR0, na.rm = TRUE)
@@ -188,11 +189,11 @@ dyeBiasNL <- dyeBiasCorrTypeINorm
 #' @import graphics
 #' @export
 sesamePlotRedGrnQQ <- function(sdf) {
-    m = max(
-        with(IR(sdf), max(c(MR,UR), na.rm=TRUE)),
-        with(IG(sdf), max(c(MG,UG), na.rm=TRUE)))
+    dG = InfIG(sdf); dR = InfIR(sdf)
+    m = max(c(dR$MR,dR$UR,dG$MG,dG$UG), na.rm=TRUE)
+    
     qqplot(
-        with(IR(sdf), c(MR,UR)), with(IG(sdf), c(MG,UG)),
+        c(dR$MR, dR$UR), c(dG$MG, dG$UG),
         xlab = 'Infinium-I Red Signal', ylab = 'Infinium-I Grn Signal',
         main = 'Red-Green QQ-Plot', cex = 0.5,
         xlim = c(0,m), ylim = c(0,m))

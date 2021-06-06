@@ -59,6 +59,10 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
     smry = parallel::mclapply(seq_len(nrow(betas)), function(i) {
         m0 = lm(betas[i,]~.+0, data=as.data.frame(mm))
         sm = summary(lm(betas[i,]~.+0, data=as.data.frame(mm)))
+        ## the following is stripped to reduce the size of return
+        sm$cov.unscaled = NULL
+        sm$residuals = NULL
+        sm$terms = NULL
         sm$Ftest = do.call(cbind, lapply(mm_holdout, function(mm_) {
             m1 = lm(betas[i,]~.+0, data=as.data.frame(mm_))
             anv = anova(m1, m0)

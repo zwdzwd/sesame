@@ -11,7 +11,6 @@
 #' or RGChannelSet(s)
 #' @param platform optional platform string
 #' @param manifest optional dynamic manifest
-#' @param what either 'sigset' or 'beta'
 #' @param ... parameters to getBetas
 #' @param BPPARAM get parallel with MulticoreParam(n)
 #' @return a numeric vector for processed beta values

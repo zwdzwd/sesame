@@ -353,8 +353,8 @@ head(sdf[sdf$col=="2",])
 head(attr(sdf, "controls")) # the last column: the type of the control.
 ```
 
-Similarly, signals for Type-I probes can be accessed from `sset@IR` and
-`sset@IG` and out-of-band signals from `sset@oobG` and `sset@oobR`.
+Similarly, signals for Type-I probes can be accessed from `sdf[sdf$col!="2",]`
+and `sset@IG` and out-of-band signals from `sset@oobG` and `sset@oobR`.
 As one can see the probe names (row names) of `IR` always coincide with the
 probe names (row names) of `oobG` (and vice versa). This is because the
 out-of-band probe signal for red channel probes is in green channel

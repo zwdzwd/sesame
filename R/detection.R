@@ -34,8 +34,8 @@ detectionPnegEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 
     ## p-value is the minimium detection p-value of the 2 alleles
     pvals = setNames(pmin(
-        with(sdf, 1-funcR(pmax(MR, UR, na.rm=TRUE))),
-        with(sdf, 1-funcG(pmax(MG, UG, na.rm=TRUE)))), sdf$Probe_ID)
+        1-funcR(pmax(sdf$MR, sdf$UR, na.rm=TRUE)),
+        1-funcG(pmax(sdf$MG, sdf$UG, na.rm=TRUE))), sdf$Probe_ID)
         
     if (return.pval) { return(pvals) }
 
@@ -66,13 +66,14 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 
     stopifnot(is(sdf, "SigDF"))
 
-    funcG <- with(IR(sdf), ecdf(c(MG,UG)))
-    funcR <- with(IG(sdf), ecdf(c(MR,UR)))
+    dG = InfIG(sdf); dR = InfIR(sdf)
+    funcG <- ecdf(c(dR$MG,dR$UG))
+    funcR <- ecdf(c(dG$MR,dG$UR))
 
     ## p-value is the minimium detection p-value of the 2 alleles
     pvals = setNames(pmin(
-        with(sdf, 1-funcR(pmax(MR, UR, na.rm=TRUE))),
-        with(sdf, 1-funcG(pmax(MG, UG, na.rm=TRUE)))), sdf$Probe_ID)
+        1-funcR(pmax(sdf$MR, sdf$UR, na.rm=TRUE)),
+        1-funcG(pmax(sdf$MG, sdf$UG, na.rm=TRUE))), sdf$Probe_ID)
         
     if (return.pval) { return(pvals) }
 
@@ -100,21 +101,20 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
 #' sum(sdf$mask)
-#' sdf <- detectionPoobEcdf(sdf)
+#' sdf <- detectionPoobEcdf2(sdf)
 #' sum(sdf$mask)
 #' @export
 detectionPoobEcdf2 <- function(sdf, return.pval = FALSE, pval.threshold=0.05){
 
     stopifnot(is(sdf, "SigDF"))
 
-    func <- ecdf(c(
-        with(IR(sdf), c(MG,UG)),
-        with(IG(sdf), c(MR,UR))))
-
+    dG = InfIG(sdf); dR = InfIR(sdf)
+    func <- ecdf(c(dR$MG,dR$UG,dG$MR,dG$UR))
+    
     ## p-value is the minimium detection p-value of the 2 alleles
     pvals = setNames(pmin(
-        with(sdf, 1-func(pmax(MR, UR, na.rm=TRUE))),
-        with(sdf, 1-func(pmax(MG, UG, na.rm=TRUE)))), sdf$Probe_ID)
+        1-func(pmax(sdf$MR, sdf$UR, na.rm=TRUE)),
+        1-func(pmax(sdf$MG, sdf$UG, na.rm=TRUE))), sdf$Probe_ID)
         
     if (return.pval) { return(pvals) }
 

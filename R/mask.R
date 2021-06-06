@@ -60,6 +60,7 @@ resetMask <- function(sdf) {
 #' 
 #' @param sdf a \code{SigDF} object
 #' @param mask.use.manifest use manifest to mask probes
+#' @param manifest the manifest to use, for custom arrays
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
 #' @return a filtered \code{SigDF}
 #' @examples

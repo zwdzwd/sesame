@@ -73,8 +73,9 @@ sesamePlotIntensVsBetas <- function(sdf, mask=TRUE, intens.range=c(5,15)) {
     abline(h=0.5, lty='dashed')
     ## plot envelope lines
     x <- c(seq(1,100,by=1), seq(101,10000,by=100))
-    bG <- with(IR(sdf), median(c(MG, UG), na.rm=TRUE))
-    bR <- with(IG(sdf), median(c(MR, UR), na.rm=TRUE))
+    dG = InfIG(sdf); dR = InfIR(sdf)
+    bG <- median(c(dR$MG, dR$UG), na.rm=TRUE)
+    bR <- median(c(dG$MR, dG$UR), na.rm=TRUE)
     lines(log2(x + bG + bR), (0 + bG) / (0 + bG + x + bR), col='blue')
     lines(log2(x + bG + bR), (x + bG) / (x + bG + 0 + bR), col='blue')
     lines(log2(x + bR + bR), (0 + bR) / (x + bR + 0 + bR), col='red')
@@ -98,22 +99,23 @@ sesameQC <- function(sdf) {
 
     qc <- structure(data.frame(), class='sesameQC')
     ## number of type II probes
-    qc$num_probes_II <- nrow(II(sdf))
+    qc$num_probes_II <- nrow(InfII(sdf))
     ## number of type I (red channel) probes
-    qc$num_probes_IR <- nrow(IR(sdf))
+    qc$num_probes_IR <- nrow(InfIR(sdf))
     ## number of type I (grn channel) probes
-    qc$num_probes_IG <- nrow(IG(sdf))
+    qc$num_probes_IG <- nrow(InfIG(sdf))
     ## number of all probes
     qc$num_probes_all <- qc$num_probes_II +
         qc$num_probes_IR + qc$num_probes_IG
-    qc$mean_ii <- with(II(sdf), mean(c(UG,UR), na.rm = TRUE))
+    dG = InfIG(sdf); dR = InfIR(sdf); d2 = InfII(sdf)
+    qc$mean_ii <- mean(c(d2$UG,d2$UR), na.rm = TRUE)
     
     qc$mean_intensity <- meanIntensity(sdf) # excluding type-I out-of-band
     qc$mean_intensity_total <- mean(totalIntensities(sdf), na.rm=TRUE) # M + U
-    qc$mean_inb_grn <- with(IG(sdf), mean(c(MG, UG), na.rm = TRUE))
-    qc$mean_inb_red <- with(IR(sdf), mean(c(MR, UR), na.rm = TRUE))
-    qc$mean_oob_red <- with(IG(sdf), mean(c(MR, UR), na.rm = TRUE))
-    qc$mean_oob_grn <- with(IR(sdf), mean(c(MG, UG), na.rm = TRUE))
+    qc$mean_inb_grn <- mean(c(dG$MG, dG$UG), na.rm = TRUE)
+    qc$mean_inb_red <- mean(c(dR$MR, dR$UR), na.rm = TRUE)
+    qc$mean_oob_red <- mean(c(dG$MR, dG$UR), na.rm = TRUE)
+    qc$mean_oob_grn <- mean(c(dR$MG, dR$UG), na.rm = TRUE)
 
     res <- inferTypeIChannel(sdf, summary = TRUE)
     for (nm in names(res)) {

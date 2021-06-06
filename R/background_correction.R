@@ -79,7 +79,7 @@ scrubSoft <- function(sdf) {
 noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
 
     ## if no Infinium-I probes
-    if (nrow(IG(sdf)) == 0 && nrow(IR(sdf)) == 0) { return(sdf) }
+    if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
 
     ## background
     oobG = oobG(noMask(sdf))
@@ -91,8 +91,8 @@ noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
     oobG[oobG == 0] = 1
 
     ## foreground
-    ibG = c(IG(sdf)$MG, IG(sdf)$UG, II(sdf)$UG)
-    ibR = c(IR(sdf)$MR, IR(sdf)$UR, II(sdf)$UR)
+    ibG = c(InfIG(sdf)$MG, InfIG(sdf)$UG, InfII(sdf)$UG)
+    ibR = c(InfIR(sdf)$MR, InfIR(sdf)$UR, InfII(sdf)$UR)
     ibG[ibG == 0] = 1 # set signal to 1 if 0
     ibR[ibR == 0] = 1 # set signal to 1 if 0
 

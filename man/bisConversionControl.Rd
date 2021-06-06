@@ -8,8 +8,6 @@ bisConversionControl(sdf)
 }
 \arguments{
 \item{sdf}{a SigDF}
-
-\item{use.median}{use median to compute GCT instead of mean}
 }
 \value{
 GCT score (the higher, the more incomplete conversion)

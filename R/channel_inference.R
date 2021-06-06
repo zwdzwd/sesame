@@ -21,11 +21,6 @@
 inferTypeIChannel <- function(
     sdf, switch_failed = FALSE, verbose = FALSE, summary = FALSE) {
     
-    ## red_channel <- rbind(IR(sdf), oobR(sdf))
-    ## grn_channel <- rbind(oobG(sdf), IG(sdf))
-    ## n_red <- nrow(IR(sdf))
-    ## red_idx0 <- seq_len(nrow(red_channel)) <= nrow(IR(sdf)) # old red index
-
     ## ## If there are NA in the probe intensity, exclude these probes.
     ## ## This is rare and usually occurred when manifest is not complete
     ## no_na <- complete.cases(cbind(red_channel, grn_channel))
@@ -47,19 +42,18 @@ inferTypeIChannel <- function(
 
     inf1_idx = which(sdf$col != "2")
     sdf1 = sdf[inf1_idx,]
-    red_max = with(sdf1, pmax(MR, UR))
-    grn_max = with(sdf1, pmax(MG, UG))
+    red_max = pmax(sdf1$MR, sdf1$UR)
+    grn_max = pmax(sdf1$MG, sdf1$UG)
     new_col = ifelse(red_max > grn_max, "R", "G")
-    bg_max = quantile(c(
-        with(sdf1[new_col == "R",], c(MG,UG)),
-        with(sdf1[new_col == "G",], c(MR,UR))), 0.95)
+    d1R = sdf1[new_col == "R",]
+    d1G = sdf1[new_col == "G",]
+    bg_max = quantile(c(d1R$MG,d1R$UG,d1G$MR,d1G$UR), 0.95)
     
     if (!switch_failed) {
         idx = pmax(red_max, grn_max) < bg_max
         new_col[idx] = sdf1$col[idx]
     }
     sdf$col[inf1_idx] = factor(new_col, levels=c("G","R","2"))
-    
 
     ## ## stop inference when in-band signal is lower than a minimum
     ## min_ib <- quantile(

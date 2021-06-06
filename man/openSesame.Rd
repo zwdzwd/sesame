@@ -17,8 +17,6 @@ or RGChannelSet(s)}
 \item{BPPARAM}{get parallel with MulticoreParam(n)}
 
 \item{...}{parameters to getBetas}
-
-\item{what}{either 'sigset' or 'beta'}
 }
 \value{
 a numeric vector for processed beta values

@@ -12,22 +12,28 @@ noMask = function(sdf) {
     sdf[!sdf$mask,,drop=FALSE]
 }
 
-IR = function(sdf) {
+InfIR = function(sdf) {
     sdf[sdf$col == "R",,drop=FALSE]
 }
 
-IG = function(sdf) {
+InfIG = function(sdf) {
     sdf[sdf$col == "G",,drop=FALSE]
 }
 
-II = function(sdf) {
+InfI = function(sdf) {
+    sdf[sdf$col != "2",,drop=FALSE]
+}
+
+InfII = function(sdf) {
     sdf[sdf$col == "2",,drop=FALSE]
 }
 
 oobG = function(sdf) {
-    with(IR(sdf), c(MG, UG))
+    dR = InfIR(sdf)
+    c(dR$MG, dR$UG)
 }
 
 oobR = function(sdf) {
-    with(IG(sdf), c(MR, UR))
+    dG = InfIG(sdf)
+    c(dG$MR, dG$UR)
 }

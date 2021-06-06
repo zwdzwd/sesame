@@ -4,10 +4,12 @@
 \alias{totalIntensities}
 \title{M+U Intensities for All Probes}
 \usage{
-totalIntensities(sdf, mask = TRUE)
+totalIntensities(sdf, mask = FALSE)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
+
+\item{mask}{whether to mask probes using mask column}
 }
 \value{
 a vector of M+U signal for each probe

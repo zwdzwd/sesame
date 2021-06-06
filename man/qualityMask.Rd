@@ -16,6 +16,8 @@ qualityMask(
 
 \item{mask.use.manifest}{use manifest to mask probes}
 
+\item{manifest}{the manifest to use, for custom arrays}
+
 \item{mask.use.tcga}{whether to use TCGA masking, only applies to HM450}
 }
 \value{
