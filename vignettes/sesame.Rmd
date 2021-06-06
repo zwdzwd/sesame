@@ -19,14 +19,14 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Installation
 
-From Bioconductor
+To install SeSAMe from Bioconductor,
 ```{r, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
 BiocManager::install("sesame")
 ```
 
-Development version can be installed from github
+To install the development version directly from github
 ```{r, eval=FALSE}
 BiocManager::install('zwdzwd/sesameData')
 BiocManager::install('zwdzwd/sesame')
@@ -51,7 +51,10 @@ data/experiment/html/sesameData.html) package which is based on the
 [ExperimentHub](https://bioconductor.org/packages/release/
 bioc/html/ExperimentHub.html) package. You can find the path of
 the annotation data storage on your local computer using
-`tools::R_user_dir("ExperimentHub", which="cache")`.
+
+```{r}
+tools::R_user_dir("ExperimentHub", which="cache")
+```
 
 # Beta Value Extraction
 
@@ -61,38 +64,41 @@ Green and red files for the same samples should always share the same sample
 name prefix.
 For example, `204529320035_R06C01_Red.idat` and
 `204529320035_R06C01_Grn.idat` correspond to the red and green signal
-of one sample. In SeSAMe, we will use the common prefix,
-i.e. 204529320035_R06C01, to refer to that sample.
-Sesame recognize both the raw idat as well as gzipped idats which are common
+of one sample. In SeSAMe, we will use the **common prefix**,
+i.e. `204529320035_R06C01`, to refer to that sample.
+Sesame recognize both the raw IDAT as well as gzipped IDATs which are common
 in data stored in [GEO](https://www.ncbi.nlm.nih.gov/geo/).
 For example, in addition to the example above, SeSAMe also recognizes
 `GSM2178224_Red.idat.gz` and `GSM2178224_Grn.idat.gz`.
 
 The function `readIDATpair` function reads in the signal intensity data from
 the IDAT pairs. The function takes the **common prefix** as input and outputs
-a `SigSet`. Using the two examples above, one would run the following
+a `SigDF` object. Using the two examples above, one would run the following
 commands.
 ```{r eval=FALSE}
-sdf = readIDAT("GSM2178224")
-# or
-sdf = readIDAT("204529320035_R06C01")
+sdf = readIDAT("204529320035_R06C01")  # Example 1
+sdf = readIDAT("GSM2178224")           # Example 2
 ```
 Note that SeSAMe automatically detects and matches up the green and red signal
 files for the same sample.
-We will get back to the structure of `SigSet` below.
+We will get back to the structure of `SigDF` below.
 
 DNA methylation level (aka beta values) are defined as
-`methylated signal`/(`methylated signal` + `unmethylated signal`).
-It can be retrieved using the `getBetas` function on the `SigSet`. 
+$$\beta = M / (M+U)$$
+with `M` representing the signal from methylated allele and `U`
+representing the unmethylated signal.
+It can be retrieved calling the `getBetas` function on the `SigDF`.
 The output is a named vector with probe ID as names.
-For example, the following commands reads in one
-sample and convert it to beta values.
+For example, the following commands read in one
+sample and convert it to $\beta$ values.
 ```{r eval=FALSE}
 sdf = readIDAT("GSM2178224")
 betas = getBetas(sdf)
 ```
-Please note that `getBetas` takes a single `SigSet`
-object instead of a list of them. To have it process many `SigSet`s, you
+**NOTE:** `getBetas` takes a single `SigDF`
+object as input instead of a list of them. A common mistake is to `c`-merge
+multiple `SigDF`s. To combine multiple `SigDF`s, one can use `list()` instead.
+To have it process many `SigDF`s, we
 should combine that with looping functions `lapply` or `mclapply`s, or using
 the `openSesame` pipeline (see below).
 

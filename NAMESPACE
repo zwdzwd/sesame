@@ -2,6 +2,7 @@
 
 S3method(as.data.frame,sesameQC)
 S3method(print,DMLSummary)
+S3method(print,SigDF)
 S3method(print,fileSet)
 S3method(print,sesameQC)
 export(BetaValueToMValue)
