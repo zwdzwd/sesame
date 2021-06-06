@@ -41,8 +41,8 @@ signalMU <- function(sdf, mask = TRUE) {
     dG = InfIG(sdf); dR = InfIR(sdf); d2 = InfII(sdf)
     sdf2 = rbind(
         data.frame(M = dG$MG, U = dG$UG, Probe_ID = dG$Probe_ID),
-        data.frame(M = dR$MG, U = dR$UG, Probe_ID = dR$Probe_ID),
-        data.frame(M = d2$MG, U = d2$UG, Probe_ID = d2$Probe_ID))
+        data.frame(M = dR$MR, U = dR$UR, Probe_ID = dR$Probe_ID),
+        data.frame(M = d2$UG, U = d2$UR, Probe_ID = d2$Probe_ID))
     sdf2 = sdf2[match(sdf$Probe_ID, sdf2$Probe_ID),]
     if (mask) { sdf2 = sdf2[!sdf$mask,] }
     rownames(sdf2) = NULL
