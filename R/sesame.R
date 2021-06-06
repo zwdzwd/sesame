@@ -38,6 +38,7 @@
 #' head(signalMU(sdf))
 #' @export
 signalMU <- function(sdf, mask = TRUE) {
+    stopifnot(is(sdf, "SigDF"))
     dG = InfIG(sdf); dR = InfIR(sdf); d2 = InfII(sdf)
     sdf2 = rbind(
         data.frame(M = dG$MG, U = dG$UG, Probe_ID = dG$Probe_ID),
@@ -110,9 +111,7 @@ subsetvec <- function(vec, vecnames) {
 #' getSexInfo(sdf)
 #' @export
 getSexInfo <- function(sdf) {
-
     stopifnot(is(sdf, "SigDF"))
-
     cleanY = sesameDataGet(paste0(
         platform(sdf),'.probeInfo'))$chrY.clean
 
