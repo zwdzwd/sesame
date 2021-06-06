@@ -368,22 +368,22 @@ matrix, with `N` representing the number of probes in the class. The two
 columns of the matrix represent the methylated probe intensity and the 
 unmethylated probe intensity.
 
-## Read/Write as tsv/csv files
+## IO with tsv/csv files
 
 `SigDF` can be written as and read from plain text file with the compliant
 column names (i.e., `r colnames(sdf)`).
 ```{r}
 txt_file_path = sprintf("%s/sigdf.txt", tempdir())
 sdf_write_table(sdf, file=txt_file_path) # save as space-delimited txt
-sdf2 = sdf_read_table(txt_file_path)    # read back
+sdf2 = sdf_read_table(txt_file_path)     # read back
 
 tsv_file_path = sprintf("%s/sigdf.tsv", tempdir())
 sdf_write_table(sdf, file=tsv_file_path, sep="\t", quote=FALSE) # save as tsv
-sdf2 = sdf_read_table(tsv_file_path)    # read back
+sdf2 = sdf_read_table(tsv_file_path)                            # read back
 
 csv_file_path = sprintf("%s/sigdf.csv", tempdir())
 sdf_write_table(sdf, file=csv_file_path, sep=",") # save as csv
-sdf2 = sdf_read_table(txt_file_path, sep=",") # read back
+sdf2 = sdf_read_table(csv_file_path, sep=",")     # read back
 ```
 
 ## Interaction with SigSet

@@ -5,7 +5,8 @@ html_document:
   highlight: tango
   mathjax: null
   toc: true
-  toc_float: true
+  toc_float:
+    collapsed: false
   toc_depth: 3
   df_print: paged
   css: include/site.css
