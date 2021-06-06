@@ -10,12 +10,13 @@
 #' @export
 print.SigDF = function(x, ...) {
     stopifnot(is(x, "SigDF"))
-    cat("SigDF -", platform(x),
-        sprintf("\n - %d Infinium-I Probes\n", nrow(InfI(x))),
+    cat(paste0(
+        sprintf("SigDF - %s\n", platform(x)),
+        sprintf(" - %d Infinium-I Probes\n", nrow(InfI(x))),
         sprintf(" - %d Infinium-II Probes\n", nrow(InfII(x))),
         sprintf(" - %d Control Probes\n", nrow(controls(x))),
-        sprintf(" - %d Number of Masked Probes\n", sum(x$mask)))
-    print(cbind("- "=" - ",
+        sprintf(" - %d Number of Masked Probes\n", sum(x$mask))))
+    print(cbind("-"="-",
         Row=c(1,2,nrow(x)-1,nrow(x)),
         as.data.frame(x[c(1,2,nrow(x)-1,nrow(x)),])), row.names=FALSE)
 }
@@ -23,11 +24,6 @@ print.SigDF = function(x, ...) {
 platform = function(sdf) {
     stopifnot(is(sdf, "SigDF"))
     attr(sdf, "platform")
-}
-
-controls = function(sdf) {
-    stopifnot(is(sdf, "SigDF"))
-    attr(sdf, "controls")
 }
 
 noMask = function(sdf) {
@@ -58,4 +54,54 @@ oobG = function(sdf) {
 oobR = function(sdf) {
     dG = InfIG(sdf)
     c(dG$MR, dG$UR)
+}
+
+#' get the controls attributes
+#'
+#' @param sdf a \code{SigDF}
+#' @return the controls data frame
+#' @examples
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' head(controls(sdf))
+#' @export
+controls = function(sdf) {
+    stopifnot(is(sdf, "SigDF"))
+    attr(sdf, "controls")
+}
+
+#' write SigDF to table file
+#'
+#' @param sdf
+#' @return write SigDF to table file
+#' @examples
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' sdf_write_table(sdf, file=sprintf("%s/sigdf.txt", tempdir()))
+#' @export
+sdf_write_table = function(sdf, ...) {
+    write.table(sdf, row.names=FALSE, ...)
+}
+
+#' read a table file to SigDF
+#'
+#' @param fname file name
+#' @param platform array platform (will infer if not given)
+#' @return read table file to SigDF
+#' @examples
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' fname = sprintf("%s/sigdf.txt", tempdir())
+#' sdf_write_table(sdf, file=fname)
+#' sdf2 = sdf_read_table(fname)
+#' @export
+sdf_read_table = function(fname, platform = NULL, ...) {
+    df = read.table(fname, header=TRUE, ...)
+    sdf = structure(df, class=c("SigDF", "data.frame"))
+    sdf$col = factor(sdf$col, levels=c("G","R","2"))
+    sdf$mask = as.logical(sdf$mask)
+    if (is.null(platform)) {
+        attr(sdf, "platform") = inferPlatformFromProbeIDs(sdf$Probe_ID)
+    }
+    sdf
 }
