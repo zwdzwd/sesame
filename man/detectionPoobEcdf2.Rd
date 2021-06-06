@@ -35,7 +35,7 @@ corrected signal and do not distinguish the color channel difference.
 \examples{
 sdf <- sesameDataGet("EPIC.1.SigDF")
 sum(sdf$mask)
-sdf <- detectionPoobEcdf(sdf)
+sdf <- detectionPoobEcdf2(sdf)
 sum(sdf$mask)
 sdf <- sesameDataGet("EPIC.1.SigDF")
 sum(sdf$mask)
