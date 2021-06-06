@@ -87,7 +87,7 @@ meanIntensity <- function(sdf, mask = TRUE) {
 totalIntensities <- function(sdf, mask = FALSE) {
     stopifnot(is(sdf, "SigDF"))
     s = signalMU(sdf, mask = mask)
-    setNames(ifelse(is.na(s$M),0,s$M)+s$U, s$Probe_ID)
+    setNames(s$M+s$U, s$Probe_ID)
 }
 
 subsetvec <- function(vec, vecnames) {
