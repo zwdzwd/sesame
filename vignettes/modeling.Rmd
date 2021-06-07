@@ -22,6 +22,7 @@ using linear modeling. This general supervised learning framework
 identifies CpG loci whose differential methylation is associated with known
 co-variates. Let's first load needed packages
 ```{r message=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
 library(sesame)
 library(dplyr)
 library(tidyr)
@@ -135,18 +136,20 @@ reference level (0).
 
 ## Goodness of fit
 
-One may want to ask a question like whether the methylation of the probe is
-tissue-specific rather than the methylation of the probe is specifically
-hypermethylated in fat. The former question ask about the contrast variable
+One may want to ask a question like _whether the methylation of the probe is
+tissue-specific_ rather than whether the methylation of the probe is
+differentially methylated in fat.
+The former question ask about the contrast variable
 as a whole instead of a specific level of the contrast variable. To answer
-this question, we can use a F-test contasting the full model with a reduced
-model with the target contrast variable held out. This information is captured
+this question, we can use an F-test contasting the full model with a reduced
+model with the target contrast held out. By default, this analysis is already
+completed in the `DML` function. The test result is recorded
 in the **FPval_** columns. For example, to get all CpGs that are methylated
 specific to sex,
 
 ```{r}
 test_result %>% dplyr::filter(FPval_sex < 0.05, Eff_sex > 0.1) %>%
-    select(Pval_sexMale, Eff_sex)
+    select(FPval_sex, Eff_sex)
 ```
 Here we used 0.1 as the effect size threshold. This means DNA methylation
 difference under 0.1 (10%) is not considered a biologically meaningful
@@ -187,39 +190,72 @@ ggplot(test_result) + geom_point(aes(Est_tissueFat, -log10(Pval_tissueFat)))
 
 ## Continuous Variable
 
+The variable tested in the `DML` function can be continuous.
+Suppose we are interested in `age` besides `sex`. We will call the
+same function but with the following formula:
+```{r}
+smry2 = DML(se, ~ age + sex)
+test_result2 = summaryExtractTest(smry2) %>% arrange(Est_age)
+```
 
+Let's verify the CpGs positively associated with age.
+```{r}
+test_result2 %>% dplyr::select(Est_age, Pval_age) %>% tail # positive assoc.
+df = data.frame(Age = colData(se)$age,
+    BetaValue = assay(se)[rownames(test_result2)[nrow(test_result2)],])
+ggplot(df, aes(Age, BetaValue)) + geom_smooth(method="lm") + geom_point()
+```
 
 # DMR
 
-Testing sex-specific differential methylation yields chrX-linked probes.
+For a given contrast, one can merge neighboring CpGs that show consistent
+methylation variation into differentially methylated regions (DMRs).
+For example, we can merge sex-specific differential methylation identified
+above to chromosome X regions that show X-inactivation-related methylation
+difference. To do this, we need to first reorganize the summary data by
+contrast and levels by calling `summaryExtractCfList`.
+
 ```{r}
 cf_list = summaryExtractCfList(smry)
-cf_list = DMR(se, cf_list$sexMale)
-topSegments(cf_list) %>% dplyr::filter(Seg.Pval.adj < 0.05)
 ```
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
-library(sesame)
-library(dplyr)
-options(rmarkdown.html_vignette.check_title = FALSE)
+```{r}
+names(cf_list)
+head(cf_list$sexMale)
+cf_list = DMR(se, cf_list$sexMale)      # merge CpGs to regions / segments
+## most significant segments
+topSegments(cf_list) %>% dplyr::filter(Seg.Pval.adj < 0.05)
 ```
 
 # Track View
 
-To visualize all probes from a gene
-```{r, message=FALSE, fig.width=6, fig.height=5}
+SeSAMe provide utilities to view methylation reading in a track view.
+Next, we will demonstrate how to create track view with transcript
+position marked focusing on a genomic region, a gene and specific probes.
+Let's first load example HM450 data
+```{r}
 betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
-visualizeGene('DNMT1', betas, platform='HM450')
 ```
 
-To visualize probes from arbitrary region
+## By Genomic Region
+To visualize probes from arbitrary region, we will call `visualizeRegion`:
 ```{r, message=FALSE, fig.width=6, fig.height=5}
 visualizeRegion(
     'chr19',10260000,10380000, betas, platform='HM450',
     show.probeNames = FALSE)
 ```
+Zero to full methylation are displayed using the jet color scheme with blue
+representing no methylation and red full methylation.
 
-To visualize by probe names
+## By Gene Name
+To visualize all probes from a gene, we will call `visualizeGene`
+```{r, message=FALSE, fig.width=6, fig.height=5}
+visualizeGene('DNMT1', betas, platform='HM450')
+```
+
+## By Probe ID
+To visualize genome neighborhood using probe names, we will call
+`visualizeProbes`:
 ```{r, message=FALSE, fig.width=6}
 visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 ```

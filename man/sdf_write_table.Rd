@@ -6,6 +6,9 @@
 \usage{
 sdf_write_table(sdf, ...)
 }
+\arguments{
+\item{sdf}{the \code{SigDF} to output}
+}
 \value{
 write SigDF to table file
 }

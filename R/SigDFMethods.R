@@ -72,7 +72,7 @@ controls = function(sdf) {
 
 #' write SigDF to table file
 #'
-#' @param sdf
+#' @param sdf the \code{SigDF} to output
 #' @return write SigDF to table file
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
