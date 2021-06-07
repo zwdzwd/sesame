@@ -28,30 +28,43 @@
 
 inferSpecies <- function(sset,df_as=NULL,topN=3000,
 			threshold.pos=0.01,threshold.neg=0.1,ret.max=T,
-			balance=T,threshold.sucess.rate = 0.8) {
+			balance=T,threshold.sucess.rate = 0.8,platform='') {
     if (is.null(df_as)) {
-    	df_as=sesameDataGet(paste(sset@platform,'alignmentScore',sep='.'))
+	# Load alignment score (df_as) from .rda according to the specific species.
+    	df_as=sesameDataGet(paste(platform,'alignmentScore',sep='.'))
 	}
     pvalue=pval(sset)
+    # Only keep the overlapped probes between matrix of pvalue and alignment score.
     pvalue <- pvalue[intersect(names(pvalue),rownames(df_as))]
+    # Get positive probes (pvalue <= 0.01) and sort from the smallest to the largest
     pos_probes=sort(pvalue[pvalue <= threshold.pos],decreasing=F)
+    # Get negative probes (pvalue >= 0.1) and sort from the largest to the smallest.
     neg_probes=sort(pvalue[pvalue >= threshold.neg],decreasing=T)
-	success.rate = length(pvalue[pvalue<=0.05]) / length(pvalue)
-	if (success.rate >= threshold.sucess.rate && sset@platform=='Mouse') {
-		return(list(auc=1,taxid='10090',species='Mus musculus'))
+    success.rate = length(pvalue[pvalue<=0.05]) / length(pvalue)
+	
+    # If success.rate larger than 0.8, then directly assign species 'mouse' to this sample
+    if (success.rate >= threshold.sucess.rate && sset@platform=='Mouse') {
+	return(list(auc=1,taxid='10090',species='Mus musculus'))
 	}
+	
+    # balance means keep the same number of positive and negative of probes.
     if (balance) {
-	    topN <- min(length(neg_probes),length(pos_probes))
+	topN <- min(length(neg_probes),length(pos_probes))
     }
     if (length(pos_probes) > topN){
-	    pos_probes <- pos_probes[1:topN]
+	pos_probes <- pos_probes[1:topN]
     }
     if (length(neg_probes) > topN){
-	    neg_probes <- neg_probes[1:topN]
+	neg_probes <- neg_probes[1:topN]
     }
+	
+    # for positive probes (pvalue <= 0.01), y_true <- 1, for negative probes (pvalue > 0.1), y_true <- 1
     y_true=structure(c(rep(1,length(pos_probes)),rep(0,length(neg_probes))),
 		     names=c(names(pos_probes),names(neg_probes)))
+	
+    # y_pred is the alignment score.
     df_as=df_as[c(names(pos_probes),names(neg_probes)),]
+	
     if (length(y_true) == 0){
 	    if (ret.max==T){
 		    return(list(auc=NA,species=NA,taxid=NA))
@@ -63,9 +76,9 @@ inferSpecies <- function(sset,df_as=NULL,topN=3000,
 	    }
     }
         
-    
+    # Calculate AUC based on y_true and y_pred (df_as)
     auc = sapply(colnames(df_as),function(s) {
-		labels <- as.logical(y_true)
+	    labels <- as.logical(y_true)
 	    n1 <- sum(labels)
 	    n2 <- sum(!labels)
 	    R1 <- sum(rank(df_as[,s])[labels])
@@ -77,6 +90,7 @@ inferSpecies <- function(sset,df_as=NULL,topN=3000,
 	    return(auc) #p.value=p$p.value
     })
         
+    # if ret.max, then only the species with the maximal AUC would be returned, else, a vector of species and AUC would be returned.
     if (ret.max == T){
 	    l=as.list(auc[which.max(auc)])
 	    l['species']=unlist(strsplit(names(l)[1],"\\|"))[1]
