@@ -7,7 +7,7 @@ navbar:
       href: sesame.html
     - text: "Quality Control"
       icon: fa-copy
-      href: qc.html
+      href: QC.html
     - text: "Non-human Array"
       icon: fa-paw
       href: nonhuman.html
