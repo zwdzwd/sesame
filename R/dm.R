@@ -1,8 +1,9 @@
 
 #' filter data matrix by factor completeness
+#' only works for discrete factors
 #'
 #' @param betas matrix data
-#' @param fc factors
+#' @param fc factors, or characters
 #' @return a boolean vector whether there is non-NA value for each tested
 #' group for each probe
 #' @examples
@@ -13,6 +14,7 @@
 #' se1 = se0[se_ok,]
 #' @export
 checkLevels = function(betas, fc) {
+    stopifnot(is(fc, "factor") || is(fc, "character"))
     apply(betas, 1, function(dt) {
         all(vapply(split(dt, fc), function(x) sum(!is.na(x))>0, logical(1)))
     })
@@ -25,10 +27,13 @@ checkLevels = function(betas, fc) {
 #' (meta) and formula for testing. The function outputs a list of
 #' coefficient tables for each factor tested.
 #' @param betas beta values, matrix or SummarizedExperiment
+#' rows are probes and columns are samples.
 #' @param fm formula
 #' @param meta data frame for sample information, column names
 #' are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
 #' and are referenced in formula. Rows are samples.
+#' When the betas argument is a SummarizedExperiment object, this
+#' is ignored. colData(betas) will be used instead.
 #' @param mc.cores number of cores for parallel processing
 #' @return a list of test summaries, summary.lm objects
 #' @import stats
@@ -48,9 +53,12 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
     }
 
     mm = model.matrix(fm, meta)
+    ## clean the level names
+    colnames(mm) = make.names(colnames(mm))
 
-    contr2lvs = setNames(lapply(names(attr(mm, "contrasts")), function(cont) {
-        levels(factor(meta[[cont]])) }), names(attr(mm, "contrasts")))
+    contrasts = names(attr(mm, "contrasts"))
+    contr2lvs = setNames(lapply(contrasts, function(cont) {
+        make.names(levels(factor(meta[[cont]]))) }), contrasts)
     
     ## prepare holdout models
     mm_holdout = lapply(names(contr2lvs), function(cont) {
@@ -59,7 +67,7 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
     smry = parallel::mclapply(seq_len(nrow(betas)), function(i) {
         m0 = lm(betas[i,]~.+0, data=as.data.frame(mm))
         sm = summary(lm(betas[i,]~.+0, data=as.data.frame(mm)))
-        ## the following is stripped to reduce the size of return
+        ## the following is removed to reduce the size of return
         sm$cov.unscaled = NULL
         sm$residuals = NULL
         sm$terms = NULL

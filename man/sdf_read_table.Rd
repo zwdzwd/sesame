@@ -10,6 +10,8 @@ sdf_read_table(fname, platform = NULL, ...)
 \item{fname}{file name}
 
 \item{platform}{array platform (will infer if not given)}
+
+\item{...}{additional argument to read.table}
 }
 \value{
 read table file to SigDF

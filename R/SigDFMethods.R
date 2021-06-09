@@ -73,6 +73,7 @@ controls = function(sdf) {
 #' write SigDF to table file
 #'
 #' @param sdf the \code{SigDF} to output
+#' @param ... additional argument to write.table
 #' @return write SigDF to table file
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
@@ -87,6 +88,7 @@ sdf_write_table = function(sdf, ...) {
 #'
 #' @param fname file name
 #' @param platform array platform (will infer if not given)
+#' @param ... additional argument to read.table
 #' @return read table file to SigDF
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet

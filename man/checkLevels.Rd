@@ -2,14 +2,15 @@
 % Please edit documentation in R/dm.R
 \name{checkLevels}
 \alias{checkLevels}
-\title{filter data matrix by factor completeness}
+\title{filter data matrix by factor completeness
+only works for discrete factors}
 \usage{
 checkLevels(betas, fc)
 }
 \arguments{
 \item{betas}{matrix data}
 
-\item{fc}{factors}
+\item{fc}{factors, or characters}
 }
 \value{
 a boolean vector whether there is non-NA value for each tested
@@ -17,6 +18,7 @@ group for each probe
 }
 \description{
 filter data matrix by factor completeness
+only works for discrete factors
 }
 \examples{
 se0 = sesameDataGet("MM285.10.tissues")[1:1000,]
