@@ -58,7 +58,9 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 
     contrasts = names(attr(mm, "contrasts"))
     contr2lvs = setNames(lapply(contrasts, function(cont) {
-        make.names(levels(factor(meta[[cont]]))) }), contrasts)
+        x = make.names(paste0("X",levels(factor(meta[[cont]]))))
+        substr(x,2,nchar(x))
+    }), contrasts)
     
     ## prepare holdout models
     mm_holdout = lapply(names(contr2lvs), function(cont) {
