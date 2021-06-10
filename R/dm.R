@@ -247,6 +247,8 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' @param platform EPIC, HM450, MM285, ...
 #' @param refversion hg38, hg19, mm10, ...
 #' @return coefficient table with segment ID and segment P-value
+#' each row is a locus, multiple loci may share a segment ID if
+#' they are merged to the same segment.
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @examples
@@ -256,13 +258,12 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas, ~type, meta=data$sampleInfo)
 #' colnames(attr(smry, "model.matrix")) # pick a contrast from here
-#' cf_list = DMR(data$betas, smry, "typeTumour")
+#' loci_merged = DMR(data$betas, smry, "typeTumour")
 #' @export
 DMR <- function(betas, smry, contrast,
     platform=NULL, refversion=NULL,
     dist.cutoff=NULL, seg.per.locus=0.5) {
 
-    betas = data$betas
     stopifnot(is(smry, "DMLSummary"))
     if (is.null(platform)) {
         platform = inferPlatformFromProbeIDs(rownames(betas))

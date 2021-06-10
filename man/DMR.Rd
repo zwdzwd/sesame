@@ -33,6 +33,8 @@ higher value leads to more segments}
 }
 \value{
 coefficient table with segment ID and segment P-value
+each row is a locus, multiple loci may share a segment ID if
+they are merged to the same segment.
 }
 \description{
 This subroutine uses Euclidean distance to group CpGs and
@@ -49,5 +51,5 @@ sesameDataCache("HM450") # in case not done yet
 data <- sesameDataGet('HM450.76.TCGA.matched')
 smry <- DML(data$betas, ~type, meta=data$sampleInfo)
 colnames(attr(smry, "model.matrix")) # pick a contrast from here
-cf_list = DMR(data$betas, smry, "typeTumour")
+loci_merged = DMR(data$betas, smry, "typeTumour")
 }
