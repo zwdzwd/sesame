@@ -41,8 +41,7 @@ checkLevels = function(betas, fc) {
 #' @examples
 #' sesameDataCache("HM450") # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- DML(
-#'     data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' @export
 DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 
@@ -56,12 +55,12 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
     ## clean the level names
     colnames(mm) = make.names(colnames(mm))
 
-    contrasts = names(attr(mm, "contrasts"))
-    contr2lvs = setNames(lapply(contrasts, function(cont) {
+    contrs = names(attr(mm, "contrasts"))
+    contr2lvs = setNames(lapply(contrs, function(cont) {
         ## avoid X-prepended to levels that start with number
         x = make.names(paste0("X",levels(factor(meta[[cont]]))))
         substr(x,2,nchar(x))
-    }), contrasts)
+    }), contrs)
     
     ## prepare holdout models
     mm_holdout = lapply(names(contr2lvs), function(cont) {
@@ -197,25 +196,35 @@ dmr_merge_cpgs <- function(betas, probe.coords, dist.cutoff, seg.per.locus) {
 }
 
 dmr_combine_pval = function(cf, segs) {
+    ## mean of Estimate
+    seg.est <- as.vector(tapply(
+        cf[segs$cpg.ids, 'Estimate'], segs$id,
+        function(x) mean(x, na.rm=TRUE) ))
     ## Stouffer's Z-score method
     seg.pval <- as.vector(tapply(
         cf[segs$cpg.ids, 'Pr(>|t|)'], segs$id,
         function(x) pnorm(sum(qnorm(x))/sqrt(length(x)))))
     seg.pval.adj <- p.adjust(seg.pval, method="BH")
     seg.ids.cf <- match(rownames(cf), segs$cpg.ids)
-    cf <- as.data.frame(cf)
-    cf$Seg.ID <- segs$id[seg.ids.cf]
-    cf$Seg.chrm <- segs$chrm[cf$Seg.ID]
-    cf$Seg.start <- segs$start[cf$Seg.ID]
-    cf$Seg.end <- segs$end[cf$Seg.ID]
-    cf$Seg.Pval <- seg.pval[cf$Seg.ID]
-    cf$Seg.Pval.adj <- seg.pval.adj[cf$Seg.ID]
+    s = segs$id[seg.ids.cf]
+    cf <- cbind(data.frame(
+        Seg_ID = s,
+        Seg_Chrm = segs$chrm[s],
+        Seg_Start = segs$start[s],
+        Seg_End = segs$end[s],
+        Seg_Est = seg.est[s],
+        Seg_Pval = seg.pval[s],
+        Seg_Pval_adj = seg.pval.adj[s],
+        Probe_ID = rownames(cf)
+    ), as.data.frame(cf))
     message(sprintf(
         ' - %d significant segments.',
         sum(seg.pval<0.05, na.rm=TRUE)))
     message(sprintf(
         ' - %d significant segments (after BH).',
         sum(seg.pval.adj<0.05, na.rm=TRUE)))
+    cf = cf[order(cf$Seg_Est, cf$Seg_Chrm, cf$Seg_Start),]
+    rownames(cf) = NULL
     cf
 }
 
@@ -248,7 +257,7 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' @param refversion hg38, hg19, mm10, ...
 #' @return coefficient table with segment ID and segment P-value
 #' each row is a locus, multiple loci may share a segment ID if
-#' they are merged to the same segment.
+#' they are merged to the same segment. Records are ordered by Seg_Est.
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @examples
@@ -256,9 +265,9 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' sesameDataCache("HM450") # in case not done yet
 #' 
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- DML(data$betas, ~type, meta=data$sampleInfo)
+#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' colnames(attr(smry, "model.matrix")) # pick a contrast from here
-#' loci_merged = DMR(data$betas, smry, "typeTumour")
+#' merged = DMR(data$betas, smry, "typeTumour")
 #' @export
 DMR <- function(betas, smry, contrast,
     platform=NULL, refversion=NULL,
@@ -289,27 +298,17 @@ DMR <- function(betas, smry, contrast,
     cf
 }
 
-#' Top segments in differential methylation
-#' 
-#' This is a utility function to show top differential methylated segments.
-#' The function takes a coefficient table as input and output the same
-#' table ordered by the sigificance of the segments.
-#' 
-#' @param cf1 coefficient table of one factor from DMR
-#' @return coefficient table ordered by adjusted p-value of segments
-#' @examples
-#'
-#' sesameDataCache("HM450") # in case not done yet
-#' 
-#' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' cf_list = summaryExtractCfList(DML(data$betas, ~type, meta=data$sampleInfo))
-#' cf_list = DMR(data$betas, cf_list$typeTumour)
-#' topSegments(cf_list)
-#' @export
-topSegments <- function(cf1) {
-    x <- unique(cf1[order(cf1[,'Seg.Pval']), c(
-        'Seg.ID','Seg.chrm','Seg.start','Seg.end','Seg.Pval','Seg.Pval.adj')])
-    rownames(x) <- x[['Seg.ID']]
-    x
-}
 
+#' List all contrasts of a DMLSummary
+#' 
+#' @param smry a DMLSummary object
+#' @return a character vector of contrasts
+#' @examples
+#' data <- sesameDataGet('HM450.76.TCGA.matched')
+#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' contrasts(smry)
+#' @export
+contrasts = function(smry) {
+    stopifnot(is(smry, "DMLSummary"))
+    colnames(attr(smry, "model.matrix"))
+}

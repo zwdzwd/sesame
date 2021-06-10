@@ -212,19 +212,11 @@ For a given contrast, one can merge neighboring CpGs that show consistent
 methylation variation into differentially methylated regions (DMRs).
 For example, we can merge sex-specific differential methylation identified
 above to chromosome X regions that show X-inactivation-related methylation
-difference. To do this, we need to first reorganize the summary data by
-contrast and levels by calling `summaryExtractCfList`.
+difference. To do this, we need to pick a contrast:
 
 ```{r}
-cf_list = summaryExtractCfList(smry)
-```
-
-```{r}
-names(cf_list)
-head(cf_list$sexMale)
-cf_list = DMR(se, cf_list$sexMale)      # merge CpGs to regions / segments
-## most significant segments
-topSegments(cf_list) %>% dplyr::filter(Seg.Pval.adj < 0.05)
+contrasts(smry)                         # pick a contrast
+merged = DMR(se, smry, "sexMale")       # merge CpGs to regions / segments
 ```
 
 # Track View
