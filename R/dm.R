@@ -58,6 +58,7 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 
     contrasts = names(attr(mm, "contrasts"))
     contr2lvs = setNames(lapply(contrasts, function(cont) {
+        ## avoid X-prepended to levels that start with number
         x = make.names(paste0("X",levels(factor(meta[[cont]]))))
         substr(x,2,nchar(x))
     }), contrasts)
@@ -137,34 +138,13 @@ summaryExtractTest = function(smry) {
     cbind(est, pvals, f_pvals, effsize)
 }
 
-#' Extract Coefficient Table List from DMLSummary
-#' This function returns a list of coefficients for each variable
-#' tested.
-#' 
-#' @param smry DMLSummary from DML command
-#' @return a list of coefficients for each tested factor
-#' @examples
-#' sesameDataCache("HM450") # in case not done yet
-#' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
-#' cf_list <- summaryExtractCfList(smry)
-#' @export
-summaryExtractCfList = function(smry) {
-    tests = unique(do.call(c, lapply(smry, function(x) {
-        rownames(x$coefficients)
-    })))
-    cf_list = lapply(tests, function(tn) {
-        cf = do.call(rbind, lapply(smry, function(x) {
-            x$coefficients[tn,]
-        }))
-        rownames(cf) = names(smry)
-        cf
-    })
-    names(cf_list) = tests
-    cf_list
+summaryExtractCf = function(smry, contrast) {
+    cf = do.call(rbind, lapply(smry, function(x) {
+        x$coefficients[contrast,]
+    }))
+    rownames(cf) = names(smry)
+    cf # probes x c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
 }
-
-
 
 dmr_merge_cpgs <- function(betas, probe.coords, dist.cutoff, seg.per.locus) {
 
@@ -258,7 +238,9 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' the segment.
 #' 
 #' @param betas beta values for distance calculation
-#' @param cf coefficient table from DML or DMLShrinkage
+#' @param smry DML
+#' @param contrast the pair-wise comparison or contrast
+#' check colnames(attr(smry, "model.matrix")) if uncertain
 #' @param dist.cutoff distance cutoff (default to use dist.cutoff.quantile)
 #' @param seg.per.locus number of segments per locus
 #' higher value leads to more segments
@@ -272,10 +254,12 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' sesameDataCache("HM450") # in case not done yet
 #' 
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' cf_list = summaryExtractCfList(DML(data$betas, ~type, meta=data$sampleInfo))
-#' cf_list = DMR(data$betas, cf_list$typeTumour)
+#' smry <- DML(data$betas, ~type, meta=data$sampleInfo)
+#' colnames(attr(smry, "model.matrix")) # pick a contrast from here
+#' cf_list = DMR(data$betas, smry, "typeTumour")
 #' @export
-DMR <- function(betas, cf, platform=NULL, refversion=NULL,
+DMR <- function(betas, smry, contrast,
+    platform=NULL, refversion=NULL,
     dist.cutoff=NULL, seg.per.locus=0.5) {
 
     if (is.null(platform)) {
@@ -293,6 +277,7 @@ DMR <- function(betas, cf, platform=NULL, refversion=NULL,
     segs = dmr_merge_cpgs(betas, probe.coords, dist.cutoff, seg.per.locus)
     message(sprintf('Generated %d segments.', segs$id[length(segs$id)]))
     message("Combine p-values ... ")
+    cf = summaryExtractCf(smry, contrast)
     cf = dmr_combine_pval(cf, segs)
     message("Done.")
     cf

@@ -6,7 +6,8 @@
 \usage{
 DMR(
   betas,
-  cf,
+  smry,
+  contrast,
   platform = NULL,
   refversion = NULL,
   dist.cutoff = NULL,
@@ -16,7 +17,10 @@ DMR(
 \arguments{
 \item{betas}{beta values for distance calculation}
 
-\item{cf}{coefficient table from DML or DMLShrinkage}
+\item{smry}{DML}
+
+\item{contrast}{the pair-wise comparison or contrast
+check colnames(attr(smry, "model.matrix")) if uncertain}
 
 \item{platform}{EPIC, HM450, MM285, ...}
 
@@ -43,6 +47,7 @@ the segment.
 sesameDataCache("HM450") # in case not done yet
 
 data <- sesameDataGet('HM450.76.TCGA.matched')
-cf_list = summaryExtractCfList(DML(data$betas, ~type, meta=data$sampleInfo))
-cf_list = DMR(data$betas, cf_list$typeTumour)
+smry <- DML(data$betas, ~type, meta=data$sampleInfo)
+colnames(attr(smry, "model.matrix")) # pick a contrast from here
+cf_list = DMR(data$betas, smry, "typeTumour")
 }
