@@ -204,6 +204,39 @@ bSubComplete <- function(betas) {
     }
 }
 
+default_genome = function(pfm) {
+    c(
+        HM27="hg38",
+        HM450="hg38",
+        EPIC="hg38",
+        MM285="mm10"
+    )[pfm]
+}
 
+#' Annotate a data.frame using manifest
+#'
+#' @param df input data frame with Probe_ID as a column
+#' @param probe_id the Probe_ID column name, default to "Probe_ID" or rownames
+#' @param pfm which array platform, guess from probe ID if not given
+#' @param genome the genome build, use default if not given
+#' @return a new data.frame with manifest attached
+#' @examples
+#' df = data.frame(Probe_ID = c("cg00101675_BC21", "cg00116289_BC21"))
+#' attachManifest(df)
+#' @export
+attachManifest <- function(df, probe_id="Probe_ID", pfm=NULL, genome=NULL) {
+    stopifnot(is(df, "data.frame"))
+    stopifnot(probe_id %in% colnames(df))
 
+    if (is.null(pfm)) {
+        pfm = inferPlatformFromProbeIDs(df[[probe_id]])
+    }
+
+    if (is.null(genome)) {
+        genome = default_genome(pfm)
+    }
+
+    mft = sesameDataGet(sprintf("%s.%s.manifest", pfm, genome))
+    cbind(df, as.data.frame(mft)[match(df[[probe_id]], names(mft)),])
+}
 
