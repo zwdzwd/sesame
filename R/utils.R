@@ -204,15 +204,6 @@ bSubComplete <- function(betas) {
     }
 }
 
-default_genome = function(pfm) {
-    c(
-        HM27="hg38",
-        HM450="hg38",
-        EPIC="hg38",
-        MM285="mm10"
-    )[pfm]
-}
-
 #' Annotate a data.frame using manifest
 #'
 #' @param df input data frame with Probe_ID as a column
@@ -233,7 +224,7 @@ attachManifest <- function(df, probe_id="Probe_ID", pfm=NULL, genome=NULL) {
     }
 
     if (is.null(genome)) {
-        genome = default_genome(pfm)
+        genome = defaultAssembly(pfm)
     }
 
     mft = sesameDataGet(sprintf("%s.%s.manifest", pfm, genome))

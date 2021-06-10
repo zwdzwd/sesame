@@ -262,10 +262,15 @@ DMR <- function(betas, smry, contrast,
     platform=NULL, refversion=NULL,
     dist.cutoff=NULL, seg.per.locus=0.5) {
 
+    betas = data$betas
+    stopifnot(is(smry, "DMLSummary"))
     if (is.null(platform)) {
-        platform = inferPlatformFromProbeIDs(rownames(betas)) }
+        platform = inferPlatformFromProbeIDs(rownames(betas))
+    }
     
-    if (is.null(refversion)) refversion = defaultAssembly(platform)
+    if (is.null(refversion)) {
+        refversion = defaultAssembly(platform)
+    }
 
     if(is(betas, "SummarizedExperiment")) {
         betas = assay(betas)
