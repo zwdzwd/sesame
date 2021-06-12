@@ -28,7 +28,7 @@
 
 inferSpecies <- function(sset,df_as=NULL,topN=3000,
 			threshold.pos=0.01,threshold.neg=0.1,ret.max=T,
-			balance=T,threshold.sucess.rate = 0.8,platform='') {
+			balance=T,threshold.sucess.rate = 0.8,platform='MM285') {
     if (is.null(df_as)) {
 	# Load alignment score (df_as) from .rda according to the specific species.
     	df_as=sesameDataGet(paste(platform,'alignmentScore',sep='.'))
@@ -43,11 +43,11 @@ inferSpecies <- function(sset,df_as=NULL,topN=3000,
     success.rate = length(pvalue[pvalue<=0.05]) / length(pvalue)
 	
     # If success.rate larger than 0.8, then directly assign species 'mouse' to this sample
-    if (success.rate >= threshold.sucess.rate && sset@platform=='Mouse') {
+    if (success.rate >= threshold.sucess.rate && sset@platform=='MM285') {
 	return(list(auc=1,taxid='10090',species='Mus musculus'))
 	}
 	
-    # balance means keep the same number of positive and negative of probes.
+    # balance means keep the same number of positive and negative probes.
     if (balance) {
 	topN <- min(length(neg_probes),length(pos_probes))
     }
@@ -58,7 +58,7 @@ inferSpecies <- function(sset,df_as=NULL,topN=3000,
 	neg_probes <- neg_probes[1:topN]
     }
 	
-    # for positive probes (pvalue <= 0.01), y_true <- 1, for negative probes (pvalue > 0.1), y_true <- 1
+    # for positive probes (pvalue <= 0.01), y_true <- 1, for negative probes (pvalue > 0.1), y_true <- 0
     y_true=structure(c(rep(1,length(pos_probes)),rep(0,length(neg_probes))),
 		     names=c(names(pos_probes),names(neg_probes)))
 	
@@ -84,10 +84,7 @@ inferSpecies <- function(sset,df_as=NULL,topN=3000,
 	    R1 <- sum(rank(df_as[,s])[labels])
 	    U1 <- R1 - n1 * (n1 + 1)/2
 	    auc <- U1/(n1 * n2)
-	    #z <- (R1 - n1*(n1+n2+1)/2) / sqrt(n1*n2*(n1+n2+1))
-	    #p1 <- pnorm(z, lower.tail=FALSE)
-	    #p <- wilcox.test(df_as[names(pos_probes),s],df_as[names(neg_probes),s],alternative='greater')
-	    return(auc) #p.value=p$p.value
+	    return(auc)
     })
         
     # if ret.max, then only the species with the maximal AUC would be returned, else, a vector of species and AUC would be returned.
