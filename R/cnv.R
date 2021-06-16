@@ -9,7 +9,9 @@
 #' bin.coords) and bin signals (bin.signals).
 #'
 #' @param sdf \code{SigDF}
-#' @param sdfs.normal \code{SigDF} for normalization
+#' @param sdfs.normal a list of \code{SigDF}s for normalization, if not given, use the
+#' stored normal data from sesameData. However, we do recommend using a matched
+#' copy number normal dataset for normalization.
 #' @param refversion hg19 or hg38
 #' @return an object of \code{CNSegment}
 #' @examples
@@ -20,11 +22,20 @@
 #' seg <- cnSegmentation(sdf, sdfs.normal)
 #' 
 #' @export
-cnSegmentation <- function(sdf, sdfs.normal, refversion=c('hg19','hg38')) {
+cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
 
     stopifnot(is(sdf, "SigDF"))
     pkgTest('GenomicRanges')
     refversion <- match.arg(refversion)
+
+    if (is.null(sdfs.normal)) {
+        if (platform(sdf) == "EPIC") {
+            sdfs.normal = sesameDataGet("EPIC.5.SigDFs.normal")
+        } else {
+            stop(sprintf("For %s, please provide the sdfs.normal argument.",
+                platform(sdf)))
+        }
+    }
     
     ## retrieve chromosome info and probe coordinates
     seqInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$seqInfo

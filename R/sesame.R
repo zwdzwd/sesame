@@ -439,10 +439,14 @@ readIDATpair <- function(
 }
 
 readControls <- function(dm, controls) {
-    ctl <- as.data.frame(dm[match(controls$Address, rownames(dm)),])
-    rownames(ctl) <- make.names(controls$Name, unique=TRUE)
-    ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
-    colnames(ctl) <- c('G','R','col','type')
+    if ("Color_Channel" %in% colnames(controls)) { # legacy control data
+        ctl <- as.data.frame(dm[match(controls$Address, rownames(dm)),])
+        rownames(ctl) <- make.names(controls$Name, unique=TRUE)
+        ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
+        colnames(ctl) <- c('G','R','col','type')
+    } else {
+        ctl = as.data.frame(chipAddressToSignal(dm, controls))
+    }
     ctl
 }
 

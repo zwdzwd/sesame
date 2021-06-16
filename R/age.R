@@ -47,7 +47,6 @@ predictAgeSkinBlood <- function(betas) {
     predictAge(betas, sesameDataGet('age.inference')$SkinBlood)
 }
 
-
 #' Phenotypic age predictor
 #'
 #' The function takes a named numeric vector of beta values. The name attribute
@@ -57,7 +56,6 @@ predictAgeSkinBlood <- function(betas) {
 #'
 #' @param betas a probeID-named vector of beta values
 #' @return age in years
-#' @export
 #' @examples
 #' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 #' predictAgePheno(betas)
