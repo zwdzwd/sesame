@@ -15,15 +15,12 @@
 #'
 #' Our function works on a single sample.
 #' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
 #' df_as <- sesameDataGet('Mammal40.alignmentScore')
-#' res=inferSpecies(sset,df_as)
-#' res=inferSpecies(sset,df_as,ret.max=F)
-#' result=do.call(cbind, mclapply(idats, function(x) {
-#' 		sset=readIDATpair(x,manifest=mft, platform='mammal')
-#'      	res=inferSpecies(sset,df_as,ret.max=T)
-#'    },mc.cores=8)
-#'    )
+#' manifests=sesameDataGet("Mammal40.address")
+#' mft_mm=cbind(manifests$ordering[,1:3],manifests$species$mus_musculus)
+#' idat <- searchIDATprefixes(system.file("extdata/", package = "sesameData"))['GSM4411953']
+#' sset <- readIDATpair(idat,manifest=mft_mm, platform='Mammal40')
+#' inferred.species <- inferSpecies(sset,df_as)
 #' @export
 
 inferSpecies <- function(sset,df_as=NULL,topN=3000,
