@@ -373,10 +373,15 @@ inferSexKaryotypes <- function(sset) {
 #' @export
 inferSex <- function(sset) {
     stopifnot(is(sset, "SigSet"))
-    stopifnot(sset@platform %in% c('EPIC','HM450'))
-    sex.info <- getSexInfo(sset)[seq_len(3)]
-    as.character(predict(
-        sesameDataGet('sex.inference'), sex.info))
+    stopifnot(sset@platform %in% c('EPIC','HM450','MM285'))
+    if (sset@platform == 'MM285'){
+        svm <- sesameDataGet('sex.inference.MM285')
+        as.character(predict(svm, newdata = t(as.data.frame(totalIntensities(sset)[svm$coefnames]))))
+    } else {
+        sex.info <- getSexInfo(sset)[seq_len(3)]
+        as.character(predict(
+            sesameDataGet('sex.inference'), sex.info))
+    }
 }
 
 #' Infer Ethnicity
