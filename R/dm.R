@@ -267,7 +267,7 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' colnames(attr(smry, "model.matrix")) # pick a contrast from here
-#' merged = DMR(data$betas, smry, "typeTumour")
+#' merged_segs = DMR(data$betas[1:1000,], smry, "typeTumour")
 #' @export
 DMR <- function(betas, smry, contrast,
     platform=NULL, refversion=NULL,
@@ -293,6 +293,8 @@ DMR <- function(betas, smry, contrast,
     message(sprintf('Generated %d segments.', segs$id[length(segs$id)]))
     message("Combine p-values ... ")
     cf = summaryExtractCf(smry, contrast)
+    ## make sure the beta values and coefficients match
+    stopifnot(all(segs$cpg.ids %in% rownames(cf)))
     cf = dmr_combine_pval(cf, segs)
     message("Done.")
     cf

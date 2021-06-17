@@ -9,9 +9,9 @@ cnSegmentation(sdf, sdfs.normal = NULL, refversion = c("hg19", "hg38"))
 \arguments{
 \item{sdf}{\code{SigDF}}
 
-\item{sdfs.normal}{a list of \code{SigDF}s for normalization, if not given, use the
-stored normal data from sesameData. However, we do recommend using a matched
-copy number normal dataset for normalization.}
+\item{sdfs.normal}{a list of \code{SigDF}s for normalization, if not given,
+use the stored normal data from sesameData. However, we do recommend using
+a matched copy number normal dataset for normalization.}
 
 \item{refversion}{hg19 or hg38}
 }

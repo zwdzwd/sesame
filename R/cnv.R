@@ -9,9 +9,9 @@
 #' bin.coords) and bin signals (bin.signals).
 #'
 #' @param sdf \code{SigDF}
-#' @param sdfs.normal a list of \code{SigDF}s for normalization, if not given, use the
-#' stored normal data from sesameData. However, we do recommend using a matched
-#' copy number normal dataset for normalization.
+#' @param sdfs.normal a list of \code{SigDF}s for normalization, if not given,
+#' use the stored normal data from sesameData. However, we do recommend using
+#' a matched copy number normal dataset for normalization.
 #' @param refversion hg19 or hg38
 #' @return an object of \code{CNSegment}
 #' @examples

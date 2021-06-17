@@ -113,13 +113,13 @@ SeSAMe can output explicit and Infinium-I-derived SNP to VCF.
 This information can be used to identify sample swaps.
 
 ```{r}
-sset <- sesameDataGet('EPIC.1.SigDF')
+sdf <- sesameDataGet('EPIC.1.SigDF')
 annoS = sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
 annoI = sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
-head(formatVCF(sset, annoS=annoS, annoI=annoI)) # output to console
+head(formatVCF(sdf, annoS=annoS, annoI=annoI)) # output to console
 ```
 
-One can output to actual VCF file with a header by `formatVCF(sset,
+One can output to actual VCF file with a header by `formatVCF(sdf,
 vcf=path_to_vcf)`.
 
 # The FileSet

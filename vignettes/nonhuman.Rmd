@@ -43,7 +43,7 @@ pfx = sprintf("%s/204637490002_R05C01", res_red$dest_dir)
 
 To load IDAT into `SigSet`, one needs the readIDATpair function,
 ```{r eval=FALSE}
-sset = readIDATpair(pfx)
+sdf = readIDATpair(pfx)
 ```
 
 The default openSesame pipeline works for the mouse array
@@ -53,21 +53,21 @@ openSesame(idat_dir)
 
 Let's load a pre-built `SigSet` object
 ```{r include=FALSE}
-sset = sesameDataGet('MM285.1.SigDF')
+sdf = sesameDataGet('MM285.1.SigDF')
 ```
 
 Preprocess the sigset to produce beta values.
 The standard `noob`, `dyeBiasCorrTypeINorm` works as expected:
 ```{r}
-sset_normalized = sset %>%
-                  qualityMask %>%
-                  pOOBAH %>%
-                  noob %>%
-                  dyeBiasCorrTypeINorm
+sdf_normalized = sdf %>%
+                 qualityMask %>%
+                 pOOBAH %>%
+                 noob %>%
+                 dyeBiasCorrTypeINorm
 ```
 Retrieve beta values using the following commands
 ```{r}
-betas = getBetas(sset_normalized)
+betas = getBetas(sdf_normalized)
 ```
 
 By default the repeat and suboptimally designed probes are masked by `NA`.
@@ -82,8 +82,8 @@ head(betas[grep('uk', names(betas))])
 To use these probes, one skip qualityMask and explicitly perform masking based
 on detection p-values only:
 ```{r}
-betas = sset_normalized %>%
-        setMask(pOOBAH(qualityMask(sset), return.pval=TRUE)>0.05) %>%
+betas = sdf_normalized %>%
+        setMask(pOOBAH(qualityMask(sdf), return.pval=TRUE)>0.05) %>%
         getBetas
 sum(is.na(betas))
 head(betas[grep('uk', names(betas))])
@@ -93,12 +93,12 @@ probes are only masked because of insignificant detection p-value
 One can completely turn off all masking by toggling off the `mask` option in
 `getBetas`:
 ```{r}
-betas = getBetas(sset_normalized, mask = FALSE)
+betas = getBetas(sdf_normalized, mask = FALSE)
 sum(is.na(betas))
 ```
 or reset the mask using `resetMask` function
 ```{r}
-betas = getBetas(resetMask(sset_normalized))
+betas = getBetas(resetMask(sdf_normalized))
 sum(is.na(betas))
 ```
 
@@ -112,12 +112,12 @@ visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
 
 Let's load a pre-built `SigSet` object from SeSAMeData
 ```{r}
-sset <- sesameDataGet("MM285.1.SigDF")
+sdf <- sesameDataGet("MM285.1.SigDF")
 ```
 
 Calculate beta values using the following commands.
 ```{r}
-betas <- sset %>%
+betas <- sdf %>%
          noob %>%
          dyeBiasCorrTypeINorm %>%
          getBetas
