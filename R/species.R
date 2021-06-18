@@ -18,8 +18,9 @@
 #' df_as <- sesameDataGet('Mammal40.alignmentScore')
 #' manifests=sesameDataGet("Mammal40.address")
 #' mft_mm=cbind(manifests$ordering[,1:3],manifests$species$mus_musculus)
-#' idat <- searchIDATprefixes(system.file("extdata/", package = "sesameData"))['GSM4411953']
-#' sset <- readIDATpair(idat,manifest=mft_mm, platform='Mammal40')
+#' #idat <- searchIDATprefixes(system.file("extdata/", package = "sesameData"))['GSM4411953']
+#' #sset <- readIDATpair(idat,manifest=mft_mm, platform='Mammal40')
+#' sset <- sesameDataGet("GSM4411953")
 #' inferred.species <- inferSpecies(sset,df_as)
 #' @export
 
