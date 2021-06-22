@@ -116,7 +116,7 @@ dyeBiasCorrTypeINorm <- function(sdf) {
 
     stopifnot(is(sdf, "SigDF"))
 
-    dG = InfIG(noMask(sdf)); dR = InfIR(noMask(sdf))
+    dG = InfIG(sdf); dR = InfIR(sdf)
     IG0 <- c(dG$MG, dG$UG)
     IR0 <- c(dR$MR, dR$UR)
     

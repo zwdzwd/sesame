@@ -326,10 +326,13 @@ Here we use two cores with `mc.cores=2`.
 Equivalently, sesame provides the **openSesame** pipeline
 ```{r eval = FALSE}
 idat_dir = system.file("extdata/", package = "sesameData")
-betas = openSesame(idat_dir, BPPARAM=BiocParallel::MulticoreParam(2))
+betas = openSesame(idat_dir)
 ```
 as a quickstart default. Here `idat_dir` is the directory containing all
-the IDAT files.
+the IDAT files. Multi-core processing can be invoked using the BiocParallel:
+```{r eval = FALSE}
+betas = openSesame(idat_dir, BPPARAM=BiocParallel::MulticoreParam(2))
+```
 Like readIDATpair, `openSesame` also works with custom-made array with a
 manifest file (see above):
 
