@@ -10,6 +10,8 @@ SigDF(df, platform = "EPIC", ctl = NULL)
 \item{df}{a \code{data.frame}}
 
 \item{platform}{a string to specify the array platform}
+
+\item{ctl}{optional control probe data frame}
 }
 \description{
 SigDF constructor

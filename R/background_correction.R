@@ -16,8 +16,8 @@
 #' sdf.nb.scrub <- scrub(sdf.nb)
 #' @export
 scrub <- function(sdf) {
-    bG <- median(oobG(noMask(sdf)), na.rm=TRUE)
-    bR <- median(oobR(noMask(sdf)), na.rm=TRUE)
+    bG <- median(oobG(noMasked(sdf)), na.rm=TRUE)
+    bR <- median(oobR(noMasked(sdf)), na.rm=TRUE)
     sdf$MG = pmax(sdf$MG - bG, 1)
     sdf$MR = pmax(sdf$MR - bR, 1)
     sdf$UG = pmax(sdf$UG - bG, 1)
@@ -49,8 +49,8 @@ noobSub <- function(sig, bg) {
 #' sdf.nb.scrubSoft <- scrubSoft(sdf.nb)
 #' @export
 scrubSoft <- function(sdf) {
-    bgR <- oobR(noMask(sdf))
-    bgG <- oobG(noMask(sdf))
+    bgR <- oobR(noMasked(sdf))
+    bgG <- oobG(noMasked(sdf))
 
     sdf$MG = noobSub(sdf$MG, bgG)
     sdf$MR = noobSub(sdf$MR, bgR)
@@ -82,8 +82,8 @@ noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
     if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
 
     ## background
-    oobG = oobG(noMask(sdf))
-    oobR = oobR(noMask(sdf))
+    oobG = oobG(noMasked(sdf))
+    oobR = oobR(noMasked(sdf))
     ## if not enough out-of-band signal
     if (sum(oobG > 0, na.rm=TRUE) < 100 ||
             sum(oobR > 0, na.rm=TRUE) < 100) { return(sdf) }

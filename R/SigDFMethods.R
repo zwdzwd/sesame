@@ -14,7 +14,8 @@ print.SigDF = function(x, ...) {
         sprintf("SigDF - %s\n", platform(x)),
         sprintf(" - %d Infinium-I Probes\n", nrow(InfI(x))),
         sprintf(" - %d Infinium-II Probes\n", nrow(InfII(x))),
-        sprintf(" - %d Control Probes\n", nrow(controls(x))),
+        sprintf(" - %d Control Probes\n",
+            ifelse(is.null(controls(x)), 0, nrow(controls(x)))),
         sprintf(" - %d Number of Masked Probes\n", sum(x$mask))))
     print(cbind("-"="-",
         Row=c(1,2,nrow(x)-1,nrow(x)),
@@ -26,7 +27,7 @@ platform = function(sdf) {
     attr(sdf, "platform")
 }
 
-noMask = function(sdf) {
+noMasked = function(sdf) { # filter masked probes
     sdf[!sdf$mask,,drop=FALSE]
 }
 

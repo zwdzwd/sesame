@@ -5,15 +5,23 @@
 \alias{pOOBAH2}
 \title{Detection P-value based on ECDF of out-of-band signal}
 \usage{
-detectionPoobEcdf2(sdf, return.pval = FALSE, pval.threshold = 0.05)
+detectionPoobEcdf2(
+  sdf,
+  return.pval = FALSE,
+  combine.neg = TRUE,
+  pval.threshold = 0.05
+)
 
-pOOBAH2(sdf, return.pval = FALSE, pval.threshold = 0.05)
+pOOBAH2(sdf, return.pval = FALSE, combine.neg = TRUE, pval.threshold = 0.05)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
 
 \item{return.pval}{whether to return p-values, instead of a
 masked \code{SigDF}}
+
+\item{combine.neg}{whether to combine negative control probes with
+the out-of-band probes in simulating the signal background}
 
 \item{pval.threshold}{minimum p-value to mask}
 }

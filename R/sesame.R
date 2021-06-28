@@ -31,6 +31,7 @@
 #'
 #' @param df a \code{data.frame}
 #' @param platform a string to specify the array platform
+#' @param ctl optional control probe data frame
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' df <- as.data.frame(sesameDataGet('EPIC.1.SigDF'))

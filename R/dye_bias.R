@@ -116,7 +116,8 @@ dyeBiasCorrTypeINorm <- function(sdf) {
 
     stopifnot(is(sdf, "SigDF"))
 
-    dG = InfIG(sdf); dR = InfIR(sdf)
+    ## we use all Inf-I probes so we capture the entire support range
+    dG = InfIG(noMasked(sdf)); dR = InfIR(noMasked(sdf))
     IG0 <- c(dG$MG, dG$UG)
     IR0 <- c(dR$MR, dR$UR)
     
@@ -189,7 +190,7 @@ dyeBiasNL <- dyeBiasCorrTypeINorm
 #' @import graphics
 #' @export
 sesamePlotRedGrnQQ <- function(sdf) {
-    dG = InfIG(sdf); dR = InfIR(sdf)
+    dG = InfIG(noMasked(sdf)); dR = InfIR(noMasked(sdf))
     m = max(c(dR$MR,dR$UR,dG$MG,dG$UG), na.rm=TRUE)
     
     qqplot(

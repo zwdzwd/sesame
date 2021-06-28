@@ -1,9 +1,19 @@
 ## get negative control probes
 negControls <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
-    negctls <- controls(sdf)[grep(
+
+    ## controls from attributes
+    negctls = controls(sdf)[grep(
         'negative', tolower(rownames(controls(sdf)))),]
-    negctls <- subset(negctls, col!=-99)
+    if (nrow(negctls) > 0) {
+        stopifnot(all(c("G","R","col") %in% colnames(negctls)))
+        negctls = negctls[negctls$col!=-99, c("G","R")]
+    } else { # controls from normal probes
+        negctls = as.data.frame(
+            sdf[grep("ctl-Negative", sdf$Probe_ID), c("UG", "UR")])
+        colnames(negctls) = c("G","R")
+    }
+    
     negctls
 }
 
@@ -55,6 +65,8 @@ detectionPnegEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 #' @param pval.threshold minimum p-value to mask
 #' @param return.pval whether to return p-values, instead of a
 #' masked \code{SigDF}
+#' @param combine.neg whether to combine negative control probes with
+#' the out-of-band probes in simulating the signal background
 #' @return a \code{SigDF}, or a p-value vector if return.pval is TRUE
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
@@ -62,13 +74,21 @@ detectionPnegEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 #' sum(detectionPoobEcdf(sdf)$mask)
 #' 
 #' @export
-detectionPoobEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
+detectionPoobEcdf <- function(sdf, return.pval = FALSE,
+    combine.neg = TRUE, pval.threshold=0.05) {
 
     stopifnot(is(sdf, "SigDF"))
 
     dG = InfIG(sdf); dR = InfIR(sdf)
-    funcG <- ecdf(c(dR$MG,dR$UG))
-    funcR <- ecdf(c(dG$MR,dG$UR))
+    bgG = c(dR$MG, dR$UG)
+    bgR = c(dG$MR, dG$UR)
+    if (combine.neg) {
+        neg = negControls(sdf)
+        bgG = c(bgG, neg$G)
+        bgR = c(bgR, neg$R)
+    }
+    funcG = ecdf(bgG)
+    funcR = ecdf(bgR)
 
     ## p-value is the minimium detection p-value of the 2 alleles
     pvals = setNames(pmin(
@@ -97,6 +117,8 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 #' @param pval.threshold minimum p-value to mask
 #' @param return.pval whether to return p-values, instead of a
 #' masked \code{SigDF}
+#' @param combine.neg whether to combine negative control probes with
+#' the out-of-band probes in simulating the signal background
 #' @return a \code{SigDF}, or a p-value vector if return.pval is TRUE
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
@@ -104,12 +126,18 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 #' sdf <- detectionPoobEcdf2(sdf)
 #' sum(sdf$mask)
 #' @export
-detectionPoobEcdf2 <- function(sdf, return.pval = FALSE, pval.threshold=0.05){
+detectionPoobEcdf2 <- function(sdf, return.pval = FALSE,
+    combine.neg = TRUE, pval.threshold=0.05){
 
     stopifnot(is(sdf, "SigDF"))
 
     dG = InfIG(sdf); dR = InfIR(sdf)
-    func <- ecdf(c(dR$MG,dR$UG,dG$MR,dG$UR))
+    bg = c(dR$MG,dR$UG,dG$MR,dG$UR)
+    if (combine.neg) {
+        neg = negControls(sdf)
+        bg = c(bg, c(neg$G, neg$R))
+    }
+    func <- ecdf(bg)
     
     ## p-value is the minimium detection p-value of the 2 alleles
     pvals = setNames(pmin(
