@@ -27,25 +27,6 @@
 #'
 "_PACKAGE"
 
-#' SigDF constructor
-#'
-#' @param df a \code{data.frame}
-#' @param platform a string to specify the array platform
-#' @param ctl optional control probe data frame
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' df <- as.data.frame(sesameDataGet('EPIC.1.SigDF'))
-#' @export
-SigDF = function(df, platform = "EPIC", ctl=NULL) {
-    sdf = structure(df, class=c("SigDF", "data.frame"))
-    sdf$col = factor(sdf$col, levels=c("G","R","2"))
-    attr(sdf, "platform") = platform
-    attr(sdf, "controls") = ctl
-    rownames(sdf) = NULL
-    sdf
-}
-
-
 #' report M and U for regular probes
 #'
 #' @param sdf a \code{SigDF}

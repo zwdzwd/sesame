@@ -5,7 +5,7 @@ negControls <- function(sdf) {
     ## controls from attributes
     negctls = controls(sdf)[grep(
         'negative', tolower(rownames(controls(sdf)))),]
-    if (nrow(negctls) > 0) {
+    if (!is.null(negctls) && nrow(negctls) > 0) {
         stopifnot(all(c("G","R","col") %in% colnames(negctls)))
         negctls = negctls[negctls$col!=-99, c("G","R")]
     } else { # controls from normal probes
