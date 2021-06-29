@@ -375,8 +375,17 @@ inferSex <- function(sset) {
     stopifnot(is(sset, "SigSet"))
     stopifnot(sset@platform %in% c('EPIC','HM450','MM285'))
     if (sset@platform == 'MM285'){
+        require(caret)
+        require(kernlab)
         svm <- sesameDataGet('sex.inference.MM285')
-        as.character(predict(svm, newdata = t(as.data.frame(totalIntensities(sset)[svm$coefnames]))))
+        newdata <- t(as.data.frame(totalIntensities(sset)[svm$coefnames]))
+        pred <- predict(svm, newdata = newdata,type="prob")
+        pred.sex <- ifelse(pred$Male > pred$Female,'Male','Female')
+        pred.pval <- 1 - pred[,pred.sex]
+        pvalue <- pOOBAH(sset, return.pval=TRUE) # pvalue <- pval(sset)
+        success.rate <- sum(pvalue[!is.na(pvalue)] < 0.05) / length(pvalue)
+        p <- max(1-success.rate,pred.pval) # set the pvalue as the maximum pvalue between detection pvalue and sex inference pvalue.
+        return(list(Sex=pred.sex,pvalue=p))
     } else {
         sex.info <- getSexInfo(sset)[seq_len(3)]
         as.character(predict(
