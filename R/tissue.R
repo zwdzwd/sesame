@@ -227,7 +227,8 @@ inferTopProbesHypo = function(res, n=50, delta_max=-0.3, auc_min=0.99, coverage_
 
 #' buildReferenceHypo builds and saves a reference for the top hypomethylated
 #' probes from using the data in betas and the meta data provided. The 
-#' intermediate files are stored in the specified file directory (id_dir).
+#' intermediate files are stored in the specified file directory (id_dir). 
+#' Intermediate files will be saved if either id_dir is passed or save is TRUE.
 #'
 #' @param betas Matrix of beta value measurement for each sample (columns) 
 #' across all probes of the array (rows)
@@ -235,17 +236,17 @@ inferTopProbesHypo = function(res, n=50, delta_max=-0.3, auc_min=0.99, coverage_
 #' branch column name contains a vector specifying the in-group (0), out-group 
 #' (1), and ignored (2) samples as they appear in the column names of betas.
 #' @param id_dir String corresponding to the file directory to which the probe 
-#' information is stored.
+#' information is stored. Optional. Default: NULL.
 #' @param verbose Logical value indicating whether to display the scanned  
 #' results
-#' @param return_results Logical value indicating whether to return the 
-#' results from the function
+#' @param save Logical value indicating whether to save the 
+#' intermediate files from the results
 #'
 #' @return List containing delta_betas, auc, and coverage for a given 
 #' branch and set of samples (if return_results).
 #'
 #' @export
-buildReferenceHypo = function(betas, meta, id_dir, verbose=FALSE, return_results=FALSE) {
+buildReferenceHypo = function(betas, meta, id_dir=NULL, verbose=FALSE, save=FALSE) {
     res = list()
     branch2probes_hypo = list()
 
@@ -253,11 +254,12 @@ buildReferenceHypo = function(betas, meta, id_dir, verbose=FALSE, return_results
 
     for (branch in branches) {
         res[[branch]] = inferProbesHypo(betas, meta[[branch]], scan_delta=T, delta_max=-0.3, verbose=verbose)
-        saveRDS(res[[branch]], sprintf("%s/fit_%s.rds", id_dir, branch))
-
-        res[[branch]] = readRDS(sprintf("%s/fit_%s.rds", id_dir, branch))
+        # res[[branch]] = readRDS(sprintf("%s/fit_%s.rds", id_dir, branch))
         branch2probes_HM450_hypo[[branch]] = inferTopProbesHypo(res[[branch]],sort_delta_beta=T, delta_max=-0.3)
-        saveProbes(branch, branch2probes_HM450_hypo[[branch]], id_dir=id_dir)
+        if (save | !is.null(id_dir)) {
+            saveRDS(res[[branch]], sprintf("%s/fit_%s.rds", id_dir, branch))
+            saveProbes(branch, branch2probes_HM450_hypo[[branch]], id_dir=id_dir)
+        }
     }
     return(res)
 }
@@ -401,6 +403,7 @@ inferTopProbesHyper = function(res, auc_min=0.99, n=50, coverage_min=0.80, delta
 #' buildReferenceHyper builds and saves a reference for the top hypermethylated
 #' probes from using the data in betas and the meta data provided. The 
 #' intermediate files are stored in the specified file directory (id_dir).
+#' Intermediate files will be saved if either id_dir is passed or save is TRUE.
 #'
 #' @param betas Matrix of beta value measurement for each sample (columns) 
 #' across all probes of the array (rows)
@@ -408,17 +411,17 @@ inferTopProbesHyper = function(res, auc_min=0.99, n=50, coverage_min=0.80, delta
 #' branch column name contains a vector specifying the in-group (0), out-group 
 #' (1), and ignored (2) samples as they appear in the column names of betas.
 #' @param id_dir String corresponding to the file directory to which the probe 
-#' information is stored.
+#' information is stored. Optional. Default: NULL
 #' @param verbose Logical value indicating whether to display the scanned  
 #' results
-#' @param return_results Logical value indicating whether to return the 
-#' results from the function
+#' @param save Logical value indicating whether to save the 
+#' intermediate files from the results
 #'
 #' @return List containing delta_betas, auc, and coverage for a given 
 #' branch and set of samples (if return_results).
 #'
 #' @export
-buildReferenceHyper = function(betas, meta, id_dir, verbose=FALSE, return_results=FALSE) {
+buildReferenceHyper = function(betas, meta, id_dir=NULL, verbose=FALSE, save=FALSE) {
     res = list()
     branch2probes_hyper = list()
 
@@ -426,13 +429,13 @@ buildReferenceHyper = function(betas, meta, id_dir, verbose=FALSE, return_result
 
     for (branch in branches) {
         res[[branch]] = inferProbesHyper(betas, meta[[branch]], scan_delta=T, delta_min=0.3, verbose=verbose)
-        saveRDS(res[[branch]], sprintf("%s/fit_%s.rds", id_dir, branch))
-
-        res[[branch]] = readRDS(sprintf("%s/fit_%s.rds", id_dir, branch))
+        # res[[branch]] = readRDS(sprintf("%s/fit_%s.rds", id_dir, branch))
         branch2probes_hyper[[branch]] = inferTopProbesHyper(res[[branch]],sort_delta_beta=T, delta_min=0.3)
-        saveProbes(branch, branch2probes_hyper[[branch]], id_dir=id_dir)
+        if (save | !is.null(id_dir)) {
+            saveRDS(res[[branch]], sprintf("%s/fit_%s.rds", id_dir, branch))
+            saveProbes(branch, branch2probes_hyper[[branch]], id_dir=id_dir)
+        }
     }
-
     return(res)
 }
 
@@ -445,6 +448,8 @@ buildReferenceHyper = function(betas, meta, id_dir, verbose=FALSE, return_result
 #' results
 #'
 #' @return List of branches with named vectors of delta_beta for each probe 
+#'
+#' @import readr
 readBranchProbesDeltaBeta = function(id_dir) {
     with(do.call(rbind, lapply(list.files(id_dir, ".tsv"), function(x) read_tsv(sprintf("%s/%s", id_dir, x), col_names=TRUE, , col_types = cols()))), split(setNames(delta_beta, probeID), branchID))
 }
@@ -458,6 +463,8 @@ readBranchProbesDeltaBeta = function(id_dir) {
 #' results
 #'
 #' @return List of branches with named vectors of auc for each probe 
+#'
+#' @import readr
 readBranchProbesAUC = function(id_dir) {
     with(do.call(rbind, lapply(list.files(id_dir, ".tsv"), function(x) read_tsv(sprintf("%s/%s", id_dir, x), col_names=TRUE, , col_types = cols()))), split(setNames(auc, probeID), branchID))
 }
@@ -471,6 +478,8 @@ readBranchProbesAUC = function(id_dir) {
 #' results
 #'
 #' @return List of branches with named vectors of coverage for each probe 
+#'
+#' @import readr
 readBranchProbesCoverage = function(id_dir) {
     with(do.call(rbind, lapply(list.files(id_dir, ".tsv"), function(x) read_tsv(sprintf("%s/%s", id_dir, x), col_names=TRUE, , col_types = cols()))), split(setNames(coverage, probeID), branchID))
 }
@@ -483,28 +492,35 @@ readBranchProbesCoverage = function(id_dir) {
 #' branch column name contains a vector specifying the in-group (0), out-group 
 #' (1), and ignored (2) samples as they appear in the column names of betas.
 #' @param id_dir String corresponding to the file directory to which the probe 
-#' information is stored.
+#' information is stored. Optional. Default: NULL.
 #' @param tissue_color Named vector with the tissue corresponding to color 
-#' HEX code
+#' HEX code. Optional. Default: NULL.
 #' @param branchID_color  Named vector with the branch corresponding to color
-#' HEX code
+#' HEX code. Optional. Default: NULL.
 #'
 #' @return Summarized Experiment with probe selection (row data), sample 
 #' selection (column data), meta data, and the betas (assay)
 #'
 #' @export
-buildTissueSEReference = function(betas, meta, id_dir, tissue_color, branchID_color) {
-
-    branch2probes_delta_beta = readBranchProbesDeltaBeta(id_dir=id_dir)
-    branch2probes_delta_beta_ = unlist(setNames(branch2probes_delta_beta, NULL))
-    branch2probes_auc = readBranchProbesAUC(id_dir=id_dir)
-    branch2probes_auc_ = unlist(setNames(branch2probes_auc, NULL))
-    branch2probe_coverage = readBranchProbesCoverage(id_dir=id_dir)
-    branch2probe_coverage_ = unlist(setNames(branch2probe_coverage, NULL))
+buildTissueSEReference = function(betas, meta, res=NULL, id_dir=NULL, tissue_color=NULL, branchID_color=NULL) {
+    if (!is.null(id_dir)) {
+        branch2probes_delta_beta = readBranchProbesDeltaBeta(id_dir=id_dir)
+        branch2probes_delta_beta_ = unlist(setNames(branch2probes_delta_beta, NULL))
+        branch2probes_auc = readBranchProbesAUC(id_dir=id_dir)
+        branch2probes_auc_ = unlist(setNames(branch2probes_auc, NULL))
+        branch2probe_coverage = readBranchProbesCoverage(id_dir=id_dir)
+        branch2probe_coverage_ = unlist(setNames(branch2probe_coverage, NULL))
+    } else if (!is.null(res)) {
+        branch2probes_delta_beta_ = lapply(res, function(x) {return(x$delta_betas)})
+        branch2probes_auc_ = lapply(res, function(x) {return(x$auc)})
+        branch2probe_coverage_ = lapply(res, function(x) {return(x$coverage)})
+    } else {
+        cat("Neither res nor id_dir were provided. No data is available to form inference.\n")
+    }
 
     bt = clusterWithRowGroupingW(betas, group2probes = lapply(branch2probes_delta_beta, names))
     
-    bt = clusterWithColumnGroupingW(bt, grouping = meta$tissue, ordered_groups = names(tissue_color)) #[c(47, 20, 24, 31, 14, 30, 12, 11, 10, 29, 1:8, 22, 21, 27, 32, 33, 17, 18, 37, 38, 16, 25, 26, 39, 40:46, 36, 68, 69)]
+    bt = clusterWithColumnGroupingW(bt, grouping = meta$tissue, ordered_groups = names(meta$tissue)) 
 
     rd = tibble(probeID=rownames(bt), 
                 branchID=rep(names(branch2probes_delta_beta), sapply(branch2probes_delta_beta, length)),
@@ -513,8 +529,18 @@ buildTissueSEReference = function(betas, meta, id_dir, tissue_color, branchID_co
                 coverage=as.numeric(branch2probe_coverage_[match(rownames(bt), names(branch2probe_coverage_))]))
     cd = meta[match(colnames(bt), meta$sample),]
     se = SummarizedExperiment(assays=list(betas=bt), rowData=rd, colData=cd)
-    metadata(se)$tissue_color = tissue_color
-    metadata(se)$branchID_color = branchID_color
+
+    if (!is.null(tissue_color)) {
+        metadata(se)$tissue_color = tissue_color
+    } else {
+        metadata(se)$tissue_color = wzGetColors(names(meta@tissue))
+    }
+    
+    if (!is.null(branchID_color)) {
+        metadata(se)$branchID_color = branchID_color
+    } else {
+        metadata(se)$branchID_color = wzGetColors(names(branch2probes_delta_beta))
+    }
     se
 }
 
@@ -557,8 +583,8 @@ mergeTissueSEReferences = function(hypoSE, hyperSE) {
     return(se)
 }
 
-#' inferTissue infers the tissue of a single sample (as identified through the 
-#' branchIDs in the row data of the reference) by reporting independent 
+#' inferTissue1 infers the tissue of a single sample (as identified through 
+#' the branchIDs in the row data of the reference) by reporting independent 
 #' composition through cell type deconvolution.
 #'
 #' @param reference Summarized Experiment with either hypomethylated or 
@@ -577,7 +603,7 @@ mergeTissueSEReferences = function(hypoSE, hyperSE) {
 #' the result is not guaranteed to be equal to one.
 #'
 #' @export
-inferTissue = function(reference, sample, report_first=TRUE, ignore_branches=c("ML-Hematopoiesis", "MLH-Lymphoid", "MLH-Myeloid", "MLHL-T"), abs_delta_beta_min=0.3) {
+inferTissue1 = function(reference, sample, report_first=TRUE, ignore_branches=c("ML-Hematopoiesis", "MLH-Lymphoid", "MLH-Myeloid", "MLHL-T"), abs_delta_beta_min=0.3) {
     rd = rowData(reference)
     branches = unique(rd$branchID)
     inferred.tissue = unlist(setNames(lapply(branches, 
@@ -597,9 +623,9 @@ inferTissue = function(reference, sample, report_first=TRUE, ignore_branches=c("
     return(inferred.tissue)
 }   
 
-#' inferTissue infers the tissue of a matrix of samples (as identified through
-#' the branchIDs in the row data of the reference) by reporting independent 
-#' composition through cell type deconvolution.
+#' inferTissueAll infers the tissue of a matrix of samples (as identified 
+#' through the branchIDs in the row data of the reference) by reporting 
+#' independent composition through cell type deconvolution.
 #'
 #' @param reference Summarized Experiment with either hypomethylated or 
 #' hypermethylated probe selection (row data), sample selection (column data), 
@@ -618,9 +644,9 @@ inferTissue = function(reference, sample, report_first=TRUE, ignore_branches=c("
 #' sample is not guaranteed to be equal to one.
 #'
 #' @export
-inferTissues = function(refrence, betas, report_first=TRUE, ignore_branches=c("ML-Hematopoiesis", "MLH-Lymphoid", "MLH-Myeloid", "MLHL-T"), abs_delta_beta_min=0.3) {
+inferTissueAll = function(refrence, betas, report_first=FALSE, ignore_branches=c("ML-Hematopoiesis", "MLH-Lymphoid", "MLH-Myeloid", "MLHL-T"), abs_delta_beta_min=0.3) {
     res = apply(betas, 2, 
-        function(sample) { inferTissue(reference=reference, sample=sample, report_first=F)
+        function(sample) { inferTissue1(reference=reference, sample=sample, report_first=report_first)
             })
     return(res)
 }
@@ -691,6 +717,43 @@ plotInferTissueResults = function(resultsSE) {
     )
     g = g + WCustomize(mar.top=0.23, mar.left = 0.12, mar.bottom = 0.12)
     g
+}
+
+
+#' inferTissue performs tissue inference on betas given a meta data samplesheet
+#'
+#' @param betas Matrix of beta value measurement for each sample (columns) 
+#' across all probes of the array (rows)
+#' @param meta DataFrame corresponding the the meta of the analysis where each 
+#' branch column name contains a vector specifying the in-group (0), out-group 
+#' (1), and ignored (2) samples as they appear in the column names of betas.
+#' @param id_dir_hypo String corresponding to the file directory to which the 
+#' hypomethylated probe information is stored. Optional. Default: NULL.
+#' @param id_dir_hyper String corresponding to the file directory to which the 
+#' hypermethylated probe information is stored. Optional. Default: NULL.
+#' @param tissue_color Named vector with the tissue corresponding to color 
+#' HEX code. Optional. Default: NULL.
+#' @param branchID_color  Named vector with the branch corresponding to color
+#' HEX code. Optional. Default: NULL.
+#'
+#' @return Summarized experiment with meta data of the inferred samples 
+#' (column data), meta data, and results of tissue inference (assay).
+#'
+#' @export
+inferTissue = function(betas, meta, id_dir_hypo=NULL, id_dir_hyper=NULL, tissue_color=NULL, branchID_color=NULL) {
+    resHypo = buildReferenceHypo(betas, meta, id_dir_hypo=id_dir_hypo)
+    resHyper = buildReferenceHyper(betas, meta, id_dir_hyper=id_dir_hyper)
+
+    hypoSE = buildTissueSEReference(betas, meta, result=resHypo, id_dir_hypo=id_dir_hypo, tissue_color=tissue_color, branchID_color=branchID_color)
+    hyperSE = buildTissueSEReference(betas, meta, result=resHyper, id_dir_hype=id_dir_hyper, tissue_color=tissue_color, branchID_color=branchID_color)
+
+    reference = mergeTissueSEReferences(hypoSE, hyperSE)
+
+    resAll = inferTissueAll(reference, betas)
+
+    resAllSE = buildResultsSE(resAll, meta, reference)
+
+    return(resAllSE)
 }
 
 
