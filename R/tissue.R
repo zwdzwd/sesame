@@ -736,8 +736,10 @@ plotInferTissueResults = function(resultsSE) {
 #' @param branchID_color  Named vector with the branch corresponding to color
 #' HEX code. Optional. Default: NULL.
 #'
-#' @return Summarized experiment with meta data of the inferred samples 
-#' (column data), meta data, and results of tissue inference (assay).
+#' @return List containing Summarized Experiment with meta data of the 
+#' inferred samples (column data), meta data, and results of tissue inference (assay) [resultsSE] and a Summarized Experiment with hypomethylated and 
+# hypermethylated probe selection (row data), sample selection (column data), 
+#' meta data, and the betas (assay) [reference]
 #'
 #' @export
 inferTissue = function(betas, meta, id_dir_hypo=NULL, id_dir_hyper=NULL, tissue_color=NULL, branchID_color=NULL) {
@@ -753,7 +755,7 @@ inferTissue = function(betas, meta, id_dir_hypo=NULL, id_dir_hyper=NULL, tissue_
 
     resAllSE = buildResultsSE(resAll, meta, reference)
 
-    return(resAllSE)
+    return(lsit(resultsSE=resAllSE, reference=reference))
 }
 
 
