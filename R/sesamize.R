@@ -16,6 +16,12 @@
 #' @importFrom S4Vectors metadata
 #' @importFrom S4Vectors metadata<-
 #' @importFrom SummarizedExperiment assays
+#' @examples
+#' if(FALSE) {
+#'     library(FlowSorted.CordBloodNorway.450k)
+#'     sesamize(FlowSorted.CordBloodNorway.450k[,1:2],
+#'         BPPARAM=MulticoreParam(2))
+#' }
 #' @export 
 sesamize <- function(
     rgSet, naFrac=1, BPPARAM=SerialParam(), HDF5=NULL,
@@ -35,16 +41,16 @@ sesamize <- function(
     }
     t1 = bptry(bplapply(samples, function(sample) {
         message("Sesamizing ", sample, "...")
-        sset <- RGChannelSet1ToSigSet(rgSet[,sample])
-        sset <- dyeBiasCorrTypeINorm(noob(sset))
-        SigSetToRatioSet(sset)}, BPPARAM=BPPARAM))
+        sdf <- RGChannelSet1ToSigDF(rgSet[,sample])
+        sdf <- dyeBiasNL(noob(sdf))
+        SigDFToRatioSet(sdf)}, BPPARAM=BPPARAM))
     lk = vapply(t1, inherits, logical(1), "bperror")  # second try?
     if (any(lk)) {
         t1 = bptry(bplapply(samples, function(sample) {
             message("Sesamizing ", sample, "...")
-            sset <- RGChannelSet1ToSigSet(rgSet[,sample])
-            sset <- dyeBiasCorrTypeINorm(noob(sset))
-            SigSetToRatioSet(sset)}, BPREDO=t1, BPPARAM=BPPARAM))
+            sdf <- RGChannelSet1ToSigDF(rgSet[,sample])
+            sdf <- dyeBiasNL(noob(sdf))
+            SigDFToRatioSet(sdf)}, BPREDO=t1, BPPARAM=BPPARAM))
     }
 
     ratioSet <- do.call(
@@ -64,8 +70,8 @@ sesamize <- function(
     ## keep only probes surviving naFrac
     kept <- seq_len(nrow(ratioSet))
     if (naFrac < 1) { 
-        kept <- which((rowSums(is.na(minfi::getBeta(ratioSet))) / 
-                           ncol(ratioSet)) <= naFrac)
+        kept <- which((
+            rowSums(is.na(minfi::getBeta(ratioSet)))/ncol(ratioSet)) <= naFrac)
         if (length(kept) < 1) 
             stop("No probes survived with naFrac <= ",naFrac,".")
     } 
@@ -109,66 +115,31 @@ platformSmToMinfi <- function(platform) {
 }
 
 ## reverse of chipAddressToSignal
-SigSetToRGChannel <- function(sset, manifest = NULL, controls = NULL) {
+SigDFToRGChannel <- function(sdf, manifest = NULL, controls = NULL) {
 
     if (is.null(manifest)) {
-        dfAddress <- sesameDataGet(paste0(sset@platform,'.address'))
+        dfAddress <- sesameDataGet(paste0(platform(sdf),'.address'))
         manifest <- dfAddress$ordering
         controls <- dfAddress$controls
     }
 
-    SSRed <- NULL
-    SSGrn <- NULL
-    
-    IIdf <- manifest[
-        manifest$COLOR_CHANNEL=='Both', c('Probe_ID','U')]
-    SSRed <- c(SSRed, setNames(sset@II[match(
-        IIdf$Probe_ID, rownames(sset@II)), 'U'],
-        as.character(IIdf$U)))
-    SSGrn <- c(SSGrn, setNames(sset@II[match(
-        IIdf$Probe_ID, rownames(sset@II)), 'M'],
-        as.character(IIdf$U)))
-    
-    IRdf <- manifest[
-        manifest$COLOR_CHANNEL=='Red', c('Probe_ID','M','U')]
-    SSRed <- c(SSRed, setNames(sset@IR[match(
-        IRdf$Probe_ID, rownames(sset@IR)), 'M'],
-        as.character(IRdf$M)))
-    SSRed <- c(SSRed, setNames(sset@IR[match(
-        IRdf$Probe_ID, rownames(sset@IR)), 'U'],
-        as.character(IRdf$U)))
-    ## OOB signals
-    SSGrn <- c(SSGrn, setNames(sset@oobG[match(
-        IRdf$Probe_ID, rownames(sset@oobG)), 'M'],
-        as.character(IRdf$M)))
-    SSGrn <- c(SSGrn, setNames(sset@oobG[match(
-        IRdf$Probe_ID, rownames(sset@oobG)), 'U'],
-        as.character(IRdf$U)))
-    
-    IGdf <- manifest[
-        manifest$COLOR_CHANNEL=='Grn', c('Probe_ID','M','U')]
-    SSGrn <- c(SSGrn, setNames(sset@IG[match(
-        IGdf$Probe_ID, rownames(sset@IG)), 'M'], 
-        as.character(IGdf$M)))
-    SSGrn <- c(SSGrn, setNames(sset@IG[match(
-        IGdf$Probe_ID, rownames(sset@IG)), 'U'], 
-        as.character(IGdf$U)))
-    ## OOB signals
-    SSRed <- c(SSRed, setNames(sset@oobR[match(
-        IGdf$Probe_ID, rownames(sset@oobR)), 'M'],
-        as.character(IGdf$M)))
-    SSRed <- c(SSRed, setNames(sset@oobR[match(
-        IGdf$Probe_ID, rownames(sset@oobR)), 'U'],
-        as.character(IGdf$U)))
+    d1 = InfI(sdf)
+    SSRed <- c(
+        setNames(d1$MR, manifest$M[match(d1$Probe_ID, manifest$Probe_ID)]),
+        setNames(sdf$UR, manifest$U[match(sdf$Probe_ID, manifest$Probe_ID)]))
+    SSGrn <- c(
+        setNames(d1$MG, manifest$M[match(d1$Probe_ID, manifest$Probe_ID)]),
+        setNames(sdf$UG, manifest$U[match(sdf$Probe_ID, manifest$Probe_ID)]))
     
     ## controls
     if (!is.null(controls)) {
+        ctl = controls(sdf)
         control.names <- make.names(controls$Name, unique = TRUE)
-        SSGrn <- c(SSGrn, setNames(sset@ctl[match(
-            control.names, rownames(sset@ctl)),'G'], 
+        SSGrn <- c(SSGrn, setNames(ctl[match(
+            control.names, rownames(ctl)),'G'],
             as.character(controls$Address)))
-        SSRed <- c(SSRed, setNames(sset@ctl[match(
-            control.names, rownames(sset@ctl)),'R'], 
+        SSRed <- c(SSRed, setNames(ctl[match(
+            control.names, rownames(ctl)),'R'],
             as.character(controls$Address)))
     } ## else TODO controls obtained from manifest
     
@@ -176,9 +147,9 @@ SigSetToRGChannel <- function(sset, manifest = NULL, controls = NULL) {
 }
 
 ## annotation, if not given is guessed
-guessMinfiAnnotation <- function(platform, annotation = NA) {
+guessMinfiAnnotation <- function(ptf, annotation = NA) {
     if (is.na(annotation)) {
-        if (platform %in% c("HM450", "HM27")) {
+        if (ptf %in% c("HM450", "HM27")) {
             'ilmn12.hg19'
         } else { # EPIC
             'ilm10b4.hg19'
@@ -188,43 +159,45 @@ guessMinfiAnnotation <- function(platform, annotation = NA) {
     }
 }
 
-#' Convert sesame::SigSet to minfi::RGChannelSet
+#' Convert sesame::SigDF to minfi::RGChannelSet
 #' 
-#' @param ssets a list of sesame::SigSet
+#' @param sdfs a list of sesame::SigDF
 #' @param BPPARAM get parallel with MulticoreParam(n)
 #' @param annotation the minfi annotation string, guessed if not given
 #' @return a minfi::RGChannelSet
 #' @import BiocParallel
 #' @examples
 #'
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' rgSet <- SigSetsToRGChannelSet(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' rgSet <- SigDFsToRGChannelSet(sdf)
 #'
 #' @export 
-SigSetsToRGChannelSet <- function(ssets, BPPARAM=SerialParam(), annotation=NA) {
-    if (is(ssets, 'SigSet')) {
-        ssets <- list(sample=ssets)
+SigDFsToRGChannelSet <- function(sdfs, BPPARAM=SerialParam(), annotation=NA) {
+
+    if (is(sdfs, 'SigDF')) {
+        sdfs <- list(sample=sdfs)
     }
 
-    platform <- ssets[[1]]@platform
-    annotation <- guessMinfiAnnotation(annotation)
+    pt <- platform(sdfs[[1]])
+    annotation <- guessMinfiAnnotation(pt, annotation)
     
-    ss_all <- bplapply(ssets, SigSetToRGChannel, BPPARAM=BPPARAM)
+    ss_all <- bplapply(sdfs, SigDFToRGChannel, BPPARAM=BPPARAM)
     rgset <- minfi::RGChannelSet(
         Green=do.call(cbind, lapply(ss_all, function(ss) ss$grn)), 
         Red=do.call(cbind, lapply(ss_all, function(ss) ss$red)), 
         annotation=c(
-            array=unname(platformSmToMinfi(platform)),
+            array=unname(platformSmToMinfi(pt)),
             annotation=annotation))
 }
 
 ## helper: convert RGChannelSet of one sample
-RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
+RGChannelSet1ToSigDF <- function(rgSet1, manifest = NULL, controls = NULL) {
 
     pkgTest('minfi')
     stopifnot(ncol(rgSet1) == 1)
     
-                                        # chipaddress/rownames are automatically the same
+    ## chipaddress/rownames are automatically the same
     dm <- cbind(
         G=as.matrix(minfi::getGreen(rgSet1)),
         R=as.matrix(minfi::getRed(rgSet1)))
@@ -239,10 +212,14 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
         controls <- df_address$controls
     }
 
-    pOOBAH(chipAddressToSignal(dm, manifest, controls))
+    sdf = pOOBAH(qualityMask(chipAddressToSignal(dm, manifest)))
+    if (!is.null(controls)) {
+        attr(sdf, "controls") = readControls(dm, controls)
+    }
+    sdf
 }
 
-#' Convert RGChannelSet (minfi) to a list of SigSet (SeSAMe)
+#' Convert RGChannelSet (minfi) to a list of SigDF (SeSAMe)
 #'
 #' Notice the colData() and rowData() is lost. Most cases, rowData is empty
 #' anyway.
@@ -250,42 +227,43 @@ RGChannelSet1ToSigSet <- function(rgSet1, manifest = NULL, controls = NULL) {
 #' @param rgSet a minfi::RGChannelSet
 #' @param BPPARAM get parallel with MulticoreParam(n)
 #' @param manifest manifest file
-#' @return a list of sesame::SigSet
+#' @return a list of sesame::SigDF
 #' @import BiocParallel
 #' @examples
 #'
 #' if (require(FlowSorted.Blood.450k)) {
 #'     rgSet <- FlowSorted.Blood.450k[,1:2]
-#'     ssets <- RGChannelSetToSigSets(rgSet)
+#'     sdfs <- RGChannelSetToSigDFs(rgSet)
 #' }
 #' @export
-RGChannelSetToSigSets <- function(
+RGChannelSetToSigDFs <- function(
     rgSet, manifest=NULL, BPPARAM=SerialParam()) {
 
     pkgTest('minfi')
     samples <- colnames(rgSet)
     setNames(bplapply(
         samples, function(sample) {
-            RGChannelSet1ToSigSet(rgSet[,sample], manifest=manifest)
+            RGChannelSet1ToSigDF(rgSet[,sample], manifest=manifest)
         }, BPPARAM=BPPARAM), samples)
 }
 
-#' Convert one sesame::SigSet to minfi::RatioSet
+#' Convert one sesame::SigDF to minfi::RatioSet
 #'
-#' @param sset a sesame::SigSet
+#' @param sdf a sesame::SigDF
 #' @param annotation minfi annotation string
 #' @return a minfi::RatioSet
 #' @examples
 #'
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' ratioSet <- SigSetToRatioSet(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' ratioSet <- SigDFToRatioSet(sdf)
 #' 
 #' @export
-SigSetToRatioSet <- function(sset, annotation = NA) {
-    Beta <- as.matrix(getBetas(sset))
-    CN <- as.matrix(log2(totalIntensities(sset))[rownames(Beta)])
-    annotation <- guessMinfiAnnotation(sset@platform, annotation)
-    platform <- platformSmToMinfi(sset@platform)
+SigDFToRatioSet <- function(sdf, annotation = NA) {
+    Beta <- as.matrix(getBetas(sdf))
+    CN <- as.matrix(log2(totalIntensities(sdf))[rownames(Beta)])
+    annotation <- guessMinfiAnnotation(platform(sdf), annotation)
+    platform <- platformSmToMinfi(platform(sdf))
     minfi::RatioSet(Beta = Beta, CN = CN, annotation = c(
         array = unname(platform), annotation = annotation))
 }

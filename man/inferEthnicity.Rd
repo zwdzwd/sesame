@@ -4,10 +4,10 @@
 \alias{inferEthnicity}
 \title{Infer Ethnicity}
 \usage{
-inferEthnicity(sset)
+inferEthnicity(sdf)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 }
 \value{
 string of ethnicity
@@ -17,13 +17,13 @@ This function uses both the built-in rsprobes as well as the type I
 Color-Channel-Switching probes to infer ethnicity.
 }
 \details{
-sset better be background subtracted and dyebias corrected for
+s better be background subtracted and dyebias corrected for
 best accuracy
 
-Please note: the betas should come from sigset *without*
+Please note: the betas should come from SigDF *without*
 channel inference.
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet("HM450")
-inferEthnicity(sset)
+sdf <- sesameDataGet('EPIC.1.SigDF')
+inferEthnicity(sdf)
 }

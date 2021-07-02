@@ -1,8 +1,8 @@
 Package: sesame
 Type: Package
-Title: Tools For Analyzing Illumina Infinium DNA Methylation Arrays
+Title: SEnsible Step-wise Analysis of DNA MEthylation BeadChips
 Description: Tools For analyzing Illumina Infinium DNA methylation arrays.SeSAMe provides utilities to support analyses of multiple generations of Infinium DNA methylation BeadChips, including preprocessing, quality control, visualization and inference. SeSAMe features more accurate detection calling, intelligenet inference of ethnicity, sex and advanced quality control routines.
-Version: 1.9.11
+Version: 1.11.7
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "zhouwanding@gmail.com"),
              person("Hui", "Shen", role = c("aut"),
@@ -29,6 +29,8 @@ Imports: BiocParallel,
          randomForest,
          wheatmap,
          ggplot2,
+         graphics,
+         KernSmooth,
          parallel,
          matrixStats,
          DNAcopy,
@@ -52,27 +54,23 @@ URL: https://github.com/zwdzwd/sesame
 BugReports: https://github.com/zwdzwd/sesame/issues
 biocViews: DNAMethylation, MethylationArray, Preprocessing, QualityControl
 Collate: 
-    'GEO.R'
     'QC.R'
-    'SigSetList.R'
+    'SigDFMethods.R'
     'sesame.R'
-    'SigSetMethods.R'
     'age.R'
     'background_correction.R'
     'cell_composition.R'
     'channel_inference.R'
     'cnv.R'
-    'controls.R'
     'deidentify.R'
     'detection.R'
-    'differential_methylation.R'
+    'dm.R'
     'dye_bias.R'
     'feature_selection.R'
     'fileSet.R'
     'mask.R'
     'open.R'
     'sesamize.R'
-    'simulate_data.R'
     'snp.R'
     'strain.R'
     'tissue.R'
@@ -80,3 +78,4 @@ Collate:
     'utils.R'
     'vcf.R'
     'visualize.R'
+    'zzz.R'

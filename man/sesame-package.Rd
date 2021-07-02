@@ -15,11 +15,11 @@ processing >10,000 samples in parallel on clusters.
 }
 \examples{
 
-sset <- readIDATpair(sub('_Grn.idat','',system.file(
+sdf <- readIDATpair(sub('_Grn.idat','',system.file(
     'extdata','4207113116_A_Grn.idat',package='sesameData')))
 
 ## The OpenSesame pipeline
-betas <- openSesame(sset)
+betas <- openSesame(sdf)
 
 }
 \seealso{

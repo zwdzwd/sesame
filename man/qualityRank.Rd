@@ -6,10 +6,12 @@
 e.g., tissue, FFPE vs non-FFPE, etc to evaluate the quality
 of the target data quality}
 \usage{
-qualityRank(sset, tissue = NULL, samplePrep = NULL, raw = FALSE)
+qualityRank(sdf, tissue = NULL, samplePrep = NULL, raw = FALSE)
+
+qualityRank(sdf, tissue = NULL, samplePrep = NULL, raw = FALSE)
 }
 \arguments{
-\item{sset}{a raw (unprocessed) \code{SigSet}}
+\item{sdf}{a raw (unprocessed) \code{SigDF}}
 
 \item{tissue}{A string (blood,buccal and saliva)}
 
@@ -23,15 +25,31 @@ three numbers:
 2. The fraction of public samples with more nondetection, and
 3. The fraction of public samples with lower mean intensity
 4. The higher the fraction, the better the sample.
+
+three numbers:
+1. The number of public samples compared.
+2. The fraction of public samples with more nondetection, and
+3. The fraction of public samples with lower mean intensity
+4. The higher the fraction, the better the sample.
 }
 \description{
+This function looks at public data of similar nature
+e.g., tissue, FFPE vs non-FFPE, etc to evaluate the quality
+of the target data quality
+
 This function looks at public data of similar nature
 e.g., tissue, FFPE vs non-FFPE, etc to evaluate the quality
 of the target data quality
 }
 \examples{
 
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-ranks <- qualityRank(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+ranks <- qualityRank(sdf)
+
+
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+ranks <- qualityRank(sdf)
 
 }

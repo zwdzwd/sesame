@@ -4,10 +4,12 @@
 \alias{signalMU}
 \title{report M and U for regular probes}
 \usage{
-signalMU(sset)
+signalMU(sdf, mask = TRUE)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
+
+\item{mask}{whether to apply mask}
 }
 \value{
 a data frame of M and U columns
@@ -16,6 +18,7 @@ a data frame of M and U columns
 report M and U for regular probes
 }
 \examples{
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-signalMU(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+head(signalMU(sdf))
 }

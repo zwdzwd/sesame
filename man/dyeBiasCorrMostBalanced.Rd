@@ -4,23 +4,24 @@
 \alias{dyeBiasCorrMostBalanced}
 \title{Correct dye bias using most balanced sample as the reference}
 \usage{
-dyeBiasCorrMostBalanced(ssets)
+dyeBiasCorrMostBalanced(sdfs)
 }
 \arguments{
-\item{ssets}{a list of normalized \code{SigSet}s}
+\item{sdfs}{a list of normalized \code{SigDF}s}
 }
 \value{
-a list of normalized \code{SigSet}s
+a list of normalized \code{SigDF}s
 }
 \description{
-The function chose the reference signal level from a list of \code{SigSet}.
+The function chose the reference signal level from a list of \code{SigDF}.
 The chosen sample has the smallest difference in Grn and Red signal
 intensity as measured using the normalization control probes. In practice,
 it doesn't matter which sample is chosen as long as the reference level
-does not deviate much. The function returns a list of \code{SigSet}s with
+does not deviate much. The function returns a list of \code{SigDF}s with
 dye bias corrected.
 }
 \examples{
-ssets <- sesameDataGet('HM450.10.TCGA.BLCA.normal')
-ssets.db <- dyeBiasCorrMostBalanced(ssets)
+sesameDataCache("HM450") # if not done yet
+sdfs <- sesameDataGet('HM450.10.SigDFs')
+sdfs.db <- dyeBiasCorrMostBalanced(sdfs)
 }

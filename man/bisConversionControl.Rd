@@ -4,12 +4,10 @@
 \alias{bisConversionControl}
 \title{Compute internal bisulfite conversion control}
 \usage{
-bisConversionControl(sset, use.median = FALSE)
+bisConversionControl(sdf)
 }
 \arguments{
-\item{sset}{signal set}
-
-\item{use.median}{use median to compute GCT instead of mean}
+\item{sdf}{a SigDF}
 }
 \value{
 GCT score (the higher, the more incomplete conversion)
@@ -20,7 +18,8 @@ takes a \code{SigSet} as input. The higher the GCT score, the more likely
 the incomplete conversion.
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet('HM450')
-bisConversionControl(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+bisConversionControl(sdf)
 
 }

@@ -4,20 +4,23 @@
 \alias{totalIntensities}
 \title{M+U Intensities for All Probes}
 \usage{
-totalIntensities(sset)
+totalIntensities(sdf, mask = FALSE)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
+
+\item{mask}{whether to mask probes using mask column}
 }
 \value{
 a vector of M+U signal for each probe
 }
 \description{
-The function takes one single \code{SigSet} and computes total
+The function takes one single \code{SigDF} and computes total
 intensity of all the in-band measurements by summing methylated and
 unmethylated alleles. This function outputs a single numeric for the mean.
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
-intensities <- totalIntensities(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+intensities <- totalIntensities(sdf)
 }

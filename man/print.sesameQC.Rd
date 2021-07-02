@@ -18,6 +18,7 @@ print sesameQC result on screen
 Print sesameQC object
 }
 \examples{
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sesameQC(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sesameQC(sdf)
 }

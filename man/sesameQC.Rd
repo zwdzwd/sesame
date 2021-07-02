@@ -3,23 +3,24 @@
 \name{sesameQC}
 \alias{sesameQC}
 \title{Generate summary numbers that indicative of experiment quality
-Please provide a raw sigset (before any preprocessing). Usually
+Please provide a raw SigDF(before any preprocessing). Usually
 directly from readIDATpair}
 \usage{
-sesameQC(sset)
+sesameQC(sdf)
 }
 \arguments{
-\item{sset}{a \code{SigSet} object}
+\item{sdf}{a \code{SigDF} object}
 }
 \value{
 a sesameQC class object
 }
 \description{
 Generate summary numbers that indicative of experiment quality
-Please provide a raw sigset (before any preprocessing). Usually
+Please provide a raw SigDF(before any preprocessing). Usually
 directly from readIDATpair
 }
 \examples{
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sesameQC(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sesameQC(sdf)
 }

@@ -4,24 +4,15 @@
 \alias{openSesame}
 \title{The openSesame pipeline}
 \usage{
-openSesame(
-  x,
-  platform = "",
-  manifest = NULL,
-  what = "beta",
-  BPPARAM = SerialParam(),
-  ...
-)
+openSesame(x, platform = "", manifest = NULL, BPPARAM = SerialParam(), ...)
 }
 \arguments{
-\item{x}{SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
+\item{x}{SigDF(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
 or RGChannelSet(s)}
 
 \item{platform}{optional platform string}
 
 \item{manifest}{optional dynamic manifest}
-
-\item{what}{either 'sigset' or 'beta'}
 
 \item{BPPARAM}{get parallel with MulticoreParam(n)}
 
@@ -35,12 +26,12 @@ This function is a simple wrapper of noob + nonlinear dye bias
 correction + pOOBAH masking.
 }
 \details{
-If the input is an IDAT prefix or a \code{SigSet}, the output is
+If the input is an IDAT prefix or a \code{SigDF}, the output is
 the beta value numerics. If the input is a minfi GenomicRatioSet
 or RGChannelSet, the output is the sesamized GenomicRatioSet.
 }
 \examples{
-sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+sdf <- sesameDataGet('HM450.1.TCGA.PAAD')$sdf
 IDATprefixes <- searchIDATprefixes(
     system.file("extdata", "", package = "sesameData"))
 betas <- openSesame(IDATprefixes)

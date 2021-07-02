@@ -17,12 +17,12 @@
 openSesameToFile <- function(
     map_path, idat_dir, BPPARAM=SerialParam(), inc = 4) {
     samples <- basename(searchIDATprefixes(idat_dir))
-    sset <- readIDATpair(file.path(idat_dir, samples[1]))
+    sdf <- readIDATpair(file.path(idat_dir, samples[1]))
 
-    fset <- initFileSet(map_path, sset@platform, samples, inc = inc)
+    fset <- initFileSet(map_path, platform(sdf), samples, inc = inc)
     
     message(
-        'Mapping ', length(samples), ' ', sset@platform,
+        'Mapping ', length(samples), ' ', platform(sdf),
         ' samples to ', map_path, '.')
     
     returned <- bplapply(samples, function(sample) {
@@ -46,7 +46,7 @@ openSesameToFile <- function(
 #' initialize a fileSet class by allocating appropriate storage
 #'
 #' @param map_path path of file to map
-#' @param platform EPIC, HM450 or HM27, consistent with sset@platform
+#' @param platform EPIC, HM450 or HM27, consistent with platform(sdf)
 #' @param samples sample names
 #' @param probes probe names
 #' @param inc bytes per unit data storage
@@ -186,7 +186,7 @@ sliceFileSet <- function(
     sample_indices <- match(samples, fset$samples)
     if (any(is.na(sample_indices))) {
         message(
-            'Warning: ', sum(is.na(sample_indices)),
+            sum(is.na(sample_indices)),
             ' sample(s) are nonexistent')
         samples <- samples[!is.na(sample_indices)]
         sample_indices <- sample_indices[!is.na(sample_indices)]
@@ -195,7 +195,7 @@ sliceFileSet <- function(
     probe_indices <- match(probes, fset$probes)
     if (any(is.na(probe_indices))) {
         message(
-            'Warning: ', sum(is.na(probe_indices)),
+            sum(is.na(probe_indices)),
             ' probe(s) are nonexistent')
         probes <- probes[!is.na(probe_indices)]
         probe_indices <- probe_indices[!is.na(probe_indices)]

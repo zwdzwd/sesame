@@ -4,25 +4,25 @@
 \alias{meanIntensity}
 \title{Mean Intensity}
 \usage{
-meanIntensity(sset, mask.use.manifest = TRUE)
+meanIntensity(sdf, mask = TRUE)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 
-\item{mask.use.manifest}{use mask column in the manifest to filter probes
-attributes set in extra(sset)}
+\item{mask}{whether to mask probes using mask column}
 }
 \value{
 mean of all intensities
 }
 \description{
-The function takes one single \code{SigSet} and computes mean
+The function takes one single \code{SigDF} and computes mean
 intensity of all the in-band measurements. This includes all Type-I
 in-band measurements and all Type-II probe measurements. Both methylated
 and unmethylated alleles are considered. This function outputs a single
 numeric for the mean.
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
-meanIntensity(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+meanIntensity(sdf)
 }

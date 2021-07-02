@@ -1,123 +1,101 @@
+#' Add probes to mask
+#'
+#' This function essentially merge existing probe masking
+#' with new prboes to mask
+#' 
+#' @param sdf a \code{SigDF}
+#' @param probes a vector of probe IDs or a logical vector with TRUE
+#' representing masked probes
+#' @return a \code{SigDF} with added mask
+#' @examples
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sum(sdf$mask)
+#' sum(addMask(sdf, c("cg14057072", "cg22344912"))$mask)
+#' @export
+addMask <- function(sdf, probes) {
+    if (is.logical(probes)) {
+        sdf$mask[probes[sdf$Probe_ID]] = TRUE
+    } else {
+        sdf$mask[match(probes, sdf$Probe_ID)] = TRUE
+    }
+    sdf
+}
+
+#' Set mask to only the probes specified
+#'
+#' @param sdf a \code{SigDF}
+#' @param probes a vector of probe IDs or a logical vector with TRUE
+#' representing masked probes
+#' @return a \code{SigDF} with added mask
+#' @examples
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sum(sdf$mask)
+#' sum(setMask(sdf, "cg14959801")$mask)
+#' sum(setMask(sdf, c("cg14057072", "cg22344912"))$mask)
+#' @export
+setMask <- function(sdf, probes) {
+    addMask(resetMask(sdf), probes)
+}
 
 #' Reset Masking
 #'
-#' @param sset a \code{SigSet}
-#' @return a new \code{SigSet} with mask reset to empty
+#' @param sdf a \code{SigDF}
+#' @return a new \code{SigDF} with mask reset to all FALSE
 #' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.no.mask <- resetMask(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sum(sdf$mask)
+#' sdf <- addMask(sdf, c("cg14057072", "cg22344912"))
+#' sum(sdf$mask)
+#' sum(resetMask(sdf)$mask)
 #' @export
-resetMask <- function(sset) {
-    probes <- probeNames(sset)
-    sset@extra$mask <- setNames(rep(FALSE, length(probes)), probes)
-    sset
-}
-
-#' Save current mask
-#'
-#' @param sset a \code{SigSet} object
-#' @param to new mask name
-#' @return a new \code{SigSet} object
-#' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset <- resetMask(sset)
-#' sset <- saveMask(sset)
-#' @export
-saveMask <- function(sset, to='mask2') {
-    ## TODO: change the examples to more sset with meaningful mask
-    sset@extra[[to]] <- sset@extra$mask
-    sset
-}
-
-
-#' Save current mask
-#'
-#' @param sset a \code{SigSet} object
-#' @param from name of a previously saved mask
-#' @return a new \code{SigSet} object
-#' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset <- resetMask(sset)
-#' sset <- saveMask(sset)
-#' sset <- restoreMask(sset)
-#' @export
-restoreMask <- function(sset, from='mask2') {
-    ## TODO: change the examples to more sset with meaningful mask
-    sset@extra$mask <- sset@extra[[from]]
-    sset
+resetMask <- function(sdf) {
+    sdf$mask = FALSE
+    sdf
 }
 
 #' Mask beta values by design quality
 #' 
 #' Currently quality masking only supports three platforms
 #' 
-#' @param sset a \code{SigSet} object
+#' @param sdf a \code{SigDF} object
 #' @param mask.use.manifest use manifest to mask probes
+#' @param manifest the manifest to use, for custom arrays
 #' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
-#' @return a filtered \code{SigSet}
+#' @return a filtered \code{SigDF}
 #' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.masked <- qualityMask(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sum(sdf$mask)
+#' sum(qualityMask(sdf)$mask)
 #' @export 
 qualityMask <- function(
-    sset,
-    mask.use.manifest = TRUE,
+    sdf, mask.use.manifest = TRUE,
+    manifest = NULL,
     mask.use.tcga = FALSE) {
 
-    if (!extraHas(sset, 'mask')) {
-        resetMask(sset);
-    }
-
     ## mask using manifest
-    if (mask.use.manifest && extraHas(sset, "maskManifest")) {
-        if (!extraHas(sset, "mask")) {
-            sset@extra$mask = sset@extra$maskManifest
-        } else {
-            mask = sset@extra$maskManifest[names(sset@extra$mask)]
-            sset@extra$mask[mask] = TRUE
+    if (mask.use.manifest) {
+        if (is.null(manifest)) {
+            manifest <- sesameDataGet(paste0(
+                platform(sdf), '.address'))$ordering
+        }
+        if ("mask" %in% colnames(manifest)) {
+            sdf <- addMask(sdf, setNames(manifest$mask, manifest$Probe_ID))
         }
     }
 
     ## mask HM450/HM27/EPIC using TCGA masking
     if (mask.use.tcga) {
-        if(!(sset@platform %in% c('HM27','HM450','EPIC'))) {
+        if(!(platform(sdf) %in% c('HM27','HM450','EPIC'))) {
             message(sprintf(
-                "TCGA masking is not supported for %s.", sset@platform))
-            return(sset)
+                "TCGA masking is not supported for %s.", platform(sdf)))
+            return(sdf)
         }
-        stopifnot(sset@platform == 'HM450')
-        masked <- sesameDataGet('HM450.probeInfo')$mask.tcga
-        sset@extra$mask[masked] = TRUE
+        stopifnot(platform(sdf) == 'HM450')
+        sdf = addMask(sdf, sesameDataGet('HM450.probeInfo')$mask.tcga)
     }
 
-    return(sset)
+    sdf
 }
 
-#' Mask Sigset by detection p-value
-#'
-#' @param sset a \code{SigSet}
-#' @param pval.method which method to use in calculating p-values
-#' @param pval.threshold the p-value threshold
-#' @return a filtered \code{SigSet}
-#' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sset.masked <- detectionMask(sset)
-#' @export
-detectionMask <- function(
-    sset, pval.method=NULL, pval.threshold=0.05) {
-    if (is.null(pval.method)) {
-        pv <- pval(sset)
-    } else {
-        stopifnot(
-            extraHas(sset, 'pvals') &&
-                pval.method %in% names(sset@extra$pvals))
-        pv <- sset@extra$pvals[[pval.method]]
-    }
-
-    if (!extraHas(sset, 'mask')) {
-        resetMask(sset);
-    }
-    sset@extra$mask[pv[names(sset@extra$mask)] > pval.threshold] <- TRUE
-
-    sset
-}

@@ -2,23 +2,29 @@
 % Please edit documentation in R/dye_bias.R
 \name{dyeBiasCorrTypeINorm}
 \alias{dyeBiasCorrTypeINorm}
+\alias{dyeBiasNL}
 \title{Dye bias correction by matching green and red to mid point}
 \usage{
-dyeBiasCorrTypeINorm(sset)
+dyeBiasCorrTypeINorm(sdf)
+
+dyeBiasNL(sdf)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 }
 \value{
-a \code{SigSet} after dye bias correction.
+a \code{SigDF} after dye bias correction.
 }
 \description{
 This function compares the Type-I Red probes and Type-I Grn probes and
 generates and mapping to correct signal of the two channels to the middle.
-The function takes one single \code{SigSet} and returns a \code{SigSet}
+The function takes one single \code{SigDF} and returns a \code{SigDF}
 with dye bias corrected.
 }
 \examples{
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sset.db <- dyeBiasCorrTypeINorm(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sdf.db <- dyeBiasCorrTypeINorm(sdf)
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sdf <- dyeBiasNL(sdf)
 }

@@ -19,7 +19,8 @@ and the probabilities of all strains
 Infer strain information for mouse array
 }
 \examples{
-sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
-vafs <- betaToAF(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
+sesameDataCache("MM285") # if not done yet
+sdf <- sesameDataGet('MM285.1.SigDF')
+vafs <- betaToAF(getBetas(dyeBiasNL(noob(sdf))))
 inferStrain(vafs)
 }

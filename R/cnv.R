@@ -1,39 +1,52 @@
 #' Perform copy number segmentation
 #'
 #' Perform copy number segmentation using the signals in the signal set.
-#' The function takes a \code{SigSet} for the target sample and a set of
-#' normal \code{SigSet} for the normal samples. An optional arguments specifies
+#' The function takes a \code{SigDF} for the target sample and a set of
+#' normal \code{SigDF} for the normal samples. An optional arguments specifies
 #' the version of genome build that the inference will operate on. The function
 #' outputs an object of class \code{CNSegment} with signals for the segments (
 #' seg.signals), the bin coordinates (
 #' bin.coords) and bin signals (bin.signals).
 #'
-#' @param sset \code{SigSet}
-#' @param ssets.normal \code{SigSet} for normalization
+#' @param sdf \code{SigDF}
+#' @param sdfs.normal a list of \code{SigDF}s for normalization, if not given,
+#' use the stored normal data from sesameData. However, we do recommend using
+#' a matched copy number normal dataset for normalization.
 #' @param refversion hg19 or hg38
 #' @return an object of \code{CNSegment}
 #' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' ssets.normal <- sesameDataGet('EPIC.5.normal')
-#' seg <- cnSegmentation(sset, ssets.normal)
+#'
+#' sesameDataCache("EPIC") # in case not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
+#' seg <- cnSegmentation(sdf, sdfs.normal)
 #' 
 #' @export
-cnSegmentation <- function(sset, ssets.normal, refversion=c('hg19','hg38')) {
+cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
 
-    stopifnot(is(sset, "SigSet"))
+    stopifnot(is(sdf, "SigDF"))
     pkgTest('GenomicRanges')
     refversion <- match.arg(refversion)
+
+    if (is.null(sdfs.normal)) {
+        if (platform(sdf) == "EPIC") {
+            sdfs.normal = sesameDataGet("EPIC.5.SigDFs.normal")
+        } else {
+            stop(sprintf("For %s, please provide the sdfs.normal argument.",
+                platform(sdf)))
+        }
+    }
     
     ## retrieve chromosome info and probe coordinates
     seqInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$seqInfo
     gapInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$gapInfo
     probe.coords <- sesameDataGet(paste0(
-        sset@platform, '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
+        platform(sdf), '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
     
     ## extract intensities
-    target.intens <- totalIntensities(sset)
-    normal.intens <- do.call(cbind, lapply(ssets.normal, function(sset) {
-        totalIntensities(sset) }))
+    target.intens <- totalIntensities(sdf)
+    normal.intens <- do.call(cbind, lapply(sdfs.normal, function(sdf) {
+        totalIntensities(sdf) }))
 
     ## find overlapping probes
     pb <- intersect(rownames(normal.intens), names(target.intens))
@@ -226,7 +239,11 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
 #' @return plot graphics
 #' @examples
-#' seg <- sesameDataGet('EPIC.1.LNCaP')$seg
+#'
+#' sesameDataCache("EPIC") # in case not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
+#' seg <- cnSegmentation(sdf, sdfs.normal)
 #' 
 #' visualizeSegments(seg)
 #' 

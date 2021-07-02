@@ -4,18 +4,22 @@
 \alias{resetMask}
 \title{Reset Masking}
 \usage{
-resetMask(sset)
+resetMask(sdf)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 }
 \value{
-a new \code{SigSet} with mask reset to empty
+a new \code{SigDF} with mask reset to all FALSE
 }
 \description{
 Reset Masking
 }
 \examples{
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-sset.no.mask <- resetMask(sset)
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sum(sdf$mask)
+sdf <- addMask(sdf, c("cg14057072", "cg22344912"))
+sum(sdf$mask)
+sum(resetMask(sdf)$mask)
 }

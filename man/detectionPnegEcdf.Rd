@@ -4,22 +4,26 @@
 \alias{detectionPnegEcdf}
 \title{Detection P-value based on ECDF of negative control}
 \usage{
-detectionPnegEcdf(sset, force = FALSE)
+detectionPnegEcdf(sdf, return.pval = FALSE, pval.threshold = 0.05)
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 
-\item{force}{force rerun even if result already exists}
+\item{return.pval}{whether to return p-values, instead of a
+masked \code{SigDF}}
+
+\item{pval.threshold}{minimum p-value to mask}
 }
 \value{
-detection p-value
+a \code{SigDF}, or a p-value vector if return.pval is TRUE
 }
 \description{
-The function takes a \code{SigSet} as input, computes detection p-value
+The function takes a \code{SigDF} as input, computes detection p-value
 using negative control probes' empirical distribution and returns a new
-\code{SigSet} with an updated pval slot.
+\code{SigDF} with an updated mask slot.
 }
 \examples{
-sset <- makeExampleSeSAMeDataSet()
-sset <- detectionPnegEcdf(sset)
+sdf <- sesameDataGet("EPIC.1.SigDF")
+sum(sdf$mask)
+sum(detectionPnegEcdf(sdf)$mask)
 }

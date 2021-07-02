@@ -395,12 +395,12 @@ visualizeRegion <- function(
         ((seq_len(nprobes)-0.5)/nprobes), 0, draw=FALSE)
 
     ## clustering
+    pkgTest('wheatmap')
     betas <- betas[names(probes),,drop=FALSE]
     if (cluster.samples) {
         betas <- column.cluster(betas[names(probes),,drop=FALSE])$mat
     }
 
-    pkgTest('wheatmap')
     if (draw) {
         w <- WGrob(plt.txns, name='txn') +
             WGrob(plt.mapLines, Beneath(pad=0, height=0.15)) +

@@ -4,10 +4,10 @@
 \alias{formatVCF}
 \title{Convert SNP from Infinium array to VCF file}
 \usage{
-formatVCF(sset, vcf = NULL, refversion = "hg19", annoS = NULL, annoI = NULL)
+formatVCF(sdf, vcf = NULL, refversion = "hg19", annoS = NULL, annoI = NULL)
 }
 \arguments{
-\item{sset}{SigSet}
+\item{sdf}{SigDF}
 
 \item{vcf}{output VCF file path, if NULL output to console}
 
@@ -29,11 +29,12 @@ awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k2,2n"}'
 Convert SNP from Infinium array to VCF file
 }
 \examples{
-sset <- sesameDataGet('EPIC.1.LNCaP')$sset
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
 
-annoS <- sesameDataPullVariantAnno_SNP('EPIC','hg19')
-annoI <- sesameDataPullVariantAnno_InfiniumI('EPIC','hg19')
+annoS <- sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
+annoI <- sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
 ## output to console
-head(formatVCF(sset, annoS=annoS, annoI=annoI))
+head(formatVCF(sdf, annoS=annoS, annoI=annoI))
 
 }

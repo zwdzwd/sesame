@@ -4,20 +4,15 @@
 \alias{chipAddressToSignal}
 \title{Lookup address in one sample}
 \usage{
-chipAddressToSignal(dm, manifest, controls = NULL)
+chipAddressToSignal(dm, mft)
 }
 \arguments{
 \item{dm}{data frame in chip address, 2 columns: cy3/Grn and cy5/Red}
 
-\item{manifest}{a data frame with columns Probe_ID, M, U and col}
-
-\item{controls}{a data frame with columns Address and Name. This is optional
-but might be necessary for some preprocessing methods that depends on these
-control probes. This is left for backward compatibility. Updated version
-should have controls consolidated into manifest.}
+\item{mft}{a data frame with columns Probe_ID, M, U and col}
 }
 \value{
-a SigSet, indexed by probe ID address
+a SigDF, indexed by probe ID address
 }
 \description{
 Lookup address and transform address to probe

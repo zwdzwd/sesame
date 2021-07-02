@@ -24,13 +24,13 @@ readIDATpair(
 \item{verbose}{be verbose?  (FALSE)}
 }
 \value{
-a \code{SigSet}
+a \code{SigDF}
 }
 \description{
 The function takes a prefix string that are shared with _Grn.idat
-and _Red.idat. The function returns a \code{SigSet}.
+and _Red.idat. The function returns a \code{SigDF}.
 }
 \examples{
-sset <- readIDATpair(sub('_Grn.idat','',system.file(
+sdf <- readIDATpair(sub('_Grn.idat','',system.file(
     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 }

@@ -16,6 +16,7 @@ SNP variant allele frequency
 convert betas to variant allele frequency
 }
 \examples{
-sset <- sesameDataGet('MM285.1.NOD.FrontalLobe')
-vafs <- betaToAF(getBetas(dyeBiasCorrTypeINorm(noob(sset))))
+sesameDataCache("MM285") # if not done yet
+sdf <- sesameDataGet('MM285.1.SigDF')
+vafs <- betaToAF(getBetas(dyeBiasNL(noob(sdf))))
 }

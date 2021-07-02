@@ -3,67 +3,49 @@
 #' This function is a simple wrapper of noob + nonlinear dye bias 
 #' correction + pOOBAH masking.
 #' 
-#' If the input is an IDAT prefix or a \code{SigSet}, the output is
+#' If the input is an IDAT prefix or a \code{SigDF}, the output is
 #' the beta value numerics. If the input is a minfi GenomicRatioSet
 #' or RGChannelSet, the output is the sesamized GenomicRatioSet.
 #' 
-#' @param x SigSet(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
+#' @param x SigDF(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
 #' or RGChannelSet(s)
 #' @param platform optional platform string
 #' @param manifest optional dynamic manifest
-#' @param what either 'sigset' or 'beta'
 #' @param ... parameters to getBetas
 #' @param BPPARAM get parallel with MulticoreParam(n)
 #' @return a numeric vector for processed beta values
 #' @import BiocParallel
 #' @examples
-#' sset <- sesameDataGet('HM450.1.TCGA.PAAD')$sset
+#' sdf <- sesameDataGet('HM450.1.TCGA.PAAD')$sdf
 #' IDATprefixes <- searchIDATprefixes(
 #'     system.file("extdata", "", package = "sesameData"))
 #' betas <- openSesame(IDATprefixes)
 #' @export
 openSesame <- function(
     x, platform = '', manifest = NULL,
-    what = 'beta', BPPARAM=SerialParam(), ...) {
+    BPPARAM=SerialParam(), ...) {
 
     ## expand if a directory
     if (length(x) == 1 && is(x, 'character') && dir.exists(x)) {
         x <- searchIDATprefixes(x)
     }
     
-    if (length(x) == 1) {
-        if (is(x, 'character')) { # IDAT prefix
-            x <- readIDATpair(
-                x, platform = platform, manifest = manifest)
-            stopifnot(is(x, 'SigSet'))
-            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(x)))
-            if (what == 'beta') {
-                getBetas(qualityMask(detectionMask(x)), ...)
-            } else {
-                x
-            }
-        } else if (is(x, 'SigSet')) { # SigSet input
-            x <- dyeBiasCorrTypeINorm(noob(pOOBAH(x)))
-            if (what == 'beta') {
-                getBetas(qualityMask(detectionMask(x)), ...)
-            } else {
-                x
-            }
-        }
+    if (is(x, "SigDF")) {
+        getBetas(dyeBiasNL(noob(pOOBAH(qualityMask(x)))))
     } else if (is(x, "GenomicRatioSet")) {
         reopenSesame(x)
     } else if (is(x, "RGChannelSet")) {
         sesamize(x)
-    } else { # multiple IDAT prefixes / sigsets
-        if (what == 'beta') {
+    } else if (is(x, 'character')) {
+        if (length(x) == 1) {
+            getBetas(dyeBiasNL(noob(pOOBAH(readIDATpair(
+                x, platform = platform, manifest = manifest)
+            ))))
+        } else { # multiple IDAT prefixes / sigsets
             do.call(
                 cbind, bplapply(x, openSesame,
                     platform = platform,
                     manifest = manifest, BPPARAM=BPPARAM, ...))
-        } else {
-            bplapply(x, openSesame, what='sigset',
-                platform = platform,
-                manifest = manifest, BPPARAM=BPPARAM, ...)
         }
     }
 }

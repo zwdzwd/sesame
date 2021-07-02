@@ -47,24 +47,6 @@ predictAgeSkinBlood <- function(betas) {
     predictAge(betas, sesameDataGet('age.inference')$SkinBlood)
 }
 
-
-#' Phenotypic age predictor
-#'
-#' The function takes a named numeric vector of beta values. The name attribute
-#' contains the probe ID (cg, ch or rs IDs). The function looks for overlapping
-#' probes and estimate age using Horvath aging model (Levine et al. 2018
-#' Aging, 513 probes). The function outputs a single numeric of age in years.
-#'
-#' @param betas a probeID-named vector of beta values
-#' @return age in years
-#' @export
-#' @examples
-#' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-#' predictAgePheno(betas)
-predictAgePheno <- function(betas) {
-    predictAge(betas, sesameDataGet('age.inference')$PhenoAge)
-}
-
 predictAge <- function(betas, cf) {
     probes <- intersect(names(na.omit(betas)), cf$CpGmarker[-1])
 

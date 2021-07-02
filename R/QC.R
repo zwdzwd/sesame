@@ -1,62 +1,136 @@
 
+#' This function looks at public data of similar nature
+#' e.g., tissue, FFPE vs non-FFPE, etc to evaluate the quality
+#' of the target data quality
+#'
+#' @param sdf a raw (unprocessed) \code{SigDF}
+#' @param tissue A string (blood,buccal and saliva)
+#' @param samplePrep FFPE, fresh, frozen
+#' @param raw to return the raw comparison table
+#' @return three numbers:
+#' 1. The number of public samples compared.
+#' 2. The fraction of public samples with more nondetection, and
+#' 3. The fraction of public samples with lower mean intensity
+#' 4. The higher the fraction, the better the sample.
+#' @examples
+#'
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' ranks <- qualityRank(sdf)
+#' 
+#' @export
+qualityRank <- function(
+    sdf,
+    tissue=NULL,
+    samplePrep=NULL,
+    raw = FALSE) {
+
+    df <- sesameDataGet('detection.stats')
+    df <- df[df$Platform == platform(sdf),]
+    if (!is.null(tissue))
+        df <- df[df$Tissue==tissue,]
+    if (!is.null(samplePrep))
+        df <- df[df$SamplePrep==samplePrep,]
+    stopifnot(nrow(df) >= 5) # stop if there are too few number of samples
+    if (raw) return (df);
+
+    mean_intensity <- meanIntensity(sdf)
+    pvals <- pOOBAH(sdf, return.pval = TRUE)
+    frac_nondt <- sum(pvals > 0.05) / length(pvals)
+    list(
+        n_sample_compared = nrow(df),
+        rank_probe_success_rate = 1-ecdf(df$frac_nondt)(frac_nondt),
+        rank_mean_intensity = ecdf(df$mean_intensity)(mean_intensity))
+}
+
+#' Plot Total Signal Intensities vs Beta Values
+#' This plot is helpful in revealing the extent of signal background
+#' and dye bias.
+#'
+#' @param sdf a \code{SigDF}
+#' @param mask whether to remove probes that are masked
+#' @param intens.range plot range of signal intensity
+#' @return create a total signal intensity vs beta value plot
+#' @examples
+#' sesameDataCache("EPIC")
+#' sdf <- # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sesamePlotIntensVsBetas(sdf)
+#' @import graphics
+#' @import KernSmooth
+#' @importFrom grDevices colorRampPalette
+#' @export
+sesamePlotIntensVsBetas <- function(sdf, mask=TRUE, intens.range=c(5,15)) {
+    
+    intens <- totalIntensities(sdf, mask=mask)
+    smoothScatter(log2(intens), getBetas(sdf, mask=mask)[names(intens)],
+        xlab='Total Intensity (Log2(M+U))',
+        ylab=expression(paste(beta, " (DNA methylation Level)")),
+        nrpoints=0, 
+        colramp=colorRampPalette(c("white","white","lightblue",
+            "blue","green","yellow","orange","red","darkred"),
+            space = "Lab"), xlim=intens.range)
+    abline(h=0.5, lty='dashed')
+    ## plot envelope lines
+    x <- c(seq(1,100,by=1), seq(101,10000,by=100))
+    dG = InfIG(sdf); dR = InfIR(sdf)
+    bG <- median(c(dR$MG, dR$UG), na.rm=TRUE)
+    bR <- median(c(dG$MR, dG$UR), na.rm=TRUE)
+    lines(log2(x + bG + bR), (0 + bG) / (0 + bG + x + bR), col='blue')
+    lines(log2(x + bG + bR), (x + bG) / (x + bG + 0 + bR), col='blue')
+    lines(log2(x + bR + bR), (0 + bR) / (x + bR + 0 + bR), col='red')
+    lines(log2(x + bR + bR), (x + bR) / (x + bR + 0 + bR), col='red')
+    lines(log2(x + bG + bG), (0 + bG) / (x + bG + 0 + bG), col='green')
+    lines(log2(x + bG + bG), (x + bG) / (x + bG + 0 + bG), col='green')
+}
+
 #' Generate summary numbers that indicative of experiment quality
-#' Please provide a raw sigset (before any preprocessing). Usually
+#' Please provide a raw SigDF(before any preprocessing). Usually
 #' directly from readIDATpair
 #' 
-#' @param sset a \code{SigSet} object
+#' @param sdf a \code{SigDF} object
 #' @return a sesameQC class object
 #' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sesameQC(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sesameQC(sdf)
 #' @export
-sesameQC <- function(sset) {
+sesameQC <- function(sdf) {
 
     qc <- structure(data.frame(), class='sesameQC')
     ## number of type II probes
-    qc$num_probes_II <- nrow(II(sset))
+    qc$num_probes_II <- nrow(InfII(sdf))
     ## number of type I (red channel) probes
-    qc$num_probes_IR <- nrow(IR(sset))
+    qc$num_probes_IR <- nrow(InfIR(sdf))
     ## number of type I (grn channel) probes
-    qc$num_probes_IG <- nrow(IG(sset))
+    qc$num_probes_IG <- nrow(InfIG(sdf))
     ## number of all probes
     qc$num_probes_all <- qc$num_probes_II +
         qc$num_probes_IR + qc$num_probes_IG
-    qc$mean_ii <- mean(II(sset), na.rm = TRUE)
+    dG = InfIG(sdf); dR = InfIR(sdf); d2 = InfII(sdf)
+    qc$mean_ii <- mean(c(d2$UG,d2$UR), na.rm = TRUE)
     
-    qc$mean_intensity <- meanIntensity(sset) # excluding type-I out-of-band
-    qc$mean_intensity_total <- mean(totalIntensities(sset), na.rm=TRUE) # M + U
-    qc$mean_inb_grn <- mean(IG(sset))
-    qc$mean_inb_red <- mean(IR(sset))
-    qc$mean_oob_grn <- mean(oobG(sset))
-    qc$mean_oob_red <- mean(oobR(sset))
+    qc$mean_intensity <- meanIntensity(sdf) # excluding type-I out-of-band
+    qc$mean_intensity_total <- mean(totalIntensities(sdf), na.rm=TRUE) # M + U
+    qc$mean_inb_grn <- mean(c(dG$MG, dG$UG), na.rm = TRUE)
+    qc$mean_inb_red <- mean(c(dR$MR, dR$UR), na.rm = TRUE)
+    qc$mean_oob_red <- mean(c(dG$MR, dG$UR), na.rm = TRUE)
+    qc$mean_oob_grn <- mean(c(dR$MG, dR$UG), na.rm = TRUE)
 
-    ## inferences
-    if (sset@platform %in% c("EPIC","HM450")) {
-        qc$sex <- inferSex(sset)
-        qc$ethnicity <- inferEthnicity(sset)
-        qc$GCT <- bisConversionControl(sset)
-        ## assuming no preprocessing
-        qc$age <- predictAgeHorvath353(getBetas(sset, mask=FALSE))
-    } else {
-        qc$sex <- "na"
-        qc$ethnicity <- "na"
-        qc$GCT <- "na"
-        qc$age <- "na"
-    }
-
-    res <- inferTypeIChannel(sset, summary = TRUE)
+    res <- inferTypeIChannel(sdf, summary = TRUE)
     for (nm in names(res)) {
         qc[[paste0('InfI_switch_', nm)]] <- unname(res[nm])
     }
 
-    betas <- getBetas(qualityMask(detectionMask(
-        dyeBiasCorrTypeINorm(noob(sset)))))
+    pvals = pOOBAH(sdf, return.pval=TRUE)
+    betas <- getBetas(addMask(
+        dyeBiasNL(noob(sdf)), pvals > 0.05))
 
     qc$num_probes <- length(betas)
     qc$num_na <- sum(is.na(betas))
     num_ok <- qc$num_probes - qc$num_na
     qc$frac_na <- qc$num_na / qc$num_probes
-    qc$num_nondt <- sum(pval(sset) > 0.05)
+    qc$num_nondt <- sum(pOOBAH(sdf, return.pval=TRUE) > 0.05)
     qc$frac_nondt <- qc$num_nondt / qc$num_probes
     qc$mean_beta <- mean(betas, na.rm = TRUE)
     qc$median_beta <- median(betas, na.rm = TRUE)
@@ -89,8 +163,9 @@ sesameQC <- function(sset) {
 #' @param ... extra parameter for print
 #' @return print sesameQC result on screen
 #' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' sesameQC(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sesameQC(sdf)
 #' @export
 print.sesameQC <- function(x, ...) {
 
@@ -167,15 +242,6 @@ print.sesameQC <- function(x, ...) {
     }
 
     cat('\n')
-    cat('=======================\n')
-    cat('=      Inferences     =\n')
-    cat('=======================\n')
-    cat('Sex:                           ', x$sex, '\n')
-    cat('Ethnicity:                     ', x$ethnicity, '\n')
-    cat('Age:                           ', x$age, '\n')
-    cat('Bisulfite Conversion (GCT):    ', x$GCT, '\n')
-    
-    cat('\n')
 }
 
 
@@ -187,8 +253,9 @@ print.sesameQC <- function(x, ...) {
 #' @param ...        see as.data.frame
 #' @return           a data.frame
 #' @examples
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' qc <- sesameQC(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' qc <- sesameQC(sdf)
 #' df <- as.data.frame(qc)
 #' @method as.data.frame sesameQC
 #' @export
@@ -203,7 +270,7 @@ as.data.frame.sesameQC <- function(
 #' e.g., tissue, FFPE vs non-FFPE, etc to evaluate the quality
 #' of the target data quality
 #'
-#' @param sset a raw (unprocessed) \code{SigSet}
+#' @param sdf a raw (unprocessed) \code{SigDF}
 #' @param tissue A string (blood,buccal and saliva)
 #' @param samplePrep FFPE, fresh, frozen
 #' @param raw to return the raw comparison table
@@ -214,18 +281,19 @@ as.data.frame.sesameQC <- function(
 #' 4. The higher the fraction, the better the sample.
 #' @examples
 #'
-#' sset <- sesameDataGet('EPIC.1.LNCaP')$sset
-#' ranks <- qualityRank(sset)
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' ranks <- qualityRank(sdf)
 #' 
 #' @export
 qualityRank <- function(
-    sset,
+    sdf,
     tissue=NULL,
     samplePrep=NULL,
     raw = FALSE) {
 
     df <- sesameDataGet('detection.stats')
-    df <- df[df$Platform == sset@platform,]
+    df <- df[df$Platform == platform(sdf),]
     if (!is.null(tissue))
         df <- df[df$Tissue==tissue,]
     if (!is.null(samplePrep))
@@ -233,16 +301,12 @@ qualityRank <- function(
     stopifnot(nrow(df) >= 5) # stop if there are too few number of samples
     if (raw) return (df);
 
-    mean_intensity <- meanIntensity(sset)
-    if (is.null(sset@extra$pvals[['pOOBAH']])) {
-        pvals <- pval(sset)
-    } else {
-        pvals <- sset@extra$pvals[['pOOBAH']]
-    }
-    frac_nondt <- sum(pvals > 0.05)
-    c(
-        n_compared = nrow(df),
-        rank_nondetection = 1-ecdf(df$frac_nondt)(frac_nondt),
-        rank_meanintensity = ecdf(df$mean_intensity)(mean_intensity))
+    mean_intensity <- meanIntensity(sdf)
+    pvals <- pOOBAH(sdf, return.pval = TRUE)
+    frac_nondt <- sum(pvals > 0.05) / length(pvals)
+    list(
+        n_sample_compared = nrow(df),
+        rank_probe_success_rate = 1-ecdf(df$frac_nondt)(frac_nondt),
+        rank_mean_intensity = ecdf(df$mean_intensity)(mean_intensity))
 }
 
