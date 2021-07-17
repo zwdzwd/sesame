@@ -53,7 +53,9 @@ VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame
 BugReports: https://github.com/zwdzwd/sesame/issues
 biocViews: DNAMethylation, MethylationArray, Preprocessing, QualityControl
-Collate: 
+Collate:
+    'sex.R'
+    'species.R'
     'QC.R'
     'SigDFMethods.R'
     'sesame.R'

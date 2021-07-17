@@ -5,7 +5,7 @@
 \title{Infer Species}
 \usage{
 inferSpecies(
-  sset,
+  sdf,
   df_as = NULL,
   topN = 3000,
   threshold.pos = 0.01,
@@ -17,7 +17,7 @@ inferSpecies(
 )
 }
 \arguments{
-\item{sset}{a \code{SigSet}}
+\item{sdf}{a \code{SigSet}}
 
 \item{df_as}{a data.frame of alignment score for each probe.}
 
@@ -49,7 +49,7 @@ df_as <- sesameDataGet('Mammal40.alignmentScore')
 manifests=sesameDataGet("Mammal40.address")
 mft_mm=cbind(manifests$ordering[,1:3],manifests$species$mus_musculus)
 #idat <- searchIDATprefixes(system.file("extdata/", package = "sesameData"))['GSM4411953']
-#sset <- readIDATpair(idat,manifest=mft_mm, platform='Mammal40')
-sset <- sesameDataGet("GSM4411953")
-inferred.species <- inferSpecies(sset,df_as)
+#sdf <- readIDATpair(idat,manifest=mft_mm, platform='Mammal40')
+sdf <- sesameDataGet("GSM4411953")
+inferred.species <- inferSpecies(sdf,df_as)
 }
