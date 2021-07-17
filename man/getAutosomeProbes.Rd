@@ -4,15 +4,12 @@
 \alias{getAutosomeProbes}
 \title{Get autosome probes}
 \usage{
-getAutosomeProbes(
-  platform = c("EPIC", "HM450", "MM285"),
-  refversion = c("hg19", "hg38", "mm10")
-)
+getAutosomeProbes(platform = c("EPIC", "HM450", "MM285"), refversion = NULL)
 }
 \arguments{
 \item{platform}{'EPIC', 'HM450' etc.}
 
-\item{refversion}{hg19, hg38, mm10}
+\item{refversion}{hg19, hg38, or mm10, inference by default}
 }
 \value{
 a vector of autosome probes

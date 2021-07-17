@@ -117,17 +117,20 @@ getProbesByRegion <- function(
 #'
 #' @param chrms chromosomes to subset
 #' @param platform EPIC, HM450, Mouse
-#' @param refversion hg19, hg38, mm10
+#' @param refversion hg19, hg38, or mm10, inference by default
 #' @return a vector of probes on the selected chromosomes
 #' @examples
 #' sex.probes <- getProbesByChromosome(c('chrX','chrY'))
 #' @export
 getProbesByChromosome <- function(
-    chrms, platform = c('EPIC','HM450'),
-    refversion=c('hg19','hg38')) {
+    chrms, platform = c('EPIC','HM450','MM285'), refversion = NULL) {
 
     platform <- match.arg(platform)
-    refversion <- match.arg(refversion)
+    if (is.null(refversion)) {
+        refversion = defaultAssembly(platform)
+    } else {
+        stopifnot(refversion %in% c('hg19','hg38','mm10'))
+    }
     
     mft <- sesameDataGet(sprintf('%s.%s.manifest', platform, refversion))
     names(mft)[as.character(GenomicRanges::seqnames(mft)) %in% chrms]
@@ -136,17 +139,20 @@ getProbesByChromosome <- function(
 #' Get autosome probes
 #'
 #' @param platform 'EPIC', 'HM450' etc.
-#' @param refversion hg19, hg38, mm10
+#' @param refversion hg19, hg38, or mm10, inference by default
 #' @return a vector of autosome probes
 #' @examples
 #' auto.probes <- getAutosomeProbes('EPIC')
 #' @export
 getAutosomeProbes <- function(
-    platform=c('EPIC','HM450','MM285'),
-    refversion=c('hg19','hg38','mm10')) {
+    platform = c('EPIC','HM450','MM285'), refversion = NULL) {
 
     platform <- match.arg(platform)
-    refversion <- match.arg(refversion)
+    if (is.null(refversion)) {
+        refversion = defaultAssembly(platform)
+    } else {
+        stopifnot(refversion %in% c('hg19','hg38','mm10'))
+    }
     
     mft <- sesameDataGet(sprintf(
         '%s.%s.manifest', platform, refversion))

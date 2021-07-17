@@ -41,6 +41,14 @@ print.SigDF = function(x, ...) {
         as.data.frame(x[c(1,2,nrow(x)-1,nrow(x)),])), row.names=FALSE)
 }
 
+#' Convenience function to output platform attribute of SigDF
+#'
+#' @param sdf a SigDF object
+#' @examples
+#' sesameDataCache("EPIC")
+#' sdf = = sesameDataGet('EPIC.1.SigDF')
+#' platform(sdf)
+#' @export
 platform = function(sdf) {
     stopifnot(is(sdf, "SigDF"))
     attr(sdf, "platform")

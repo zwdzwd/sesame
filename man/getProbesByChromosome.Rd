@@ -6,8 +6,8 @@
 \usage{
 getProbesByChromosome(
   chrms,
-  platform = c("EPIC", "HM450"),
-  refversion = c("hg19", "hg38")
+  platform = c("EPIC", "HM450", "MM285"),
+  refversion = NULL
 )
 }
 \arguments{
@@ -15,7 +15,7 @@ getProbesByChromosome(
 
 \item{platform}{EPIC, HM450, Mouse}
 
-\item{refversion}{hg19, hg38, mm10}
+\item{refversion}{hg19, hg38, or mm10, inference by default}
 }
 \value{
 a vector of probes on the selected chromosomes
