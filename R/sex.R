@@ -101,16 +101,21 @@ inferSexKaryotypes <- function(sdf) {
 
 #' Infer Sex
 #'
-#' @param x either a \code{SigDF} or a beta value vector named by probe ID
+#' @param x either a raw \code{SigDF} or a beta value vector named by probe ID
+#' SigDF is preferred over beta values.
+#' @param pfm platform Only MM285, EPIC and HM450 are supported.
 #' @return 'F' or 'M'
 #' We established our sex calling based on the CpGs hypermethylated in
 #' inactive X (XiH), CpGs hypomethylated in inactive X (XiL) and signal
 #' intensity ratio of Y-chromosome over autosomes. Currently human inference
 #' uses a random forest and mouse inference uses a support vector machine.
 #'
-#' XXY male (Klinefelter's), 45,X female (Turner's) can confuse the
-#' model sometimes.
-#' Our function works on a single sample.
+#' The function checks the sample quality. If the sample is of poor quality
+#' the inference return NA.
+#' 
+#' Note many factors such as Dnmt genotype, XXY male (Klinefelter's),
+#' 45,X female (Turner's) can confuse the model sometimes.
+#' This function works on a single sample.
 #' @importFrom randomForest randomForest
 #' @import e1071
 #' @import sesameData
@@ -133,19 +138,19 @@ inferSex <- function(x, pfm = NULL) {
     if (pfm == 'MM285'){
         library(e1071)
         inf = sesameDataGet("MM285.inferences")$sex
-        if (is(x, "SigDF")) { # if one can get signal intensity, try that
+        if (is(x, "SigDF")) { # if possible use signal intensity
             intensYvsAuto = getIntensityRatioYvsAuto(x)
             betas = getBetas(pOOBAH(resetMask(dyeBiasNL(noob(x))))) # assuming unnormalized data
             ## if probe success rate is low, give up
             if (sum(is.na(betas)) / length(betas) > 0.3) { return(NA); }
             betasXiH = median(betas[inf$XiH], na.rm=TRUE)
-            return(predict(inf$XY, data.frame(betasXiH=betasXiH, intensYvsAuto=intensYvsAuto)))
-        } else if (is.numeric(x)) {
+            return(predict(inf$XY, data.frame(betasXiH=betasXiH, intensYvsAuto=intensYvsAuto))[[1]])
+        } else if (is.numeric(x)) { # use beta value
             ## if probe success rate is low, give up
             if (sum(is.na(x)) / length(x) > 0.3) { return(NA); }
             betasXiH = median(x[inf$XiH], na.rm=TRUE)
             betasXiL = median(x[inf$XiL], na.rm=TRUE)
-            return(predict(inf$X2, data.frame(betasXiL=betasXiL, betasXiH=betasXiH)))
+            return(predict(inf$X2, data.frame(betasXiL=betasXiL, betasXiH=betasXiH))[[1]])
         } else {
             return(NA);
         }

@@ -161,6 +161,18 @@ object that contrasts the traget sample with pre-build mouse tissue reference.
 compareMouseTissueReference(betas)
 ```
 
+## Sex Inference
+
+Let's load beta values from sesameData
+```{r}
+sdf = sesameDataGet("MM285.1.SigDF")
+```
+
+Sex inference can take both the raw signal in SigDF or beta value vector
+```{r}
+inferSex(sdf)
+```
+
 ## Age Inference
 
 Let's load beta values from SeSAMeData

@@ -7,7 +7,10 @@
 inferSex(x, pfm = NULL)
 }
 \arguments{
-\item{x}{either a \code{SigDF} or a beta value vector named by probe ID}
+\item{x}{either a raw \code{SigDF} or a beta value vector named by probe ID
+SigDF is preferred over beta values.}
+
+\item{pfm}{platform Only MM285, EPIC and HM450 are supported.}
 }
 \value{
 'F' or 'M'
@@ -16,9 +19,12 @@ inactive X (XiH), CpGs hypomethylated in inactive X (XiL) and signal
 intensity ratio of Y-chromosome over autosomes. Currently human inference
 uses a random forest and mouse inference uses a support vector machine.
 
-XXY male (Klinefelter's), 45,X female (Turner's) can confuse the
-model sometimes.
-Our function works on a single sample.
+The function checks the sample quality. If the sample is of poor quality
+the inference return NA.
+
+Note many factors such as Dnmt genotype, XXY male (Klinefelter's),
+45,X female (Turner's) can confuse the model sometimes.
+This function works on a single sample.
 }
 \description{
 Infer Sex
