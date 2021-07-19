@@ -21,7 +21,7 @@ getNormCtls <- function(sdf, average = FALSE) {
     if (nrow(df) == 0)
         stop("No normalization control probes found!")
 
-    if (platform(sdf) == 'HM27') {
+    if (sdfPlatform(sdf) == 'HM27') {
         df$channel <- ifelse(grepl(
             'norm\\.green', tolower(rownames(df))), 'G', 'R')
     } else {

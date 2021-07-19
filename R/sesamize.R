@@ -118,7 +118,7 @@ platformSmToMinfi <- function(platform) {
 SigDFToRGChannel <- function(sdf, manifest = NULL, controls = NULL) {
 
     if (is.null(manifest)) {
-        dfAddress <- sesameDataGet(paste0(platform(sdf),'.address'))
+        dfAddress <- sesameDataGet(paste0(sdfPlatform(sdf),'.address'))
         manifest <- dfAddress$ordering
         controls <- dfAddress$controls
     }
@@ -179,7 +179,7 @@ SigDFsToRGChannelSet <- function(sdfs, BPPARAM=SerialParam(), annotation=NA) {
         sdfs <- list(sample=sdfs)
     }
 
-    pt <- platform(sdfs[[1]])
+    pt <- sdfPlatform(sdfs[[1]])
     annotation <- guessMinfiAnnotation(pt, annotation)
     
     ss_all <- bplapply(sdfs, SigDFToRGChannel, BPPARAM=BPPARAM)
@@ -262,8 +262,8 @@ RGChannelSetToSigDFs <- function(
 SigDFToRatioSet <- function(sdf, annotation = NA) {
     Beta <- as.matrix(getBetas(sdf))
     CN <- as.matrix(log2(totalIntensities(sdf))[rownames(Beta)])
-    annotation <- guessMinfiAnnotation(platform(sdf), annotation)
-    platform <- platformSmToMinfi(platform(sdf))
+    annotation <- guessMinfiAnnotation(sdfPlatform(sdf), annotation)
+    platform <- platformSmToMinfi(sdfPlatform(sdf))
     minfi::RatioSet(Beta = Beta, CN = CN, annotation = c(
         array = unname(platform), annotation = annotation))
 }

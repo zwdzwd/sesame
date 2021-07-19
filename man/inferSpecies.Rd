@@ -10,8 +10,8 @@ inferSpecies(
   topN = 3000,
   threshold.pos = 0.01,
   threshold.neg = 0.1,
-  ret.max = T,
-  balance = T,
+  ret.max = TRUE,
+  balance = TRUE,
   threshold.sucess.rate = 0.8,
   platform = "MM285"
 )
@@ -23,29 +23,30 @@ inferSpecies(
 
 \item{topN}{Top n positive and negative probes used to infer species.}
 
-\item{threshold.pos}{pvalue < threshold.pos are considered to be positive probes (default is 0.01).}
+\item{threshold.pos}{pvalue < threshold.pos are considered positive
+(default: 0.01).}
 
-\item{threshold.neg}{pvalue > threshold.neg are considered to be negative probes (default is 0.2).}
+\item{threshold.neg}{pvalue > threshold.neg are considered negative
+(default: 0.2).}
 
 \item{ret.max}{whether to return the species with maximal AUC.}
 
-\item{balance}{whether to balance the postive and negative probes size (default is TRUE).}
+\item{balance}{whether to balance the postive and negative probe
+number (default: TRUE).}
 
-\item{threshold.sucess.rate}{threshold of success rate to determine mouse species.}
+\item{threshold.sucess.rate}{threshold of success rate to determine
+mouse species.}
 }
 \value{
-a list of auc, pvalue, species (NCBI official species names) and taxid.
+a list of auc, pvalue, species (NCBI official species names)
+and taxid.
+}
+\description{
 We infer species based on probes pvalues and alignment score.
 AUC was calculated for each specie, y_true is 1 or 0 
 for pval < threshold.pos or pval > threshold.neg, respeceively,
-
-Our function works on a single sample.
-}
-\description{
-Infer Species
 }
 \examples{
-
 sdf = sesameDataGet("MM285.1.SigDF")
 inferSpecies(sdf)
 }

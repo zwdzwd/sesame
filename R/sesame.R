@@ -117,7 +117,7 @@ subsetvec <- function(vec, vecnames) {
 inferEthnicity <- function(sdf) {
 
     stopifnot(is(sdf, 'SigDF'))
-    stopifnot(platform(sdf) %in% c('EPIC','HM450'))
+    stopifnot(sdfPlatform(sdf) %in% c('EPIC','HM450'))
 
     ethnicity.inference <- sesameDataGet('ethnicity.inference')
     ccsprobes <- ethnicity.inference$ccs.probes
@@ -460,9 +460,9 @@ SigSetToSigDF = function(sset) {
 #' @export
 bisConversionControl <- function(sdf) {
 
-    stopifnot(platform(sdf) %in% c('EPICplus','EPIC','HM450'))
-    extC <- sesameDataGet(paste0(platform(sdf), '.probeInfo'))$typeI.extC
-    extT <- sesameDataGet(paste0(platform(sdf), '.probeInfo'))$typeI.extT
+    stopifnot(sdfPlatform(sdf) %in% c('EPICplus','EPIC','HM450'))
+    extC <- sesameDataGet(paste0(sdfPlatform(sdf), '.probeInfo'))$typeI.extC
+    extT <- sesameDataGet(paste0(sdfPlatform(sdf), '.probeInfo'))$typeI.extT
     ## prbs <- rownames(oobG(sset))
     df = InfIR(sdf)
     extC = intersect(df$Probe_ID, extC)

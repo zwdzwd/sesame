@@ -20,7 +20,7 @@ Infer strain information for mouse array
 }
 \examples{
 sesameDataCache("MM285") # if not done yet
-sdf <- sesameDataGet('MM285.1.SigDF')
-vafs <- betaToAF(getBetas(dyeBiasNL(noob(sdf))))
+sdf = sesameDataGet('MM285.1.SigDF')
+vafs = betaToAF(getBetas(dyeBiasNL(noob(sdf))))
 inferStrain(vafs)
 }

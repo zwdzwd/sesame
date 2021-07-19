@@ -26,7 +26,7 @@ qualityRank <- function(
     raw = FALSE) {
 
     df <- sesameDataGet('detection.stats')
-    df <- df[df$Platform == platform(sdf),]
+    df <- df[df$Platform == sdfPlatform(sdf),]
     if (!is.null(tissue))
         df <- df[df$Tissue==tissue,]
     if (!is.null(samplePrep))
@@ -293,7 +293,7 @@ qualityRank <- function(
     raw = FALSE) {
 
     df <- sesameDataGet('detection.stats')
-    df <- df[df$Platform == platform(sdf),]
+    df <- df[df$Platform == sdfPlatform(sdf),]
     if (!is.null(tissue))
         df <- df[df$Tissue==tissue,]
     if (!is.null(samplePrep))

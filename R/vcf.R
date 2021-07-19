@@ -42,7 +42,7 @@ genotyper <- function(x, model_background=0.1, model_nbeads=40) {
 formatVCF <- function(
     sdf, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL) {
 
-    platform <- platform(sdf)
+    platform <- sdfPlatform(sdf)
     if (is.null(annoS)) {
         annoS <- sesameDataGetAnno(sprintf("%s/%s.%s.snp_overlap_b151.rds",
             platform, platform, refversion))

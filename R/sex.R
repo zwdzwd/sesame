@@ -1,7 +1,7 @@
 getIntensityRatioYvsAuto = function(sdf) {
     intens = totalIntensities(sdf)
-    prbA = getAutosomeProbes(platform(sdf))
-    prbY = getProbesByChromosome("chrY", platform(sdf))
+    prbA = getAutosomeProbes(sdfPlatform(sdf))
+    prbY = getProbesByChromosome("chrY", sdfPlatform(sdf))
     median(intens[prbY], na.rm=TRUE) / median(intens[prbA], na.rm=TRUE)
 }
 
@@ -23,13 +23,13 @@ getIntensityRatioYvsAuto = function(sdf) {
 getSexInfo <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
     cleanY = sesameDataGet(paste0(
-        platform(sdf),'.probeInfo'))$chrY.clean
+        sdfPlatform(sdf),'.probeInfo'))$chrY.clean
 
     xLinked = sesameDataGet(paste0(
-        platform(sdf),'.probeInfo'))$chrX.xlinked
+        sdfPlatform(sdf),'.probeInfo'))$chrX.xlinked
 
     probe2chr = sesameDataGet(paste0(
-        platform(sdf),'.probeInfo'))$probe2chr.hg19
+        sdfPlatform(sdf),'.probeInfo'))$probe2chr.hg19
 
     xLinkedBeta = getBetas(sdf, mask=FALSE)[xLinked]
     intens = totalIntensities(sdf)
@@ -121,16 +121,16 @@ inferSexKaryotypes <- function(sdf) {
 #' @import sesameData
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sdf = sesameDataGet('EPIC.1.SigDF')
 #' inferSex(sdf)
 #' @export
-inferSex <- function(x, pfm = NULL) {
+inferSex = function(x, pfm = NULL) {
 
     if (is.null(pfm)) {
         if (is.numeric(x)) {
             pfm = inferPlatformFromProbeIDs(names(x))
         } else if (is(x, "SigDF")) {
-            pfm = platform(x)
+            pfm = sdfPlatform(x)
         }
     }
     
@@ -140,22 +140,32 @@ inferSex <- function(x, pfm = NULL) {
         inf = sesameDataGet("MM285.inferences")$sex
         if (is(x, "SigDF")) { # if possible use signal intensity
             intensYvsAuto = getIntensityRatioYvsAuto(x)
-            betas = getBetas(pOOBAH(resetMask(dyeBiasNL(noob(x))))) # assuming unnormalized data
+
+            ## assuming unnormalized data
+            betas = getBetas(pOOBAH(resetMask(dyeBiasNL(noob(x)))))
+
             ## if probe success rate is low, give up
             if (sum(is.na(betas)) / length(betas) > 0.3) { return(NA); }
+
             betasXiH = median(betas[inf$XiH], na.rm=TRUE)
-            return(predict(inf$XY, data.frame(betasXiH=betasXiH, intensYvsAuto=intensYvsAuto))[[1]])
+            return(predict(inf$XY,
+                data.frame(
+                    betasXiH=betasXiH,
+                    intensYvsAuto=intensYvsAuto))[[1]])
+            
         } else if (is.numeric(x)) { # use beta value
+            
             ## if probe success rate is low, give up
             if (sum(is.na(x)) / length(x) > 0.3) { return(NA); }
             betasXiH = median(x[inf$XiH], na.rm=TRUE)
             betasXiL = median(x[inf$XiL], na.rm=TRUE)
-            return(predict(inf$X2, data.frame(betasXiL=betasXiL, betasXiH=betasXiH))[[1]])
-        } else {
-            return(NA);
-        }
+            
+            return(predict(inf$X2,
+                data.frame(betasXiL=betasXiL, betasXiH=betasXiH))[[1]])
+            
+        } else { return(NA); }
     } else { # need to update human sex inference to match the mouse format
-        sex.info <- getSexInfo(sdf)[seq_len(3)]
+        sex.info <- getSexInfo(x)[seq_len(3)]
         as.character(predict(
             sesameDataGet('sex.inference'), sex.info))
     }

@@ -29,11 +29,11 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
     refversion <- match.arg(refversion)
 
     if (is.null(sdfs.normal)) {
-        if (platform(sdf) == "EPIC") {
+        if (sdfPlatform(sdf) == "EPIC") {
             sdfs.normal = sesameDataGet("EPIC.5.SigDFs.normal")
         } else {
             stop(sprintf("For %s, please provide the sdfs.normal argument.",
-                platform(sdf)))
+                sdfPlatform(sdf)))
         }
     }
     
@@ -41,7 +41,7 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
     seqInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$seqInfo
     gapInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$gapInfo
     probe.coords <- sesameDataGet(paste0(
-        platform(sdf), '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
+        sdfPlatform(sdf), '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
     
     ## extract intensities
     target.intens <- totalIntensities(sdf)

@@ -30,7 +30,7 @@ SigDF = function(df, platform = "EPIC", ctl=NULL) {
 print.SigDF = function(x, ...) {
     stopifnot(is(x, "SigDF"))
     cat(paste0(
-        sprintf("SigDF - %s\n", platform(x)),
+        sprintf("SigDF - %s\n", sdfPlatform(x)),
         sprintf(" - %d Infinium-I Probes\n", nrow(InfI(x))),
         sprintf(" - %d Infinium-II Probes\n", nrow(InfII(x))),
         sprintf(" - %d Control Probes\n",
@@ -44,12 +44,14 @@ print.SigDF = function(x, ...) {
 #' Convenience function to output platform attribute of SigDF
 #'
 #' @param sdf a SigDF object
+#' @return the platform string for the SigDF object
 #' @examples
 #' sesameDataCache("EPIC")
-#' sdf = = sesameDataGet('EPIC.1.SigDF')
-#' platform(sdf)
+#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' sdfPlatform(sdf)
+#' 
 #' @export
-platform = function(sdf) {
+sdfPlatform = function(sdf) {
     stopifnot(is(sdf, "SigDF"))
     attr(sdf, "platform")
 }

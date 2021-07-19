@@ -2,7 +2,7 @@
 % Please edit documentation in R/strain.R
 \name{betaToAF}
 \alias{betaToAF}
-\title{convert betas to variant allele frequency}
+\title{convert betas to variant allele frequency for mouse array}
 \usage{
 betaToAF(betas)
 }
@@ -13,10 +13,11 @@ betaToAF(betas)
 SNP variant allele frequency
 }
 \description{
-convert betas to variant allele frequency
+see formatVCF if you would like to convert color-channel
+probes on the human array.
 }
 \examples{
 sesameDataCache("MM285") # if not done yet
-sdf <- sesameDataGet('MM285.1.SigDF')
-vafs <- betaToAF(getBetas(dyeBiasNL(noob(sdf))))
+sdf = sesameDataGet('MM285.1.SigDF')
+vafs = betaToAF(getBetas(dyeBiasNL(noob(sdf))))
 }

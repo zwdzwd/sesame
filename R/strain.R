@@ -7,8 +7,8 @@
 #' and the probabilities of all strains
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
-#' sdf <- sesameDataGet('MM285.1.SigDF')
-#' vafs <- betaToAF(getBetas(dyeBiasNL(noob(sdf))))
+#' sdf = sesameDataGet('MM285.1.SigDF')
+#' vafs = betaToAF(getBetas(dyeBiasNL(noob(sdf))))
 #' inferStrain(vafs)
 #' @import tibble
 #' @export
@@ -32,16 +32,22 @@ inferStrain <- function(vafs, strain_snp_table = NULL) {
         probs = probs/sum(probs))
 }
 
-#' convert betas to variant allele frequency
+#' convert betas to variant allele frequency for mouse array
+#'
+#' see formatVCF if you would like to convert color-channel
+#' probes on the human array.
 #'
 #' @param betas beta value
 #' @return SNP variant allele frequency
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
-#' sdf <- sesameDataGet('MM285.1.SigDF')
-#' vafs <- betaToAF(getBetas(dyeBiasNL(noob(sdf))))
+#' sdf = sesameDataGet('MM285.1.SigDF')
+#' vafs = betaToAF(getBetas(dyeBiasNL(noob(sdf))))
 #' @export
-betaToAF <- function(betas) {
+betaToAF = function(betas) {
+
+    platform = inferPlatformFromProbeIDs(names(betas))
+    stopifnot(platform == "MM285") # only MM285 is relevant
 
     mft <- sesameDataGet('MM285.mm10.manifest')
     mft <- mft[grep('^rs', names(mft))]

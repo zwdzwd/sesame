@@ -78,7 +78,7 @@ qualityMask <- function(
     if (mask.use.manifest) {
         if (is.null(manifest)) {
             manifest <- sesameDataGet(paste0(
-                platform(sdf), '.address'))$ordering
+                sdfPlatform(sdf), '.address'))$ordering
         }
         if ("mask" %in% colnames(manifest)) {
             sdf <- addMask(sdf, setNames(manifest$mask, manifest$Probe_ID))
@@ -87,12 +87,12 @@ qualityMask <- function(
 
     ## mask HM450/HM27/EPIC using TCGA masking
     if (mask.use.tcga) {
-        if(!(platform(sdf) %in% c('HM27','HM450','EPIC'))) {
+        if(!(sdfPlatform(sdf) %in% c('HM27','HM450','EPIC'))) {
             message(sprintf(
-                "TCGA masking is not supported for %s.", platform(sdf)))
+                "TCGA masking is not supported for %s.", sdfPlatform(sdf)))
             return(sdf)
         }
-        stopifnot(platform(sdf) == 'HM450')
+        stopifnot(sdfPlatform(sdf) == 'HM450')
         sdf = addMask(sdf, sesameDataGet('HM450.probeInfo')$mask.tcga)
     }
 

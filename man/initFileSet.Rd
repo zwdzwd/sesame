@@ -9,7 +9,7 @@ initFileSet(map_path, platform, samples, probes = NULL, inc = 4)
 \arguments{
 \item{map_path}{path of file to map}
 
-\item{platform}{EPIC, HM450 or HM27, consistent with platform(sdf)}
+\item{platform}{EPIC, HM450 or HM27, consistent with sdfPlatform(sdf)}
 
 \item{samples}{sample names}
 

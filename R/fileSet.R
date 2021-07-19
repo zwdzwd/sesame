@@ -19,10 +19,10 @@ openSesameToFile <- function(
     samples <- basename(searchIDATprefixes(idat_dir))
     sdf <- readIDATpair(file.path(idat_dir, samples[1]))
 
-    fset <- initFileSet(map_path, platform(sdf), samples, inc = inc)
+    fset <- initFileSet(map_path, sdfPlatform(sdf), samples, inc = inc)
     
     message(
-        'Mapping ', length(samples), ' ', platform(sdf),
+        'Mapping ', length(samples), ' ', sdfPlatform(sdf),
         ' samples to ', map_path, '.')
     
     returned <- bplapply(samples, function(sample) {
@@ -46,7 +46,7 @@ openSesameToFile <- function(
 #' initialize a fileSet class by allocating appropriate storage
 #'
 #' @param map_path path of file to map
-#' @param platform EPIC, HM450 or HM27, consistent with platform(sdf)
+#' @param platform EPIC, HM450 or HM27, consistent with sdfPlatform(sdf)
 #' @param samples sample names
 #' @param probes probe names
 #' @param inc bytes per unit data storage
