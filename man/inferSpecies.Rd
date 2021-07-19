@@ -45,11 +45,7 @@ Our function works on a single sample.
 Infer Species
 }
 \examples{
-df_as <- sesameDataGet('Mammal40.alignmentScore')
-manifests=sesameDataGet("Mammal40.address")
-mft_mm=cbind(manifests$ordering[,1:3],manifests$species$mus_musculus)
-#idat <- searchIDATprefixes(system.file("extdata/", package = "sesameData"))['GSM4411953']
-#sdf <- readIDATpair(idat,manifest=mft_mm, platform='Mammal40')
-sdf <- sesameDataGet("GSM4411953")
-inferred.species <- inferSpecies(sdf,df_as)
+
+sdf = sesameDataGet("MM285.1.SigDF")
+inferSpecies(sdf)
 }

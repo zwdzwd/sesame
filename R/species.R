@@ -15,13 +15,9 @@
 #'
 #' Our function works on a single sample.
 #' @examples
-#' df_as <- sesameDataGet('Mammal40.alignmentScore')
-#' manifests=sesameDataGet("Mammal40.address")
-#' mft_mm=cbind(manifests$ordering[,1:3],manifests$species$mus_musculus)
-#' #idat <- searchIDATprefixes(system.file("extdata/", package = "sesameData"))['GSM4411953']
-#' #sdf <- readIDATpair(idat,manifest=mft_mm, platform='Mammal40')
-#' sdf <- sesameDataGet("GSM4411953")
-#' inferred.species <- inferSpecies(sdf,df_as)
+#'
+#' sdf = sesameDataGet("MM285.1.SigDF")
+#' inferSpecies(sdf)
 #' @export
 inferSpecies <- function(sdf,df_as=NULL,topN=3000,
     threshold.pos=0.01,threshold.neg=0.1,ret.max=T,
@@ -31,9 +27,10 @@ inferSpecies <- function(sdf,df_as=NULL,topN=3000,
         ## Load alignment score (df_as) from .rda according to the specific species.
         df_as=sesameDataGet(paste(platform,'alignmentScore',sep='.'))
     }
-    pvalue=pval(sdf)
+
+    pvalue = pOOBAH(sdf, return.pval=TRUE)
     ## Only keep the overlapped probes between matrix of pvalue and alignment score.
-    pvalue <- pvalue[intersect(names(pvalue),rownames(df_as))]
+    pvalue = pvalue[intersect(names(pvalue),rownames(df_as))]
     ## Get positive probes (pvalue <= 0.01) and sort from the smallest to the largest
     pos_probes=sort(pvalue[pvalue <= threshold.pos],decreasing=F)
     ## Get negative probes (pvalue >= 0.1) and sort from the largest to the smallest.
@@ -41,7 +38,7 @@ inferSpecies <- function(sdf,df_as=NULL,topN=3000,
     success.rate = length(pvalue[pvalue<=0.05]) / length(pvalue)
     
     ## If success.rate larger than 0.8, then directly assign species 'mouse' to this sample
-    if (success.rate >= threshold.sucess.rate && sdf@platform=='MM285') {
+    if (success.rate >= threshold.sucess.rate && platform(sdf) == 'MM285') {
         return(list(auc=1,taxid='10090',species='Mus musculus'))
     }
     
@@ -66,8 +63,7 @@ inferSpecies <- function(sdf,df_as=NULL,topN=3000,
     if (length(y_true) == 0){
         if (ret.max==T){
             return(list(auc=NA,species=NA,taxid=NA))
-        }
-        else {
+        } else {
             return(as.data.frame(t(sapply(colnames(df_as),function() {
                 list(auc=NA,species=NA,taxid=NA)
             }))))
@@ -81,8 +77,7 @@ inferSpecies <- function(sdf,df_as=NULL,topN=3000,
         n2 <- sum(!labels)
         R1 <- sum(rank(df_as[,s])[labels])
         U1 <- R1 - n1 * (n1 + 1)/2
-        auc <- U1/(n1 * n2)
-        return(auc)
+        U1/(n1 * n2)
     })
     
     ## if ret.max, then only the species with the maximal AUC would be returned, else,
@@ -93,8 +88,7 @@ inferSpecies <- function(sdf,df_as=NULL,topN=3000,
         l['taxid']=unlist(strsplit(names(l)[1],"\\|"))[2]
         names(l)[1] <- 'auc'
         return(l)
-    }
-    else {
+    } else {
         return(auc)
     }
 }

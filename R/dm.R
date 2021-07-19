@@ -308,9 +308,9 @@ DMR <- function(betas, smry, contrast,
 #' @examples
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
-#' contrasts(smry)
+#' dmContrasts(smry)
 #' @export
-contrasts = function(smry) {
+dmContrasts = function(smry) {
     stopifnot(is(smry, "DMLSummary"))
     colnames(attr(smry, "model.matrix"))
 }
