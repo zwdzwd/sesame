@@ -4,12 +4,9 @@
                   
 SeSAMe is an R package for processing Infinium DNA methylation data. SeSAMe currently supports EPIC, HM450 and HM27 platforms and dynamically generated manifest.
 
-
-To install from github,
+To install from Github,
 ```R
-BiocManager::install("sesame")
-## or developmental version
-BiocManager::install("sesame", version="devel")
+BiocManager::install("zwdzwd/sesame")
 ```
 
 See the package [Home Page on Bioconductor](https://bioconductor.org/packages/release/bioc/html/sesame.html) and the [Developmental Branch](https://bioconductor.org/packages/devel/bioc/html/sesame.html).

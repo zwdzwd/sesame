@@ -1,5 +1,11 @@
-reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
+reference_plot_se = function(betas, se, color=c("blueYellow","jet"), show_sample_names=FALSE) {
 
+    ## top N probes ordered by delta_beta, will be dominated by certain tissue otherwise
+    rd = as.data.frame(rowData(se))
+    topN = do.call(c, lapply(split(rd, rd$branch), function(x) {
+        x$Probe_ID[order(x$delta_beta)][seq_len(min(nrow(x), 200))] }))
+    se = se[rd$Probe_ID %in% topN,]
+    
     pkgTest("wheatmap")
     color = match.arg(color)
     if (color == "blueYellow") stop.points = c("blue","yellow")
@@ -13,7 +19,7 @@ reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
     }
 
     g = WHeatmap(assay(se), cmp=CMPar(stop.points=stop.points,
-        dmin=0, dmax=1), name="b1") # reference
+        dmin=0, dmax=1), xticklabels = show_sample_names, name="b1") # reference
     if (!is.null(betas)) {          # query samples
         g = g + WHeatmap(betas[rownames(se),], RightOf("b1"),
             cmp=CMPar(stop.points=stop.points, dmin=0, dmax=1),
@@ -23,10 +29,10 @@ reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
         right = "b1"
     }
     ## branch color bar (vertical)
-    g = g + WColorBarV(rd$probebranches, RightOf(right, width=0.03),
+    g = g + WColorBarV(rd$branch, RightOf(right, width=0.03),
         cmp=CMPar(label2color=md$branch_color), name="bh")
     ## tissue color bar (horizontal)
-    g = g + WColorBarH(cd$Tissue_Corrected, TopOf("b1",height=0.03),
+    g = g + WColorBarH(cd$tissue, TopOf("b1",height=0.03),
         cmp=CMPar(label2color=md$tissue_color), name="ti")
     ## legends
     g = g + WLegendV("ti", TopRightOf("bh", just=c('left','top'), h.pad=0.02),
@@ -52,21 +58,7 @@ reference_plot_se = function(betas, se, color=c("blueYellow","fullJet")) {
 #' @importFrom SummarizedExperiment rowData
 compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
     se = sesameDataGet("MM285.tissueSignature")
-    reference_plot_se(betas, se, color=color)
-}
 
-#' Compare beta value against mouse blood reference
-#'
-#' @param betas matrix of betas for the target sample
-#' @param color either blueYellow or fullJet
-#' @return grid object that co-plots with a pre-built mouse blood reference
-#' @export
-#' @examples
-#' sesameDataCache("MM285") # if not done yet
-#' b = sesameDataGet("MM285.10.tissue")$betas[,10]
-#' compareMouseBloodReference(b)
-compareMouseBloodReference = function(betas=NULL, color="blueYellow") {
-    se = sesameDataGet("MM285.bloodSignature")
     reference_plot_se(betas, se, color=color)
 }
 
@@ -74,7 +66,7 @@ compareMouseBloodReference = function(betas=NULL, color="blueYellow") {
 #' the branchIDs in the row data of the reference) by reporting independent 
 #' composition through cell type deconvolution.
 #'
-#' @param sample Named vector with probes and their corresponding beta value 
+#' @param betas Named vector with probes and their corresponding beta value 
 #' measurement
 #' @param reference Summarized Experiment with either hypomethylated or 
 #' hypermethylated probe selection (row data), sample selection (column data), 
@@ -96,97 +88,92 @@ compareMouseBloodReference = function(betas=NULL, color="blueYellow") {
 #' @return Summarized experiment with meta data of the inferred samples 
 #' (column data), meta data, and results of tissue inference (assay).
 #'
+#' betas 
+#'
 #' @export
-inferTissue = function(sample, reference=NA, platform=NA, ignore_branches=c("ML-Hematopoiesis", "MLH-Lymphoid", "MLH-Myeloid", "MLHL-T"), abs_delta_beta_min=0.3, auc_min=0.99, coverage_min=0.80, n=NA) {
+inferTissue = function(betas, reference = NULL, platform = NULL,
+    ignore_branches = c("ML-Hematopoiesis", "MLH-Lymphoid", "MLH-Myeloid", "MLHL-T"),
+    abs_delta_beta_min = 0.3, auc_min = 0.99, coverage_min = 0.80, topN = 15) {
 
-    if (!is.numeric(sample)) {
-        cat("Provided sample is not a named numeric vector.\n")
-        return(NULL)
-    }
+    ## reference = MM285.tissueSignature
+    ## betas = getBetas(sesameDataGet("MM285.1.SigDF"))
+    ## betas = tbk_data("~/zhoulab/labprojects/20200228_Mouse_Array_Project/20210104_mouse_array_data_analysis/tbk_MM285/204875570014_R03C01.tbk", max_pval=0.2)
+    ## abs_delta_beta_min = 0.3
+    ## topN = 15
+    
+    stopifnot(is.numeric(betas))
 
-    if (is.na(reference)) {
-        if (is.na(platform)) {
-            platform = inferPlatform(names(sample))
+    if (is.null(reference)) {
+        if (is.null(platform)) {
+            platform = inferPlatformFromProbeIDs(names(betas))
         }
-        reference = readRDS(url(paste("http://zhouserver.research.chop.edu/InfiniumAnnotation/current/", platform, "/", platform, ".reference.signature.rds", sep="")))
-        #sesameDataGet(paste(platform, ".reference.signature.rds" , sep=""))
+        stopifnot(platform %in% c("MM285")) # TODO: add human
+        reference = sesameDataGet(sprintf("%s.tissueSignature", platform))
     }
     
     rd = rowData(reference)
-    branches = unique(rd$branchID)
-    results = unlist(setNames(lapply(branches, 
-        function(branch) {
-            rd_branch = rd[rd$branchID == branch & abs(rd$delta_beta) >= abs_delta_beta_min, ]
+    fracs = sort(sapply(unique(rd$branch), function(branch) {
+        rd1 = rd[
+            rd$branch == branch & abs(rd$delta_beta) >= abs_delta_beta_min, ]
 
-            if (is.na(n)) {
-                n = nrow(rd_branch)
-            }
+        rd1 = head(rd1[order(-abs(rd1$delta_beta)), ], n = topN)
+        
+        fracs1 = c(1 - betas[rd1[rd1$delta_beta < 0, "Probe_ID"]],
+            betas[rd1[rd1$delta_beta > 0, "Probe_ID"]])
 
-            probes = rownames(head(rd_branch[order(-abs(rd_branch$delta_beta)), ], n=n))
-
-            rd_ = rd[probes, ]
-
-            probes_hypo = rd_$probeID[rd$delta_beta < 0]
-            probes_hyper = rd$probeID[rd$delta_beta > 0]
-
-            betas_hypo = c(0)
-            betas_hyper = c(0)
-            if(length(probes_hypo) > 0)
-                betas_hypo = sample[probes_hypo]
-            if(length(probes_hyper) > 0)
-                betas_hyper = sample[probes_hyper]
-            return((sum(betas_hyper, na.rm=T) + sum(1 - betas_hypo, na.rm=T)) / (length(betas_hypo) + length(betas_hyper)))
-            }), branches))
-    results = results[!(names(results) %in% ignore_branches)]
-
-    cd = meta[match(colnames(results), meta$sample),]
-    se = SummarizedExperiment(assays=list(results=results), colData=cd)
-    metadata(se)$tissue_color = metadata(reference)$tissue_color
-    metadata(se)$branchID_color = metadata(reference)$branchID_color
-    se
-}   
-
-
-#' inferTissue infers the tissue of a matrix of samples (as identified through
-#' the branchIDs in the row data of the reference) by reporting independent 
-#' composition through cell type deconvolution.
-#'
-#' @param resultsSE Summarized experiment with meta data of the inferred 
-#' samples (column data), meta data, and results of tissue inference (assay).
-#'
-#' @return ggplot2 object
-#'
-#' @export
-plotInferTissueResults = function(resultsSE) {
-    cd = as_tibble(colData(resultsSE))
-    md = metadata(resultsSE)
-    g = WHeatmap(assay(resultsSE), cmp=CMPar(dmax=1, dmin=0, colorspace.name = 'diverge_hcl'), name="main", 
-               xticklabels=T, xticklabels.n=ncol(assay(resultsSE)),  
-               xticklabel.fontsize=8, #xticklabel.rotat = 90, 
-               yticklabels=T, yticklabels.n=nrow(assay(resultsSE)),  
-               yticklabel.fontsize=10, yticklabel.pad = 0.04)
-    g = g + WLegendV("main", BottomRightOf(h.pad=0.05))
-    # tissue labels (horizontal)
-    g = g + WColorBarH(cd$tissue, TopOf("main",height=0.03),
-                     cmp=CMPar(label2color=md$tissue_color), name="tissue_label",
-                     xticklabels=T, xticklabel.side='t', xticklabel.fontsize=10,
-                     #label.space = 1,
-                     #xticklabel.space=0.0001,
-                     label.use.data=TRUE, 
-                     label.pad=0.2
-     )
-    # branchID labels (vertical)
-    g = g + WColorBarV(rownames(res), LeftOf("main"),
-                     cmp=CMPar(label2color=md$branchID_color), name="branch_label",
-                     yticklabels=T, yticklabel.side='t', yticklabel.fontsize=10,
-                     #label.space = 1,
-                     #xticklabel.space=0.0001,
-                     #label.use.data=TRUE, 
-                     label.pad=0.2
-    )
-    g = g + WCustomize(mar.top=0.23, mar.left = 0.12, mar.bottom = 0.12)
-    g
+        mean(fracs1, na.rm = TRUE)
+    }), decreasing = TRUE)
+    sprintf("[%s](%1.1f) [%s](%1.1f)", names(fracs)[1], fracs[1], names(fracs)[2], fracs[2])
+    
+    ## results = results[!(names(results) %in% ignore_branches)]
+    ## cd = meta[match(colnames(results), meta$betas),]
+    ## se = SummarizedExperiment(assays=list(results=results), colData=cd)
+    ## metadata(se)$tissue_color = metadata(reference)$tissue_color
+    ## metadata(se)$branchID_color = metadata(reference)$branchID_color
+    ## se
 }
+
+
+## #' inferTissue infers the tissue of a matrix of samples (as identified through
+## #' the branchIDs in the row data of the reference) by reporting independent 
+## #' composition through cell type deconvolution.
+## #'
+## #' @param resultsSE Summarized experiment with meta data of the inferred 
+## #' samples (column data), meta data, and results of tissue inference (assay).
+## #'
+## #' @return ggplot2 object
+## #'
+## #' @export
+## plotInferTissueResults = function(resultsSE) {
+##     cd = as_tibble(colData(resultsSE))
+##     md = metadata(resultsSE)
+##     g = WHeatmap(assay(resultsSE), cmp=CMPar(dmax=1, dmin=0, colorspace.name = 'diverge_hcl'),
+##         name="main", xticklabels=T, xticklabels.n=ncol(assay(resultsSE)), 
+##         xticklabel.fontsize=8, #xticklabel.rotat = 90, 
+##         yticklabels=T, yticklabels.n=nrow(assay(resultsSE)),  
+##         yticklabel.fontsize=10, yticklabel.pad = 0.04)
+##     g = g + WLegendV("main", BottomRightOf(h.pad=0.05))
+##     ## tissue labels (horizontal)
+##     g = g + WColorBarH(cd$tissue, TopOf("main",height=0.03),
+##         cmp=CMPar(label2color=md$tissue_color), name="tissue_label",
+##         xticklabels=T, xticklabel.side='t', xticklabel.fontsize=10,
+##         ## label.space = 1,
+##         ## xticklabel.space=0.0001,
+##         label.use.data=TRUE, 
+##         label.pad=0.2
+##     )
+##     ## branchID labels (vertical)
+##     g = g + WColorBarV(rownames(res), LeftOf("main"),
+##         cmp=CMPar(label2color=md$branchID_color), name="branch_label",
+##         yticklabels=T, yticklabel.side='t', yticklabel.fontsize=10,
+##         ## label.space = 1,
+##         ## xticklabel.space=0.0001,
+##         ## label.use.data=TRUE, 
+##         label.pad=0.2
+##     )
+##     g = g + WCustomize(mar.top=0.23, mar.left = 0.12, mar.bottom = 0.12)
+##     g
+## }
 
 
 

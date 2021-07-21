@@ -72,7 +72,7 @@ inferSpecies <- function(sdf, df_as = NULL, topN = 3000,
         } else {
             return(as.data.frame(t(vapply(colnames(df_as),function() {
                 list(auc=NA,species=NA,taxid=NA)
-            }), c(numeric(1), character(1), character(1)))))
+            }, c(numeric(1), character(1), character(1))))))
         }
     }
     
