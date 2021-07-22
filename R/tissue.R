@@ -1,6 +1,8 @@
-reference_plot_se = function(betas, se, color=c("blueYellow","jet"), show_sample_names=FALSE) {
+reference_plot_se = function(
+    betas, se, color=c("blueYellow","jet"), show_sample_names=FALSE) {
 
-    ## top N probes ordered by delta_beta, will be dominated by certain tissue otherwise
+    ## top N probes ordered by delta_beta, will
+    ## be dominated by certain tissue otherwise
     rd = as.data.frame(rowData(se))
     topN = do.call(c, lapply(split(rd, rd$branch), function(x) {
         x$Probe_ID[order(x$delta_beta)][seq_len(min(nrow(x), 200))] }))
@@ -8,8 +10,11 @@ reference_plot_se = function(betas, se, color=c("blueYellow","jet"), show_sample
     
     pkgTest("wheatmap")
     color = match.arg(color)
-    if (color == "blueYellow") stop.points = c("blue","yellow")
-    else stop.points = NULL
+    if (color == "blueYellow") {
+        stop.points = c("blue","yellow")
+    } else {
+        stop.points = NULL
+    }
 
     cd = as_tibble(colData(se))
     rd = as_tibble(rowData(se))
@@ -21,7 +26,7 @@ reference_plot_se = function(betas, se, color=c("blueYellow","jet"), show_sample
     g = WHeatmap(assay(se), cmp=CMPar(stop.points=stop.points,
         dmin=0, dmax=1), xticklabels = show_sample_names, name="b1") # reference
     if (!is.null(betas)) {          # query samples
-        g = g + WHeatmap(betas[rownames(se),], RightOf("b1"),
+        g = g + WHeatmap(betas[rd$Probe_ID,], RightOf("b1"),
             cmp=CMPar(stop.points=stop.points, dmin=0, dmax=1),
             name="b2", xticklabels=TRUE, xticklabels.n=ncol(betas))
         right = "b2"
@@ -51,8 +56,8 @@ reference_plot_se = function(betas, se, color=c("blueYellow","jet"), show_sample
 #' @export
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
-#' b = sesameDataGet("MM285.10.tissue")$betas[,1:2]
-#' compareMouseTissueReference(b)
+#' compareMouseTissueReference()
+#' 
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment rowData
@@ -85,22 +90,19 @@ compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
 #' @param n Numerical value indicating the number of probes to at most use for 
 #' any one given branch
 #'
-#' @return Summarized experiment with meta data of the inferred samples 
-#' (column data), meta data, and results of tissue inference (assay).
-#'
-#' betas 
+#' @return inferred tissue as a string
+#' @examples
+#' sesameDataCache("MM285") # if not done yet
+#' sdf = sesameDataGet("MM285.1.SigDF")
+#' inferTissue(getBetas(dyeBiasNL(noob(sdf))))
 #'
 #' @export
 inferTissue = function(betas, reference = NULL, platform = NULL,
-    ignore_branches = c("ML-Hematopoiesis", "MLH-Lymphoid", "MLH-Myeloid", "MLHL-T"),
+    ignore_branches = c(
+        "ML-Hematopoiesis", "MLH-Lymphoid",
+        "MLH-Myeloid", "MLHL-T"),
     abs_delta_beta_min = 0.3, auc_min = 0.99, coverage_min = 0.80, topN = 15) {
 
-    ## reference = MM285.tissueSignature
-    ## betas = getBetas(sesameDataGet("MM285.1.SigDF"))
-    ## betas = tbk_data("~/zhoulab/labprojects/20200228_Mouse_Array_Project/20210104_mouse_array_data_analysis/tbk_MM285/204875570014_R03C01.tbk", max_pval=0.2)
-    ## abs_delta_beta_min = 0.3
-    ## topN = 15
-    
     stopifnot(is.numeric(betas))
 
     if (is.null(reference)) {
@@ -112,7 +114,7 @@ inferTissue = function(betas, reference = NULL, platform = NULL,
     }
     
     rd = rowData(reference)
-    fracs = sort(sapply(unique(rd$branch), function(branch) {
+    fracs = sort(vapply(unique(rd$branch), function(branch) {
         rd1 = rd[
             rd$branch == branch & abs(rd$delta_beta) >= abs_delta_beta_min, ]
 
@@ -122,8 +124,9 @@ inferTissue = function(betas, reference = NULL, platform = NULL,
             betas[rd1[rd1$delta_beta > 0, "Probe_ID"]])
 
         mean(fracs1, na.rm = TRUE)
-    }), decreasing = TRUE)
-    sprintf("[%s](%1.1f) [%s](%1.1f)", names(fracs)[1], fracs[1], names(fracs)[2], fracs[2])
+    }, numeric(1)), decreasing = TRUE)
+    sprintf("[%s](%1.1f) [%s](%1.1f)",
+        names(fracs)[1], fracs[1], names(fracs)[2], fracs[2])
     
     ## results = results[!(names(results) %in% ignore_branches)]
     ## cd = meta[match(colnames(results), meta$betas),]
@@ -147,7 +150,8 @@ inferTissue = function(betas, reference = NULL, platform = NULL,
 ## plotInferTissueResults = function(resultsSE) {
 ##     cd = as_tibble(colData(resultsSE))
 ##     md = metadata(resultsSE)
-##     g = WHeatmap(assay(resultsSE), cmp=CMPar(dmax=1, dmin=0, colorspace.name = 'diverge_hcl'),
+##     g = WHeatmap(assay(resultsSE), cmp=CMPar(dmax=1, dmin=0,
+## colorspace.name = 'diverge_hcl'),
 ##         name="main", xticklabels=T, xticklabels.n=ncol(assay(resultsSE)), 
 ##         xticklabel.fontsize=8, #xticklabel.rotat = 90, 
 ##         yticklabels=T, yticklabels.n=nrow(assay(resultsSE)),  

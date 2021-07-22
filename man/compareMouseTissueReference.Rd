@@ -20,6 +20,6 @@ Compare mouse array data with mouse tissue references
 }
 \examples{
 sesameDataCache("MM285") # if not done yet
-b = sesameDataGet("MM285.10.tissue")$betas[,1:2]
-compareMouseTissueReference(b)
+compareMouseTissueReference()
+
 }

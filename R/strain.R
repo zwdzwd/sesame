@@ -55,7 +55,7 @@ betaToAF = function(betas) {
     toFlip <- !setNames(as.logical(substr(
         design, nchar(design), nchar(design))), names(mft))
 
-    vaf <- betas[grep('rs', names(betas))]
+    vaf <- betas[grep('^rs', names(betas))]
     vaf[toFlip[names(vaf)]] <- 1-vaf[toFlip[names(vaf)]]
     vaf
 }
