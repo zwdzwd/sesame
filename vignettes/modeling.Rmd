@@ -215,7 +215,7 @@ above to chromosome X regions that show X-inactivation-related methylation
 difference. To do this, we need to pick a contrast:
 
 ```{r}
-contrasts(smry)                         # pick a contrast
+dmContrasts(smry)                       # pick a contrast
 merged = DMR(se, smry, "sexMale")       # merge CpGs to regions / segments
 ```
 

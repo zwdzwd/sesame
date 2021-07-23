@@ -117,8 +117,8 @@ inferSexKaryotypes <- function(sdf) {
 #' 45,X female (Turner's) can confuse the model sometimes.
 #' This function works on a single sample.
 #' @importFrom randomForest randomForest
-#' @import e1071
 #' @import sesameData
+#' @import e1071
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf = sesameDataGet('EPIC.1.SigDF')
@@ -136,7 +136,7 @@ inferSex = function(x, pfm = NULL) {
     
     stopifnot(pfm %in% c('EPIC','HM450','MM285'))
     if (pfm == 'MM285'){
-        library(e1071)
+        pkgTest("e1071")
         inf = sesameDataGet("MM285.inferences")$sex
         if (is(x, "SigDF")) { # if possible use signal intensity
             intensYvsAuto = getIntensityRatioYvsAuto(x)

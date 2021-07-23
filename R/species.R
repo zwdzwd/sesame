@@ -25,11 +25,11 @@
 #' @export
 inferSpecies <- function(sdf, df_as = NULL, topN = 3000,
     threshold.pos = 0.01, threshold.neg = 0.1, ret.max = TRUE,
-    balance = TRUE, threshold.sucess.rate = 0.8, platform = 'MM285') {
+    balance = TRUE, threshold.sucess.rate = 0.8) {
 
     if (is.null(df_as)) {
         ## Load alignment score (df_as) for candidate species
-        df_as = sesameDataGet(paste(platform,'alignmentScore',sep='.'))
+        df_as = sesameDataGet(sprintf("%s.alignmentScore", sdfPlatform(sdf)))
     }
 
     pvalue = pOOBAH(sdf, return.pval=TRUE)

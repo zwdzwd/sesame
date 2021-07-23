@@ -12,8 +12,7 @@ inferSpecies(
   threshold.neg = 0.1,
   ret.max = TRUE,
   balance = TRUE,
-  threshold.sucess.rate = 0.8,
-  platform = "MM285"
+  threshold.sucess.rate = 0.8
 )
 }
 \arguments{
