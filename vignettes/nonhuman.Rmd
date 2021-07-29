@@ -108,11 +108,18 @@ betas = sesameDataGet("MM285.10.tissue")$betas
 visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
 ```
 
-## Strain Inference
+## Species, Strain Inference
 
 Let's load a pre-built `SigSet` object from SeSAMeData
 ```{r}
 sdf <- sesameDataGet("MM285.1.SigDF")
+```
+
+Infer species (obviously this is a mouse, but this is supposed to work on rat,
+human etc). Currently this feature supports both the mouse array and the mammal
+array.
+```{r}
+inferSpecies(sdf)$species
 ```
 
 Calculate beta values using the following commands.

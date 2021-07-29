@@ -29,7 +29,8 @@ openSesame <- function(
     if (length(x) == 1 && is(x, 'character') && dir.exists(x)) {
         x <- searchIDATprefixes(x)
     }
-    
+
+    ## TODO infer channel
     if (is(x, "SigDF")) {
         getBetas(dyeBiasNL(noob(pOOBAH(qualityMask(x)))))
     } else if (is(x, "GenomicRatioSet")) {

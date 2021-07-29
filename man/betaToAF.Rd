@@ -4,7 +4,7 @@
 \alias{betaToAF}
 \title{convert betas to variant allele frequency for mouse array}
 \usage{
-betaToAF(betas)
+betaToAF(betas, platform = "MM285")
 }
 \arguments{
 \item{betas}{beta value}
