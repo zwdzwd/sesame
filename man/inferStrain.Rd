@@ -4,10 +4,10 @@
 \alias{inferStrain}
 \title{Infer strain information for mouse array}
 \usage{
-inferStrain(vafs, strain_snp_table = NULL)
+inferStrain(betas, strain_snp_table = NULL)
 }
 \arguments{
-\item{vafs}{Variant allele frequency vector}
+\item{betas}{beta value vector from which VAFs are extracted}
 
 \item{strain_snp_table}{if not given download the default from sesameData}
 }
@@ -21,6 +21,6 @@ Infer strain information for mouse array
 \examples{
 sesameDataCache("MM285") # if not done yet
 sdf = sesameDataGet('MM285.1.SigDF')
-vafs = betaToAF(getBetas(dyeBiasNL(noob(sdf))))
-inferStrain(vafs)
+betas = getBetas(dyeBiasNL(noob(sdf)))
+inferStrain(betas)
 }

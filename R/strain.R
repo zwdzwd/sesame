@@ -1,18 +1,33 @@
+mouseBetaToAF = function(betas) {
+
+    mft = sesameDataGet('MM285.mm10.manifest')
+    mft = mft[grep('^rs', names(mft))]
+    ## flip AF based on manifest annotation
+    design = GenomicRanges::mcols(mft)[['design']]
+    toFlip = !setNames(as.logical(substr(
+        design, nchar(design), nchar(design))), names(mft))
+
+    vafs = betas[grep('^rs', names(betas))]
+    vafs[toFlip[names(vafs)]] = 1-vafs[toFlip[names(vafs)]]
+    vafs
+}
 
 #' Infer strain information for mouse array
 #'
-#' @param vafs Variant allele frequency vector
+#' @param betas beta value vector from which VAFs are extracted
 #' @param strain_snp_table if not given download the default from sesameData
 #' @return a list of best guess, p-value of the best guess
 #' and the probabilities of all strains
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
 #' sdf = sesameDataGet('MM285.1.SigDF')
-#' vafs = betaToAF(getBetas(dyeBiasNL(noob(sdf))))
-#' inferStrain(vafs)
+#' betas = getBetas(dyeBiasNL(noob(sdf)))
+#' inferStrain(betas)
 #' @import tibble
 #' @export
-inferStrain <- function(vafs, strain_snp_table = NULL) {
+inferStrain <- function(betas, strain_snp_table = NULL) {
+
+    vafs = mouseBetaToAF(betas)
 
     if (is.null(strain_snp_table)) {
         ## TODO: use MM285.strainSNPs
@@ -31,35 +46,6 @@ inferStrain <- function(vafs, strain_snp_table = NULL) {
         best = names(best.index),
         pval = (sum(probs) - probs[best.index]) / sum(probs),
         probs = probs/sum(probs))
-}
-
-#' convert betas to variant allele frequency for mouse array
-#'
-#' see formatVCF if you would like to convert color-channel
-#' probes on the human array.
-#'
-#' @param betas beta value
-#' @return SNP variant allele frequency
-#' @examples
-#' sesameDataCache("MM285") # if not done yet
-#' sdf = sesameDataGet('MM285.1.SigDF')
-#' vafs = betaToAF(getBetas(dyeBiasNL(noob(sdf))))
-#' @export
-betaToAF = function(betas, platform = "MM285") {
-
-    ## platform = inferPlatformFromProbeIDs(names(betas))
-    stopifnot(platform == "MM285") # only MM285 is supported
-
-    mft <- sesameDataGet('MM285.mm10.manifest')
-    mft <- mft[grep('^rs', names(mft))]
-    ## flip AF based on manifest annotation
-    design <- GenomicRanges::mcols(mft)[['design']]
-    toFlip <- !setNames(as.logical(substr(
-        design, nchar(design), nchar(design))), names(mft))
-
-    vaf <- betas[grep('^rs', names(betas))]
-    vaf[toFlip[names(vaf)]] <- 1-vaf[toFlip[names(vaf)]]
-    vaf
 }
 
 #' Compare Strain SNPs with a reference panel
