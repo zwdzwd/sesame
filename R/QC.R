@@ -117,7 +117,7 @@ sesameQC <- function(sdf) {
     qc$mean_oob_red <- mean(c(dG$MR, dG$UR), na.rm = TRUE)
     qc$mean_oob_grn <- mean(c(dR$MG, dR$UG), na.rm = TRUE)
 
-    res <- inferTypeIChannel(sdf, summary = TRUE)
+    res <- inferInfiniumIChannel(sdf, summary = TRUE)
     for (nm in names(res)) {
         qc[[paste0('InfI_switch_', nm)]] <- unname(res[nm])
     }

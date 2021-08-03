@@ -309,7 +309,7 @@ nonlinear scaling does shift beta values of Type-I probes.
 Sometimes Infinium-I channel spec is inaccurate in the manifest. We can
 infer the channel using data.
 ```{r}
-sdf.InfICorrected = inferTypeIChannel(sdf, verbose=TRUE)
+sdf.InfICorrected = inferInfiniumIChannel(sdf, verbose=TRUE)
 ```
 # The openSesame Pipeline
 
