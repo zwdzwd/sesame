@@ -72,6 +72,28 @@ meanIntensity <- function(sdf, mask = TRUE) {
     mean(c(s$M,s$U), na.rm=TRUE)
 }
 
+#' Median Intensity
+#'
+#' The function takes one single \code{SigDF} and computes median
+#' intensity of all the in-band measurements. This includes all Type-I
+#' in-band measurements and all Type-II probe measurements. Both methylated
+#' and unmethylated alleles are considered. This function outputs a single
+#' numeric for the median.
+#'
+#' @param sdf a \code{SigDF}
+#' @param mask whether to mask probes using mask column
+#' @return median of all intensities
+#' @examples
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' medianIntensity(sdf)
+#' @export
+medianIntensity <- function(sdf, mask = TRUE) {
+    stopifnot(is(sdf, "SigDF"))
+    s = signalMU(sdf, mask = mask)
+    median(c(s$M,s$U), na.rm=TRUE)
+}
+
 #' M+U Intensities for All Probes
 #'
 #' The function takes one single \code{SigDF} and computes total
