@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesame.R
 \name{medianIntensity}
 \alias{medianIntensity}
-\title{Median Intensity}
+\title{Whole-data-wide Median Intensity}
 \usage{
 medianIntensity(sdf, mask = TRUE)
 }

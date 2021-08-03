@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesame.R
 \name{totalIntensities}
 \alias{totalIntensities}
-\title{M+U Intensities for All Probes}
+\title{M+U Intensities Array}
 \usage{
 totalIntensities(sdf, mask = FALSE)
 }

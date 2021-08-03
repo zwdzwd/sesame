@@ -38,8 +38,8 @@ getSexInfo <- function(sdf) {
     probe2chr = probe2chr[probes]
 
     c(
-        medianY=median(subsetvec(intens, cleanY)),
-        medianX=median(subsetvec(intens, xLinked)),
+        medianY = median(intens[names(intens) %in% cleanY]),
+        medianX = median(intens[names(intens) %in% xLinked]),
         fracXlinked=(sum(
             xLinkedBeta>0.3 & xLinkedBeta<0.7, na.rm = TRUE) /
                 sum(!(is.na(xLinkedBeta)))),

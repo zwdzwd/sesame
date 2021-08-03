@@ -50,7 +50,7 @@ signalMU <- function(sdf, mask = TRUE) {
     sdf2
 }
 
-#' Mean Intensity
+#' Whole-dataset-wide Mean Intensity
 #'
 #' The function takes one single \code{SigDF} and computes mean
 #' intensity of all the in-band measurements. This includes all Type-I
@@ -72,7 +72,7 @@ meanIntensity <- function(sdf, mask = TRUE) {
     mean(c(s$M,s$U), na.rm=TRUE)
 }
 
-#' Median Intensity
+#' Whole-dataset-wide Median Intensity
 #'
 #' The function takes one single \code{SigDF} and computes median
 #' intensity of all the in-band measurements. This includes all Type-I
@@ -94,7 +94,29 @@ medianIntensity <- function(sdf, mask = TRUE) {
     median(c(s$M,s$U), na.rm=TRUE)
 }
 
-#' M+U Intensities for All Probes
+#' Whole-dataset-wide Probe Success Rate
+#'
+#' This function calculates the probe success rate using
+#' pOOBAH detection p-values. Probes that has a detection p-value
+#' higher than a specific threshold are considered failed probes.
+#' @param sdf a \code{SigDF}
+#' @param max_pval the maximum p-value to consider detection success
+#' @param mask whether or not we count the masked probes in SigDF
+#'
+#' @examples
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' probeSuccessRate(sdf)
+#' @export
+probeSuccessRate = function(sdf, mask = TRUE, max_pval = 0.05) {
+    pval = pOOBAH(sdf, return.pval = TRUE)
+    if (mask) { pval = pval[!sdf$mask] }
+    pval = na.omit(pval)
+    stopifnot(length(pval) > 100)
+    sum(pval < max_pval) / length(pval)
+}
+
+#' M+U Intensities Array
 #'
 #' The function takes one single \code{SigDF} and computes total
 #' intensity of all the in-band measurements by summing methylated and
@@ -111,45 +133,6 @@ totalIntensities <- function(sdf, mask = FALSE) {
     stopifnot(is(sdf, "SigDF"))
     s = signalMU(sdf, mask = mask)
     setNames(s$M+s$U, s$Probe_ID)
-}
-
-subsetvec <- function(vec, vecnames) {
-    vec[names(vec) %in% vecnames]
-}
-
-#' Infer Ethnicity
-#'
-#' This function uses both the built-in rsprobes as well as the type I
-#' Color-Channel-Switching probes to infer ethnicity.
-#'
-#' s better be background subtracted and dyebias corrected for
-#' best accuracy
-#'
-#' Please note: the betas should come from SigDF *without*
-#' channel inference.
-#'
-#' @param sdf a \code{SigDF}
-#' @return string of ethnicity
-#' @importFrom randomForest randomForest
-#' @import sesameData
-#' @examples
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' inferEthnicity(sdf)
-#' @export
-inferEthnicity <- function(sdf) {
-
-    stopifnot(is(sdf, 'SigDF'))
-    stopifnot(sdfPlatform(sdf) %in% c('EPIC','HM450'))
-
-    ethnicity.inference <- sesameDataGet('ethnicity.inference')
-    ccsprobes <- ethnicity.inference$ccs.probes
-    rsprobes <- ethnicity.inference$rs.probes
-    ethnicity.model <- ethnicity.inference$model
-    af <- c(
-        getBetas(sdf, mask=FALSE)[rsprobes],
-        getAFTypeIbySumAlleles(sdf, known.ccs.only = FALSE)[ccsprobes])
-
-    as.character(predict(ethnicity.model, af))
 }
 
 #' Get beta Values

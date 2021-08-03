@@ -2,7 +2,7 @@
 % Please edit documentation in R/sesame.R
 \name{meanIntensity}
 \alias{meanIntensity}
-\title{Mean Intensity}
+\title{Whole-dataset-wide Mean Intensity}
 \usage{
 meanIntensity(sdf, mask = TRUE)
 }
