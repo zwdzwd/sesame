@@ -21,6 +21,10 @@ in-band measurements and all Type-II probe measurements. Both methylated
 and unmethylated alleles are considered. This function outputs a single
 numeric for the mean.
 }
+\details{
+Note: mean in this case is more informative than median because
+methylation level is mostly bimodal.
+}
 \examples{
 sesameDataCache("EPIC") # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')

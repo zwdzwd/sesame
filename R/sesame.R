@@ -58,6 +58,9 @@ signalMU <- function(sdf, mask = TRUE) {
 #' and unmethylated alleles are considered. This function outputs a single
 #' numeric for the mean.
 #'
+#' Note: mean in this case is more informative than median because
+#' methylation level is mostly bimodal.
+#'
 #' @param sdf a \code{SigDF}
 #' @param mask whether to mask probes using mask column
 #' @return mean of all intensities
@@ -72,12 +75,10 @@ meanIntensity <- function(sdf, mask = TRUE) {
     mean(c(s$M,s$U), na.rm=TRUE)
 }
 
-#' Whole-dataset-wide Median Intensity
+#' Whole-dataset-wide Median Total Intensity (M+U)
 #'
 #' The function takes one single \code{SigDF} and computes median
-#' intensity of all the in-band measurements. This includes all Type-I
-#' in-band measurements and all Type-II probe measurements. Both methylated
-#' and unmethylated alleles are considered. This function outputs a single
+#' intensity of M+U for each probe. This function outputs a single
 #' numeric for the median.
 #'
 #' @param sdf a \code{SigDF}
@@ -88,10 +89,10 @@ meanIntensity <- function(sdf, mask = TRUE) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' medianIntensity(sdf)
 #' @export
-medianIntensity <- function(sdf, mask = TRUE) {
+medianTotalIntensity = function(sdf, mask = TRUE) {
     stopifnot(is(sdf, "SigDF"))
     s = signalMU(sdf, mask = mask)
-    median(c(s$M,s$U), na.rm=TRUE)
+    median(c(s$M + s$U), na.rm=TRUE)
 }
 
 #' Whole-dataset-wide Probe Success Rate
