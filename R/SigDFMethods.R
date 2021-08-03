@@ -36,9 +36,15 @@ print.SigDF = function(x, ...) {
         sprintf(" - %d Control Probes\n",
             ifelse(is.null(controls(x)), 0, nrow(controls(x)))),
         sprintf(" - %d Number of Masked Probes\n", sum(x$mask))))
-    print(cbind("-"="-",
-        Row=c(1,2,nrow(x)-1,nrow(x)),
-        as.data.frame(x[c(1,2,nrow(x)-1,nrow(x)),])), row.names=FALSE)
+    if (nrow(x) < 4) {
+        print(cbind("-"="-",
+            Row=seq_len(nrow(x)),
+            as.data.frame(x)), row.names=FALSE)
+    } else {
+        print(cbind("-"="-",
+            Row=c(1,2,nrow(x)-1,nrow(x)),
+            as.data.frame(x[c(1,2,nrow(x)-1,nrow(x)),])), row.names=FALSE)
+    }
 }
 
 #' Convenience function to output platform attribute of SigDF
