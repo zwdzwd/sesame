@@ -29,7 +29,7 @@ inferInfiniumIChannel <- function(
         red_max > grn_max, "R", "G"), levels=c("G","R","2"))
     d1R = sdf1[new_col == "R",]
     d1G = sdf1[new_col == "G",]
-    bg_max = quantile(c(d1R$MG,d1R$UG,d1G$MR,d1G$UR), 0.95)
+    bg_max = quantile(c(d1R$MG,d1R$UG,d1G$MR,d1G$UR), 0.95, na.rm=TRUE)
 
     ## revert to the original for failed probes if so desire
     if (!switch_failed) {
@@ -38,7 +38,7 @@ inferInfiniumIChannel <- function(
     }
     sdf$col[inf1_idx] = factor(new_col, levels=c("G","R","2"))
 
-    smry <- c(
+    smry = c(
         R2R = sum(sdf1$col == "R" & new_col == "R"),
         G2G = sum(sdf1$col == "G" & new_col == "G"),
         R2G = sum(sdf1$col == "R" & new_col == "G"),

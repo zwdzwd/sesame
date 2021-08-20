@@ -22,5 +22,5 @@ numeric for the median.
 \examples{
 sesameDataCache("EPIC") # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
-medianIntensity(sdf)
+medianTotalIntensity(sdf)
 }

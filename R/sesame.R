@@ -87,7 +87,7 @@ meanIntensity <- function(sdf, mask = TRUE) {
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' medianIntensity(sdf)
+#' medianTotalIntensity(sdf)
 #' @export
 medianTotalIntensity = function(sdf, mask = TRUE) {
     stopifnot(is(sdf, "SigDF"))

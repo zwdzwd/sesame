@@ -30,7 +30,7 @@ openSesame <- function(
         x <- searchIDATprefixes(x)
     }
 
-    ## TODO infer channel
+    ## TODO add inferInfiniumIChannel
     if (is(x, "SigDF")) {
         getBetas(dyeBiasNL(noob(pOOBAH(qualityMask(x)))))
     } else if (is(x, "GenomicRatioSet")) {
