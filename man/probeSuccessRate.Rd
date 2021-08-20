@@ -13,6 +13,9 @@ probeSuccessRate(sdf, mask = TRUE, max_pval = 0.05)
 
 \item{max_pval}{the maximum p-value to consider detection success}
 }
+\value{
+a fraction number as probe success rate
+}
 \description{
 This function calculates the probe success rate using
 pOOBAH detection p-values. Probes that has a detection p-value

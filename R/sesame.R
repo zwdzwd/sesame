@@ -103,7 +103,7 @@ medianTotalIntensity = function(sdf, mask = TRUE) {
 #' @param sdf a \code{SigDF}
 #' @param max_pval the maximum p-value to consider detection success
 #' @param mask whether or not we count the masked probes in SigDF
-#'
+#' @return a fraction number as probe success rate
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf = sesameDataGet('EPIC.1.SigDF')
