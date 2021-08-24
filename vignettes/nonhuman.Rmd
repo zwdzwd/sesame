@@ -162,6 +162,7 @@ betas <- sesameDataGet("MM285.10.tissue")$betas[,1:2]
 Compare mouse array data with mouse tissue references. This will return a grid
 object that contrasts the traget sample with pre-build mouse tissue reference.
 ```{r}
+options(sesameData_use_alternative=TRUE)
 compareMouseTissueReference(betas)
 ```
 
