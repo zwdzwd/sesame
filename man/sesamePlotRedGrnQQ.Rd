@@ -16,8 +16,7 @@ create a qqplot
 Plot red-green QQ-Plot using Infinium-I Probes
 }
 \examples{
-sesameDataCache("EPIC")
-sdf <- # if not done yet
+sesameDataCache("EPIC")  # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sesamePlotRedGrnQQ(sdf)
 }

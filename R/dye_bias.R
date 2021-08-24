@@ -183,8 +183,7 @@ dyeBiasNL <- dyeBiasCorrTypeINorm
 #' @param sdf a \code{SigDF}
 #' @return create a qqplot
 #' @examples
-#' sesameDataCache("EPIC")
-#' sdf <- # if not done yet
+#' sesameDataCache("EPIC")  # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesamePlotRedGrnQQ(sdf)
 #' @import graphics
@@ -199,4 +198,30 @@ sesamePlotRedGrnQQ <- function(sdf) {
         main = 'Red-Green QQ-Plot', cex = 0.5,
         xlim = c(0,m), ylim = c(0,m))
     abline(0,1,lty = 'dashed')
+}
+
+#' Quantify how much dye bias in high signal range deviates from the
+#' global median
+#'
+#' Positive value indicates augmentation of high-end dye bias over
+#' low-end. negative value represents high-end dye bias contradicts
+#' that at low-end (a distorted dye bias). Negative distortion score
+#' (< -1) suggests low experiment quality. 0 suggests a consistent
+#' dye bias at high and low-end.
+#'
+#' @param sdf a \code{SigDF}
+#' @return a numeric score
+#' @examples
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' dyeBiasDistortion(sdf)
+#' @export
+dyeBiasDistortion = function(sdf) {
+    t1 = InfI(sdf)
+    intens = totalIntensities(sdf)
+    intens[t1[t1$col == "G", "Probe_ID"]]
+    medR = median(sort(intens[t1[t1$col == "R", "Probe_ID"]]))
+    medG = median(sort(intens[t1[t1$col == "G", "Probe_ID"]]))
+    topR = median(tail(sort(intens[t1[t1$col == "R", "Probe_ID"]]), n=20))
+    topG = median(tail(sort(intens[t1[t1$col == "G", "Probe_ID"]]), n=20))
+    log(topR / topG) / log(medR / medG)
 }

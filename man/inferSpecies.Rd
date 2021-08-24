@@ -46,6 +46,8 @@ AUC was calculated for each specie, y_true is 1 or 0
 for pval < threshold.pos or pval > threshold.neg, respeceively,
 }
 \examples{
-sdf = sesameDataGet("MM285.1.SigDF")
-inferSpecies(sdf)
+if (FALSE) { ## remove this, testing doesn't allow large file caching
+  sdf = sesameDataGet("MM285.1.SigDF")
+  inferSpecies(sdf)
+}
 }

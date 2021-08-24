@@ -68,15 +68,13 @@ scrubSoft <- function(sdf) {
 #' 
 #' @param sdf a \code{SigDF}
 #' @param offset offset
-#' @param bgR background red probes, if not given use all oobR
-#' @param bgG background grn probes, if not given use all oobG
 #' @return a new \code{SigDF} with noob background correction
 #' @import stats
 #' @examples
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.nb <- noob(sdf)
 #' @export
-noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
+noob <- function(sdf, offset=15) {
 
     ## if no Infinium-I probes
     if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
@@ -108,6 +106,58 @@ noob <- function(sdf, bgR = NULL, bgG = NULL, offset=15) {
     
     sdf
 }
+
+
+
+#' Negative control plus out-of-band background correction
+#'
+#' The function takes a \code{SigDF} and returns a modified \code{SigDF}
+#' with background subtracted. Background was modelled in a normal distribution
+#' and true signal in an exponential distribution. The Norm-Exp deconvolution
+#' is parameterized using both negative control and Out-Of-Band (oob) probes
+#' 
+#' @param sdf a \code{SigDF}
+#' @param offset offset
+#' @return a new \code{SigDF} with neob background correction
+#' @import stats
+#' @examples
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sdf.nb <- neob(sdf)
+#' @export
+neob <- function(sdf, offset=15) {
+
+    ## if no Infinium-I probes
+    if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
+
+    ## background
+    neg = negControls(sdf)
+    bgG = c(oobG(noMasked(sdf)), neg$G)
+    bgR = c(oobR(noMasked(sdf)), neg$R)
+    ## if not enough out-of-band signal
+    if (sum(bgG > 0, na.rm=TRUE) < 100 ||
+            sum(bgR > 0, na.rm=TRUE) < 100) { return(sdf) }
+    bgR[bgR == 0] = 1
+    bgG[bgG == 0] = 1
+
+    ## foreground
+    ibG = c(InfIG(sdf)$MG, InfIG(sdf)$UG, InfII(sdf)$UG)
+    ibR = c(InfIR(sdf)$MR, InfIR(sdf)$UR, InfII(sdf)$UR)
+    ibG[ibG == 0] = 1 # set signal to 1 if 0
+    ibR[ibR == 0] = 1 # set signal to 1 if 0
+
+    ## grn channel
+    fitG = backgroundCorrectionNoobFit(ibG, bgG)
+    sdf$MG = normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + 15
+    sdf$UG = normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + 15
+
+    ## red channel
+    fitR = backgroundCorrectionNoobFit(ibR, bgR)
+    sdf$MR = normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + 15
+    sdf$UR = normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + 15
+    
+    sdf
+}
+
 
 ## Noob background correction for one channel
 ## ib array of in-band signal

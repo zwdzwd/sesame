@@ -56,13 +56,14 @@ reference_plot_se = function(
 #' @export
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
+#' options(sesameData_use_alternative=TRUE) # TODO
 #' compareMouseTissueReference()
 #' 
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment rowData
 compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
-    se = sesameDataGet("MM285.tissueSignature", use_alternative = TRUE) # TODO
+    se = sesameDataGet("MM285.tissueSignature")
 
     reference_plot_se(betas, se, color=color)
 }
@@ -90,6 +91,7 @@ compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
 #' @return inferred tissue as a string
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
+#' options(sesameData_use_alternative=TRUE) # TODO
 #' sdf = sesameDataGet("MM285.1.SigDF")
 #' inferTissue(getBetas(dyeBiasNL(noob(sdf))))
 #'
@@ -104,8 +106,7 @@ inferTissue = function(betas, reference = NULL, platform = NULL,
             platform = inferPlatformFromProbeIDs(names(betas))
         }
         stopifnot(platform %in% c("MM285")) # TODO: add human
-        reference = sesameDataGet(
-            sprintf("%s.tissueSignature", platform), use_alternative = TRUE)
+        reference = sesameDataGet(sprintf("%s.tissueSignature", platform))
     }
     
     rd = rowData(reference)

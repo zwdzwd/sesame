@@ -62,6 +62,19 @@ sdfPlatform = function(sdf) {
     attr(sdf, "platform")
 }
 
+#' remove masked probes from SigDF
+#'
+#' @param sdf input SigDF object
+#' @return a SigDF object without masked probes
+#' @export
+#' @examples
+#' sesameDataCache("EPIC")
+#' sdf = sesameDataGet("EPIC.1.SigDF")
+#' sdf = pOOBAH(sdf)
+#'
+#' sdf_noMasked = noMasked(sdf)
+#'
+#' @export
 noMasked = function(sdf) { # filter masked probes
     sdf[!sdf$mask,,drop=FALSE]
 }

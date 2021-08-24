@@ -171,7 +171,7 @@ getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
     }
     
     ## always use the original order
-    betas = betas[match(sdf$Probe_ID, names(betas))]
+    betas = setNames(betas[match(sdf$Probe_ID, names(betas))], sdf$Probe_ID)
     if (mask) {
         betas[sdf$mask] = NA
     }
@@ -270,7 +270,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #' @param prefix.path sample prefix without _Grn.idat and _Red.idat
 #' @param manifest optional design manifest file
 #' @param controls optional control probe manifest file
-#' @param verbose     be verbose?  (FALSE)
+#' @param verbose be verbose?  (FALSE)
 #' @param platform EPIC, HM450 and HM27 etc.
 #' 
 #' @return a \code{SigDF}
@@ -281,7 +281,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #' @export
 readIDATpair <- function(
     prefix.path, platform = '', manifest = NULL,
-    controls = NULL, verbose=FALSE) {
+    controls = NULL, verbose = FALSE) {
     
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
         grn.name <- paste0(prefix.path, '_Grn.idat')
@@ -305,7 +305,7 @@ readIDATpair <- function(
 
     dm <- readIDAT1(grn.name, red.name, platform=platform)
     if (is.null(manifest)) { # pre-built platforms, EPIC, HM450, HM27 etc
-        df_address <- sesameDataGet(paste0(
+        df_address = sesameDataGet(paste0(
             attr(dm, 'platform'), '.address'))
         manifest <- df_address$ordering
         controls <- df_address$controls
@@ -324,6 +324,7 @@ readControls <- function(dm, controls) {
         rownames(ctl) <- make.names(controls$Name, unique=TRUE)
         ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
         colnames(ctl) <- c('G','R','col','type')
+        ctl = ctl[!(is.na(ctl$G)|is.na(ctl$R)),] # no NA in controls
     } else {
         ctl = as.data.frame(chipAddressToSignal(dm, controls))
     }

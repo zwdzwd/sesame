@@ -20,8 +20,10 @@
 #' and taxid.
 #'
 #' @examples 
-#' sdf = sesameDataGet("MM285.1.SigDF")
-#' inferSpecies(sdf)
+#' if (FALSE) { ## remove this, testing doesn't allow large file caching
+#'   sdf = sesameDataGet("MM285.1.SigDF")
+#'   inferSpecies(sdf)
+#' }
 #' @export
 inferSpecies <- function(sdf, df_as = NULL, topN = 3000,
     threshold.pos = 0.01, threshold.neg = 0.1, ret.max = TRUE,
