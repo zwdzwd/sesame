@@ -1,0 +1,43 @@
+Package: sesame
+Type: Package
+Title: SEnsible Step-wise Analysis of DNA MEthylation BeadChips
+Description: Tools For analyzing Illumina Infinium DNA methylation arrays.SeSAMe provides utilities to support analyses of multiple generations of Infinium DNA methylation BeadChips, including preprocessing, quality control, visualization and inference. SeSAMe features more accurate detection calling, intelligenet inference of ethnicity, sex and advanced quality control routines.
+Version: 1.11.12
+Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
+             email = "zhouwanding@gmail.com"),
+             person("Hui", "Shen", role = c("aut"),
+             email = "Hui.Shen@vai.org"),
+             person("Timothy", "Triche", role = "ctb"),
+             person("Bret", "Barnes", role = "ctb"))
+Depends: R (>= 4.1), sesameData, methods
+License: MIT + file LICENSE
+RoxygenNote: 7.1.2
+Imports: BiocParallel, grDevices, utils, stringr, tibble, illuminaio,
+        MASS, GenomicRanges, IRanges, grid, preprocessCore, S4Vectors,
+        randomForest, wheatmap, ggplot2, graphics, KernSmooth,
+        parallel, matrixStats, DNAcopy, stats, SummarizedExperiment,
+        e1071, fgsea, ggrepel, reshape2, RCy3
+Suggests: scales, knitr, rmarkdown, testthat, dplyr, tidyr, BiocStyle,
+        IlluminaHumanMethylation450kmanifest, minfi,
+        FlowSorted.CordBloodNorway.450k, FlowSorted.Blood.450k,
+        HDF5Array
+Encoding: UTF-8
+VignetteBuilder: knitr
+URL: https://github.com/zwdzwd/sesame
+BugReports: https://github.com/zwdzwd/sesame/issues
+biocViews: DNAMethylation, MethylationArray, Preprocessing,
+        QualityControl
+Collate: 'sex.R' 'species.R' 'QC.R' 'SigDFMethods.R' 'sesame.R' 'age.R'
+        'background_correction.R' 'cell_composition.R'
+        'channel_inference.R' 'cnv.R' 'ethnicity.R' 'deidentify.R'
+        'detection.R' 'dm.R' 'dye_bias.R' 'feature_selection.R'
+        'fileSet.R' 'mask.R' 'open.R' 'sesamize.R' 'snp.R' 'strain.R'
+        'tissue.R' 'track.R' 'utils.R' 'vcf.R' 'visualize.R' 'zzz.R'
+        'kyCG.R'
+NeedsCompilation: no
+Packaged: 2021-09-15 21:19:23 UTC; moyerej
+Author: Wanding Zhou [aut, cre],
+  Hui Shen [aut],
+  Timothy Triche [ctb],
+  Bret Barnes [ctb]
+Maintainer: Wanding Zhou <zhouwanding@gmail.com>
