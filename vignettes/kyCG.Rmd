@@ -129,7 +129,7 @@ The output of each test contains at least four variables: the estimate, p-value,
 It should be noted that the estimate (or test statistic) is test dependent and comparison between p-values should be limited to within the same type of test. For instance, the test statistics for Fisher's exact test and FGSEA are log fold change and the test statistic for Spearman's test is simply the rank order correlation coefficient. For simplicity, we report all of the test types in one data frame. 
 
 The ```nQ``` and ```nD``` columns identify the length of the query set and the database set, respectively. Often, it's important to examine the extent of overlap between the two sets, so that metric is reported as well in the ```overlap``` column.
-
+ 
 Using these results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}

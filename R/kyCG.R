@@ -513,7 +513,7 @@ calcFoldChange = function(mtx){
     num = mtx[1, 1] / (mtx[1, 1] + mtx[1, 2])
     den = (mtx[1, 1] + mtx[2, 1]) / sum(mtx)
     num / den
-}
+} 
 
 
 #' testEnrichmentFGSEA uses the FGSEA test to estimate the association of a
