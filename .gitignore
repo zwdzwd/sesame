@@ -18,4 +18,8 @@ vignettes/*.pdf
 .Rproj.user
 /doc/
 /Meta/
-
+.DS_Store
+vignettes/_site
+vignettes/_site.yml
+vignettes/_output.yaml
+vignettes/.DS_Store
