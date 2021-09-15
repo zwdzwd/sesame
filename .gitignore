@@ -23,3 +23,4 @@ vignettes/_site
 vignettes/_site.yml
 vignettes/_output.yaml
 vignettes/.DS_Store
+inst/.DS_Store
