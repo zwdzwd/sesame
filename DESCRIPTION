@@ -13,7 +13,7 @@ Depends: R (>= 4.1),
           sesameData,
           methods
 License: MIT + file LICENSE
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Imports: BiocParallel,
          grDevices,
          utils,
@@ -36,7 +36,11 @@ Imports: BiocParallel,
          DNAcopy,
          stats,
          SummarizedExperiment,
-         e1071
+         e1071,
+         fgsea,
+         ggrepel, 
+         reshape2,
+         RCy3
 Suggests: scales,
           knitr,
           rmarkdown,
@@ -83,3 +87,4 @@ Collate:
     'vcf.R'
     'visualize.R'
     'zzz.R'
+    'kyCG.R'
