@@ -294,4 +294,3 @@ model = lm(Mouse_Age_Days ~ Sex + Strain_Corrected + Tissue_Corrected +
 
 summary(model)
 ```
-```

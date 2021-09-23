@@ -56,7 +56,7 @@ getDatabaseSets = function(titles=NA, group=NA,
     platform = sprintf('Platform%s', platform)
     if (platform %in% colnames(meta))
         meta = meta[as.logical(meta[[platform]]), ]
-        
+    
     if (!is.na(reference)) {
         meta = meta[which(meta$Reference %in% reference), ]
     }
@@ -116,8 +116,8 @@ flattenlist = function(x) {
 #'
 #' @export
 compareDatbaseSetOverlap = function(databaseSets=NA,
-                                          metric="Jaccard",
-                                          verbose=FALSE) {
+                                    metric="Jaccard",
+                                    verbose=FALSE) {
     ndatabaseSets = length(databaseSets)
     names = names(databaseSets)
     m = matrix(0, nrow=ndatabaseSets, ncol=ndatabaseSets)
@@ -851,7 +851,7 @@ plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
                              colours=c('#2166ac','#333333','#b2182b'),
                              # limits=c(min(log2(data$estimate + 1)),
                              #         max(log2(data$estimate + 1)) )
-                             ) +
+        ) +
         geom_text(color='white', size=3) +
         labs(title=title, subtitle=subtitle) +
         geom_label(aes(x=label,
