@@ -2,7 +2,7 @@ Package: sesame
 Type: Package
 Title: SEnsible Step-wise Analysis of DNA MEthylation BeadChips
 Description: Tools For analyzing Illumina Infinium DNA methylation arrays.SeSAMe provides utilities to support analyses of multiple generations of Infinium DNA methylation BeadChips, including preprocessing, quality control, visualization and inference. SeSAMe features more accurate detection calling, intelligenet inference of ethnicity, sex and advanced quality control routines.
-Version: 1.10.4
+Version: 1.10.5
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "zhouwanding@gmail.com"),
              person("Hui", "Shen", role = c("aut"),
@@ -13,7 +13,7 @@ Depends: R (>= 4.1),
           sesameData,
           methods
 License: MIT + file LICENSE
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
 Imports: BiocParallel,
          grDevices,
          utils,
