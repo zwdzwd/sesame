@@ -13,7 +13,10 @@ listDatabaseSets = function() {
     x = apply(meta, 1, function(row) {
         cat(sprintf("Accession: %s (n: %s)\n", 
                     format(row["Title"], width = 50, justify = "l"), 
-                    row["N"]))})
+                    row["N"]))
+        return(row["Title"])
+        })
+    return(x)
 }
 
 #' getDatabaseSets retrieves database sets from a meta data sheet by querying 
@@ -56,7 +59,7 @@ getDatabaseSets = function(titles=NA, group=NA,
     platform = sprintf('Platform%s', platform)
     if (platform %in% colnames(meta))
         meta = meta[as.logical(meta[[platform]]), ]
-        
+    
     if (!is.na(reference)) {
         meta = meta[which(meta$Reference %in% reference), ]
     }
@@ -116,8 +119,8 @@ flattenlist = function(x) {
 #'
 #' @export
 compareDatbaseSetOverlap = function(databaseSets=NA,
-                                          metric="Jaccard",
-                                          verbose=FALSE) {
+                                    metric="Jaccard",
+                                    verbose=FALSE) {
     ndatabaseSets = length(databaseSets)
     names = names(databaseSets)
     m = matrix(0, nrow=ndatabaseSets, ncol=ndatabaseSets)
@@ -286,6 +289,8 @@ testEnrichment1 = function(querySet, databaseSet, universeSet,
 #' p-value. (Default: FALSE).
 #' @param n.fdr Integer corresponding to the number of comparisons made. 
 #' Optional. (Default: NA).
+#' @param return.meta Logical value indicating whether to return meta data 
+#' columns for those database sets containing sparse meta data information.
 #' @param verbose Logical value indicating whether to display intermediate
 #' text output about the type of test. Optional. (Default: FALSE).
 #'
@@ -298,7 +303,7 @@ testEnrichment1 = function(querySet, databaseSet, universeSet,
 #' @export
 testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                              platform=NA, estimate.type="ES", p.value.adj=FALSE,
-                             n.fdr=NA, verbose=FALSE) {
+                             n.fdr=NA, return.meta=FALSE, verbose=FALSE) {
     if (all(is.na(universeSet))) {
         if (verbose) {
             cat("The universeSet was not defined.", 
@@ -367,17 +372,26 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
     else
         results$p.adjust.fdr = p.adjust(results$p.value, method='fdr', n=n.fdr)
     
-    metadata = data.frame(
-        do.call(rbind,
-                lapply(databaseSets,
-                       function(databaseSet) {
-                           output = attr(databaseSet, "meta")
-                           if (!is.null(output)) 
-                               return(append(c(meta=TRUE), output))
-                           return(c(meta=FALSE))
-                       })
+    if (return.meta) {
+        metadata = data.frame(
+            do.call(rbind,
+                    lapply(databaseSets,
+                           function(databaseSet) {
+                               output = attr(databaseSet, "meta")
+                               if (!is.null(output)) 
+                                   return(data.frame(append(c(meta=TRUE), output)))
+                               return(data.frame(meta=FALSE))
+                           })
+            )
         )
-    )
+    }
+  
+    if (length(metadata) == 1) {
+       
+    } else {
+        metadata = data.frame(sapply(metadata, function(x) unlist(x)))
+    }
+   
     
     rank = list()
     rank$estimate.rank = rank(-results$estimate, ties.method='first')
@@ -386,12 +400,15 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
     rank$max.rank = apply(data.frame(rank), 1, max)
     rank$mean.rank = apply(data.frame(rank), 1, mean)
     rank = data.frame(rank, row.names=row.names(results))
-    output = cbind(results, rank, metadata)
+    if (return.meta) {
+        output = cbind(results, rank, metadata)
+    } else {
+        output = cbind(results, rank)
+    }
     
     output = output[order(output$p.value, decreasing=FALSE), ]
     return(output)
 }
-
 
 #' testEnrichmentGene tests for the enrichment of set of probes
 #' (querySet) in gene regions.
@@ -419,9 +436,9 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
         platform = inferPlatformFromProbeIDs(querySet)
     }
     
-    probeID2gene = tryCatch({
+    databaseSets = tryCatch({
         sesameDataGet(
-            sprintf('%s.probeID2gene.20210913', platform))
+            sprintf('KYCG.%s.gene.20210923', platform))
     },
     error = function (condition) {
         print("ERROR:")
@@ -434,6 +451,8 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
         return(NULL)
     })
     
+    probeID2gene = attr(databaseSets, 'probeID2gene')
+    
     databaseSetNames = probeID2gene$genesUniq[match(querySet, 
                                                     probeID2gene$probeID)]
     
@@ -444,8 +463,6 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
                       }))))
     
     if (length(databaseSetNames) == 0) return(NULL)
-    
-    databaseSets = getDatabaseSets(group="gene", platform=platform)
     
     n = length(databaseSets)
     
@@ -851,7 +868,7 @@ plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
                              colours=c('#2166ac','#333333','#b2182b'),
                              # limits=c(min(log2(data$estimate + 1)),
                              #         max(log2(data$estimate + 1)) )
-                             ) +
+        ) +
         geom_text(color='white', size=3) +
         labs(title=title, subtitle=subtitle) +
         geom_label(aes(x=label,

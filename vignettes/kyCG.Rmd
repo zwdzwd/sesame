@@ -33,10 +33,16 @@ library(stats4)
 
 ## Database Sets
 
-We have organized our database sets in terms of different releases. The ```listDatabaseSets()``` function lists the database sets in the most recent release. The ```release``` parameter to this function controls which release to list. The user can see the database sets available in Release 2 using the following:
+We have organized our database sets in terms of different releases. The ```listDatabaseSets()``` function lists the database sets in the most recent release. The ```release``` parameter to this function controls which release to list. The user can see the database sets available in latest release using the following.
 
 ``` {r list-data, eval=TRUE, echo=TRUE}
-listDatabaseSets()
+databaseSetNames = listDatabaseSets()
+```
+
+The function returns a vector containing these accessions.
+
+``` {r list-data, eval=TRUE, echo=TRUE}
+head(databaseSetNames)
 ```
 
 We have provided the ```getDatabaseSet()``` function that returns a list of database sets identified by their accessions shown in ```listDatabaseSets()```. When this function is ran for the first time, none of the database sets have been cached. Caching on the local machine is important on two fronts: firstly it limits the number of requests sent to our server, and secondly it limits the amount of time the user needs to wait when re-downloading database sets. For this reason, the first time the user runs ```getDatabaseSet()```, it will take some time to download all of the database sets from a given release. The default directory to which the database set will be cached is in knowYourCpGPackage/databaseSets. Additionally, the user may set a global variable KYCG_DATABASESETS_LOC if they wish to specify an alternative directory. Regardless of the initial request to ```getDatabaseSet()```, the entire given Release (identified by the ```release``` parameter) will be cached and stored in a respective sub-directory.
@@ -79,8 +85,6 @@ A query set represents probes of interest. It may either be in the form of a cha
 A list of test query sets can be obtained from the following URL. 
 
 ```{r cache-data2, eval=TRUE, echo=TRUE}
-library(SummarizedExperiment)
-
 MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
 df = rowData(MM285.tissueSignature)
 querySet = df$Probe_ID[df$branch == "E-Brain"]
@@ -293,5 +297,4 @@ model = lm(Mouse_Age_Days ~ Sex + Strain_Corrected + Tissue_Corrected +
                `SNP-mean` + `SpermMeth-mean` + `VMR-mean`, data=data)
 
 summary(model)
-```
 ```
