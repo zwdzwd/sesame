@@ -6,18 +6,18 @@
 #' listDatabaseSets()
 #'
 #' @export
-listDatabaseSets = function() {
-    meta = sesameData:::df_master
-    meta = meta[grepl('KYCG', meta$Title), ]
-    
-    x = apply(meta, 1, function(row) {
-        cat(sprintf("Accession: %s (n: %s)\n", 
-                    format(row["Title"], width = 50, justify = "l"), 
-                    row["N"]))
-        return(row["Title"])
-        })
-    return(x)
-}
+# listDatabaseSets = function() {
+#    meta = sesameData:::df_master
+#    meta = meta[grepl('KYCG', meta$Title), ]
+#    
+#    x = apply(meta, 1, function(row) {
+#        cat(sprintf("Accession: %s (n: %s)\n", 
+#                    format(row["Title"], width = 50, justify = "l"), 
+#                    row["N"]))
+#        return(row["Title"])
+#        })
+#    return(x)
+#}
 
 #' getDatabaseSets retrieves database sets from a meta data sheet by querying 
 #' the group, platform, reference columns. The data is returned as a list where 
@@ -173,7 +173,11 @@ getDatabaseSetOverlap = function(querySet,
                 cat("The platform was not defined.",
                     "Inferring platform from probeIDs.")
             }
-            platform = inferPlatformFromProbeIDs(querySet)
+            if (is.numeric(querySet)) {
+                platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+            } else {
+                platform = sesame:::inferPlatformFromProbeIDs(querySet)
+            }
         }
         databaseSets = getDatabaseSets(platform=platform, verbose=verbose)
     }
@@ -314,7 +318,11 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                 cat("The platform was not defined.",
                     "Inferring platform from probeIDs.")
             }
-            platform = inferPlatformFromProbeIDs(querySet)
+            if (is.numeric(querySet)) {
+                platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+            } else {
+                platform = sesame:::inferPlatformFromProbeIDs(querySet)
+            }
         }
         
         manifests = c("MM285.mm10.manifest",
@@ -349,7 +357,11 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                 cat("The platform was not defined.",
                     "Inferring platform from probeIDs.")
             }
-            platform = inferPlatformFromProbeIDs(querySet)
+            if (is.numeric(querySet)) {
+                platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+            } else {
+                platform = sesame:::inferPlatformFromProbeIDs(querySet)
+            }
         }
         databaseSets = getDatabaseSets(platform=platform, verbose=verbose)
     }
@@ -357,13 +369,15 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
     results = data.frame(
         do.call(rbind,
                 lapply(databaseSets,
-                    function(databaseSet) testEnrichment1(
+                    function(databaseSet) {
+                        testEnrichment1(
                         querySet=querySet,
                         databaseSet=databaseSet,
                         universeSet=universeSet,
                         p.value.adj=p.value.adj,
                         estimate.type=estimate.type,
                         verbose=verbose)
+                        }
                 )
         ))
     
@@ -385,12 +399,10 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                         })
             )
         )
+        if (length(metadata) != 1) {
+            metadata = data.frame(sapply(metadata, function(x) unlist(x)))
+        }
     }
-
-    if (length(metadata) != 1) {
-        metadata = data.frame(sapply(metadata, function(x) unlist(x)))
-    }
-   
     
     rank = list()
     rank$estimate.rank = rank(-results$estimate, ties.method='first')
@@ -432,7 +444,11 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
         if (verbose)
             print("The platform was not defined.',
                 'Inferring platform from probeIDs.")
-        platform = inferPlatformFromProbeIDs(querySet)
+        if (is.numeric(querySet)) {
+            platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+        } else {
+            platform = sesame:::inferPlatformFromProbeIDs(querySet)
+        }
     }
     
     databaseSets = tryCatch({
@@ -565,7 +581,7 @@ testEnrichmentFGSEA = function(querySet, databaseSet, p.value.adj=FALSE,
         ))
     }
     res = fgsea(pathways=list(pathway=databaseSet), 
-                stats=querySet)
+                stats=na.omit(querySet))
     
     if (p.value.adj) {
         p.value = res$padj
@@ -631,7 +647,8 @@ testEnrichmentSpearman = function(querySet, databaseSet) {
     result = data.frame(
         estimate = res$estimate[[1]],
         p.value = res$p.value,
-        test = test
+        test = test,
+        overlap = length(querySet)
     )
     return(result)
 }

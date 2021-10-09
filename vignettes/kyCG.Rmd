@@ -23,20 +23,22 @@ The set of CpGs that will be tested for enrichment is called the query set, and 
 
 Additionally, knowYourCpG has support for feature selection and feature engineering, which is currently in development. 
 
-```{r echo=TRUE, message=FALSE, warning=FALSE}
+```{r load-depenencies, echo=TRUE, message=FALSE, warning=FALSE}
 library(sesame)
 library(SummarizedExperiment)
 library(stats4)
+library(sesameData)
+sesameDataCacheAll()
 ```
 
 # Input Data
 
 ## Database Sets
 
-We have organized our database sets in terms of different releases. The ```listDatabaseSets()``` function lists the database sets in the most recent release. The ```release``` parameter to this function controls which release to list. The user can see the database sets available in latest release using the following.
+We have organized our database sets in terms of different releases. The following block lists the database sets in the most recent release under sesameData.
 
 ``` {r list-data, eval=TRUE, echo=TRUE}
-databaseSetNames = listDatabaseSets()
+databaseSetNames = sesameData:::df_master$Title[grepl('KYCG', sesameData:::df_master$Title)]
 ```
 
 The function returns a vector containing these accessions.
@@ -52,7 +54,7 @@ Using a subset of the available database sets, we will download them and load th
 ``` {r cache-data, eval=TRUE, warning=FALSE}
 databaseSetNames = c('KYCG.MM285.seqContextN.20210630',
                      'KYCG.MM285.designGroup.20210210',
-                     'HM450.chromosome.hg19.20210630',
+                     'KYCG.MM285.chromosome.hg19.20210630',
                      'KYCG.MM285.probeType.20210630')
 
 databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
@@ -61,7 +63,7 @@ databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 In total, 39 database sets have been loaded from this command.
 
 ``` {r view-data0, eval=TRUE, warning=FALSE}
-cat(sprintf("length(databaseSets) = %s database sets", length(databaseSets)))
+sprintf("length(databaseSets) = %s database sets", length(databaseSets))
 ```
 
 We will show the first three for simplicity.
@@ -182,7 +184,7 @@ Both of the tests result in a p-value greater than 0.05, so there is little evid
 A third test might be whether there is a significant correlation between these two database sets.
 
 ``` {r run-test-other3, echo=TRUE, eval=TRUE}
-resultsCpGdensityTSS = testEnrichmentAll(querySet=CpGDesity50,
+resultsCpGdensityTSS = testEnrichmentAll(querySet=CpGDesity50[[1]],
                                          databaseSets=distToTSS,
                                          platform="MM285")
 print(resultsCpGdensityTSS)
@@ -202,7 +204,7 @@ databaseSets = getDatabaseSets("KYCG.MM285.TFBS.20210817", verbose=FALSE)
 
 Next we can actually perform the test.
 
-``` {r run-test-tfbs, echo=TRUE, eval=TRUE}
+``` {r run-test-tfbs, echo=TRUE, eval=TRUE, warning=FALSE}
 resultsTFBS = testEnrichmentAll(querySet=querySet, databaseSets=databaseSets,
                                 platform="MM285", verbose=FALSE)
 head(resultsTFBS)
