@@ -368,11 +368,11 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
     
     results = data.frame(
         do.call(rbind,
-                lapply(names(databaseSets),
-                    function(databaseSetName) {
+                lapply(databaseSets,
+                    function(databaseSet) {
                         testEnrichment1(
                         querySet=querySet,
-                        databaseSet=databaseSets[[databaseSetName]],
+                        databaseSet=databaseSet,
                         universeSet=universeSet,
                         p.value.adj=p.value.adj,
                         estimate.type=estimate.type,
