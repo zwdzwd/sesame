@@ -13,6 +13,7 @@ testEnrichmentAll(
   estimate.type = "ES",
   p.value.adj = FALSE,
   n.fdr = NA,
+  return.meta = FALSE,
   verbose = FALSE
 )
 }
@@ -39,6 +40,9 @@ p-value. (Default: FALSE).}
 
 \item{n.fdr}{Integer corresponding to the number of comparisons made. 
 Optional. (Default: NA).}
+
+\item{return.meta}{Logical value indicating whether to return meta data 
+columns for those database sets containing sparse meta data information.}
 
 \item{verbose}{Logical value indicating whether to display intermediate
 text output about the type of test. Optional. (Default: FALSE).}

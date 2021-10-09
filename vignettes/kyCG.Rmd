@@ -41,7 +41,7 @@ databaseSetNames = listDatabaseSets()
 
 The function returns a vector containing these accessions.
 
-``` {r list-data, eval=TRUE, echo=TRUE}
+``` {r print-data, eval=TRUE, echo=TRUE}
 head(databaseSetNames)
 ```
 
