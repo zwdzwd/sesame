@@ -20,7 +20,7 @@ listDatabaseSets = function() {
 }
 
 #' getDatabaseSets retrieves database sets from a meta data sheet by querying 
-#' the group, platform, reference columns. The data is returned as a list where 
+#' the group, platform, reference columns. The data is returned as a list where the
 #' names correspond to chosen database sets.
 #'
 #' @param titles vector containing the characters associated with the
@@ -42,8 +42,8 @@ listDatabaseSets = function() {
 #'
 #' @export
 getDatabaseSets = function(titles=NA, group=NA, 
-                            platform=NA, reference=NA, 
-                            verbose=TRUE) {
+                           platform=NA, reference=NA, 
+                           verbose=TRUE) {
     meta = sesameData:::df_master
     # meta = meta[meta$kyCG, ]
     meta = meta[grepl('KYCG', meta$Title), ]
@@ -69,9 +69,9 @@ getDatabaseSets = function(titles=NA, group=NA,
     }
     
     databaseSets = flattenlist(lapply(unlist(na.omit(meta$Title)), 
-                                    function(title) {
-                                        sesameDataGet(title, verbose=verbose)
-                                    })
+                                      function(title) {
+                                          sesameDataGet(title, verbose=verbose)
+                                      })
     )
     
     return(databaseSets)
@@ -160,9 +160,9 @@ compareDatbaseSetOverlap = function(databaseSets=NA,
 #'
 #' @export
 getDatabaseSetOverlap = function(querySet,
-                                databaseSets,
-                                platform=NA,
-                                verbose=TRUE) {
+                                 databaseSets,
+                                 platform=NA,
+                                 verbose=TRUE) {
     if (all(is.na(databaseSets))) {
         if (verbose) {
             cat("The databaseSets were not defined.", 
@@ -181,18 +181,18 @@ getDatabaseSetOverlap = function(querySet,
     metadata = as.data.frame(
         do.call(rbind,
                 lapply(databaseSets,
-                    function(databaseSet) {
-                        rowmeta = attr(databaseSet, "meta")
-                        if (!is.null(rowmeta)) 
-                            rowmeta = c(meta=TRUE, rowmeta)
-                        else
-                            rowmeta = c(meta=FALSE, rowmeta)
-                        nQ = length(querySet)
-                        nD = length(databaseSet)
-                        overlap = length(intersect(querySet, databaseSet))
-                        rowmeta = c(rowmeta, nQ=nQ, nD=nD, overlap=overlap)
-                        return(rowmeta)
-                    })
+                       function(databaseSet) {
+                           rowmeta = attr(databaseSet, "meta")
+                           if (!is.null(rowmeta)) 
+                               rowmeta = c(meta=TRUE, rowmeta)
+                           else
+                               rowmeta = c(meta=FALSE, rowmeta)
+                           nQ = length(querySet)
+                           nD = length(databaseSet)
+                           overlap = length(intersect(querySet, databaseSet))
+                           rowmeta = c(rowmeta, nQ=nQ, nD=nD, overlap=overlap)
+                           return(rowmeta)
+                       })
         ))
     
     metadata$meta = as.logical(metadata$meta)
@@ -221,8 +221,8 @@ getDatabaseSetOverlap = function(querySet,
 #' @return One list containing features corresponding the test estimate,
 #' p-value, and type of test.
 testEnrichment1 = function(querySet, databaseSet, universeSet,
-                        estimate.type="ES", p.value.adj=FALSE,
-                        verbose=FALSE) {
+                           estimate.type="ES", p.value.adj=FALSE,
+                           verbose=FALSE) {
     if (is.numeric(querySet)) { # a named vector of continuous value
         if(is.numeric(databaseSet)) { # numeric db
             if (verbose) {
@@ -302,8 +302,8 @@ testEnrichment1 = function(querySet, databaseSet, universeSet,
 #'
 #' @export
 testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
-                            platform=NA, estimate.type="ES", p.value.adj=FALSE,
-                            n.fdr=NA, return.meta=FALSE, verbose=FALSE) {
+                             platform=NA, estimate.type="ES", p.value.adj=FALSE,
+                             n.fdr=NA, return.meta=FALSE, verbose=FALSE) {
     if (all(is.na(universeSet))) {
         if (verbose) {
             cat("The universeSet was not defined.", 
@@ -318,9 +318,9 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
         }
         
         manifests = c("MM285.mm10.manifest",
-                    "EPIC.hg19.manifest",
-                    "HM450.hg19.manifest",
-                    "HM27.hg19.manifest")
+                      "EPIC.hg19.manifest",
+                      "HM450.hg19.manifest",
+                      "HM27.hg19.manifest")
         
         manifest = manifests[grepl(platform, manifests)]
         
@@ -357,13 +357,13 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
     results = data.frame(
         do.call(rbind,
                 lapply(databaseSets,
-                    function(databaseSet) testEnrichment1(
-                        querySet=querySet,
-                        databaseSet=databaseSet,
-                        universeSet=universeSet,
-                        p.value.adj=p.value.adj,
-                        estimate.type=estimate.type,
-                        verbose=verbose)
+                       function(databaseSet) testEnrichment1(
+                           querySet=querySet,
+                           databaseSet=databaseSet,
+                           universeSet=universeSet,
+                           p.value.adj=p.value.adj,
+                           estimate.type=estimate.type,
+                           verbose=verbose)
                 )
         ))
     
@@ -376,18 +376,19 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
         metadata = data.frame(
             do.call(rbind,
                     lapply(databaseSets,
-                        function(databaseSet) {
-                            output = attr(databaseSet, "meta")
-                            if (!is.null(output)) 
-                                return(data.frame(append(c(meta=TRUE), 
-                                                            output)))
-                            return(data.frame(meta=FALSE))
-                        })
+                           function(databaseSet) {
+                               output = attr(databaseSet, "meta")
+                               if (!is.null(output)) 
+                                   return(data.frame(append(c(meta=TRUE), output)))
+                               return(data.frame(meta=FALSE))
+                           })
             )
         )
     }
-
-    if (length(metadata) != 1) {
+  
+    if (length(metadata) == 1) {
+       
+    } else {
         metadata = data.frame(sapply(metadata, function(x) unlist(x)))
     }
    
@@ -429,9 +430,9 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
 #' @export
 testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
     if (is.na(platform)) {
-        if (verbose)
-            print("The platform was not defined.',
-                'Inferring platform from probeIDs.")
+        if (verbose) {
+            print("The platform was not defined. Inferring platform from probeIDs.")
+        }
         platform = inferPlatformFromProbeIDs(querySet)
     }
     
@@ -457,9 +458,9 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
     
     databaseSetNames = na.omit(unique(
         unlist(lapply(databaseSetNames,
-                    function(databaseSetName) {
-                        strsplit(databaseSetName, ";")
-                    }))))
+                      function(databaseSetName) {
+                          strsplit(databaseSetName, ";")
+                      }))))
     
     if (length(databaseSetNames) == 0) return(NULL)
     
@@ -467,10 +468,7 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
     
     databaseSets = databaseSets[names(databaseSets) %in% databaseSetNames]
     
-    return(testEnrichmentAll(querySet, 
-                            databaseSets, 
-                            platform=platform, 
-                            n.fdr=n))
+    return(testEnrichmentAll(querySet, databaseSets, platform=platform, n.fdr=n))
 }
 
 
@@ -491,11 +489,11 @@ testEnrichmentFisher = function(querySet, databaseSet, universeSet) {
     test = "fisher"
     if (length(intersect(querySet, databaseSet)) == 0) {
         return(data.frame(estimate=0,
-                        p.value=1,
-                        test=test,
-                        nQ=length(querySet),
-                        nD = length(databaseSet),
-                        overlap=0
+                          p.value=1,
+                          test=test,
+                          nQ=length(querySet),
+                          nD = length(databaseSet),
+                          overlap=0
         ))
     }
     
@@ -552,16 +550,16 @@ calcFoldChange = function(mtx){
 #' @return A DataFrame with the estimate/statistic, p-value, and name of test
 #' for the given results.
 testEnrichmentFGSEA = function(querySet, databaseSet, p.value.adj=FALSE,
-                            estimate.type="ES") {
+                               estimate.type="ES") {
     test="fgsea"
     overlap = length((intersect(names(querySet), databaseSet)))
     if (overlap == 0) {
         return(data.frame(estimate=0,
-                        p.value=1,
-                        test=test,
-                        nQ=length(databaseSet),
-                        nD=length(querySet),
-                        overlap=overlap
+                          p.value=1,
+                          test=test,
+                          nQ=length(databaseSet),
+                          nD=length(querySet),
+                          overlap=overlap
         ))
     }
     res = fgsea(pathways=list(pathway=databaseSet), 
@@ -613,11 +611,11 @@ testEnrichmentSpearman = function(querySet, databaseSet) {
     test = "spearman"
     if (length(intersect(names(querySet), names(databaseSet))) == 0) {
         return(data.frame(estimate=0,
-                        p.value=1,
-                        test=test,
-                        nQ=length(querySet),
-                        nD=length(databaseSet),
-                        overlap=0
+                          p.value=1,
+                          test=test,
+                          nQ=length(querySet),
+                          nD=length(databaseSet),
+                          overlap=0
         ))
     }
     
@@ -646,15 +644,14 @@ testEnrichmentSpearman = function(querySet, databaseSet) {
 #' @import stats
 calcDatabaseSetStatistics1 = function(x) {
     a = data.frame(mean=apply(x, 2, mean, na.rm=TRUE),
-                    median=apply(x, 2, median, na.rm=TRUE),
-                    var=apply(x, 2, var, na.rm=TRUE),
-                    sd=apply(x, 2, sd, na.rm=TRUE),
-                    skew=apply(x, 2, var, na.rm=TRUE),
-                    iqr=apply(x, 2, IQR, na.rm=TRUE),
-                    range=apply(x, 2, max, na.rm=TRUE) - 
-                        apply(x, 2, min, na.rm=TRUE),
-                    min=apply(x, 2, min, na.rm=TRUE),
-                    max=apply(x, 2, max, na.rm=TRUE))
+                   median=apply(x, 2, median, na.rm=TRUE),
+                   var=apply(x, 2, var, na.rm=TRUE),
+                   sd=apply(x, 2, sd, na.rm=TRUE),
+                   skew=apply(x, 2, var, na.rm=TRUE),
+                   iqr=apply(x, 2, IQR, na.rm=TRUE),
+                   range=apply(x, 2, max, na.rm=TRUE) - apply(x, 2, min, na.rm=TRUE),
+                   min=apply(x, 2, min, na.rm=TRUE),
+                   max=apply(x, 2, max, na.rm=TRUE))
     b = apply(x, 2, quantile, na.rm=TRUE, probs=seq(0, 1, 0.1))
     return(cbind(a, t(b)))
 }
@@ -669,16 +666,12 @@ calcDatabaseSetStatistics1 = function(x) {
 #' which the features will be extracted
 #' 
 #' @examples 
-#' library(SummarizedExperiment)
-#' se = sesameDataGet('MM285.20Kx467.SE')
-#' samplesheet = colData(se)[, c("Mouse_Age_Months", "Mouse_Age_Days", "Sex", 
-#' "Strain_Corrected","Tissue_Corrected", 'Genotype')]
-#' betas = assay(se)
-#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
-#' 'KYCG.MM285.designGroup.20210210', 'HM450.chromosome.hg19.20210630', 
-#' 'KYCG.MM285.probeType.20210630')
-#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
-#' statistics = calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
+#' betas = getBetas("MM285", dev=TRUE, verbose=TRUE)
+#' databaseSetNames = c('20210630_MM285_mm10_CpGDensity',
+#' '20210630_MM285_mm10_CGI', 20210816_MM285_mm10_distToTSS',
+#' '20210210_MM285_design', '20210630_MM285_mm10_probe_type')
+#' databaseSets = getDatabaseSets(databaseSetNames, dev=TRUE)
+#' calcDatabaseSetStatisticsAll(betas, databaseSets)
 #' 
 #' @return Vector for a given sample columns are features across different
 #' databaseSets
@@ -687,24 +680,23 @@ calcDatabaseSetStatistics1 = function(x) {
 calcDatabaseSetStatisticsAll = function(betas, databaseSets) {
     a = do.call(cbind, 
                 lapply(names(databaseSets),
-                    function(databaseSetName) {
-                        databaseSet = databaseSets[[databaseSetName]]
-                        if (length(databaseSet) >= nrow(betas)) return(FALSE)
-                        if (is.numeric(databaseSet)) {
-                            probes = names(databaseSet)
-                        } else {
-                            probes = databaseSet
-                        }
+                       function(databaseSetName) {
+                           databaseSet = databaseSets[[databaseSetName]]
+                           if (length(databaseSet) >= nrow(betas)) return(FALSE)
+                           if (is.numeric(databaseSet)) {
+                               probes = names(databaseSet)
+                           } else {
+                               probes = databaseSet
+                           }
                            
-                        statistics = suppressWarnings(
-                            calcDatabaseSetStatistics1(
-                                betas[na.omit(match(probes, rownames(betas))), ]))
-                        names(statistics) = unlist(lapply(names(statistics), 
-                            function(colname) {
-                                paste(databaseSetName, colname, sep="-")
-                            }))
-                            return(statistics)
-                        }))
+                           statistics = suppressWarnings(
+                               calcDatabaseSetStatistics1(
+                                   betas[na.omit(match(probes, rownames(betas))), ]))
+                           names(statistics) = unlist(lapply(names(statistics), function(colname) {
+                               paste(databaseSetName, colname, sep="-")
+                           }))
+                           return(statistics)
+                       }))
     b = a[, !grepl("FALSE", colnames(a))]
     c = b[, !apply(b, 2, function(x) {any(is.na(x) | is.infinite(x))})]
     return(c)
@@ -778,7 +770,7 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
     
     if (any(data$p.value <= 0.05)) {
         g = ggplot(data=data, aes(x=log2(estimate), y=-log10(p.value),
-                                color = cut(p.value, c(-Inf, 0.05))))
+                                  color = cut(p.value, c(-Inf, 0.05))))
     } else {
         g = ggplot(data=data, aes(x=estimate, y=p.value))
     }
@@ -861,21 +853,21 @@ plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
     }
     
     ggplot(data, aes(x=label, 
-                    y=log2(estimate), 
-                    label=sprintf('%.2f',log2(estimate)))) +
+                     y=log2(estimate), 
+                     label=sprintf('%.2f',log2(estimate)))) +
         geom_hline(yintercept=0) +
         geom_segment(aes(y=0, 
                          x=reorder(label, -estimate), 
                          yend=log2(estimate), xend=label), color='black') +
         geom_point(aes(fill=pmax(-1.5,log2(estimate))), 
-                stat='identity', 
-                size=10, 
-                alpha=0.95, 
-                shape=21) +
+                   stat='identity', 
+                   size=10, 
+                   alpha=0.95, 
+                   shape=21) +
         scale_fill_gradientn(name='Fold Change',
-                            colours=c('#2166ac','#333333','#b2182b'),
-                            # limits=c(min(log2(data$estimate + 1)),
-                            #         max(log2(data$estimate + 1)) )
+                             colours=c('#2166ac','#333333','#b2182b'),
+                             # limits=c(min(log2(data$estimate + 1)),
+                             #         max(log2(data$estimate + 1)) )
         ) +
         geom_text(color='white', size=3) +
         labs(title=title, subtitle=subtitle) +
@@ -889,8 +881,8 @@ plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
         # scale_fill_manual(values=hmm_colors) +
         ylab("Log2 Enrichment") +
         theme(axis.title.x = element_blank(),
-            axis.text.x = element_blank(),
-            axis.ticks.x = element_blank())
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank())
 }
 
 #' createGeneNetwork creates databaseSet network using the given similarity
@@ -915,6 +907,8 @@ createDatabaseSetNetwork = function(databaseSets,
                                     title="Database Interaction Network", 
                                     collection="DatabaseSets") {
     m = getDatabaseSetPairwiseDistance(databaseSets, metric="jaccard")
+    saveRDS(m, "/Users/ethanmoyer/Dropbox/Ongoing_knowYourCpG/data/databaseSetNetwork.rds")
+    
     m_ = m
     m = m_[seq(50), seq(50)]
     

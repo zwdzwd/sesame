@@ -22,13 +22,3 @@ databaseSets
 calcDatabaseSetStatisticsAll builds dataset for a given betas matrix 
 composed of engineered features from the given database sets
 }
-\examples{
-library(SummarizedExperiment)
-se = sesameDataGet('MM285.20Kx467.SE')
-samplesheet = colData(se)[, c("Mouse_Age_Months", "Mouse_Age_Days", "Sex", "Strain_Corrected","Tissue_Corrected", 'Genotype')]
-betas = assay(se)
-databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 'KYCG.MM285.designGroup.20210210', 'HM450.chromosome.hg19.20210630', 'KYCG.MM285.probeType.20210630')
-databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
-statistics = calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
-
-}
