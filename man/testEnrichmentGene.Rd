@@ -27,6 +27,10 @@ testEnrichmentGene tests for the enrichment of set of probes
 (querySet) in gene regions.
 }
 \examples{
-testEnrichmentGene(c("cg0000029"), platform="EPIC")
+library(SummarizedExperiment)
+MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+df = rowData(MM285.tissueSignature)
+querySet = df$Probe_ID[df$branch == "E-Brain"]
+testEnrichmentGene(querySet, platform="MM285", verbose=FALSE)
 
 }

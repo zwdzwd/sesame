@@ -32,6 +32,6 @@ databaseSetNames = c('KYCG.MM285.seqContextN.20210630',
 'KYCG.MM285.designGroup.20210210', 'HM450.chromosome.hg19.20210630', 
 'KYCG.MM285.probeType.20210630')
 databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
-statistics = calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
+calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
 
 }

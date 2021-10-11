@@ -17,7 +17,9 @@
 #' @return One list of vectors corresponding to aggregated database sets.
 #'
 #' @examples
-#' getDatabaseSets()
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
+#' 'KYCG.MM285.designGroup.20210210')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 #'
 #' @export
 getDatabaseSets = function(titles=NA, group=NA, 
@@ -82,7 +84,8 @@ flattenlist = function(x) {
 #' the pairwise distances between database sets.
 #'
 #' @examples
-#' databaseSets = list(a=c("a", "b"), b=c("a", "e", "f"), c=c("q", "a"))
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 #' compareDatbaseSetOverlap(databaseSets)
 #'
 #' @export
@@ -122,9 +125,14 @@ compareDatbaseSetOverlap = function(databaseSets=NA,
 #' sets.
 #'
 #' @examples
-#' querySet=c("cg29176188_TC21", "cg29176794_TC21")
-#' databaseSet=c("cg29176188_TC21", "cg29176794_TC21")
-#' getDatabaseSetOverlap(querySet, databaseSet)
+#' library(SummarizedExperiment)
+#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+#' df = rowData(MM285.tissueSignature)
+#' querySet = df$Probe_ID[df$branch == "E-Brain"]
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
+#' 'KYCG.MM285.designGroup.20210210')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+#' getDatabaseSetOverlap(querySet, databaseSets)
 #'
 #' @export
 getDatabaseSetOverlap = function(querySet,
@@ -270,7 +278,15 @@ testEnrichment1 = function(querySet, databaseSet, universeSet,
 #' p-value, and type of test.
 #'
 #' @examples
-#' testEnrichmentAll(c("cg0000029"))
+#' library(SummarizedExperiment)
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
+#' 'KYCG.MM285.designGroup.20210210')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+#' df = rowData(MM285.tissueSignature)
+#' querySet = df$Probe_ID[df$branch == "E-Brain"]
+#' testEnrichmentAll(querySet=querySet, 
+#' databaseSets=databaseSets, verbose=FALSE)
 #'
 #' @export
 testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
@@ -404,7 +420,11 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
 #' p-value, and type of test.
 #'
 #' @examples
-#' testEnrichmentGene(c("cg0000029"), platform="EPIC")
+#' library(SummarizedExperiment)
+#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+#' df = rowData(MM285.tissueSignature)
+#' querySet = df$Probe_ID[df$branch == "E-Brain"]
+#' testEnrichmentGene(querySet, platform="MM285", verbose=FALSE)
 #'
 #' @export
 testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
@@ -506,12 +526,6 @@ testEnrichmentFisher = function(querySet, databaseSet, universeSet) {
     return(result)
 }
 
-#' calcFoldChange calculates fold change given a 2x2 matrix of counts.
-#'
-#' @param mtx 2x2 matrix of values corresponding to overlapping counts between
-#' two sets of a categorical variable.
-#'
-#' @return A numerical value corresponding to the fold change enrichment,
 calcFoldChange = function(mtx){
     num = mtx[1, 1] / (mtx[1, 1] + mtx[1, 2])
     den = (mtx[1, 1] + mtx[2, 1]) / sum(mtx)
@@ -663,7 +677,7 @@ calcDatabaseSetStatistics1 = function(x) {
 #' 'KYCG.MM285.designGroup.20210210', 'HM450.chromosome.hg19.20210630', 
 #' 'KYCG.MM285.probeType.20210630')
 #' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
-#' statistics = calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
+#' calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
 #' 
 #' @return Vector for a given sample columns are features across different
 #' databaseSets
@@ -695,13 +709,6 @@ calcDatabaseSetStatisticsAll = function(betas, databaseSets) {
     return(c)
 }
 
-
-#' skew determines the skew of a distribution x, taken from the Moments package
-#'
-#' @param x Vector of numeric values
-#' @param na.rm Logical value corresponding to whether NA will be ignored
-#'
-#' @return Numeric value quantifying the skew of the distribution x
 skew = function (x, na.rm = FALSE) {
     if (is.matrix(x))
         apply(x, 2, skew, na.rm = na.rm)
@@ -827,7 +834,7 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE, alpha=0.05) {
 #' @import ggplot2
 #'
 #' @examples
-#' data=data.frame(estimate=c(runif(10, 0, 10)))
+#' data = data.frame(estimate=c(runif(10, 0, 10)))
 #' plotLollipop(data)
 #'
 #' @export
@@ -892,7 +899,8 @@ plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
 #' @import reshape2
 #'
 #' @examples
-#' databaseSets = list(a=c("a", "b"), b=c("a", "e", "f"), c=c("q", "a"))
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 #' createDatabaseSetNetwork(databaseSets)
 #'
 #' @export
@@ -911,6 +919,5 @@ createDatabaseSetNetwork = function(databaseSets) {
     
     # Return nodes and edges
     return(list(nodes=nodes, edges=edges))
-    
 }
 

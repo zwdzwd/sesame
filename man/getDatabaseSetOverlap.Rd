@@ -30,8 +30,13 @@ getDatabaseSetOverlap tests for the overlap of set of probes (querySet) in a
 single given feature (database set)
 }
 \examples{
-querySet=c("cg29176188_TC21", "cg29176794_TC21")
-databaseSet=c("cg29176188_TC21", "cg29176794_TC21")
-getDatabaseSetOverlap(querySet, databaseSet)
+library(SummarizedExperiment)
+MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+df = rowData(MM285.tissueSignature)
+querySet = df$Probe_ID[df$branch == "E-Brain"]
+databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
+'KYCG.MM285.designGroup.20210210')
+databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+getDatabaseSetOverlap(querySet, databaseSets)
 
 }

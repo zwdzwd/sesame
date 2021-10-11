@@ -17,7 +17,8 @@ ggplot lollipop plot
 createGeneNetwork creates databaseSet network using the Jaccard index.
 }
 \examples{
-databaseSets = list(a=c("a", "b"), b=c("a", "e", "f"), c=c("q", "a"))
+databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
+databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 createDatabaseSetNetwork(databaseSets)
 
 }
