@@ -736,6 +736,8 @@ skew = function (x, na.rm = FALSE) {
 #' @param title String representing the title label. Optional. (Default: NA)
 #' @param subtitle String representing the subtitle label. Optional. (Default:
 #' NA)
+#' @param alpha Float representing the cut-off alpha value for the plot. 
+#' Optional. (Default: 0.05)
 #'
 #' @return ggplot volcano plot
 #'
@@ -747,7 +749,7 @@ skew = function (x, na.rm = FALSE) {
 #' plotVolcano(data)
 #'
 #' @export
-plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
+plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE, alpha=0.05) {
     options(ggrepel.max.overlaps = 10)
     
     if ("Target" %in% colnames(data))
@@ -772,9 +774,9 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
     
     # TODO: repalce with column specifying sig vs non sig
     
-    if (any(data$p.value <= 0.05)) {
+    if (any(data$p.value <= alpha)) {
         g = ggplot(data=data, aes(x=log2(estimate), y=-log10(p.value),
-                                color = cut(p.value, c(-Inf, 0.05))))
+                                color = cut(p.value, c(-Inf, alpha))))
     } else {
         g = ggplot(data=data, aes(x=estimate, y=p.value))
     }
@@ -785,14 +787,14 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
         g = g + 
             ylab("-log10 p-value") +
             scale_colour_discrete(
-                name = "Significance (p < 0.05)",
+                name = sprintf("Significance (p < %s)", alpha),
                 labels=c("Significant", "Not Significant")
             )
     } else {
         g = g + 
             ylab("-log10 q-value") +
             scale_colour_discrete(
-                name = "Significance (q < 0.05)",
+                name = sprintf("Significance (q < %s)", alpha),
                 labels=c("Significant", "Not Significant")
             )
     }
@@ -809,7 +811,7 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
             legend.text = element_text(size=12)
         ) +
         geom_text_repel(
-            data = subset(data, p.value < 0.05),
+            data = subset(data, p.value < 0.0005),
             aes(label = label),
             size = 5,
             box.padding = unit(0.35, "lines"),

@@ -206,7 +206,7 @@ Next we can actually perform the test.
 
 ``` {r run-test-tfbs, echo=TRUE, eval=TRUE, warning=FALSE}
 resultsTFBS = testEnrichmentAll(querySet=querySet, databaseSets=databaseSets,
-                                platform="MM285", verbose=FALSE)
+                                platform="MM285", verbose=FALSE, return.meta=TRUE)
 head(resultsTFBS)
 ```
 
@@ -214,7 +214,7 @@ Using these sample results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano-tfbs, fig.width=7, fig.height=6, echo=TRUE}
 plotVolcano(data=resultsTFBS, title="Transcription Factor Binding Site Enrichment",
-            subtitle='MM285 Mouse Platform')
+            subtitle='MM285 Mouse Platform', alpha=0.0005)
 ```
 
 ```{r plot-lollipop-tfbs, fig.width=7, fig.height=6, echo=TRUE}

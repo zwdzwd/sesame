@@ -5,7 +5,7 @@
 \title{plotVolcano creates a volcano plot of -log2(p.value) and log(estimate)
 given data with fields estimate and p.value.}
 \usage{
-plotVolcano(data, title = NA, subtitle = NA, n.fdr = FALSE)
+plotVolcano(data, title = NA, subtitle = NA, n.fdr = FALSE, alpha = 0.05)
 }
 \arguments{
 \item{data}{DataFrame where each field is a database name with two fields
@@ -15,6 +15,9 @@ for the estimate and p.value.}
 
 \item{subtitle}{String representing the subtitle label. Optional. (Default:
 NA)}
+
+\item{alpha}{Float representing the cut-off alpha value for the plot. 
+Optional. (Default: 0.05)}
 }
 \value{
 ggplot volcano plot
