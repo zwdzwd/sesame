@@ -1,24 +1,3 @@
-#' listDatabaseSets prints which database sets are available for a given release
-#'
-#' @return One list of vectors corresponding to aggregated database sets.
-#'
-#' @examples
-#' listDatabaseSets()
-#'
-#' @export
-# listDatabaseSets = function() {
-#    meta = sesameData:::df_master
-#    meta = meta[grepl('KYCG', meta$Title), ]
-#    
-#    x = apply(meta, 1, function(row) {
-#        cat(sprintf("Accession: %s (n: %s)\n", 
-#                    format(row["Title"], width = 50, justify = "l"), 
-#                    row["N"]))
-#        return(row["Title"])
-#        })
-#    return(x)
-#}
-
 #' getDatabaseSets retrieves database sets from a meta data sheet by querying 
 #' the group, platform, reference columns. The data is returned as a list where 
 #' names correspond to chosen database sets.

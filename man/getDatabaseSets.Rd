@@ -2,7 +2,9 @@
 % Please edit documentation in R/kyCG.R
 \name{getDatabaseSets}
 \alias{getDatabaseSets}
-\title{listDatabaseSets prints which database sets are available for a given release}
+\title{getDatabaseSets retrieves database sets from a meta data sheet by querying 
+the group, platform, reference columns. The data is returned as a list where 
+names correspond to chosen database sets.}
 \usage{
 getDatabaseSets(
   titles = NA,
@@ -31,15 +33,13 @@ displayed to console. Optional. (Default: TRUE).}
 }
 \value{
 One list of vectors corresponding to aggregated database sets.
-
-One list of vectors corresponding to aggregated database sets.
 }
 \description{
-listDatabaseSets prints which database sets are available for a given release
+getDatabaseSets retrieves database sets from a meta data sheet by querying 
+the group, platform, reference columns. The data is returned as a list where 
+names correspond to chosen database sets.
 }
 \examples{
-listDatabaseSets()
-
 getDatabaseSets()
 
 }

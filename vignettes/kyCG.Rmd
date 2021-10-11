@@ -28,7 +28,6 @@ library(sesame)
 library(SummarizedExperiment)
 library(stats4)
 library(sesameData)
-sesameDataCacheAll()
 ```
 
 # Input Data
@@ -38,6 +37,7 @@ sesameDataCacheAll()
 We have organized our database sets in terms of different releases. The following block lists the database sets in the most recent release under sesameData.
 
 ``` {r list-data, eval=TRUE, echo=TRUE}
+sesameDataCache(keyword='KYCG')
 databaseSetNames = sesameData:::df_master$Title[grepl('KYCG', sesameData:::df_master$Title)]
 ```
 
@@ -297,6 +297,4 @@ A linear model can finally be constructed using this data. Since there are only 
 model = lm(Mouse_Age_Days ~ Sex + Strain_Corrected + Tissue_Corrected + 
                Genotype + `CGI-mean` + `CTCF-mean` + `Clock-mean` + 
                `SNP-mean` + `SpermMeth-mean` + `VMR-mean`, data=data)
-
-summary(model)
 ```
