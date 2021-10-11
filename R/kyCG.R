@@ -56,17 +56,6 @@ getDatabaseSets = function(titles=NA, group=NA,
     return(databaseSets)
 }
 
-
-#' flattenlist flattens a multidimensional list into a single dimensional list.
-#'
-#' @param x Multidimensional list.
-#'
-#' @return A single dimensional list.
-#'
-#' @import methods
-#'
-#' @examples
-#' flattenlist(list(a=list(1,2,3), b=list(4,5,6)))
 flattenlist = function(x) {
     morelists = vapply(x, function(x_) is(x_, 'list'), TRUE)
     out = c(x[!morelists], unlist(x[morelists], recursive=FALSE))
@@ -78,8 +67,8 @@ flattenlist = function(x) {
 }
 
 
-#' compareDatbaseSetOverlap tests for the pariwise overlap between given
-#' list of database sets using a distance metric.
+#' compareDatbaseSetOverlap calculates the pariwise overlap between given list 
+#' of database sets using a distance metric.
 #'
 #' @param databaseSets List of vectors corresponding to the database sets of
 #' interest with associated meta data as an attribute to each element. Optional.
@@ -153,9 +142,9 @@ getDatabaseSetOverlap = function(querySet,
                     "Inferring platform from probeIDs.")
             }
             if (is.numeric(querySet)) {
-                platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+                platform = inferPlatformFromProbeIDs(names(querySet))
             } else {
-                platform = sesame:::inferPlatformFromProbeIDs(querySet)
+                platform = inferPlatformFromProbeIDs(querySet)
             }
         }
         databaseSets = getDatabaseSets(platform=platform, verbose=verbose)
@@ -298,9 +287,9 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                     "Inferring platform from probeIDs.")
             }
             if (is.numeric(querySet)) {
-                platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+                platform = inferPlatformFromProbeIDs(names(querySet))
             } else {
-                platform = sesame:::inferPlatformFromProbeIDs(querySet)
+                platform = inferPlatformFromProbeIDs(querySet)
             }
         }
         
@@ -337,9 +326,9 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                     "Inferring platform from probeIDs.")
             }
             if (is.numeric(querySet)) {
-                platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+                platform = inferPlatformFromProbeIDs(names(querySet))
             } else {
-                platform = sesame:::inferPlatformFromProbeIDs(querySet)
+                platform = inferPlatformFromProbeIDs(querySet)
             }
         }
         databaseSets = getDatabaseSets(platform=platform, verbose=verbose)
@@ -424,9 +413,9 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
             print("The platform was not defined.',
                 'Inferring platform from probeIDs.")
         if (is.numeric(querySet)) {
-            platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+            platform = inferPlatformFromProbeIDs(names(querySet))
         } else {
-            platform = sesame:::inferPlatformFromProbeIDs(querySet)
+            platform = inferPlatformFromProbeIDs(querySet)
         }
     }
     
@@ -736,6 +725,8 @@ skew = function (x, na.rm = FALSE) {
 #' @param title String representing the title label. Optional. (Default: NA)
 #' @param subtitle String representing the subtitle label. Optional. (Default:
 #' NA)
+#' @param n.fdr Integer corresponding to the number of comparisons made. 
+#' Optional. (Default: NA).
 #' @param alpha Float representing the cut-off alpha value for the plot. 
 #' Optional. (Default: 0.05)
 #'
@@ -751,7 +742,7 @@ skew = function (x, na.rm = FALSE) {
 #' @export
 plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE, alpha=0.05) {
     options(ggrepel.max.overlaps = 10)
-    
+    estimate=p.value=label=NULL
     if ("Target" %in% colnames(data))
         data["label"] = unlist(data[["Target"]])
     else
@@ -841,7 +832,7 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE, alpha=0.05) {
 #'
 #' @export
 plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
-    # data = data[which(as.logical(data$meta)), ]
+    label=estimate=NULL
     
     if ("Target" %in% colnames(data))
         data["label"] = unlist(data[["Target"]])
@@ -891,17 +882,13 @@ plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
             axis.ticks.x = element_blank())
 }
 
-#' createGeneNetwork creates databaseSet network using the given similarity
-#' metric.
+#' createGeneNetwork creates databaseSet network using the Jaccard index.
 #'
 #' @param databaseSets Vector of probes corresponding to a single database set
 #' of interest.
-#' @param metric String representing the similarity score to use. Optional.
-#' (Default: "Jaccard").
 #'
 #' @return ggplot lollipop plot
 #'
-#' @import RCy3
 #' @import reshape2
 #'
 #' @examples
@@ -909,25 +896,16 @@ plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
 #' createDatabaseSetNetwork(databaseSets)
 #'
 #' @export
-createDatabaseSetNetwork = function(databaseSets, 
-                                    title="Database Interaction Network", 
-                                    collection="DatabaseSets") {
-    m = getDatabaseSetPairwiseDistance(databaseSets, metric="jaccard")
-    m_ = m
-    m = m_[seq(50), seq(50)]
+createDatabaseSetNetwork = function(databaseSets) {
+    m = compareDatbaseSetOverlap(databaseSets, metric="jaccard")
     
     m_melted = melt(m); colnames(m_melted) = c("gene1", "gene2", "metric")
     m_melted = m_melted[m_melted$metric != 0, ]
     
-    # Used for additional attributes like color, size, name. This is for GSM
     nodes <- data.frame(id=colnames(m),
-                        # group=c("A","A","B","B"), # categorical strings
-                        # score=as.integer(c(20,10,15,5)), # integers
                         stringsAsFactors=FALSE)
-    # This is for Target
     edges <- data.frame(source=m_melted$gene1,
                         target=m_melted$gene2,
-                        # interaction=NULL, Maybe for positive/negative assocation
                         weight=m_melted$metric, # numeric
                         stringsAsFactors=FALSE)
     

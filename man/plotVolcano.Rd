@@ -16,6 +16,9 @@ for the estimate and p.value.}
 \item{subtitle}{String representing the subtitle label. Optional. (Default:
 NA)}
 
+\item{n.fdr}{Integer corresponding to the number of comparisons made. 
+Optional. (Default: NA).}
+
 \item{alpha}{Float representing the cut-off alpha value for the plot. 
 Optional. (Default: 0.05)}
 }

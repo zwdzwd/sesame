@@ -2,8 +2,8 @@
 % Please edit documentation in R/kyCG.R
 \name{compareDatbaseSetOverlap}
 \alias{compareDatbaseSetOverlap}
-\title{compareDatbaseSetOverlap tests for the pariwise overlap between given
-list of database sets using a distance metric.}
+\title{compareDatbaseSetOverlap calculates the pariwise overlap between given list 
+of database sets using a distance metric.}
 \usage{
 compareDatbaseSetOverlap(
   databaseSets = NA,
@@ -27,8 +27,8 @@ An upper triangular matrix containing a metric (Jaccard) comparing
 the pairwise distances between database sets.
 }
 \description{
-compareDatbaseSetOverlap tests for the pariwise overlap between given
-list of database sets using a distance metric.
+compareDatbaseSetOverlap calculates the pariwise overlap between given list 
+of database sets using a distance metric.
 }
 \examples{
 databaseSets = list(a=c("a", "b"), b=c("a", "e", "f"), c=c("q", "a"))
