@@ -385,9 +385,6 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                         })
             )
         )
-        if (length(metadata) != 1) {
-            metadata = data.frame(vapply(metadata, function(x) unlist(x), logical(1)))
-        }
     }
     
     rank = list()
