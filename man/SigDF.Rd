@@ -7,7 +7,7 @@
 SigDF(df, platform = "EPIC", ctl = NULL)
 }
 \arguments{
-\item{df}{a \code{data.frame}}
+\item{df}{a \code{data.frame} with Probe_ID, MG, MR, UG, UR, col and mask}
 
 \item{platform}{a string to specify the array platform}
 

@@ -62,6 +62,7 @@ Collate:
     'sex.R'
     'species.R'
     'QC.R'
+    'GEO.R'
     'SigDFMethods.R'
     'sesame.R'
     'age.R'
