@@ -1,6 +1,6 @@
 #' SigDF constructor from a plain data frame
 #'
-#' @param df a \code{data.frame}
+#' @param df a \code{data.frame} with Probe_ID, MG, MR, UG, UR, col and mask
 #' @param platform a string to specify the array platform
 #' @param ctl optional control probe data frame
 #' @return a \code{SigDF} object
@@ -9,8 +9,17 @@
 #' df <- as.data.frame(sesameDataGet('EPIC.1.SigDF'))
 #' @export
 SigDF = function(df, platform = "EPIC", ctl=NULL) {
+
+    df = df[,c("Probe_ID", "MG","MR","UG","UR","col","mask")]
+
+    ## in case following the manifest
+    if (is.factor(df$col) && length(levels(df$col)) == 2) {
+        df$col = as.character(df$col)
+        df$col[is.na(df$col)] = "2"
+        df$col = factor(df$col, levels=c("G","R","2"))
+    }
+    
     sdf = structure(df, class=c("SigDF", "data.frame"))
-    sdf$col = factor(sdf$col, levels=c("G","R","2"))
     attr(sdf, "platform") = platform
     attr(sdf, "controls") = ctl
     rownames(sdf) = NULL
