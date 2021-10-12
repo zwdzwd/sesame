@@ -2,31 +2,23 @@
 % Please edit documentation in R/kyCG.R
 \name{createDatabaseSetNetwork}
 \alias{createDatabaseSetNetwork}
-\title{createGeneNetwork creates databaseSet network using the given similarity
-metric.}
+\title{createGeneNetwork creates databaseSet network using the Jaccard index.}
 \usage{
-createDatabaseSetNetwork(
-  databaseSets,
-  title = "Database Interaction Network",
-  collection = "DatabaseSets"
-)
+createDatabaseSetNetwork(databaseSets)
 }
 \arguments{
 \item{databaseSets}{Vector of probes corresponding to a single database set
 of interest.}
-
-\item{metric}{String representing the similarity score to use. Optional.
-(Default: "Jaccard").}
 }
 \value{
 ggplot lollipop plot
 }
 \description{
-createGeneNetwork creates databaseSet network using the given similarity
-metric.
+createGeneNetwork creates databaseSet network using the Jaccard index.
 }
 \examples{
-databaseSets = list(a=c("a", "b"), b=c("a", "e", "f"), c=c("q", "a"))
+databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
+databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 createDatabaseSetNetwork(databaseSets)
 
 }

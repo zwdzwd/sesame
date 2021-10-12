@@ -1,24 +1,3 @@
-#' listDatabaseSets prints which database sets are available for a given release
-#'
-#' @return One list of vectors corresponding to aggregated database sets.
-#'
-#' @examples
-#' listDatabaseSets()
-#'
-#' @export
-# listDatabaseSets = function() {
-#    meta = sesameData:::df_master
-#    meta = meta[grepl('KYCG', meta$Title), ]
-#    
-#    x = apply(meta, 1, function(row) {
-#        cat(sprintf("Accession: %s (n: %s)\n", 
-#                    format(row["Title"], width = 50, justify = "l"), 
-#                    row["N"]))
-#        return(row["Title"])
-#        })
-#    return(x)
-#}
-
 #' getDatabaseSets retrieves database sets from a meta data sheet by querying 
 #' the group, platform, reference columns. The data is returned as a list where 
 #' names correspond to chosen database sets.
@@ -38,7 +17,9 @@
 #' @return One list of vectors corresponding to aggregated database sets.
 #'
 #' @examples
-#' getDatabaseSets()
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
+#' 'KYCG.MM285.designGroup.20210210')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 #'
 #' @export
 getDatabaseSets = function(titles=NA, group=NA, 
@@ -77,17 +58,6 @@ getDatabaseSets = function(titles=NA, group=NA,
     return(databaseSets)
 }
 
-
-#' flattenlist flattens a multidimensional list into a single dimensional list.
-#'
-#' @param x Multidimensional list.
-#'
-#' @return A single dimensional list.
-#'
-#' @import methods
-#'
-#' @examples
-#' flattenlist(list(a=list(1,2,3), b=list(4,5,6)))
 flattenlist = function(x) {
     morelists = vapply(x, function(x_) is(x_, 'list'), TRUE)
     out = c(x[!morelists], unlist(x[morelists], recursive=FALSE))
@@ -99,8 +69,8 @@ flattenlist = function(x) {
 }
 
 
-#' compareDatbaseSetOverlap tests for the pariwise overlap between given
-#' list of database sets using a distance metric.
+#' compareDatbaseSetOverlap calculates the pariwise overlap between given list 
+#' of database sets using a distance metric.
 #'
 #' @param databaseSets List of vectors corresponding to the database sets of
 #' interest with associated meta data as an attribute to each element. Optional.
@@ -114,7 +84,8 @@ flattenlist = function(x) {
 #' the pairwise distances between database sets.
 #'
 #' @examples
-#' databaseSets = list(a=c("a", "b"), b=c("a", "e", "f"), c=c("q", "a"))
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 #' compareDatbaseSetOverlap(databaseSets)
 #'
 #' @export
@@ -154,9 +125,14 @@ compareDatbaseSetOverlap = function(databaseSets=NA,
 #' sets.
 #'
 #' @examples
-#' querySet=c("cg29176188_TC21", "cg29176794_TC21")
-#' databaseSet=c("cg29176188_TC21", "cg29176794_TC21")
-#' getDatabaseSetOverlap(querySet, databaseSet)
+#' library(SummarizedExperiment)
+#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+#' df = rowData(MM285.tissueSignature)
+#' querySet = df$Probe_ID[df$branch == "E-Brain"]
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
+#' 'KYCG.MM285.designGroup.20210210')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+#' getDatabaseSetOverlap(querySet, databaseSets)
 #'
 #' @export
 getDatabaseSetOverlap = function(querySet,
@@ -174,9 +150,9 @@ getDatabaseSetOverlap = function(querySet,
                     "Inferring platform from probeIDs.")
             }
             if (is.numeric(querySet)) {
-                platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+                platform = inferPlatformFromProbeIDs(names(querySet))
             } else {
-                platform = sesame:::inferPlatformFromProbeIDs(querySet)
+                platform = inferPlatformFromProbeIDs(querySet)
             }
         }
         databaseSets = getDatabaseSets(platform=platform, verbose=verbose)
@@ -302,7 +278,15 @@ testEnrichment1 = function(querySet, databaseSet, universeSet,
 #' p-value, and type of test.
 #'
 #' @examples
-#' testEnrichmentAll(c("cg0000029"))
+#' library(SummarizedExperiment)
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
+#' 'KYCG.MM285.designGroup.20210210')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+#' df = rowData(MM285.tissueSignature)
+#' querySet = df$Probe_ID[df$branch == "E-Brain"]
+#' testEnrichmentAll(querySet=querySet, 
+#' databaseSets=databaseSets, verbose=FALSE)
 #'
 #' @export
 testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
@@ -319,9 +303,9 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                     "Inferring platform from probeIDs.")
             }
             if (is.numeric(querySet)) {
-                platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+                platform = inferPlatformFromProbeIDs(names(querySet))
             } else {
-                platform = sesame:::inferPlatformFromProbeIDs(querySet)
+                platform = inferPlatformFromProbeIDs(querySet)
             }
         }
         
@@ -358,9 +342,9 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                     "Inferring platform from probeIDs.")
             }
             if (is.numeric(querySet)) {
-                platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+                platform = inferPlatformFromProbeIDs(names(querySet))
             } else {
-                platform = sesame:::inferPlatformFromProbeIDs(querySet)
+                platform = inferPlatformFromProbeIDs(querySet)
             }
         }
         databaseSets = getDatabaseSets(platform=platform, verbose=verbose)
@@ -436,7 +420,11 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
 #' p-value, and type of test.
 #'
 #' @examples
-#' testEnrichmentGene(c("cg0000029"), platform="EPIC")
+#' library(SummarizedExperiment)
+#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+#' df = rowData(MM285.tissueSignature)
+#' querySet = df$Probe_ID[df$branch == "E-Brain"]
+#' testEnrichmentGene(querySet, platform="MM285", verbose=FALSE)
 #'
 #' @export
 testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
@@ -445,9 +433,9 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
             print("The platform was not defined.',
                 'Inferring platform from probeIDs.")
         if (is.numeric(querySet)) {
-            platform = sesame:::inferPlatformFromProbeIDs(names(querySet))
+            platform = inferPlatformFromProbeIDs(names(querySet))
         } else {
-            platform = sesame:::inferPlatformFromProbeIDs(querySet)
+            platform = inferPlatformFromProbeIDs(querySet)
         }
     }
     
@@ -538,12 +526,6 @@ testEnrichmentFisher = function(querySet, databaseSet, universeSet) {
     return(result)
 }
 
-#' calcFoldChange calculates fold change given a 2x2 matrix of counts.
-#'
-#' @param mtx 2x2 matrix of values corresponding to overlapping counts between
-#' two sets of a categorical variable.
-#'
-#' @return A numerical value corresponding to the fold change enrichment,
 calcFoldChange = function(mtx){
     num = mtx[1, 1] / (mtx[1, 1] + mtx[1, 2])
     den = (mtx[1, 1] + mtx[2, 1]) / sum(mtx)
@@ -695,7 +677,7 @@ calcDatabaseSetStatistics1 = function(x) {
 #' 'KYCG.MM285.designGroup.20210210', 'HM450.chromosome.hg19.20210630', 
 #' 'KYCG.MM285.probeType.20210630')
 #' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
-#' statistics = calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
+#' calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
 #' 
 #' @return Vector for a given sample columns are features across different
 #' databaseSets
@@ -727,13 +709,6 @@ calcDatabaseSetStatisticsAll = function(betas, databaseSets) {
     return(c)
 }
 
-
-#' skew determines the skew of a distribution x, taken from the Moments package
-#'
-#' @param x Vector of numeric values
-#' @param na.rm Logical value corresponding to whether NA will be ignored
-#'
-#' @return Numeric value quantifying the skew of the distribution x
 skew = function (x, na.rm = FALSE) {
     if (is.matrix(x))
         apply(x, 2, skew, na.rm = na.rm)
@@ -757,6 +732,10 @@ skew = function (x, na.rm = FALSE) {
 #' @param title String representing the title label. Optional. (Default: NA)
 #' @param subtitle String representing the subtitle label. Optional. (Default:
 #' NA)
+#' @param n.fdr Integer corresponding to the number of comparisons made. 
+#' Optional. (Default: NA).
+#' @param alpha Float representing the cut-off alpha value for the plot. 
+#' Optional. (Default: 0.05)
 #'
 #' @return ggplot volcano plot
 #'
@@ -768,9 +747,9 @@ skew = function (x, na.rm = FALSE) {
 #' plotVolcano(data)
 #'
 #' @export
-plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
+plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE, alpha=0.05) {
     options(ggrepel.max.overlaps = 10)
-    
+    estimate=p.value=label=NULL
     if ("Target" %in% colnames(data))
         data["label"] = unlist(data[["Target"]])
     else
@@ -793,9 +772,9 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
     
     # TODO: repalce with column specifying sig vs non sig
     
-    if (any(data$p.value <= 0.05)) {
+    if (any(data$p.value <= alpha)) {
         g = ggplot(data=data, aes(x=log2(estimate), y=-log10(p.value),
-                                color = cut(p.value, c(-Inf, 0.05))))
+                                color = cut(p.value, c(-Inf, alpha))))
     } else {
         g = ggplot(data=data, aes(x=estimate, y=p.value))
     }
@@ -806,14 +785,14 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
         g = g + 
             ylab("-log10 p-value") +
             scale_colour_discrete(
-                name = "Significance (p < 0.05)",
+                name = sprintf("Significance (p < %s)", alpha),
                 labels=c("Significant", "Not Significant")
             )
     } else {
         g = g + 
             ylab("-log10 q-value") +
             scale_colour_discrete(
-                name = "Significance (q < 0.05)",
+                name = sprintf("Significance (q < %s)", alpha),
                 labels=c("Significant", "Not Significant")
             )
     }
@@ -830,7 +809,7 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
             legend.text = element_text(size=12)
         ) +
         geom_text_repel(
-            data = subset(data, p.value < 0.05),
+            data = subset(data, p.value < 0.0005),
             aes(label = label),
             size = 5,
             box.padding = unit(0.35, "lines"),
@@ -855,12 +834,12 @@ plotVolcano = function(data, title=NA, subtitle=NA, n.fdr=FALSE) {
 #' @import ggplot2
 #'
 #' @examples
-#' data=data.frame(estimate=c(runif(10, 0, 10)))
+#' data = data.frame(estimate=c(runif(10, 0, 10)))
 #' plotLollipop(data)
 #'
 #' @export
 plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
-    # data = data[which(as.logical(data$meta)), ]
+    label=estimate=NULL
     
     if ("Target" %in% colnames(data))
         data["label"] = unlist(data[["Target"]])
@@ -910,48 +889,35 @@ plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
             axis.ticks.x = element_blank())
 }
 
-#' createGeneNetwork creates databaseSet network using the given similarity
-#' metric.
+#' createGeneNetwork creates databaseSet network using the Jaccard index.
 #'
 #' @param databaseSets Vector of probes corresponding to a single database set
 #' of interest.
-#' @param metric String representing the similarity score to use. Optional.
-#' (Default: "Jaccard").
 #'
 #' @return ggplot lollipop plot
 #'
-#' @import RCy3
 #' @import reshape2
 #'
 #' @examples
-#' databaseSets = list(a=c("a", "b"), b=c("a", "e", "f"), c=c("q", "a"))
+#' databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
+#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 #' createDatabaseSetNetwork(databaseSets)
 #'
 #' @export
-createDatabaseSetNetwork = function(databaseSets, 
-                                    title="Database Interaction Network", 
-                                    collection="DatabaseSets") {
-    m = getDatabaseSetPairwiseDistance(databaseSets, metric="jaccard")
-    m_ = m
-    m = m_[seq(50), seq(50)]
+createDatabaseSetNetwork = function(databaseSets) {
+    m = compareDatbaseSetOverlap(databaseSets, metric="jaccard")
     
     m_melted = melt(m); colnames(m_melted) = c("gene1", "gene2", "metric")
     m_melted = m_melted[m_melted$metric != 0, ]
     
-    # Used for additional attributes like color, size, name. This is for GSM
     nodes <- data.frame(id=colnames(m),
-                        # group=c("A","A","B","B"), # categorical strings
-                        # score=as.integer(c(20,10,15,5)), # integers
                         stringsAsFactors=FALSE)
-    # This is for Target
     edges <- data.frame(source=m_melted$gene1,
                         target=m_melted$gene2,
-                        # interaction=NULL, Maybe for positive/negative assocation
                         weight=m_melted$metric, # numeric
                         stringsAsFactors=FALSE)
     
     # Return nodes and edges
     return(list(nodes=nodes, edges=edges))
-    
 }
 

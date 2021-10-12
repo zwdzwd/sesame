@@ -26,7 +26,7 @@ plotLollipop creates a lollipop plot of log(estimate) given data with fields
 estimate.
 }
 \examples{
-data=data.frame(estimate=c(runif(10, 0, 10)))
+data = data.frame(estimate=c(runif(10, 0, 10)))
 plotLollipop(data)
 
 }

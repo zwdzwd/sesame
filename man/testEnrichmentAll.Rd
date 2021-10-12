@@ -56,6 +56,14 @@ testEnrichmentAll tests for the enrichment of set of probes (query set) in
 a number of features (database sets).
 }
 \examples{
-testEnrichmentAll(c("cg0000029"))
+library(SummarizedExperiment)
+databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
+'KYCG.MM285.designGroup.20210210')
+databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+df = rowData(MM285.tissueSignature)
+querySet = df$Probe_ID[df$branch == "E-Brain"]
+testEnrichmentAll(querySet=querySet, 
+databaseSets=databaseSets, verbose=FALSE)
 
 }
