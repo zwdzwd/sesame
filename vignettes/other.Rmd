@@ -205,3 +205,9 @@ spot-check.
 abs(sliceFileSet(fset2,'sample2','cg00000108') -
         hypothetical_betas['cg00000108']) < 1e-7
 ```
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

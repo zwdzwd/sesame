@@ -412,3 +412,9 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 grSet <- sesamize(FlowSorted.Blood.450k[,1:4])
 grSet
 ```
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

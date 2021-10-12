@@ -77,3 +77,9 @@ cells.
 betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 estimateLeukocyte(betas.tissue)
 ```
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

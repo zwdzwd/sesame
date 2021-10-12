@@ -251,3 +251,9 @@ To visualize genome neighborhood using probe names, we will call
 ```{r, message=FALSE, fig.width=6}
 visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 ```
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

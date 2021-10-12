@@ -142,3 +142,9 @@ head(formatVCF(sdf, annoS=annoS, annoI=annoI))
 
 One can output to actual VCF file with a header by `formatVCF(sdf,
 vcf=path_to_vcf)`.
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

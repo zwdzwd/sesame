@@ -298,3 +298,9 @@ model = lm(Mouse_Age_Days ~ Sex + Strain_Corrected + Tissue_Corrected +
                Genotype + `CGI-mean` + `CTCF-mean` + `Clock-mean` + 
                `SNP-mean` + `SpermMeth-mean` + `VMR-mean`, data=data)
 ```
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

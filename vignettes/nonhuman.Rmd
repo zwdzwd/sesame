@@ -224,3 +224,8 @@ betas = getBetas(sdf_normalized)
 head(betas)
 ```
 
+# Session Info
+
+```{r}
+sessionInfo()
+```

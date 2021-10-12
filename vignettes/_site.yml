@@ -20,3 +20,6 @@ navbar:
     - text: "Others"
       icon: fa-barcode
       href: other.html
+    - text: "KnowYourCG"
+      icon: fa-barcode
+      href: kyCG.html
