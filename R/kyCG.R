@@ -38,8 +38,8 @@ getDatabaseSets = function(titles=NA, group=NA,
     }
     
     platform = sprintf('Platform%s', platform)
-    if (platform %in% colnames(meta))
-        meta = meta[as.logical(meta[[platform]]), ]
+    if (any(grepl(platform, colnames(meta))))
+        meta = meta[as.logical(meta[[grep(platform, colnames(meta))]]), ]
     
     if (!is.na(reference)) {
         meta = meta[which(meta$Reference %in% reference), ]
@@ -49,11 +49,13 @@ getDatabaseSets = function(titles=NA, group=NA,
         print(sprintf("Retrieving %d databaseSets...", sum(meta$N)))
     }
     
+    if (any(grepl('gene', meta$Title)))
+        meta = meta[grep('gene', meta$Title, invert=TRUE), ]
+    
     databaseSets = flattenlist(lapply(unlist(na.omit(meta$Title)), 
                                     function(title) {
                                         sesameDataGet(title, verbose=verbose)
-                                    })
-    )
+                                    }))
     
     return(databaseSets)
 }
@@ -384,7 +386,7 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
             )
         )
         if (length(metadata) != 1) {
-            metadata = data.frame(sapply(metadata, function(x) unlist(x)))
+            metadata = data.frame(vapply(metadata, function(x) unlist(x), logical(1)))
         }
     }
     
@@ -684,7 +686,7 @@ calcDatabaseSetStatistics1 = function(x) {
 #' 
 #' @export
 calcDatabaseSetStatisticsAll = function(betas, databaseSets) {
-    a = do.call(cbind, 
+    statistics = do.call(cbind, 
                 lapply(names(databaseSets),
                     function(databaseSetName) {
                         databaseSet = databaseSets[[databaseSetName]]
@@ -695,18 +697,21 @@ calcDatabaseSetStatisticsAll = function(betas, databaseSets) {
                             probes = databaseSet
                         }
                            
-                        statistics = suppressWarnings(
-                            calcDatabaseSetStatistics1(
-                                betas[na.omit(match(probes, rownames(betas))), ]))
+                        statistics = calcDatabaseSetStatistics1(
+                                betas[na.omit(match(probes, 
+                                                    rownames(betas))), ])
                         names(statistics) = unlist(lapply(names(statistics), 
                             function(colname) {
                                 paste(databaseSetName, colname, sep="-")
                             }))
                             return(statistics)
                         }))
-    b = a[, !grepl("FALSE", colnames(a))]
-    c = b[, !apply(b, 2, function(x) {any(is.na(x) | is.infinite(x))})]
-    return(c)
+    statistics = statistics[, !grepl("FALSE", colnames(statistics))]
+    statistics = statistics[, !apply(statistics, 2, 
+                                     function(x) {
+                                         any(is.na(x) | is.infinite(x))
+                                         })]
+    return(statistics)
 }
 
 skew = function (x, na.rm = FALSE) {
