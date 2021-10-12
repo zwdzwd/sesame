@@ -1,23 +1,23 @@
 ---
-title: "KnowYourCpG"
+title: "knowYourCpG"
 shorttitle: "kyCG"
-package: KnowYourCpG
+package: knowYourCpG
 output: rmarkdown::html_vignette
 fig_width: 6
 fig_height: 6
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{"6. KnowYourCpG"}
+  %\VignetteIndexEntry{"6. knowYourCpG"}
   %\VignetteEncoding{UTF-8}
 ---
 
-SeSAMe implements an automated discovery tool named KnowYourCpG for discovering hidden biological and technical elements. The goal is to find a link between these elements and observed DNA methylation.
+SeSAMe implements an automated discovery tool named knowYourCpG for discovering hidden biological and technical elements. The goal is to find a link between these elements and observed DNA methylation.
 
-# KnowYourCpG
+# knowYourCpG
 
 ## Introduction
 
-KnowYourCpG is a tool for evaluating CpG feature enrichment using Illumina probe IDs. One feature in this tool automates the hypothesis testing by asking whether a set of CpGs (represented by Illumina methylation chip probes) is enriched in certain categories or features. These categories or features can be categorical (e.g., CpGs related to tissue-specific transcription factors) or continuous (e.g., CpG Island density). Additionally, the set of CpGs to which the test will be applied can be categorical or continuous as well.
+knowYourCpG is a tool for evaluating CpG feature enrichment using Illumina probe IDs. One feature in this tool automates the hypothesis testing by asking whether a set of CpGs (represented by Illumina methylation chip probes) is enriched in certain categories or features. These categories or features can be categorical (e.g., CpGs related to tissue-specific transcription factors) or continuous (e.g., CpG Island density). Additionally, the set of CpGs to which the test will be applied can be categorical or continuous as well.
 
 The set of CpGs that will be tested for enrichment is called the query set, and the set of CpGs that will be used to determine enrichment of a given factor is called the database set. A query set, for example, might be the results of an epigenome-wide association study. We have taken the time to curate our own database sets from a variety of sources that describe different categorical and continuous features such as transcription factor binding sites, CpG density, technical factors, etc. 
 
@@ -47,7 +47,7 @@ The function returns a vector containing these accessions.
 head(databaseSetNames)
 ```
 
-We have provided the ```getDatabaseSet()``` function that returns a list of database sets identified by their accessions shown in ```listDatabaseSets()```. When this function is ran for the first time, none of the database sets have been cached. Caching on the local machine is important on two fronts: firstly it limits the number of requests sent to our server, and secondly it limits the amount of time the user needs to wait when re-downloading database sets. For this reason, the first time the user runs ```getDatabaseSet()```, it will take some time to download all of the database sets from a given release. The default directory to which the database set will be cached is in knowYourCpGPackage/databaseSets. Additionally, the user may set a global variable KYCG_DATABASESETS_LOC if they wish to specify an alternative directory. Regardless of the initial request to ```getDatabaseSet()```, the entire given Release (identified by the ```release``` parameter) will be cached and stored in a respective sub-directory.
+We have provided the ```getDatabaseSet()``` function that returns a list of database sets identified by their accessions shown in ```listDatabaseSets()```. When this function is ran for the first time, none of the database sets have been cached. Caching on the local machine is important on two fronts: firstly it limits the number of requests sent to our server, and secondly it limits the amount of time the user needs to wait when re-downloading database sets. For this reason, the first time the user runs ```getDatabaseSet()```, it will take some time to download all of the database sets from a given release. The default directory to which the database set will be cached is in knowYourCpG/databaseSets. Additionally, the user may set a global variable KYCG_DATABASESETS_LOC if they wish to specify an alternative directory. Regardless of the initial request to ```getDatabaseSet()```, the entire given Release (identified by the ```release``` parameter) will be cached and stored in a respective sub-directory.
 
 Using a subset of the available database sets, we will download them and load them in into memory using their accessions.
 
@@ -117,9 +117,9 @@ The ```meta``` column indicates whether the respective database set contains ann
 
 ## Investigating the Enrichment of Many Database Sets in a Single Query Set
 
-The ```testEnrichmentAll()``` function is the main work horse to KnowYourCpG. It tests the enrichment of the given database sets in a single query set. There are four testing scenarios depending on the type format of the query set and database sets. They are shown with the respective testing scenario in the table below.
+The ```testEnrichmentAll()``` function is the main work horse to knowYourCpG. It tests the enrichment of the given database sets in a single query set. There are four testing scenarios depending on the type format of the query set and database sets. They are shown with the respective testing scenario in the table below.
 
-![Four testing scenarios of KnowYourCpG](../man/figures/20210627_kycpg_tests.png){width=75%}
+![Four testing scenarios of knowYourCpG](../man/figures/20210627_kycpg_tests.png){width=75%}
 
 The ```testEnrichmentAll()``` will automate statistical tests and report metrics about each of the the loaded database sets. Another set that is needed for the test is called the universe set. This is the set of all probes for a given platform. It can either be passed in as an argument called ```universeSet``` or the platform name can be passed with argument ```platform```. If neither of these are supplied, the universe set will be implied from the probes. In all subsequent runs of ```testEnrichmentAll()``` in this vignette, the platform will be specified. 
 
