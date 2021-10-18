@@ -7,7 +7,7 @@ the group, platform, reference columns. The data is returned as a list where
 names correspond to chosen database sets.}
 \usage{
 getDatabaseSets(
-  titles = NA,
+  accessions = NA,
   group = NA,
   platform = NA,
   reference = NA,
@@ -15,7 +15,7 @@ getDatabaseSets(
 )
 }
 \arguments{
-\item{titles}{vector containing the characters associated with the
+\item{accessions}{vector containing the characters associated with the
 selected database sets; only non-NA locations will be returned. Optional.
 (Default: c("20210810_MM285_TFBS_ENCODE").}
 
