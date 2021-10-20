@@ -2,7 +2,7 @@
 #' the group, platform, reference columns. The data is returned as a list where 
 #' names correspond to chosen database sets.
 #'
-#' @param titles vector containing the characters associated with the
+#' @param accessions vector containing the characters associated with the
 #' selected database sets; only non-NA locations will be returned. Optional.
 #' (Default: c("20210810_MM285_TFBS_ENCODE").
 #' @param group string representing the group for which the database sets will
@@ -22,16 +22,21 @@
 #' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
 #'
 #' @export
-getDatabaseSets = function(titles=NA, group=NA, 
+getDatabaseSets = function(accessions=NA, group=NA, 
                             platform=NA, reference=NA, 
                             verbose=TRUE) {
-    meta = sesameData:::df_master
-    # meta = meta[meta$kyCG, ]
-    meta = meta[grepl('KYCG', meta$Title), ]
     
-    if (any(!is.na(titles))) {
-        meta = meta[which(meta$Title %in% titles), ]
+    if (any(!is.na(accessions))) {
+        databaseSets = flattenlist(lapply(accessions, 
+                                          function(accession) {
+                                              sesameDataGet(accession, verbose=verbose)
+                                          }))
+        
+        return(databaseSets)
     }
+    
+    meta = sesameData:::df_master
+    meta = meta[grepl('KYCG', meta$Title), ]
     
     if (!is.na(group)) {
         meta = meta[grepl(group, meta$Title, ignore.case=TRUE), ]
@@ -512,7 +517,7 @@ testEnrichmentFisher = function(querySet, databaseSet, universeSet) {
             querySet = c("Q_in","Q_out"),
             databaseSet = c("D_in","D_out")))
     
-    res = fisher.test(mtx)
+    res = fisher.test(mtx) #, alternative = 'greater'
     
     result = data.frame(
         estimate = calcFoldChange(mtx),
