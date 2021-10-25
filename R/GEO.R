@@ -52,6 +52,7 @@ parseGEOSignalABFile <- function(
         sdf$mask[auxP >= 0.05] = TRUE
         sdf
     })
+    names(sdfs) = samples
     sdfs
 }
 

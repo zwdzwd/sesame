@@ -1,12 +1,19 @@
 ---
+<<<<<<< HEAD
 title: "knowYourCpG"
 shorttitle: "kyCG"
 package: knowYourCpG
+=======
+title: "knowYourCG"
+shorttitle: "kyCG"
+package: knowYourCG
+>>>>>>> c4450667a8de8e0c6a7bf6585c5b8eb450d0d1a6
 output: rmarkdown::html_vignette
 fig_width: 6
 fig_height: 6
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
+<<<<<<< HEAD
   %\VignetteIndexEntry{"6. knowYourCpG"}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,10 +25,23 @@ SeSAMe implements an automated discovery tool named knowYourCpG for discovering 
 ## Introduction
 
 knowYourCpG is a tool for evaluating CpG feature enrichment using Illumina probe IDs. One feature in this tool automates the hypothesis testing by asking whether a set of CpGs (represented by Illumina methylation chip probes) is enriched in certain categories or features. These categories or features can be categorical (e.g., CpGs related to tissue-specific transcription factors) or continuous (e.g., CpG Island density). Additionally, the set of CpGs to which the test will be applied can be categorical or continuous as well.
+=======
+  %\VignetteIndexEntry{"6. knowYourCG"}
+  %\VignetteEncoding{UTF-8}
+---
+
+SeSAMe implements an automated discovery tool named knowYourCG for discovering hidden biological and technical elements. The goal is to find a link between these elements and observed DNA methylation.
+
+# knowYourCG
+
+## Introduction
+
+knowYourCG is a tool for evaluating CpG feature enrichment using Illumina probe IDs. One feature in this tool automates the hypothesis testing by asking whether a set of CpGs (represented by Illumina methylation chip probes) is enriched in certain categories or features. These categories or features can be categorical (e.g., CpGs related to tissue-specific transcription factors) or continuous (e.g., CpG Island density). Additionally, the set of CpGs to which the test will be applied can be categorical or continuous as well.
+>>>>>>> c4450667a8de8e0c6a7bf6585c5b8eb450d0d1a6
 
 The set of CpGs that will be tested for enrichment is called the query set, and the set of CpGs that will be used to determine enrichment of a given factor is called the database set. A query set, for example, might be the results of an epigenome-wide association study. We have taken the time to curate our own database sets from a variety of sources that describe different categorical and continuous features such as transcription factor binding sites, CpG density, technical factors, etc. 
 
-Additionally, knowYourCpG has support for feature selection and feature engineering, which is currently in development. 
+Additionally, knowYourCG has support for feature selection and feature engineering, which is currently in development. 
 
 ```{r load-depenencies, echo=TRUE, message=FALSE, warning=FALSE}
 library(sesame)
@@ -47,20 +67,23 @@ The function returns a vector containing these accessions.
 head(databaseSetNames)
 ```
 
+<<<<<<< HEAD
 We have provided the ```getDatabaseSet()``` function that returns a list of database sets identified by their accessions shown in ```listDatabaseSets()```. When this function is ran for the first time, none of the database sets have been cached. Caching on the local machine is important on two fronts: firstly it limits the number of requests sent to our server, and secondly it limits the amount of time the user needs to wait when re-downloading database sets. For this reason, the first time the user runs ```getDatabaseSet()```, it will take some time to download all of the database sets from a given release. The default directory to which the database set will be cached is in knowYourCpG/databaseSets. Additionally, the user may set a global variable KYCG_DATABASESETS_LOC if they wish to specify an alternative directory. Regardless of the initial request to ```getDatabaseSet()```, the entire given Release (identified by the ```release``` parameter) will be cached and stored in a respective sub-directory.
+=======
+The ```sesameDataGet()``` function returns a nested list of database sets identified by their accessions shown in ```sesameData:::df_master()```. When this function is ran for the first time, none of the database sets have been cached. Caching on the local machine is important on two fronts: firstly it limits the number of requests sent to our server, and secondly it limits the amount of time the user needs to wait when re-downloading database sets. For this reason, one should run ```sesameDataCache(keyword='KYCG')``` before loading in any database sets. This will take some time to download all of the database sets from a given release.
+>>>>>>> c4450667a8de8e0c6a7bf6585c5b8eb450d0d1a6
 
 Using a subset of the available database sets, we will download them and load them in into memory using their accessions.
 
 ``` {r cache-data, eval=TRUE, warning=FALSE}
 databaseSetNames = c('KYCG.MM285.seqContextN.20210630',
                      'KYCG.MM285.designGroup.20210210',
-                     'KYCG.MM285.chromosome.hg19.20210630',
+                     'KYCG.MM285.chromosome.mm10.20210630',
                      'KYCG.MM285.probeType.20210630')
-
-databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 ```
 
-In total, 39 database sets have been loaded from this command.
+In total, 61 database sets have been loaded from this command.
 
 ``` {r view-data0, eval=TRUE, warning=FALSE}
 sprintf("length(databaseSets) = %s database sets", length(databaseSets))
@@ -78,7 +101,7 @@ And display a summary of its contents.
 summary(databaseSets[1:3])
 ```
 
-On subsequent runs of the ```getDatabaseSet()``` function, loading specific database sets from the same release will be much faster. These database sets will be persistent between R sessions so long as the directory to which they are downloaded is not deleted. Otherwise, the database sets will have to be downloaded again.
+On subsequent runs of the ```sesameDataGet()``` function, loading specific database sets from the same release will be much faster. These database sets will be persistent between R sessions so long as the directory to which they are downloaded is not deleted. Otherwise, the database sets will have to be downloaded again.
 
 ## Query Sets
 
@@ -117,17 +140,23 @@ The ```meta``` column indicates whether the respective database set contains ann
 
 ## Investigating the Enrichment of Many Database Sets in a Single Query Set
 
+<<<<<<< HEAD
 The ```testEnrichmentAll()``` function is the main work horse to knowYourCpG. It tests the enrichment of the given database sets in a single query set. There are four testing scenarios depending on the type format of the query set and database sets. They are shown with the respective testing scenario in the table below.
 
 ![Four testing scenarios of knowYourCpG](../man/figures/20210627_kycpg_tests.png){width=75%}
+=======
+The ```testEnrichment()``` function is the main work horse to knowYourCG. It tests the enrichment of the given database sets in a single query set. There are four testing scenarios depending on the type format of the query set and database sets. They are shown with the respective testing scenario in the table below.
 
-The ```testEnrichmentAll()``` will automate statistical tests and report metrics about each of the the loaded database sets. Another set that is needed for the test is called the universe set. This is the set of all probes for a given platform. It can either be passed in as an argument called ```universeSet``` or the platform name can be passed with argument ```platform```. If neither of these are supplied, the universe set will be implied from the probes. In all subsequent runs of ```testEnrichmentAll()``` in this vignette, the platform will be specified. 
+![Four testing scenarios of knowYourCG](../man/figures/20210627_kycpg_tests.png){width=75%}
+>>>>>>> c4450667a8de8e0c6a7bf6585c5b8eb450d0d1a6
+
+The ```testEnrichment()``` will automate statistical tests and report metrics about each of the the loaded database sets. Another set that is needed for the test is called the universe set. This is the set of all probes for a given platform. It can either be passed in as an argument called ```universeSet``` or the platform name can be passed with argument ```platform```. If neither of these are supplied, the universe set will be implied from the probes. In all subsequent runs of ```testEnrichment()``` in this vignette, the platform will be specified. 
 
 ```{r run-test-single, echo=TRUE, eval=TRUE}
-resultsAll = testEnrichmentAll(querySet=querySet, 
+results = testEnrichment(querySet=querySet, 
                                databaseSets=databaseSets, 
                                verbose=FALSE)
-print(head(resultsAll))
+print(head(results))
 ```
 
 The output of each test contains at least four variables: the estimate, p-value, type of test, and whether meta data is included in the tested database set. The name of the database set is also recorded as well. By default, the p-value column is sorted. 
@@ -139,12 +168,12 @@ The ```nQ``` and ```nD``` columns identify the length of the query set and the d
 Using these results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
-plotVolcano(data=resultsAll, title="Database Set Enrichment", 
+plotVolcano(data=results, title="Database Set Enrichment", 
             subtitle="MM285 Mouse Platform")
 ```
 
 ```{r plot-lollipop, fig.width=7, fig.height=6, echo=TRUE}
-plotLollipop(data=resultsAll, title="Top Database Set Enrichment", 
+plotLollipop(data=results, title="Top Database Set Enrichment", 
              subtitle="MM285 Mouse Platform")
 ```
 
@@ -155,7 +184,7 @@ The querySet may be a named continuous vector. In that case, either a gene enric
 To display this functionality, let's load two numeric database sets individually. One is a database set for CpG density and the other is a database set corresponding to the distance of the nearest transcriptional start site (TSS) to each probe.
 
 ``` {r run-test-data, echo=TRUE, eval=TRUE}
-KYCG.MM285.seqContextN.20210630 = getDatabaseSets('KYCG.MM285.seqContextN.20210630', verbose=FALSE)
+KYCG.MM285.seqContextN.20210630 = sesameDataGet('KYCG.MM285.seqContextN.20210630')
 CpGDesity50 = KYCG.MM285.seqContextN.20210630['CpGDesity50']
 distToTSS = KYCG.MM285.seqContextN.20210630['distToTSS']
 ```
@@ -165,14 +194,14 @@ distToTSS = KYCG.MM285.seqContextN.20210630['distToTSS']
 Our first test will look at whether the query set is significantly enriched in either of the database sets individually.
 
 ``` {r run-test-other1, echo=TRUE, eval=TRUE}
-resultsCpGDensity = testEnrichmentAll(querySet=querySet,
+resultsCpGDensity = testEnrichment(querySet=querySet,
                                       databaseSets=CpGDesity50,
                                       platform="MM285")
 print(resultsCpGDensity)
 ```
 
 ``` {r run-test-other2, echo=TRUE, eval=TRUE}
-resultsTSS = testEnrichmentAll(querySet=querySet, 
+resultsTSS = testEnrichment(querySet=querySet, 
                                databaseSets=distToTSS, 
                                platform="MM285")
 print(resultsTSS)
@@ -184,7 +213,7 @@ Both of the tests result in a p-value greater than 0.05, so there is little evid
 A third test might be whether there is a significant correlation between these two database sets.
 
 ``` {r run-test-other3, echo=TRUE, eval=TRUE}
-resultsCpGdensityTSS = testEnrichmentAll(querySet=CpGDesity50[[1]],
+resultsCpGdensityTSS = testEnrichment(querySet=CpGDesity50[[1]],
                                          databaseSets=distToTSS,
                                          platform="MM285")
 print(resultsCpGdensityTSS)
@@ -199,14 +228,15 @@ In the above four examples, the database sets were specified explicitly. This is
 We may want to look specifically at query our query set is significantly enriched in the set of all Transcription Factor Binding Sites (TFBS). Let's first load in the TFBS database set.
 
 ``` {r load-data-tfbs, echo=TRUE, eval=TRUE}
-databaseSets = getDatabaseSets("KYCG.MM285.TFBS.20210817", verbose=FALSE)
+databaseSets = sesameDataGet("KYCG.MM285.TFBS.20210817")
 ```
 
 Next we can actually perform the test.
 
 ``` {r run-test-tfbs, echo=TRUE, eval=TRUE, warning=FALSE}
-resultsTFBS = testEnrichmentAll(querySet=querySet, databaseSets=databaseSets,
-                                platform="MM285", verbose=FALSE, return.meta=TRUE)
+resultsTFBS = testEnrichment(querySet=querySet, databaseSets=databaseSets,
+                                platform="MM285", verbose=FALSE, 
+                                return.meta=TRUE)
 head(resultsTFBS)
 ```
 
@@ -247,7 +277,7 @@ For example, this given query set is tissue specific hypomethylation of mouse br
 
 # Feature Engineering
 
-In addition to hypothesis testing, knowYourCpG also uses the curated database sets for feature engineering. We have a pre-curated summarized experiment containing a samplesheet and beta value matrix corresponding to about 467 MM285 samples with 20k probes. The samplesheet includes UIDs pertaining to the sample and several categorical/numerical features. To use this data for a linear model, we will extract the most relevant prevalent features. 
+In addition to hypothesis testing, knowYourCG also uses the curated database sets for feature engineering. We have a pre-curated summarized experiment containing a samplesheet and beta value matrix corresponding to about 467 MM285 samples with 20k probes. The samplesheet includes UIDs pertaining to the sample and several categorical/numerical features. To use this data for a linear model, we will extract the most relevant prevalent features. 
 
 ``` {r run-feature-engineering-get-data, echo=TRUE, eval=TRUE}
 se = sesameDataGet('MM285.20Kx467.SE')
@@ -264,7 +294,7 @@ We have found that it is incredibly computationally expensive to perform a linea
 We will calculate the summary statistics for the betas matrix using a list of database sets.
 
 ``` {r run-feature-engineering-statistics}
-databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 statistics = calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
 head(statistics[, 1:5])
 ```

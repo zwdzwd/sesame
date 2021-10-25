@@ -6,7 +6,7 @@
 This plot is helpful in revealing the extent of signal background
 and dye bias.}
 \usage{
-sesamePlotIntensVsBetas(sdf, mask = TRUE, intens.range = c(5, 15))
+sesamePlotIntensVsBetas(sdf, mask = TRUE, intens.range = c(5, 15), ...)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
@@ -14,6 +14,8 @@ sesamePlotIntensVsBetas(sdf, mask = TRUE, intens.range = c(5, 15))
 \item{mask}{whether to remove probes that are masked}
 
 \item{intens.range}{plot range of signal intensity}
+
+\item{...}{additional arguments to smoothScatter}
 }
 \value{
 create a total signal intensity vs beta value plot

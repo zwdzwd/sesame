@@ -5,11 +5,15 @@
 \title{testEnrichmentGene tests for the enrichment of set of probes
 (querySet) in gene regions.}
 \usage{
-testEnrichmentGene(querySet, platform = NA, verbose = FALSE)
+testEnrichmentGene(querySet, databaseSets = NA, platform = NA, verbose = FALSE)
 }
 \arguments{
 \item{querySet}{Vector of probes of interest (e.g., probes belonging to a
 given platform)}
+
+\item{databaseSets}{List of vectors corresponding to the database sets of
+interest with associated meta data as an attribute to each element. Optional.
+(Default: NA)}
 
 \item{platform}{String corresponding to the type of platform to use. Either
 MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred

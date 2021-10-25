@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 #' getDatabaseSets retrieves database sets from a meta data sheet by querying 
 #' the group, platform, reference columns. The data is returned as a list where 
 #' names correspond to chosen database sets.
@@ -76,6 +77,8 @@ flattenlist = function(x) {
 }
 
 
+=======
+>>>>>>> c4450667a8de8e0c6a7bf6585c5b8eb450d0d1a6
 #' compareDatbaseSetOverlap calculates the pariwise overlap between given list 
 #' of database sets using a distance metric.
 #'
@@ -92,7 +95,7 @@ flattenlist = function(x) {
 #'
 #' @examples
 #' databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
-#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+#' databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 #' compareDatbaseSetOverlap(databaseSets)
 #'
 #' @export
@@ -138,7 +141,7 @@ compareDatbaseSetOverlap = function(databaseSets=NA,
 #' querySet = df$Probe_ID[df$branch == "E-Brain"]
 #' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
 #' 'KYCG.MM285.designGroup.20210210')
-#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+#' databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 #' getDatabaseSetOverlap(querySet, databaseSets)
 #'
 #' @export
@@ -162,8 +165,13 @@ getDatabaseSetOverlap = function(querySet,
                 platform = inferPlatformFromProbeIDs(querySet)
             }
         }
-        databaseSets = getDatabaseSets(platform=platform, verbose=verbose)
+        databaseSetNames = sesameData:::df_master$Title[
+            grepl(paste("KYCG.", platform, sep=''), 
+                  sesameData:::df_master$Title)]
+        databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
     }
+    
+   
     
     metadata = as.data.frame(
         do.call(rbind,
@@ -257,7 +265,7 @@ testEnrichment1 = function(querySet, databaseSet, universeSet,
 }
 
 
-#' testEnrichmentAll tests for the enrichment of set of probes (query set) in
+#' testEnrichment tests for the enrichment of set of probes (query set) in
 #' a number of features (database sets).
 #'
 #' @param querySet Vector of probes of interest (e.g., significant probes)
@@ -288,15 +296,14 @@ testEnrichment1 = function(querySet, databaseSet, universeSet,
 #' library(SummarizedExperiment)
 #' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
 #' 'KYCG.MM285.designGroup.20210210')
-#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+#' databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 #' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
 #' df = rowData(MM285.tissueSignature)
 #' querySet = df$Probe_ID[df$branch == "E-Brain"]
-#' testEnrichmentAll(querySet=querySet, 
-#' databaseSets=databaseSets, verbose=FALSE)
+#' testEnrichment(querySet=querySet, databaseSets=databaseSets, verbose=FALSE)
 #'
 #' @export
-testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
+testEnrichment = function(querySet, databaseSets=NA, universeSet=NA,
                             platform=NA, estimate.type="ES", p.value.adj=FALSE,
                             n.fdr=NA, return.meta=FALSE, verbose=FALSE) {
     if (all(is.na(universeSet))) {
@@ -354,7 +361,10 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
                 platform = inferPlatformFromProbeIDs(querySet)
             }
         }
-        databaseSets = getDatabaseSets(platform=platform, verbose=verbose)
+        databaseSetNames = sesameData:::df_master$Title[
+            grepl(paste("KYCG.", platform, sep=''), 
+                  sesameData:::df_master$Title)]
+        databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
     }
     
     results = data.frame(
@@ -414,6 +424,9 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
 #'
 #' @param querySet Vector of probes of interest (e.g., probes belonging to a
 #' given platform)
+#' @param databaseSets List of vectors corresponding to the database sets of
+#' interest with associated meta data as an attribute to each element. Optional.
+#' (Default: NA)
 #' @param platform String corresponding to the type of platform to use. Either
 #' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 #' from the query set querySet (Default: NA)
@@ -431,7 +444,7 @@ testEnrichmentAll = function(querySet, databaseSets=NA, universeSet=NA,
 #' testEnrichmentGene(querySet, platform="MM285", verbose=FALSE)
 #'
 #' @export
-testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
+testEnrichmentGene = function(querySet, databaseSets=NA, platform=NA, verbose=FALSE) {
     if (is.na(platform)) {
         if (verbose)
             print("The platform was not defined.',
@@ -442,23 +455,36 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
             platform = inferPlatformFromProbeIDs(querySet)
         }
     }
+    if (is.na(databaseSets)) {
+        databaseSets = tryCatch({
+            sesameDataGet(
+                sprintf('KYCG.%s.gene.20210923', platform))
+        },
+        error = function (condition) {
+            print("ERROR:")
+            print(paste("  Message:",conditionMessage(condition)))
+            print(paste("  Call: ",conditionCall(condition)))
+            return(NULL)
+        },
+        finally= function() {
+            print(sprintf("Invalid platform [%s]", platform))
+            return(NULL)
+        })    
+    }
     
-    databaseSets = tryCatch({
-        sesameDataGet(
-            sprintf('KYCG.%s.gene.20210923', platform))
+    probeID2gene = tryCatch({
+        attr(databaseSets, 'probeID2gene')
     },
-    error = function (condition) {
+    error = function(condition) {
         print("ERROR:")
         print(paste("  Message:",conditionMessage(condition)))
         print(paste("  Call: ",conditionCall(condition)))
         return(NULL)
-    },
-    finally= function() {
-        print(sprintf("Invalid platform [%s]", platform))
+    }, finally = function() {
+        print(sprintf("Invalid database sets"))
         return(NULL)
     })
     
-    probeID2gene = attr(databaseSets, 'probeID2gene')
     
     databaseSetNames = probeID2gene$genesUniq[match(querySet, 
                                                     probeID2gene$probeID)]
@@ -475,7 +501,7 @@ testEnrichmentGene = function(querySet, platform=NA, verbose=FALSE) {
     
     databaseSets = databaseSets[names(databaseSets) %in% databaseSetNames]
     
-    return(testEnrichmentAll(querySet, 
+    return(testEnrichment(querySet, 
                             databaseSets, 
                             platform=platform, 
                             n.fdr=n))
@@ -678,9 +704,8 @@ calcDatabaseSetStatistics1 = function(x) {
 #' "Strain_Corrected","Tissue_Corrected", 'Genotype')]
 #' betas = assay(se)
 #' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
-#' 'KYCG.MM285.designGroup.20210210', 'HM450.chromosome.hg19.20210630', 
 #' 'KYCG.MM285.probeType.20210630')
-#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+#' databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 #' calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
 #' 
 #' @return Vector for a given sample columns are features across different
@@ -907,7 +932,7 @@ plotLollipop = function(data, n=10, title=NA, subtitle=NA) {
 #'
 #' @examples
 #' databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
-#' databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+#' databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 #' createDatabaseSetNetwork(databaseSets)
 #'
 #' @export

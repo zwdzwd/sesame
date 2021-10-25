@@ -37,7 +37,7 @@ sesamize <- function(
 
     if (is.null(HDF5)) {
         ## are we working on an HDF5-backed RGChannelSet?
-        HDF5 <- (class(assays(rgSet)[[1]])[1] == "DelayedMatrix")
+        HDF5 <- is(assays(rgSet)[[1]], "DelayedMatrix")
     }
     t1 = bptry(bplapply(samples, function(sample) {
         message("Sesamizing ", sample, "...")

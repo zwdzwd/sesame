@@ -50,6 +50,7 @@ qualityRank <- function(
 #' @param sdf a \code{SigDF}
 #' @param mask whether to remove probes that are masked
 #' @param intens.range plot range of signal intensity
+#' @param ... additional arguments to smoothScatter
 #' @return create a total signal intensity vs beta value plot
 #' @examples
 #' sesameDataCache("EPIC")
@@ -60,7 +61,8 @@ qualityRank <- function(
 #' @import KernSmooth
 #' @importFrom grDevices colorRampPalette
 #' @export
-sesamePlotIntensVsBetas <- function(sdf, mask=TRUE, intens.range=c(5,15)) {
+sesamePlotIntensVsBetas <- function(
+    sdf, mask=TRUE, intens.range=c(5,15), ...) {
     
     intens <- totalIntensities(sdf, mask=mask)
     smoothScatter(log2(intens), getBetas(sdf, mask=mask)[names(intens)],
@@ -69,7 +71,7 @@ sesamePlotIntensVsBetas <- function(sdf, mask=TRUE, intens.range=c(5,15)) {
         nrpoints=0, 
         colramp=colorRampPalette(c("white","white","lightblue",
             "blue","green","yellow","orange","red","darkred"),
-            space = "Lab"), xlim=intens.range)
+            space = "Lab"), xlim=intens.range, ...)
     abline(h=0.5, lty='dashed')
     ## plot envelope lines
     x <- c(seq(1,100,by=1), seq(101,10000,by=100))
