@@ -36,7 +36,7 @@ df = rowData(MM285.tissueSignature)
 querySet = df$Probe_ID[df$branch == "E-Brain"]
 databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
 'KYCG.MM285.designGroup.20210210')
-databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 getDatabaseSetOverlap(querySet, databaseSets)
 
 }

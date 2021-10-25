@@ -29,9 +29,8 @@ samplesheet = colData(se)[, c("Mouse_Age_Months", "Mouse_Age_Days", "Sex",
 "Strain_Corrected","Tissue_Corrected", 'Genotype')]
 betas = assay(se)
 databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
-'KYCG.MM285.designGroup.20210210', 'HM450.chromosome.hg19.20210630', 
 'KYCG.MM285.probeType.20210630')
-databaseSets = getDatabaseSets(databaseSetNames, verbose=FALSE)
+databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
 
 }
