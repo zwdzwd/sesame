@@ -16,6 +16,7 @@ vignette: >
 ```{r echo=FALSE, message=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)
 library(sesame)
+sesameDataCacheAll()
 ```
 
 Sesame provide convenient function to compare your sample with

@@ -22,6 +22,7 @@ deIdentification. The following function requires the R package seSAMe.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(sesame)
+sesameDataCacheAll()
 ```
 
 Let's take DNA methylation data from the HM450 platform for example.

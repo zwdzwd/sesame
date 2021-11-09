@@ -24,6 +24,7 @@ co-variates. Let's first load needed packages
 ```{r message=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)
 library(sesame)
+sesameDataCacheAll()
 library(dplyr)
 library(tidyr)
 library(SummarizedExperiment)
