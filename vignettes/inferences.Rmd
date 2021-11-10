@@ -17,6 +17,7 @@ swaps.
 
 ```{r echo=FALSE, message=FALSE}
 library(sesame)
+sesameDataCacheAll()
 ```
 
 # Sex

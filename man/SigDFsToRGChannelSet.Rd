@@ -17,7 +17,7 @@ SigDFsToRGChannelSet(sdfs, BPPARAM = SerialParam(), annotation = NA)
 a minfi::RGChannelSet
 }
 \description{
-Convert sesame::SigDF to minfi::RGChannelSet
+This function does not support the mouse array.
 }
 \examples{
 

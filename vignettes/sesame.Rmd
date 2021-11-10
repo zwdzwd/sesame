@@ -35,7 +35,7 @@ BiocManager::install('zwdzwd/sesame')
 **CRITICAL:** After a new installation, one needs to cache the associated
 annotation data using the following command.
 This needs to be done only once per SeSAMe installation.
-```{r eval=FALSE}
+```{r}
 sesameDataCacheAll()
 ```
 This function caches the needed SeSAMe annotation for all the supported

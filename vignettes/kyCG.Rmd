@@ -25,6 +25,7 @@ Additionally, knowYourCG has support for feature selection and feature engineeri
 
 ```{r load-depenencies, echo=TRUE, message=FALSE, warning=FALSE}
 library(sesame)
+sesameDataCacheAll()
 library(SummarizedExperiment)
 library(stats4)
 library(sesameData)
