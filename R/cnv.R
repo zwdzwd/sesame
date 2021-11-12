@@ -241,11 +241,15 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @examples
 #'
 #' sesameDataCache("EPIC") # in case not done yet
+#'
+#' if (FALSE) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
 #' seg <- cnSegmentation(sdf, sdfs.normal)
 #' 
 #' visualizeSegments(seg)
+#'
+#' }
 #' 
 #' @export
 visualizeSegments <- function(seg, to.plot=NULL) {
