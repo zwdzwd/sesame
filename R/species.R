@@ -25,7 +25,7 @@
 #'   inferSpecies(sdf)
 #' }
 #' @export
-inferSpecies20211111 <- function(sdf, df_as = NULL, topN = 3000,
+inferSpecies <- function(sdf, df_as = NULL, topN = 3000,
                                  threshold.pos = 0.01, threshold.neg = 0.1, ret.max = TRUE,
                                  balance = TRUE, threshold.sucess.rate = 0.8) {
   if (is.null(df_as)) {
@@ -98,7 +98,11 @@ inferSpecies20211111 <- function(sdf, df_as = NULL, topN = 3000,
     names(l)[1] = 'auc'
     return(l)
   } else { # return all
-    return(auc)
+    r = data.frame(species=sapply(names(auc),function(x) {unlist(strsplit(x,"\\|"))[1]}),
+                   taxid=sapply(names(auc),function(x) {unlist(strsplit(x,"\\|"))[2]}),
+                   auc=as.vector(auc),row.names = NULL)
+    r$success_rate <- success.rate
+    return(r[order(r$auc,decreasing=T),])
   }
 }
 
