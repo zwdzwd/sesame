@@ -18,7 +18,7 @@
 #'
 #' sesameDataCache("EPIC") # in case not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
+#' sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 #' seg <- cnSegmentation(sdf, sdfs.normal)
 #' 
 #' @export
@@ -30,7 +30,7 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
 
     if (is.null(sdfs.normal)) {
         if (sdfPlatform(sdf) == "EPIC") {
-            sdfs.normal = sesameDataGet("EPIC.5.SigDFs.normal")
+            sdfs.normal = sesameDataGet("EPIC.5.SigDF.normal")
         } else {
             stop(sprintf("For %s, please provide the sdfs.normal argument.",
                 sdfPlatform(sdf)))
@@ -242,15 +242,12 @@ segmentBins <- function(bin.signals, bin.coords) {
 #'
 #' sesameDataCache("EPIC") # in case not done yet
 #'
-#' if (FALSE) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
+#' sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 #' seg <- cnSegmentation(sdf, sdfs.normal)
 #' 
 #' visualizeSegments(seg)
 #'
-#' }
-#' 
 #' @export
 visualizeSegments <- function(seg, to.plot=NULL) {
 

@@ -25,13 +25,10 @@ require ggplot2, scales
 
 sesameDataCache("EPIC") # in case not done yet
 
-if (FALSE) {
 sdf <- sesameDataGet('EPIC.1.SigDF')
-sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
+sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 seg <- cnSegmentation(sdf, sdfs.normal)
 
 visualizeSegments(seg)
-
-}
 
 }

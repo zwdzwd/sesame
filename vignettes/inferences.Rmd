@@ -60,7 +60,7 @@ SeSAMe performs copy number variation in three steps: 1) normalizes the signal
 intensity using a copy-number-normal data set; 2) groups adjacent probes into
 bins; 3) runs DNAcopy internally to group bins into segments.
 ```{r, message=FALSE, fig.width=6}
-sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
+sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 segs <- cnSegmentation(sdf, sdfs.normal)
 ```
 

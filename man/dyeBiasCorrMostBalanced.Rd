@@ -22,6 +22,6 @@ dye bias corrected.
 }
 \examples{
 sesameDataCache("HM450") # if not done yet
-sdfs <- sesameDataGet('HM450.10.SigDFs')
+sdfs <- sesameDataGet('HM450.10.SigDF')
 sdfs.db <- dyeBiasCorrMostBalanced(sdfs)
 }
