@@ -96,11 +96,13 @@ getProbesByRegion <- function(
 
     platform <- match.arg(platform)
     refversion <- match.arg(refversion)
-    
-    if (end < 0) {
-        end <- sesameDataGet(paste0(
-            'genomeInfo.', refversion))$seqInfo[chrm]@seqlengths
-    }
+
+    stopifnot(end > 0)
+    ## TODO: the following doesnot work with current EH3665
+    ## if (end < 0) {
+    ##     end <- sesameDataGet(paste0(
+    ##         'genomeInfo.', refversion))$seqInfo[chrm]@seqlengths
+    ## }
 
     probes <- sesameDataGet(paste0(
         platform, '.probeInfo'))[[paste0('mapped.probes.', refversion)]]

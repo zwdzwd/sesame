@@ -4,10 +4,10 @@
 \alias{getBinCoordinates}
 \title{Get bin coordinates}
 \usage{
-getBinCoordinates(seqInfo, gapInfo, probe.coords)
+getBinCoordinates(seqLength, gapInfo, probe.coords)
 }
 \arguments{
-\item{seqInfo}{chromosome information object}
+\item{seqLength}{chromosome information object}
 
 \item{gapInfo}{chromosome gap information}
 

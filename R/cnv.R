@@ -17,8 +17,9 @@
 #' @examples
 #'
 #' sesameDataCache("EPIC") # in case not done yet
+#'
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
+#' sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 #' seg <- cnSegmentation(sdf, sdfs.normal)
 #' 
 #' @export
@@ -30,7 +31,7 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
 
     if (is.null(sdfs.normal)) {
         if (sdfPlatform(sdf) == "EPIC") {
-            sdfs.normal = sesameDataGet("EPIC.5.SigDFs.normal")
+            sdfs.normal = sesameDataGet("EPIC.5.SigDF.normal")
         } else {
             stop(sprintf("For %s, please provide the sdfs.normal argument.",
                 sdfPlatform(sdf)))
@@ -38,8 +39,10 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
     }
     
     ## retrieve chromosome info and probe coordinates
-    seqInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$seqInfo
+    options(sesameData_use_alternative = TRUE) # TODO: REMOVE THIS AFTER EH UPDATE
+    seqLength <- sesameDataGet(paste0('genomeInfo.', refversion))$seqLength
     gapInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$gapInfo
+    options(sesameData_use_alternative = FALSE) # TODO: REMOVE THIS AFTER EH UPDATE
     probe.coords <- sesameDataGet(paste0(
         sdfPlatform(sdf), '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
     
@@ -61,7 +64,7 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
 
     ## bin signals
     ## fix bin coordinates, TODO: this is too time-consuming
-    bin.coords <- getBinCoordinates(seqInfo, gapInfo, probe.coords)
+    bin.coords <- getBinCoordinates(seqLength, gapInfo, probe.coords)
     bin.signals <- binSignals(probe.signals, bin.coords, probe.coords)
 
     ## segmentation
@@ -129,17 +132,17 @@ leftRightMerge1 <- function(chrom.windows, min.probes.per.bin=20) {
 #'
 #' requires GenomicRanges, IRanges
 #' 
-#' @param seqInfo chromosome information object
+#' @param seqLength chromosome information object
 #' @param gapInfo chromosome gap information
 #' @param probe.coords probe coordinates
 #' @return bin.coords
-getBinCoordinates <- function(seqInfo, gapInfo, probe.coords) {
+getBinCoordinates <- function(seqLength, gapInfo, probe.coords) {
 
     pkgTest('GenomicRanges')
     pkgTest('IRanges')
 
     tiles <- sort(GenomicRanges::tileGenome(
-        seqInfo, tilewidth=50000, cut.last.tile.in.chrom = TRUE))
+        seqLength, tilewidth=50000, cut.last.tile.in.chrom = TRUE))
     
     tiles <- sort(c(
         GenomicRanges::setdiff(tiles[seq(1, length(tiles), 2)], gapInfo), 
@@ -242,7 +245,7 @@ segmentBins <- function(bin.signals, bin.coords) {
 #'
 #' sesameDataCache("EPIC") # in case not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdfs.normal <- sesameDataGet('EPIC.5.SigDFs.normal')
+#' sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 #' seg <- cnSegmentation(sdf, sdfs.normal)
 #' 
 #' visualizeSegments(seg)
