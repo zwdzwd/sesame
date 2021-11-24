@@ -142,7 +142,7 @@ getProbesByChromosome <- function(
 #' @param refversion hg19, hg38, or mm10, inference by default
 #' @return a vector of autosome probes
 #' @examples
-#' auto.probes <- getAutosomeProbes('EPIC')
+#' auto.probes <- getAutosomeProbes('MM285')
 #' @export
 getAutosomeProbes <- function(
     platform = c('EPIC','HM450','MM285'), refversion = NULL) {

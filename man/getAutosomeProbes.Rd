@@ -18,5 +18,5 @@ a vector of autosome probes
 Get autosome probes
 }
 \examples{
-auto.probes <- getAutosomeProbes('EPIC')
+auto.probes <- getAutosomeProbes('MM285')
 }
