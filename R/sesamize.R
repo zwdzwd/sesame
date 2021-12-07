@@ -168,9 +168,11 @@ guessMinfiAnnotation <- function(ptf, annotation = NA) {
 #' @import BiocParallel
 #' @examples
 #'
+#' if (FALSE) { # to avoid excessive memory usage in package builder
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' rgSet <- SigDFsToRGChannelSet(sdf)
+#' }
 #'
 #' @export 
 SigDFsToRGChannelSet <- function(sdfs, BPPARAM=SerialParam(), annotation=NA) {
@@ -230,10 +232,11 @@ RGChannelSet1ToSigDF <- function(rgSet1, manifest = NULL, controls = NULL) {
 #' @return a list of sesame::SigDF
 #' @import BiocParallel
 #' @examples
-#'
+#' if (FALSE) { # to avoid excessive memory usage in package builder
 #' if (require(FlowSorted.Blood.450k)) {
 #'     rgSet <- FlowSorted.Blood.450k[,1:2]
 #'     sdfs <- RGChannelSetToSigDFs(rgSet)
+#' }
 #' }
 #' @export
 RGChannelSetToSigDFs <- function(
@@ -254,9 +257,11 @@ RGChannelSetToSigDFs <- function(
 #' @return a minfi::RatioSet
 #' @examples
 #'
+#' if (FALSE) { # to avoid excessive memory usage in package builder
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' ratioSet <- SigDFToRatioSet(sdf)
+#' }
 #' 
 #' @export
 SigDFToRatioSet <- function(sdf, annotation = NA) {

@@ -170,6 +170,10 @@ getAutosomeProbes <- function(
 #' betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
 #' betas.most.variable <- bSubMostVariable(
 #'     betas[getAutosomeProbes('HM450'),],2000)
+#'
+#' ## clear cache
+#' rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+#' gc()
 #' @export
 bSubMostVariable <- function(betas, n=2000) {
     std <- apply(betas, 1, sd, na.rm=TRUE)

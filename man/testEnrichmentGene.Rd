@@ -37,4 +37,8 @@ df = rowData(MM285.tissueSignature)
 querySet = df$Probe_ID[df$branch == "E-Brain"]
 testEnrichmentGene(querySet, platform="MM285", verbose=FALSE)
 
+# release memory for Windows package builder
+rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+gc()
+
 }

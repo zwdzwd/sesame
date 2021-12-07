@@ -56,8 +56,11 @@ reference_plot_se = function(
 #' @export
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
-#' options(sesameData_use_alternative=TRUE) # TODO
 #' compareMouseTissueReference()
+#'
+#' # release memory for Windows package builder
+#' rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+#' gc()
 #' 
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
@@ -91,7 +94,6 @@ compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
 #' @return inferred tissue as a string
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
-#' options(sesameData_use_alternative=TRUE) # TODO
 #' sdf = sesameDataGet("MM285.1.SigDF")
 #' inferTissue(getBetas(dyeBiasNL(noob(sdf))))
 #'

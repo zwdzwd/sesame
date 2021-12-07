@@ -20,7 +20,10 @@ Compare mouse array data with mouse tissue references
 }
 \examples{
 sesameDataCache("MM285") # if not done yet
-options(sesameData_use_alternative=TRUE) # TODO
 compareMouseTissueReference()
+
+# release memory for Windows package builder
+rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+gc()
 
 }

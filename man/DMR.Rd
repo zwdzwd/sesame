@@ -52,4 +52,9 @@ data <- sesameDataGet('HM450.76.TCGA.matched')
 smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 colnames(attr(smry, "model.matrix")) # pick a contrast from here
 merged_segs = DMR(data$betas[1:1000,], smry, "typeTumour")
+
+# release memory for Windows package builder
+rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+gc()
+
 }

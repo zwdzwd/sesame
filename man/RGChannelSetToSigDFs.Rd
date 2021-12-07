@@ -21,9 +21,10 @@ Notice the colData() and rowData() is lost. Most cases, rowData is empty
 anyway.
 }
 \examples{
-
+if (FALSE) { # to avoid excessive memory usage in package builder
 if (require(FlowSorted.Blood.450k)) {
     rgSet <- FlowSorted.Blood.450k[,1:2]
     sdfs <- RGChannelSetToSigDFs(rgSet)
+}
 }
 }

@@ -221,6 +221,10 @@ testEnrichment1 = function(querySet, databaseSet, universeSet,
 #' querySet = df$Probe_ID[df$branch == "E-Brain"]
 #' testEnrichment(querySet=querySet, databaseSets=databaseSets, verbose=FALSE)
 #'
+#' # release memory for Windows package builder
+#' rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+#' gc()
+#'
 #' @export
 testEnrichment = function(querySet, databaseSets=NA, universeSet=NA,
                             platform=NA, estimate.type="ES", p.value.adj=FALSE,
@@ -361,6 +365,10 @@ testEnrichment = function(querySet, databaseSets=NA, universeSet=NA,
 #' df = rowData(MM285.tissueSignature)
 #' querySet = df$Probe_ID[df$branch == "E-Brain"]
 #' testEnrichmentGene(querySet, platform="MM285", verbose=FALSE)
+#'
+#' # release memory for Windows package builder
+#' rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+#' gc()
 #'
 #' @export
 testEnrichmentGene = function(querySet, databaseSets=NA, platform=NA, verbose=FALSE) {

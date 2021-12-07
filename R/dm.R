@@ -42,6 +42,11 @@ checkLevels = function(betas, fc) {
 #' sesameDataCache("HM450") # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#'
+#' # release memory for Windows package builder
+#' rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+#' gc()
+#'
 #' @export
 DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 
@@ -268,6 +273,11 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' colnames(attr(smry, "model.matrix")) # pick a contrast from here
 #' merged_segs = DMR(data$betas[1:1000,], smry, "typeTumour")
+#'
+#' # release memory for Windows package builder
+#' rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+#' gc()
+#'
 #' @export
 DMR <- function(betas, smry, contrast,
     platform=NULL, refversion=NULL,
@@ -309,6 +319,11 @@ DMR <- function(betas, smry, contrast,
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' dmContrasts(smry)
+#'
+#' # release memory for Windows package builder
+#' rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+#' gc()
+#' 
 #' @export
 dmContrasts = function(smry) {
     stopifnot(is(smry, "DMLSummary"))

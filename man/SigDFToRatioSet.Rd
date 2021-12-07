@@ -19,8 +19,10 @@ Convert one sesame::SigDF to minfi::RatioSet
 }
 \examples{
 
+if (FALSE) { # to avoid excessive memory usage in package builder
 sesameDataCache("EPIC") # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 ratioSet <- SigDFToRatioSet(sdf)
+}
 
 }

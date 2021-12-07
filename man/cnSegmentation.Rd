@@ -34,4 +34,8 @@ sdf <- sesameDataGet('EPIC.1.SigDF')
 sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')[1:3]
 seg <- cnSegmentation(sdf, sdfs.normal)
 
+# release memory for Windows package builder
+rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+gc()
+
 }

@@ -24,11 +24,14 @@ require ggplot2, scales
 \examples{
 
 sesameDataCache("EPIC") # in case not done yet
-
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')[1:3]
 seg <- cnSegmentation(sdf, sdfs.normal)
 
 visualizeSegments(seg)
+
+# release memory for Windows package builder
+rm(list=ls(env=sesameData:::cacheEnv), envir=sesameData:::cacheEnv)
+gc()
 
 }
