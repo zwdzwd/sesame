@@ -6,12 +6,20 @@
 This plot is helpful in revealing the extent of signal background
 and dye bias.}
 \usage{
-sesamePlotIntensVsBetas(sdf, mask = TRUE, intens.range = c(5, 15), ...)
+sesamePlotIntensVsBetas(
+  sdf,
+  mask = TRUE,
+  use_max = FALSE,
+  intens.range = c(5, 15),
+  ...
+)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
 
 \item{mask}{whether to remove probes that are masked}
+
+\item{use_max}{to use max(M,U) or M+U}
 
 \item{intens.range}{plot range of signal intensity}
 

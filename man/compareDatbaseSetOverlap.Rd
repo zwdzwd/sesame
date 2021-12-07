@@ -31,8 +31,10 @@ compareDatbaseSetOverlap calculates the pariwise overlap between given list
 of database sets using a distance metric.
 }
 \examples{
+
 databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
 databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 compareDatbaseSetOverlap(databaseSets)
+sesameDataClearCache()
 
 }

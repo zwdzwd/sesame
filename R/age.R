@@ -24,8 +24,11 @@ Hv.response2age <- function(x, adult.age=20) {
 #' @return age in years
 #' @export
 #' @examples
+#'
 #' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 #' predictAgeHorvath353(betas)
+#' sesameDataClearCache()
+#' 
 predictAgeHorvath353 <- function(betas) {
     predictAge(betas, sesameDataGet('age.inference')$Horvath353)
 }
@@ -41,8 +44,11 @@ predictAgeHorvath353 <- function(betas) {
 #' @return age in years
 #' @export
 #' @examples
+#'
 #' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 #' predictAgeSkinBlood(betas)
+#' sesameDataClearCache()
+#' 
 predictAgeSkinBlood <- function(betas) {
     predictAge(betas, sesameDataGet('age.inference')$SkinBlood)
 }
@@ -72,8 +78,11 @@ predictAge <- function(betas, cf) {
 #' @param na_fallback use the fallback default for NAs.
 #' @return age in month
 #' @examples
+#'
 #' betas = sesameDataGet('MM285.10.tissue')$betas
 #' predictMouseAgeInMonth(betas[,1])
+#' sesameDataClearCache()
+#' 
 #' @export
 predictMouseAgeInMonth = function(betas, na_fallback=TRUE) {
     coefs = sesameDataGet("MM285.clock347")

@@ -12,6 +12,8 @@
 #'     SummarizedExperiment::colData(se0)$tissue)
 #' sum(se_ok) # number of good probes
 #' se1 = se0[se_ok,]
+#'
+#' sesameDataClearCache()
 #' @export
 checkLevels = function(betas, fc) {
     stopifnot(is(fc, "factor") || is(fc, "character"))
@@ -40,8 +42,10 @@ checkLevels = function(betas, fc) {
 #' @import parallel
 #' @examples
 #' sesameDataCache("HM450") # in case not done yet
-#' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' data = sesameDataGet('HM450.76.TCGA.matched')
+#' smry = DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#'
+#' sesameDataClearCache()
 #' @export
 DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 
@@ -97,6 +101,8 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' smry
+#'
+#' sesameDataClearCache()
 #' @export
 print.DMLSummary <- function(x, ...) {
     mm = attr(x, "model.matrix")
@@ -113,6 +119,8 @@ print.DMLSummary <- function(x, ...) {
 #' data = sesameDataGet('HM450.76.TCGA.matched')
 #' smry = DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' slopes = summaryExtractTest(smry)
+#'
+#' sesameDataClearCache()
 #' @export
 summaryExtractTest = function(smry) {
     est = as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
@@ -264,10 +272,14 @@ DMGetProbeInfo <- function(platform, refversion) {
 #'
 #' sesameDataCache("HM450") # in case not done yet
 #' 
-#' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' data = sesameDataGet('HM450.76.TCGA.matched')
+#' smry = DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' colnames(attr(smry, "model.matrix")) # pick a contrast from here
-#' merged_segs = DMR(data$betas[1:1000,], smry, "typeTumour")
+#' ## showing on a small set of 100 CGs
+#' merged_segs = DMR(data$betas[1:100,], smry, "typeTumour")
+#'
+#' sesameDataClearCache()
+#' 
 #' @export
 DMR <- function(betas, smry, contrast,
     platform=NULL, refversion=NULL,
@@ -309,6 +321,8 @@ DMR <- function(betas, smry, contrast,
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' dmContrasts(smry)
+#'
+#' sesameDataClearCache()
 #' @export
 dmContrasts = function(smry) {
     stopifnot(is(smry, "DMLSummary"))

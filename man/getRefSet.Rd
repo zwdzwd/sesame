@@ -25,5 +25,8 @@ matrix with probes on the rows and specified cell types on the columns.
 methylation and nonclusive calls are left with NA.
 }
 \examples{
-betas <- getRefSet('CD4T', platform='HM450')
+
+betas = getRefSet('CD4T', platform='HM450')
+sesameDataClearCache()
+
 }

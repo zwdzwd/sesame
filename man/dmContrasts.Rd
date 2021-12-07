@@ -19,4 +19,6 @@ List all contrasts of a DMLSummary
 data <- sesameDataGet('HM450.76.TCGA.matched')
 smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 dmContrasts(smry)
+
+sesameDataClearCache()
 }

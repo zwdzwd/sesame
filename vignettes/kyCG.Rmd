@@ -104,7 +104,7 @@ Using the obtained database sets and query set, the user may analyze their overl
 
 There are many functions in this package that make investigating the biological significance of a set of probes easier.
 
-## Obtaining Optional Annotation from each Databse Set 
+## Obtaining Database Annotation
 
 Using the ```getDatabaseSetOverlap()``` function, the user can investigate the database sets that overlap with the given query set, the degree of overlap, and any provided annotation.
 
@@ -115,11 +115,18 @@ head(annotation)
 
 The ```meta``` column indicates whether the respective database set contains annotation. The ```nQ``` and ```nD``` columns indicate the length of the query set and database set respectively, and the ```overlap``` column indicates the amount of overlap. In some cases, this annotation data.frame will be sparse as not all database sets have the same annotation columns. None of these overlapping database sets have annotation, so no additional columns were returned.
 
-## Investigating the Enrichment of Many Database Sets in a Single Query Set
+## Single Query vs Multiple DBs
 
 The ```testEnrichment()``` function is the main work horse to knowYourCG. It tests the enrichment of the given database sets in a single query set. There are four testing scenarios depending on the type format of the query set and database sets. They are shown with the respective testing scenario in the table below.
 
-![Four testing scenarios of knowYourCG](../man/figures/20210627_kycpg_tests.png){width=75%}
+```{r echo = FALSE, results="asis"}
+library(knitr)
+df = data.frame(
+    "Continuous DB"=c("Correlation","FGSEA"),
+    "Discrete DB"=c("FGSEA","Fisher's Exact Test"))
+rownames(df) = c("Continuous Query", "Discrete Query")
+kable(df, caption="Four KnowYourCG Testing Scenarios")
+```
 
 The ```testEnrichment()``` will automate statistical tests and report metrics about each of the the loaded database sets. Another set that is needed for the test is called the universe set. This is the set of all probes for a given platform. It can either be passed in as an argument called ```universeSet``` or the platform name can be passed with argument ```platform```. If neither of these are supplied, the universe set will be implied from the probes. In all subsequent runs of ```testEnrichment()``` in this vignette, the platform will be specified. 
 

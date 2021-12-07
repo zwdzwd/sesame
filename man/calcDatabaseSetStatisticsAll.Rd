@@ -23,6 +23,7 @@ calcDatabaseSetStatisticsAll builds dataset for a given betas matrix
 composed of engineered features from the given database sets
 }
 \examples{
+
 library(SummarizedExperiment)
 se = sesameDataGet('MM285.20Kx467.SE')
 samplesheet = colData(se)[, c("Mouse_Age_Months", "Mouse_Age_Days", "Sex", 
@@ -32,5 +33,6 @@ databaseSetNames = c('KYCG.MM285.seqContextN.20210630',
 'KYCG.MM285.probeType.20210630')
 databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
+sesameDataClearCache()
 
 }

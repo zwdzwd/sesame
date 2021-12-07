@@ -19,5 +19,8 @@ the columns and output a subset matrix and only probes that show
 discordant methylation levels among the cell types.
 }
 \examples{
-g <- diffRefSet(getRefSet(platform='HM450'))
+
+g = diffRefSet(getRefSet(platform='HM450'))
+sesameDataClearCache()
+
 }

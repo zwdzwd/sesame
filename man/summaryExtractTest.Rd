@@ -20,4 +20,6 @@ sesameDataCache("HM450") # in case not done yet
 data = sesameDataGet('HM450.76.TCGA.matched')
 smry = DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 slopes = summaryExtractTest(smry)
+
+sesameDataClearCache()
 }

@@ -158,9 +158,8 @@ getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
 
     if (sum.TypeI) {
         d1 = InfI(sdf); d2 = InfII(sdf)
-        betas = c(
-            setNames(pmax(d1$MG+d1$MR,1) /
-                         pmax(d1$MG+d1$MR+d1$UG+d1$UR,2), d1$Probe_ID),
+        betas = c(setNames(
+            pmax(d1$MG+d1$MR,1)/pmax(d1$MG+d1$MR+d1$UG+d1$UR,2), d1$Probe_ID),
             setNames(pmax(d2$UG,1) / pmax(d2$UG+d2$UR,2), d2$Probe_ID))
     } else {
         dG = InfIG(sdf); dR = InfIR(sdf); d2 = InfII(sdf)
@@ -198,11 +197,10 @@ getAFTypeIbySumAlleles <- function(sdf, known.ccs.only = TRUE) {
     stopifnot(is(sdf, "SigDF"))
 
     dG = InfIG(sdf); dR = InfIR(sdf)
-    af = c(
-        setNames(pmax(dG$MR+dG$UR,1) /
-                     pmax(dG$MR+dG$UR+dG$MG+dG$UG,2), dG$Probe_ID),
-        setNames(pmax(dR$MG+dR$UG,1) /
-                     pmax(dR$MR+dR$UR+dR$MG+dR$UG,2), dR$Probe_ID))
+    af = c(setNames(
+        pmax(dG$MR+dG$UR,1)/pmax(dG$MR+dG$UR+dG$MG+dG$UG,2), dG$Probe_ID),
+        setNames(
+            pmax(dR$MG+dR$UG,1)/pmax(dR$MR+dR$UR+dR$MG+dR$UG,2), dR$Probe_ID))
 
     if (known.ccs.only) {
         af = af[intersect(
@@ -245,8 +243,8 @@ defaultAssembly <- function(platform) {
 ## return a data frame with 2 columns, corresponding to
 ## cy3 (Grn) and cy5 (Red) color channel signal
 readIDAT1 <- function(grn.name, red.name, platform='') {
-    ida.grn <- suppressWarnings(illuminaio::readIDAT(grn.name));
-    ida.red <- suppressWarnings(illuminaio::readIDAT(red.name));
+    ida.grn <- suppressWarnings(illuminaio::readIDAT(grn.name))
+    ida.red <- suppressWarnings(illuminaio::readIDAT(red.name))
     d <- cbind(
         cy3=ida.grn$Quants[,"Mean"],
         cy5=ida.red$Quants[,"Mean"])

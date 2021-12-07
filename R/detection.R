@@ -1,4 +1,45 @@
 
+#' Mask detection by intermediate beta values
+#'
+#' @param sdf a \code{SigDF}
+#' @param return.pval whether to return p-values, instead of a SigDF
+#' @param pval.threshold minimum p-value to mask
+#' @param capMU the maximum M+U to search for intermediate betas
+#' @param window window size for smoothing and beta fraction calc.
+#' @return a \code{SigDF} with mask added
+#' @examples
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' sum(sdf$mask)
+#' sum(detectionIB(sdf)$mask)
+#' @export
+detectionIB = function(
+    sdf, return.pval = FALSE, pval.threshold = 0.05,
+    capMU = 3000, window = 100) {
+
+    df = signalMU(sdf)
+    df$MU = df$M + df$U
+    df$beta = df$M / (df$M + df$U)
+    df = df[order(df$MU),]
+
+    ## fraction of the intermediate beta
+    fmid = vapply(seq_len(nrow(df)-window), function(i) {
+        sum(abs(df$beta[i:(i+window-1)] - 0.5)<0.1) / window;
+    }, numeric(1))
+
+    ## the range to search for intermediate betas
+    error_max_index = min(
+        which(fmid <= sort(fmid)[1] + 0.01)[1],
+        which(df$MU > capMU)[1])
+    df_err = df[seq_len(error_max_index),]
+    errors = df_err$MU[abs(df_err$beta - 0.5) < 0.2]
+    
+    pvals = setNames(1-ecdf(errors)(df$MU), df$Probe_ID)
+    pvals[is.na(pvals)] = 1.0 # set NA to 1
+
+    if (return.pval) { return(pvals) }
+    addMask(sdf, pvals > pval.threshold)
+}
+
 negControls <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
 

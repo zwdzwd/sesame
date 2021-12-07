@@ -30,6 +30,7 @@ plotVolcano creates a volcano plot of -log2(p.value) and log(estimate)
 given data with fields estimate and p.value.
 }
 \examples{
+
 data=data.frame(estimate=c(runif(10)), p.value=c(runif(10)))
 plotVolcano(data)
 

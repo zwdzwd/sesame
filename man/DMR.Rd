@@ -48,8 +48,12 @@ the segment.
 
 sesameDataCache("HM450") # in case not done yet
 
-data <- sesameDataGet('HM450.76.TCGA.matched')
-smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+data = sesameDataGet('HM450.76.TCGA.matched')
+smry = DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 colnames(attr(smry, "model.matrix")) # pick a contrast from here
-merged_segs = DMR(data$betas[1:1000,], smry, "typeTumour")
+## showing on a small set of 100 CGs
+merged_segs = DMR(data$betas[1:100,], smry, "typeTumour")
+
+sesameDataClearCache()
+
 }

@@ -19,8 +19,9 @@ pre-built mouse tissue reference
 Compare mouse array data with mouse tissue references
 }
 \examples{
+
 sesameDataCache("MM285") # if not done yet
-options(sesameData_use_alternative=TRUE) # TODO
 compareMouseTissueReference()
+sesameDataClearCache()
 
 }

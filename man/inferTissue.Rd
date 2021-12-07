@@ -49,8 +49,9 @@ composition through cell type deconvolution.
 }
 \examples{
 sesameDataCache("MM285") # if not done yet
-options(sesameData_use_alternative=TRUE) # TODO
 sdf = sesameDataGet("MM285.1.SigDF")
 inferTissue(getBetas(dyeBiasNL(noob(sdf))))
+
+sesameDataClearCache()
 
 }

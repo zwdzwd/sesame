@@ -36,5 +36,6 @@ a single numeric describing the fraction of leukocyte.
 
 betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 estimateLeukocyte(betas.tissue)
+sesameDataClearCache()
 
 }

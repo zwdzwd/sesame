@@ -56,6 +56,7 @@ testEnrichment tests for the enrichment of set of probes (query set) in
 a number of features (database sets).
 }
 \examples{
+
 library(SummarizedExperiment)
 databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
 'KYCG.MM285.designGroup.20210210')
@@ -64,5 +65,6 @@ MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
 df = rowData(MM285.tissueSignature)
 querySet = df$Probe_ID[df$branch == "E-Brain"]
 testEnrichment(querySet=querySet, databaseSets=databaseSets, verbose=FALSE)
+sesameDataClearCache()
 
 }

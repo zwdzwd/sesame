@@ -26,4 +26,6 @@ se_ok = checkLevels(SummarizedExperiment::assay(se0),
     SummarizedExperiment::colData(se0)$tissue)
 sum(se_ok) # number of good probes
 se1 = se0[se_ok,]
+
+sesameDataClearCache()
 }

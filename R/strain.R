@@ -55,6 +55,7 @@ inferStrain <- function(betas, strain_snp_table = NULL) {
 #' @return grid object that contrast the target sample with
 #' pre-built mouse strain reference
 #' @import wheatmap
+#' @import S4Vectors
 #' @export
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
@@ -66,8 +67,8 @@ compareMouseStrainReference = function(
     se = sesameDataGet("MM285.strainSNPs") # TODO
     pkgTest("wheatmap")
 
-    cd = as_tibble(colData(se))
-    rd = as_tibble(rowData(se))
+    cd = as_tibble(SummarizedExperiment::colData(se))
+    rd = as_tibble(SummarizedExperiment::rowData(se))
     md = metadata(se)
     if (!is.null(betas) && is.null(dim(betas))) { # in case a vector
         betas = cbind(betas)

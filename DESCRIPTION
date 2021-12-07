@@ -2,7 +2,7 @@ Package: sesame
 Type: Package
 Title: SEnsible Step-wise Analysis of DNA MEthylation BeadChips
 Description: Tools For analyzing Illumina Infinium DNA methylation arrays.SeSAMe provides utilities to support analyses of multiple generations of Infinium DNA methylation BeadChips, including preprocessing, quality control, visualization and inference. SeSAMe features more accurate detection calling, intelligenet inference of ethnicity, sex and advanced quality control routines.
-Version: 1.13.3
+Version: 1.13.4
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"),
              email = "zhouwanding@gmail.com"),
              person("Hui", "Shen", role = c("aut"),
@@ -46,12 +46,7 @@ Suggests: scales,
           testthat,
           dplyr,
           tidyr,
-          BiocStyle,
-          IlluminaHumanMethylation450kmanifest,
-          minfi,
-          FlowSorted.CordBloodNorway.450k,
-          FlowSorted.Blood.450k,
-          HDF5Array
+          BiocStyle
 Encoding: UTF-8
 VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame
@@ -78,7 +73,6 @@ Collate:
     'fileSet.R'
     'mask.R'
     'open.R'
-    'sesamize.R'
     'snp.R'
     'strain.R'
     'tissue.R'

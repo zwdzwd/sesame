@@ -50,6 +50,7 @@ qualityRank <- function(
 #' @param sdf a \code{SigDF}
 #' @param mask whether to remove probes that are masked
 #' @param intens.range plot range of signal intensity
+#' @param use_max to use max(M,U) or M+U
 #' @param ... additional arguments to smoothScatter
 #' @return create a total signal intensity vs beta value plot
 #' @examples
@@ -62,9 +63,14 @@ qualityRank <- function(
 #' @importFrom grDevices colorRampPalette
 #' @export
 sesamePlotIntensVsBetas <- function(
-    sdf, mask=TRUE, intens.range=c(5,15), ...) {
-    
-    intens <- totalIntensities(sdf, mask=mask)
+    sdf, mask=TRUE, use_max=FALSE, intens.range=c(5,15), ...) {
+
+    if (use_max) {
+        df = signalMU(sdf)
+        intens = setNames(pmax(df$M,df$U), df$Probe_ID)
+    } else {
+        intens = totalIntensities(sdf, mask=mask)
+    }
     smoothScatter(log2(intens), getBetas(sdf, mask=mask)[names(intens)],
         xlab='Total Intensity (Log2(M+U))',
         ylab=expression(paste(beta, " (DNA methylation Level)")),
@@ -78,12 +84,21 @@ sesamePlotIntensVsBetas <- function(
     dG = InfIG(sdf); dR = InfIR(sdf)
     bG <- median(c(dR$MG, dR$UG), na.rm=TRUE)
     bR <- median(c(dG$MR, dG$UR), na.rm=TRUE)
-    lines(log2(x + bG + bR), (0 + bG) / (0 + bG + x + bR), col='blue')
-    lines(log2(x + bG + bR), (x + bG) / (x + bG + 0 + bR), col='blue')
-    lines(log2(x + bR + bR), (0 + bR) / (x + bR + 0 + bR), col='red')
-    lines(log2(x + bR + bR), (x + bR) / (x + bR + 0 + bR), col='red')
-    lines(log2(x + bG + bG), (0 + bG) / (x + bG + 0 + bG), col='green')
-    lines(log2(x + bG + bG), (x + bG) / (x + bG + 0 + bG), col='green')
+    if (use_max) {
+        lines(log2(pmax(bG, x + bR)), (0 + bG) / (0 + bG + x + bR), col='blue')
+        lines(log2(pmax(x + bG, bR)), (x + bG) / (x + bG + 0 + bR), col='blue')
+        lines(log2(pmax(bR, x + bR)), (0 + bR) / (x + bR + 0 + bR), col='red')
+        lines(log2(pmax(x + bR, bR)), (x + bR) / (x + bR + 0 + bR), col='red')
+        lines(log2(pmax(bG, x + bG)), (0 + bG) / (x + bG + 0 + bG), col='green')
+        lines(log2(pmax(x + bG, bG)), (x + bG) / (x + bG + 0 + bG), col='green')
+    } else {
+        lines(log2(x + bG + bR), (0 + bG) / (0 + bG + x + bR), col='blue')
+        lines(log2(x + bG + bR), (x + bG) / (x + bG + 0 + bR), col='blue')
+        lines(log2(x + bR + bR), (0 + bR) / (x + bR + 0 + bR), col='red')
+        lines(log2(x + bR + bR), (x + bR) / (x + bR + 0 + bR), col='red')
+        lines(log2(x + bG + bG), (0 + bG) / (x + bG + 0 + bG), col='green')
+        lines(log2(x + bG + bG), (x + bG) / (x + bG + 0 + bG), col='green')
+    }
 }
 
 #' Generate summary numbers that indicative of experiment quality

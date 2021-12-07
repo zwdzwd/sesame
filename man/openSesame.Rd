@@ -7,8 +7,7 @@
 openSesame(x, platform = "", manifest = NULL, BPPARAM = SerialParam(), ...)
 }
 \arguments{
-\item{x}{SigDF(s), IDAT prefix(es), minfi GenomicRatioSet(s), 
-or RGChannelSet(s)}
+\item{x}{SigDF(s), IDAT prefix(es)}
 
 \item{platform}{optional platform string}
 
@@ -27,8 +26,7 @@ correction + pOOBAH masking.
 }
 \details{
 If the input is an IDAT prefix or a \code{SigDF}, the output is
-the beta value numerics. If the input is a minfi GenomicRatioSet
-or RGChannelSet, the output is the sesamized GenomicRatioSet.
+the beta value numerics.
 }
 \examples{
 sdf <- sesameDataGet('HM450.1.TCGA.PAAD')$sdf

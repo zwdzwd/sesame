@@ -19,6 +19,9 @@ probes and estimate age using Horvath aging model (Horvath 2013
 Genome Biology). The function outputs a single numeric of age in years.
 }
 \examples{
+
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 predictAgeHorvath353(betas)
+sesameDataClearCache()
+
 }

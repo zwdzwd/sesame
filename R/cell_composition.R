@@ -24,7 +24,10 @@ cleanRefSet <- function(g, platform = c('EPIC','HM450','HM27')) {
 #' @param g a matrix with probes on the rows and cell types on the columns
 #' @return g a matrix with a subset of input probes (rows)
 #' @examples
-#' g <- diffRefSet(getRefSet(platform='HM450'))
+#'
+#' g = diffRefSet(getRefSet(platform='HM450'))
+#' sesameDataClearCache()
+#' 
 #' @export
 diffRefSet <- function(g) {
     g <- g[apply(g, 1, function(x) min(x) != max(x)),]
@@ -49,7 +52,10 @@ diffRefSet <- function(g) {
 #' @return g, a 0/1 matrix with probes on the rows and specified cell types
 #' on the columns.
 #' @examples
-#' betas <- getRefSet('CD4T', platform='HM450')
+#'
+#' betas = getRefSet('CD4T', platform='HM450')
+#' sesameDataClearCache()
+#' 
 #' @export
 getRefSet <- function(cells=NULL, platform = c('EPIC','HM450')) {
     
@@ -233,6 +239,7 @@ estimateCellComposition <- function(
 #'
 #' betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 #' estimateLeukocyte(betas.tissue)
+#' sesameDataClearCache()
 #' 
 #' @export
 estimateLeukocyte<-function(
@@ -338,7 +345,7 @@ twoCompsEst2 <- function(
 
     pb <- intersect(
         intersect(rownames(pop1), rownames(pop2)),
-            rownames(target))
+        rownames(target))
     cat(length(pb), "probes are shared among data sets. Starting from there.\n")
     
     pop1 <- pop1[pb,]

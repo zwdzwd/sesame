@@ -30,6 +30,7 @@ getDatabaseSetOverlap tests for the overlap of set of probes (querySet) in a
 single given feature (database set)
 }
 \examples{
+
 library(SummarizedExperiment)
 MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
 df = rowData(MM285.tissueSignature)
@@ -38,5 +39,6 @@ databaseSetNames = c('KYCG.MM285.seqContextN.20210630',
 'KYCG.MM285.designGroup.20210210')
 databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
 getDatabaseSetOverlap(querySet, databaseSets)
+sesameDataClearCache()
 
 }

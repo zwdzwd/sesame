@@ -22,6 +22,9 @@ The function outputs a single numeric of age in months. The clock is most
 accurate with the sesame preprocessing.
 }
 \examples{
+
 betas = sesameDataGet('MM285.10.tissue')$betas
 predictMouseAgeInMonth(betas[,1])
+sesameDataClearCache()
+
 }
