@@ -79,8 +79,8 @@ predictAge <- function(betas, cf) {
 #' @return age in month
 #' @examples
 #'
-#' betas = sesameDataGet('MM285.10.tissue')$betas
-#' predictMouseAgeInMonth(betas[,1])
+#' betas = SummarizedExperiment::assay(sesameDataGet('MM285.10.SE.tissue'))[,1]
+#' predictMouseAgeInMonth(betas)
 #' sesameDataClearCache()
 #' 
 #' @export

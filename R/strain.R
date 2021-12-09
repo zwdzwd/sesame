@@ -55,7 +55,7 @@ inferStrain <- function(betas, strain_snp_table = NULL) {
 #' @return grid object that contrast the target sample with
 #' pre-built mouse strain reference
 #' @import wheatmap
-#' @import S4Vectors
+#' @importFrom S4Vectors metadata
 #' @export
 #' @examples
 #' sesameDataCache("MM285") # if not done yet

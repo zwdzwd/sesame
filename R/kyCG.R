@@ -1,4 +1,4 @@
-#' compareDatbaseSetOverlap calculates the pariwise overlap between given list 
+#' calculates the pariwise overlap between given list
 #' of database sets using a distance metric.
 #'
 #' @param databaseSets List of vectors corresponding to the database sets of
@@ -21,6 +21,7 @@
 compareDatbaseSetOverlap = function(databaseSets=NA,
     metric="Jaccard",
     verbose=FALSE) {
+    
     ndatabaseSets = length(databaseSets)
     names = names(databaseSets)
     m = matrix(0, nrow=ndatabaseSets, ncol=ndatabaseSets)

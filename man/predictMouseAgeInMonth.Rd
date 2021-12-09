@@ -23,8 +23,8 @@ accurate with the sesame preprocessing.
 }
 \examples{
 
-betas = sesameDataGet('MM285.10.tissue')$betas
-predictMouseAgeInMonth(betas[,1])
+betas = SummarizedExperiment::assay(sesameDataGet('MM285.10.SE.tissue'))[,1]
+predictMouseAgeInMonth(betas)
 sesameDataClearCache()
 
 }
