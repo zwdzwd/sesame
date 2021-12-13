@@ -126,29 +126,19 @@ getDatabaseSetOverlap = function(
 #' "ES")
 #' @param p.value.adj Logical value indicating whether to report the adjusted
 #' p-value. (Default: FALSE)
-#' @param verbose Logical value indicating whether to display intermediate
-#' text output about the type of test. Optional. (Default: FALSE)
 #' @import utils
 #' @return One list containing features corresponding the test estimate,
 #' p-value, and type of test.
 testEnrichment1 = function(
     querySet, databaseSet, universeSet,
-    estimate.type="ES", p.value.adj=FALSE, verbose=FALSE) {
+    estimate.type="ES", p.value.adj=FALSE) {
     
     if (is.numeric(querySet)) { # a named vector of continuous value
         if(is.numeric(databaseSet)) { # numeric db
-            if (verbose) {
-                cat("Query set: Continuous\t",
-                    "Database set: Continuous\t[Spearman test]\n")
-            }
             results = testEnrichmentSpearman(
                 querySet=querySet,
                 databaseSet=databaseSet)
         } else {
-            if (verbose) {
-                cat("Query set: Continuous\t",
-                    "Database set: Discrete\t\t[FGSEA test]\n")
-            }
             results = testEnrichmentFGSEA(
                 querySet=querySet,
                 databaseSet=databaseSet,
@@ -157,21 +147,12 @@ testEnrichment1 = function(
         }
     } else { # categorical query
         if(is.numeric(databaseSet)) { # numeric db
-            ## do fgsea(switched arguments)
-            if (verbose) {
-                cat("Query set: Discrete\t", 
-                    "Database set: Continuous\t[FGSEA test]\n")
-            }
             results = testEnrichmentFGSEA(
                 querySet=databaseSet,
                 databaseSet=querySet,
                 p.value.adj=p.value.adj,
                 estimate.type=estimate.type)
         } else { # categorical db
-            if (verbose) {
-                cat("Query set: Discrete\t",
-                    "Database set: Discrete\t\t[Fisher exact test]\n")
-            }
             results = testEnrichmentFisher(
                 querySet=querySet,
                 databaseSet=databaseSet,
@@ -181,6 +162,13 @@ testEnrichment1 = function(
     return(results)
 }
 
+inferPlatformFromQuery = function(querySet) {
+    if (is.numeric(querySet)) {
+        platform = inferPlatformFromProbeIDs(names(querySet))
+    } else {
+        platform = inferPlatformFromProbeIDs(querySet)
+    }
+}
 
 #' testEnrichment tests for the enrichment of set of probes (query set) in
 #' a number of features (database sets).
@@ -227,114 +215,67 @@ testEnrichment = function(
     platform=NA, estimate.type="ES", p.value.adj=FALSE,
     n.fdr=NA, return.meta=FALSE, verbose=FALSE) {
     
-    if (all(is.na(universeSet))) {
-        if (verbose) {
-            cat("The universeSet was not defined.", 
-                "Loading in universeSet based on platform.")
-        }
-        if (is.na(platform)) {
-            if (verbose) {
-                cat("The platform was not defined.",
-                    "Inferring platform from probeIDs.")
-            }
-            if (is.numeric(querySet)) {
-                platform = inferPlatformFromProbeIDs(names(querySet))
-            } else {
-                platform = inferPlatformFromProbeIDs(querySet)
-            }
+    if (all(is.na(universeSet))) { # infer uset from platform if not given
+        if (is.na(platform)) {     # infer platform from probe ID
+            inferPlatformFromQuery(querySet)
         }
         
         manifests = c("MM285.mm10.manifest", "EPIC.hg19.manifest",
             "HM450.hg19.manifest", "HM27.hg19.manifest")
-        
         manifest = manifests[grepl(platform, manifests)]
-        
-        universeSet = tryCatch({
-            names(sesameDataGet(manifest))
-        },
-        error = function (condition) {
-            print("ERROR:")
-            print(paste("  Message:",conditionMessage(condition)))
-            print(paste("  Call: ",conditionCall(condition)))
-            return(NULL)
-        },
-        finally= function() {
-            print(sprintf("Invalid platform [%s]", platform))
-            return(NULL)
-        })
+        universeSet = names(sesameDataGet(manifest))
     }
     
-    if (all(is.na(databaseSets))) {
-        if (verbose) {
-            cat("The databaseSets were not defined.", 
-                "Loading in databaseSets based on platform.")
-        }
+    if (all(is.na(databaseSets))) { # load a default set
         if (is.na(platform)) {
-            if (verbose) {
-                cat("The platform was not defined.",
-                    "Inferring platform from probeIDs.")
-            }
-            if (is.numeric(querySet)) {
-                platform = inferPlatformFromProbeIDs(names(querySet))
-            } else {
-                platform = inferPlatformFromProbeIDs(querySet)
-            }
+            inferPlatformFromQuery(querySet)
         }
         databaseSetNames = sesameData:::df_master$Title[
             grepl(paste("KYCG.", platform, sep=''), 
                 sesameData:::df_master$Title)]
         databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
+    } else if (is.character(databaseSets)) { # db given in names
+        databaseSets = do.call(c, lapply(databaseSets, sesameDataGet))
     }
     
-    results = data.frame(
-        do.call(rbind,
-            lapply(databaseSets,
-                function(databaseSet) {
-                    testEnrichment1(
-                        querySet=querySet,
-                        databaseSet=databaseSet,
-                        universeSet=universeSet,
-                        p.value.adj=p.value.adj,
-                        estimate.type=estimate.type,
-                        verbose=verbose)
-                }
-            )
-        ))
+    results = data.frame(do.call(rbind, lapply(
+        databaseSets, function(databaseSet) {
+            testEnrichment1(
+                querySet = querySet,
+                databaseSet = databaseSet,
+                universeSet = universeSet,
+                p.value.adj = p.value.adj,
+                estimate.type = estimate.type)
+        })))
     
-    if (is.na(n.fdr))
+    if (is.na(n.fdr)) {
         results$p.adjust.fdr = p.adjust(results$p.value, method='fdr')
-    else
-        results$p.adjust.fdr = p.adjust(results$p.value, method='fdr', n=n.fdr)
-    
-    if (return.meta) {
-        metadata = data.frame(
-            do.call(rbind,
-                lapply(databaseSets,
-                    function(databaseSet) {
-                        output = attr(databaseSet, "meta")
-                        if (!is.null(output)) 
-                            return(data.frame(append(c(meta=TRUE), 
-                                output)))
-                        return(data.frame(meta=FALSE))
-                    })
-            )
-        )
-    }
-    
-    rank = list()
-    rank$estimate.rank = rank(-results$estimate, ties.method='first')
-    rank$p.value.rank = rank(results$p.value, ties.method='first')
-    rank$overlap.rank = rank(results$overlap, ties.method='first')
-    rank$max.rank = apply(data.frame(rank), 1, max)
-    rank$mean.rank = apply(data.frame(rank), 1, mean)
-    rank = data.frame(rank, row.names=row.names(results))
-    if (return.meta) {
-        output = cbind(results, rank, metadata)
     } else {
-        output = cbind(results, rank)
+        results$p.adjust.fdr = p.adjust(results$p.value, method='fdr', n=n.fdr)
     }
     
-    output[order(output$p.value, decreasing=FALSE), ]
+    ## rank = list()
+    ## rank$estimate.rank = rank(-results$estimate, ties.method='first')
+    ## rank$p.value.rank = rank(results$p.value, ties.method='first')
+    ## rank$overlap.rank = rank(results$overlap, ties.method='first')
+    ## rank$max.rank = apply(data.frame(rank), 1, max)
+    ## rank$mean.rank = apply(data.frame(rank), 1, mean)
+    ## rank = data.frame(rank, row.names=row.names(results))
+    if (return.meta) {
+        metadata = data.frame(do.call(rbind, lapply(
+            databaseSets, function(databaseSet) {
+                output = attr(databaseSet, "meta")
+                if (!is.null(output)) 
+                    return(data.frame(append(c(meta=TRUE), 
+                        output)))
+                return(data.frame(meta=FALSE))
+            })))
+        output = cbind(results, metadata)
+    } else {
+        output = cbind(results)
+    }
+    
+    output[order(-output$estimate), ]
 }
 
 #' testEnrichmentGene tests for the enrichment of set of probes
@@ -439,45 +380,34 @@ testEnrichmentGene = function(
 #' @return A DataFrame with the estimate/statistic, p-value, and name of test
 #' for the given results.
 testEnrichmentFisher = function(querySet, databaseSet, universeSet) {
-    test = "fisher"
-    if (length(intersect(querySet, databaseSet)) == 0) {
-        return(data.frame(estimate=0,
+    q_and_d = length(intersect(querySet, databaseSet))
+    if (q_and_d == 0) {
+        return(data.frame(
+            estimate=0,
             p.value=1,
-            test=test,
-            nQ=length(querySet),
+            test = "Fisher",
+            nQ = length(querySet),
             nD = length(databaseSet),
-            overlap=0
+            overlap = 0
         ))
     }
+    d_min_q = length(setdiff(databaseSet, querySet))
+    q_min_d = length(setdiff(querySet, databaseSet))
+    min_q_d = length(setdiff(universeSet, union(databaseSet, querySet)))
     
-    mtx = matrix(c(
-        length(intersect(querySet, databaseSet)),
-        length(setdiff(databaseSet, querySet)),
-        length(setdiff(querySet, databaseSet)),
-        length(setdiff(universeSet, union(databaseSet, querySet)))),
-        nrow = 2,
-        dimnames = list(
-            querySet = c("Q_in","Q_out"),
-            databaseSet = c("D_in","D_out")))
-    
-    res = fisher.test(mtx) #, alternative = 'greater'
+    res = fisher.test(matrix(c(
+        q_and_d, d_min_q, q_min_d, min_q_d), nrow = 2))
     
     data.frame(
-        estimate = calcFoldChange(mtx),
+        estimate = (
+            q_and_d / (q_and_d + q_min_d) / (q_and_d + d_min_q) *
+                (q_and_d + q_min_d + d_min_q + min_q_d)),
         p.value = res$p.value,
-        test = test,
+        test = "Fisher",
         nQ = length(querySet),
         nD = length(databaseSet),
-        overlap = length(intersect(querySet, databaseSet))
-    )
+        overlap = q_and_d)
 }
-
-calcFoldChange = function(mtx){
-    num = mtx[1, 1] / (mtx[1, 1] + mtx[1, 2])
-    den = (mtx[1, 1] + mtx[2, 1]) / sum(mtx)
-    num / den
-} 
-
 
 #' testEnrichmentFGSEA uses the FGSEA test to estimate the association of a
 #' categorical variable against a continuous variable.

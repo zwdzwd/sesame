@@ -10,8 +10,7 @@ testEnrichment1(
   databaseSet,
   universeSet,
   estimate.type = "ES",
-  p.value.adj = FALSE,
-  verbose = FALSE
+  p.value.adj = FALSE
 )
 }
 \arguments{
@@ -28,9 +27,6 @@ the probes to be considered in the test.}
 
 \item{p.value.adj}{Logical value indicating whether to report the adjusted
 p-value. (Default: FALSE)}
-
-\item{verbose}{Logical value indicating whether to display intermediate
-text output about the type of test. Optional. (Default: FALSE)}
 }
 \value{
 One list containing features corresponding the test estimate,

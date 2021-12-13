@@ -3,10 +3,10 @@ reference_plot_se = function(
 
     ## top N probes ordered by delta_beta, will
     ## be dominated by certain tissue otherwise
-    rd = as.data.frame(rowData(se))
-    topN = do.call(c, lapply(split(rd, rd$branch), function(x) {
-        x$Probe_ID[order(x$delta_beta)][seq_len(min(nrow(x), 200))] }))
-    se = se[rd$Probe_ID %in% topN,]
+    ## rd = as.data.frame(rowData(se))
+    ## topN = do.call(c, lapply(split(rd, rd$branch), function(x) {
+    ##     x$Probe_ID[order(x$delta_beta)][seq_len(min(nrow(x), 200))] }))
+    ## se = se[rd$Probe_ID %in% topN,]
     
     pkgTest("wheatmap")
     color = match.arg(color)
@@ -37,12 +37,11 @@ reference_plot_se = function(
     g = g + WColorBarV(rd$branch, RightOf(right, width=0.03),
         cmp=CMPar(label2color=md$branch_color), name="bh")
     ## tissue color bar (horizontal)
-    g = g + WColorBarH(cd$tissue, TopOf("b1",height=0.03),
-        cmp=CMPar(label2color=md$tissue_color), name="ti")
+    g = g + WColorBarH(cd$branch, TopOf("b1",height=0.03),
+        cmp=CMPar(label2color=md$branch_color), name="ti")
     ## legends
     g = g + WLegendV("ti", TopRightOf("bh", just=c('left','top'), h.pad=0.02),
         height=0.02)
-    g = g + WLegendV('bh', Beneath(pad=0.06))
     g + WCustomize(mar.bottom=0.15, mar.right=0.06)
 }
 
