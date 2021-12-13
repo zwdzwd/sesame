@@ -66,8 +66,7 @@ reference_plot_se = function(
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment rowData
 compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
-    se = sesameDataGet("MM285.tissueSignature")
-
+    se = sesameDataGet("MM285.141.SE.tissueSignature")
     reference_plot_se(betas, se, color=color)
 }
 

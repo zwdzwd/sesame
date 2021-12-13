@@ -31,7 +31,7 @@ single given feature (database set)
 }
 \examples{
 library(SummarizedExperiment)
-MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+MM285.tissueSignature = sesameDataGet('MM285.141.SE.tissueSignature')
 df = rowData(MM285.tissueSignature)
 querySet = df$Probe_ID[df$branch == "E-Brain"]
 databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 

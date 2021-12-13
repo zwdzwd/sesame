@@ -55,7 +55,7 @@ compareDatbaseSetOverlap = function(databaseSets=NA,
 #'
 #' @examples
 #' library(SummarizedExperiment)
-#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+#' MM285.tissueSignature = sesameDataGet('MM285.141.SE.tissueSignature')
 #' df = rowData(MM285.tissueSignature)
 #' querySet = df$Probe_ID[df$branch == "E-Brain"]
 #' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
@@ -216,7 +216,7 @@ testEnrichment1 = function(querySet, databaseSet, universeSet,
 #' databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
 #' 'KYCG.MM285.designGroup.20210210')
 #' databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
-#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+#' MM285.tissueSignature = sesameDataGet('MM285.141.SE.tissueSignature')
 #' df = rowData(MM285.tissueSignature)
 #' querySet = df$Probe_ID[df$branch == "E-Brain"]
 #' testEnrichment(querySet=querySet, databaseSets=databaseSets, verbose=FALSE)
@@ -361,7 +361,7 @@ testEnrichment = function(querySet, databaseSets=NA, universeSet=NA,
 #'
 #' @examples
 #' library(SummarizedExperiment)
-#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+#' MM285.tissueSignature = sesameDataGet('MM285.141.SE.tissueSignature')
 #' df = rowData(MM285.tissueSignature)
 #' querySet = df$Probe_ID[df$branch == "E-Brain"]
 #' testEnrichmentGene(querySet, platform="MM285", verbose=FALSE)

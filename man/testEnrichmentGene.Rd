@@ -32,7 +32,7 @@ testEnrichmentGene tests for the enrichment of set of probes
 }
 \examples{
 library(SummarizedExperiment)
-MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+MM285.tissueSignature = sesameDataGet('MM285.141.SE.tissueSignature')
 df = rowData(MM285.tissueSignature)
 querySet = df$Probe_ID[df$branch == "E-Brain"]
 testEnrichmentGene(querySet, platform="MM285", verbose=FALSE)

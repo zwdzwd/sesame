@@ -86,7 +86,7 @@ A query set represents probes of interest. It may either be in the form of a cha
 A list of test query sets can be obtained from the following URL. 
 
 ```{r cache-data2, eval=TRUE, echo=TRUE}
-MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
+MM285.tissueSignature = sesameDataGet('MM285.141.SE.tissueSignature')
 df = rowData(MM285.tissueSignature)
 querySet = df$Probe_ID[df$branch == "E-Brain"]
 ```
