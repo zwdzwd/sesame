@@ -124,14 +124,11 @@ getDatabaseSetOverlap = function(
 #' the probes to be considered in the test.
 #' @param estimate.type String indicating the estimate to report. (Default:
 #' "ES")
-#' @param p.value.adj Logical value indicating whether to report the adjusted
-#' p-value. (Default: FALSE)
 #' @import utils
 #' @return One list containing features corresponding the test estimate,
 #' p-value, and type of test.
 testEnrichment1 = function(
-    querySet, databaseSet, universeSet,
-    estimate.type="ES", p.value.adj=FALSE) {
+    querySet, databaseSet, universeSet, estimate.type="ES") {
     
     if (is.numeric(querySet)) { # a named vector of continuous value
         if(is.numeric(databaseSet)) { # numeric db
@@ -142,7 +139,6 @@ testEnrichment1 = function(
             results = testEnrichmentFGSEA(
                 querySet=querySet,
                 databaseSet=databaseSet,
-                p.value.adj=p.value.adj,
                 estimate.type=estimate.type)
         }
     } else { # categorical query
@@ -150,7 +146,6 @@ testEnrichment1 = function(
             results = testEnrichmentFGSEA(
                 querySet=databaseSet,
                 databaseSet=querySet,
-                p.value.adj=p.value.adj,
                 estimate.type=estimate.type)
         } else { # categorical db
             results = testEnrichmentFisher(
@@ -185,10 +180,6 @@ inferPlatformFromQuery = function(querySet) {
 #' from the query set probeIDs (Default: NA).
 #' @param estimate.type String indicating the estimate to report. (Default:
 #' "ES")
-#' @param p.value.adj Logical value indicating whether to report the adjusted
-#' p-value. (Default: FALSE).
-#' @param n.fdr Integer corresponding to the number of comparisons made. 
-#' Optional. (Default: NA).
 #' @param return.meta Logical value indicating whether to return meta data 
 #' columns for those database sets containing sparse meta data information.
 #' @param verbose Logical value indicating whether to display intermediate
@@ -212,8 +203,7 @@ inferPlatformFromQuery = function(querySet) {
 #' @export
 testEnrichment = function(
     querySet, databaseSets=NA, universeSet=NA,
-    platform=NA, estimate.type="ES", p.value.adj=FALSE,
-    n.fdr=NA, return.meta=FALSE, verbose=FALSE) {
+    platform=NA, estimate.type="ES", return.meta=FALSE, verbose=FALSE) {
     
     if (all(is.na(universeSet))) { # infer uset from platform if not given
         if (is.na(platform)) {     # infer platform from probe ID
@@ -244,15 +234,10 @@ testEnrichment = function(
                 querySet = querySet,
                 databaseSet = databaseSet,
                 universeSet = universeSet,
-                p.value.adj = p.value.adj,
                 estimate.type = estimate.type)
         })))
     
-    if (is.na(n.fdr)) {
-        results$p.adjust.fdr = p.adjust(results$p.value, method='fdr')
-    } else {
-        results$p.adjust.fdr = p.adjust(results$p.value, method='fdr', n=n.fdr)
-    }
+    results$fdr = p.adjust(results$p.value, method='fdr')
     
     ## rank = list()
     ## rank$estimate.rank = rank(-results$estimate, ties.method='first')
@@ -358,11 +343,8 @@ testEnrichmentGene = function(
     
     if (length(databaseSetNames) == 0) return(NULL)
     
-    n = length(databaseSets)
-    
     databaseSets = databaseSets[names(databaseSets) %in% databaseSetNames]
-    
-    testEnrichment(querySet, databaseSets, platform=platform, n.fdr=n)
+    testEnrichment(querySet, databaseSets, platform=platform)
 }
 
 

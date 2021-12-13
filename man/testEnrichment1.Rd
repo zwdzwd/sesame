@@ -5,13 +5,7 @@
 \title{testEnrichment1 tests for the enrichment of set of probes (query set) in a
 single given feature (database set)}
 \usage{
-testEnrichment1(
-  querySet,
-  databaseSet,
-  universeSet,
-  estimate.type = "ES",
-  p.value.adj = FALSE
-)
+testEnrichment1(querySet, databaseSet, universeSet, estimate.type = "ES")
 }
 \arguments{
 \item{querySet}{Vector of probes of interest (e.g., significant probes)}
@@ -24,9 +18,6 @@ the probes to be considered in the test.}
 
 \item{estimate.type}{String indicating the estimate to report. (Default:
 "ES")}
-
-\item{p.value.adj}{Logical value indicating whether to report the adjusted
-p-value. (Default: FALSE)}
 }
 \value{
 One list containing features corresponding the test estimate,

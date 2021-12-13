@@ -11,8 +11,6 @@ testEnrichment(
   universeSet = NA,
   platform = NA,
   estimate.type = "ES",
-  p.value.adj = FALSE,
-  n.fdr = NA,
   return.meta = FALSE,
   verbose = FALSE
 )
@@ -34,12 +32,6 @@ from the query set probeIDs (Default: NA).}
 
 \item{estimate.type}{String indicating the estimate to report. (Default:
 "ES")}
-
-\item{p.value.adj}{Logical value indicating whether to report the adjusted
-p-value. (Default: FALSE).}
-
-\item{n.fdr}{Integer corresponding to the number of comparisons made. 
-Optional. (Default: NA).}
 
 \item{return.meta}{Logical value indicating whether to return meta data 
 columns for those database sets containing sparse meta data information.}
