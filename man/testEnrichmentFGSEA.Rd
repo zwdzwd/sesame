@@ -5,17 +5,12 @@
 \title{testEnrichmentFGSEA uses the FGSEA test to estimate the association of a
 categorical variable against a continuous variable.}
 \usage{
-testEnrichmentFGSEA(
-  querySet,
-  databaseSet,
-  p.value.adj = FALSE,
-  estimate.type = "ES"
-)
+testEnrichmentFGSEA(query, database, p.value.adj = FALSE, estimate.type = "ES")
 }
 \arguments{
-\item{querySet}{Vector of probes of interest (e.g., significant probes)}
+\item{query}{Vector of probes of interest (e.g., significant probes)}
 
-\item{databaseSet}{Vector of probes corresponding to a single database set
+\item{database}{Vector of probes corresponding to a single database set
 of interest.}
 
 \item{p.value.adj}{Logical value indicating whether to report the adjusted

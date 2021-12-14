@@ -6,9 +6,9 @@
 a number of features (database sets).}
 \usage{
 testEnrichment(
-  querySet,
-  databaseSets = NA,
-  universeSet = NA,
+  query,
+  databases = NA,
+  universe = NA,
   platform = NA,
   estimate.type = "ES",
   return.meta = FALSE,
@@ -16,13 +16,13 @@ testEnrichment(
 )
 }
 \arguments{
-\item{querySet}{Vector of probes of interest (e.g., significant probes)}
+\item{query}{Vector of probes of interest (e.g., significant probes)}
 
-\item{databaseSets}{List of vectors corresponding to the database sets of
+\item{databases}{List of vectors corresponding to the database sets of
 interest with associated meta data as an attribute to each element. Optional.
 (Default: NA)}
 
-\item{universeSet}{Vector of probes in the universe set containing all of
+\item{universe}{Vector of probes in the universe set containing all of
 the probes to be considered in the test. If it is not provided, it will be
 inferred from the provided platform. (Default: NA).}
 
@@ -50,13 +50,9 @@ a number of features (database sets).
 \examples{
 
 library(SummarizedExperiment)
-databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
-'KYCG.MM285.designGroup.20210210')
-databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
-MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
-df = rowData(MM285.tissueSignature)
-querySet = df$Probe_ID[df$branch == "E-Brain"]
-testEnrichment(querySet=querySet, databaseSets=databaseSets, verbose=FALSE)
+df = rowData(sesameDataGet('MM285.tissueSignature'))
+query = df$Probe_ID[df$branch == "B_cell"]
+testEnrichment(query, 'KYCG.MM285.designGroup.20210210')
 sesameDataClearCache()
 
 }

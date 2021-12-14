@@ -5,18 +5,13 @@
 \title{plotLollipop creates a lollipop plot of log(estimate) given data with fields
 estimate.}
 \usage{
-plotLollipop(data, n = 10, title = NA, subtitle = NA)
+plotLollipop(data, n = 10)
 }
 \arguments{
 \item{data}{DataFrame where each field is a database name with its estimate.}
 
 \item{n}{Integer representing the number of top enrichments to report.
 Optional. (Default: 10)}
-
-\item{title}{String representing the title label. Optional. (Default: NA)}
-
-\item{subtitle}{String representing the subtitle label. Optional. (Default:
-NA)}
 }
 \value{
 ggplot lollipop plot

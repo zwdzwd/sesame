@@ -2,16 +2,16 @@
 % Please edit documentation in R/kyCG.R
 \name{getDatabaseSetOverlap}
 \alias{getDatabaseSetOverlap}
-\title{getDatabaseSetOverlap tests for the overlap of set of probes (querySet) in a
+\title{getDatabaseSetOverlap tests for the overlap of set of probes (query) in a
 single given feature (database set)}
 \usage{
-getDatabaseSetOverlap(querySet, databaseSets, platform = NA, verbose = TRUE)
+getDatabaseSetOverlap(query, databases, platform = NA, verbose = TRUE)
 }
 \arguments{
-\item{querySet}{Vector of probes corresponding to a single database set
+\item{query}{Vector of probes corresponding to a single database set
 of interest.}
 
-\item{databaseSets}{List of vectors corresponding to the database sets of
+\item{databases}{List of vectors corresponding to the database sets of
 interest with associated meta data as an attribute to each element.}
 
 \item{platform}{String corresponding to the type of platform to use. Either
@@ -26,7 +26,7 @@ A sparse data.frame containing all of the meta data from all database
 sets.
 }
 \description{
-getDatabaseSetOverlap tests for the overlap of set of probes (querySet) in a
+getDatabaseSetOverlap tests for the overlap of set of probes (query) in a
 single given feature (database set)
 }
 \examples{
@@ -34,11 +34,11 @@ single given feature (database set)
 library(SummarizedExperiment)
 MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
 df = rowData(MM285.tissueSignature)
-querySet = df$Probe_ID[df$branch == "E-Brain"]
-databaseSetNames = c('KYCG.MM285.seqContextN.20210630', 
+query = df$Probe_ID[df$branch == "B_cell"]
+databaseNames = c('KYCG.MM285.seqContextN.20210630', 
 'KYCG.MM285.designGroup.20210210')
-databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
-getDatabaseSetOverlap(querySet, databaseSets)
+databases = do.call(c, lapply(databaseNames, sesameDataGet))
+getDatabaseSetOverlap(query, databases)
 sesameDataClearCache()
 
 }

@@ -23,7 +23,7 @@ The set of CpGs that will be tested for enrichment is called the query set, and 
 
 Additionally, knowYourCG has support for feature selection and feature engineering, which is currently in development. 
 
-```{r load-depenencies, echo=TRUE, message=FALSE, warning=FALSE}
+```{r load-depenencies, echo=FALSE, message=FALSE, warning=FALSE}
 library(sesame)
 sesameDataCacheAll()
 library(SummarizedExperiment)
@@ -53,29 +53,30 @@ The ```sesameDataGet()``` function returns a nested list of database sets identi
 Using a subset of the available database sets, we will download them and load them in into memory using their accessions.
 
 ``` {r cache-data, eval=TRUE, warning=FALSE}
-databaseSetNames = c('KYCG.MM285.seqContextN.20210630',
-                     'KYCG.MM285.designGroup.20210210',
-                     'KYCG.MM285.chromosome.mm10.20210630',
-                     'KYCG.MM285.probeType.20210630')
-databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
+db_nms = c(
+    'KYCG.MM285.seqContextN.20210630',
+    'KYCG.MM285.designGroup.20210210',
+    'KYCG.MM285.chromosome.mm10.20210630',
+    'KYCG.MM285.probeType.20210630')
+databases = do.call(c, lapply(db_nms, sesameDataGet))
 ```
 
 In total, 61 database sets have been loaded from this command.
 
 ``` {r view-data0, eval=TRUE, warning=FALSE}
-sprintf("length(databaseSets) = %s database sets", length(databaseSets))
+length(databases)
 ```
 
 We will show the first three for simplicity.
 
 ``` {r view-data1, eval=TRUE, warning=FALSE}
-str(databaseSets[1:3])
+str(databases[1:3])
 ```
 
 And display a summary of its contents.
 
 ``` {r view-data2, eval=TRUE, warning=FALSE}
-summary(databaseSets[1:3])
+summary(databases[1:3])
 ```
 
 On subsequent runs of the ```sesameDataGet()``` function, loading specific database sets from the same release will be much faster. These database sets will be persistent between R sessions so long as the directory to which they are downloaded is not deleted. Otherwise, the database sets will have to be downloaded again.
@@ -89,13 +90,13 @@ A list of test query sets can be obtained from the following URL.
 ```{r cache-data2, eval=TRUE, echo=TRUE}
 MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
 df = rowData(MM285.tissueSignature)
-querySet = df$Probe_ID[df$branch == "E-Brain"]
+query = df$Probe_ID[df$branch == "B_cell"]
 ```
 
 This query set represents hypomethylated probes in Mouse brain tissue from the MM285 platform. This specific query set has 71 probes.
 
 ``` {r view-data4, eval=TRUE, echo=FALSE}
-cat(sprintf("length(querySet) = %s probes", length(querySet)))
+cat(sprintf("length(query) = %s probes", length(query)))
 ```
 
 Using the obtained database sets and query set, the user may analyze their overlap and enrichment. 
@@ -109,7 +110,7 @@ There are many functions in this package that make investigating the biological 
 Using the ```getDatabaseSetOverlap()``` function, the user can investigate the database sets that overlap with the given query set, the degree of overlap, and any provided annotation.
 
 ``` {r run-annotation, echo=TRUE, eval=TRUE}
-annotation = getDatabaseSetOverlap(querySet, databaseSets)
+annotation = getDatabaseSetOverlap(query, databases)
 head(annotation)
 ```
 
@@ -131,10 +132,8 @@ kable(df, caption="Four KnowYourCG Testing Scenarios")
 The ```testEnrichment()``` will automate statistical tests and report metrics about each of the the loaded database sets. Another set that is needed for the test is called the universe set. This is the set of all probes for a given platform. It can either be passed in as an argument called ```universeSet``` or the platform name can be passed with argument ```platform```. If neither of these are supplied, the universe set will be implied from the probes. In all subsequent runs of ```testEnrichment()``` in this vignette, the platform will be specified. 
 
 ```{r run-test-single, echo=TRUE, eval=TRUE}
-results = testEnrichment(querySet=querySet, 
-                               databaseSets=databaseSets, 
-                               verbose=FALSE)
-print(head(results))
+results = testEnrichment(query, databases)
+head(results)
 ```
 
 The output of each test contains at least four variables: the estimate, p-value, type of test, and whether meta data is included in the tested database set. The name of the database set is also recorded as well. By default, the p-value column is sorted. 
@@ -146,25 +145,23 @@ The ```nQ``` and ```nD``` columns identify the length of the query set and the d
 Using these results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
-plotVolcano(data=results, title="Database Set Enrichment", 
-            subtitle="MM285 Mouse Platform")
+plotVolcano(results)
 ```
 
 ```{r plot-lollipop, fig.width=7, fig.height=6, echo=TRUE}
-plotLollipop(data=results, title="Top Database Set Enrichment", 
-             subtitle="MM285 Mouse Platform")
+plotLollipop(results)
 ```
 
 ## Example Testing Scenarios
 
-The querySet may be a named continuous vector. In that case, either a gene enrichment score will be calculated (if the databaseSet is discrete) or a Spearman correlation will be calculated (if the databaseSet is continuous as well). The three other cases are shown below using biologically relevant examples.
+The query may be a named continuous vector. In that case, either a gene enrichment score will be calculated (if the database is discrete) or a Spearman correlation will be calculated (if the database is continuous as well). The three other cases are shown below using biologically relevant examples.
 
 To display this functionality, let's load two numeric database sets individually. One is a database set for CpG density and the other is a database set corresponding to the distance of the nearest transcriptional start site (TSS) to each probe.
 
 ``` {r run-test-data, echo=TRUE, eval=TRUE}
-KYCG.MM285.seqContextN.20210630 = sesameDataGet('KYCG.MM285.seqContextN.20210630')
-CpGDesity50 = KYCG.MM285.seqContextN.20210630['CpGDesity50']
-distToTSS = KYCG.MM285.seqContextN.20210630['distToTSS']
+dbs = sesameDataGet('KYCG.MM285.seqContextN.20210630')
+CpGDesity50 = dbs['CpGDesity50']
+distToTSS = dbs['distToTSS']
 ```
 
 ### Example 1
@@ -172,17 +169,11 @@ distToTSS = KYCG.MM285.seqContextN.20210630['distToTSS']
 Our first test will look at whether the query set is significantly enriched in either of the database sets individually.
 
 ``` {r run-test-other1, echo=TRUE, eval=TRUE}
-resultsCpGDensity = testEnrichment(querySet=querySet,
-                                      databaseSets=CpGDesity50,
-                                      platform="MM285")
-print(resultsCpGDensity)
+testEnrichment(query, CpGDesity50, platform="MM285")
 ```
 
 ``` {r run-test-other2, echo=TRUE, eval=TRUE}
-resultsTSS = testEnrichment(querySet=querySet, 
-                               databaseSets=distToTSS, 
-                               platform="MM285")
-print(resultsTSS)
+testEnrichment(query, distToTSS, platform="MM285")
 ```
 Both of the tests result in a p-value greater than 0.05, so there is little evidence to suggest that either of the query set is enriched in either of these database sets. 
 
@@ -191,10 +182,7 @@ Both of the tests result in a p-value greater than 0.05, so there is little evid
 A third test might be whether there is a significant correlation between these two database sets.
 
 ``` {r run-test-other3, echo=TRUE, eval=TRUE}
-resultsCpGdensityTSS = testEnrichment(querySet=CpGDesity50[[1]],
-                                         databaseSets=distToTSS,
-                                         platform="MM285")
-print(resultsCpGdensityTSS)
+testEnrichment(CpGDesity50[[1]], databases=distToTSS, platform="MM285")
 ```
 
 This test is statistically significant with a p-value less than 0.05 and a moderately weak negative correlation. It is known in biology that the distance to TSS are negatively correlated with CpG islands, which is shown to be the case here from the data as well.
@@ -206,13 +194,13 @@ In the above four examples, the database sets were specified explicitly. This is
 We may want to look specifically at query our query set is significantly enriched in the set of all Transcription Factor Binding Sites (TFBS). Let's first load in the TFBS database set.
 
 ``` {r load-data-tfbs, echo=TRUE, eval=TRUE}
-databaseSets = sesameDataGet("KYCG.MM285.TFBS.20210817")
+databases = sesameDataGet("KYCG.MM285.TFBS.20210817")
 ```
 
 Next we can actually perform the test.
 
 ``` {r run-test-tfbs, echo=TRUE, eval=TRUE, warning=FALSE}
-resultsTFBS = testEnrichment(querySet=querySet, databaseSets=databaseSets,
+resultsTFBS = testEnrichment(query=query, databases=databases,
                                 platform="MM285", verbose=FALSE, 
                                 return.meta=TRUE)
 head(resultsTFBS)
@@ -221,13 +209,11 @@ head(resultsTFBS)
 Using these sample results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano-tfbs, fig.width=7, fig.height=6, echo=TRUE}
-plotVolcano(data=resultsTFBS, title="Transcription Factor Binding Site Enrichment",
-            subtitle='MM285 Mouse Platform', alpha=0.0005)
+plotVolcano(resultsTFBS, alpha=0.0005)
 ```
 
 ```{r plot-lollipop-tfbs, fig.width=7, fig.height=6, echo=TRUE}
-plotLollipop(data=resultsTFBS, title="Transcription Factor Binding Site Enrichment",
-             subtitle='MM285 Mouse Platform')
+plotLollipop(resultsTFBS)
 ```
 
 ## Gene Enrichment Ananlysis
@@ -235,20 +221,18 @@ plotLollipop(data=resultsTFBS, title="Transcription Factor Binding Site Enrichme
 Automating the enrichment test process only works when the number of database sets is small. This is important when targeting all genes as there are tens of thousands of genes on each platform. By testing only those genes that overlap with the query set, we can greatly reduce the number of tests. For this reason, the gene enrichment analysis is a special case of these enrichment tests. We can perform this analysis using the ```testEnrichmentGene()``` function.
 
 ``` {r run-test-gene, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
-resultsGene = testEnrichmentGene(querySet, platform="MM285", verbose=FALSE)
+resultsGene = testEnrichmentGene(query, platform="MM285", verbose=FALSE)
 head(resultsGene)
 ```
 
 Using these sample results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano-gene, fig.width=7, fig.height=6, echo=TRUE}
-plotVolcano(data=resultsGene, title="Gene Enrichment",
-            subtitle="MM285 Mouse Platform", n.fdr=TRUE)
+plotVolcano(resultsGene)
 ```
 
 ```{r plot-lollipop-gene, fig.width=7, fig.height=6, echo=TRUE}
-plotLollipop(data=resultsGene, title="Top Gene Enrichment", 
-             subtitle="MM285 Mouse Platform", n=10)
+plotLollipop(data=resultsGene)
 ```
 
 For example, this given query set is tissue specific hypomethylation of mouse brain. Rufy3 is shown to be significantly enriched in this set and it is known to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
@@ -269,20 +253,13 @@ print(head(samplesheet))
 
 We have found that it is incredibly computationally expensive to perform a linear model/generalized linear model on a feature set of individual CpGs. Additionally, interpreting the mechanism the significantly contributing CpGs is non-trivial due to their complex interactions. We hope to leverage these pre-curated database sets by using their beta value summary statistics as features instead. 
 
-We will calculate the summary statistics for the betas matrix using a list of database sets.
+We will calculate the summary statistics for the betas matrix using a list of database sets. The default is to calculate the mean.
 
 ``` {r run-feature-engineering-statistics}
-databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
-statistics = calcDatabaseSetStatisticsAll(betas, databaseSets=databaseSets)
+statistics = dbStats(betas, db_nms)
 head(statistics[, 1:5])
 ```
 
-We will look at the mean of each database set.
-
-``` {r feature-engineering-subsetting-statistics}
-statistics = statistics[, grepl("mean", colnames(statistics))]
-head(statistics[, 1:5])
-```
 Just from the few database set means above, we can see that CpG islands are consistently hypomethylated, which is consistent with known biology. 
 
 Using the samplesheet and beta values, we can create a singular data for linear models. Each categorical variable should be caste as a factor with a reference level. Each numerical variable should be expressed appropriately as well.
@@ -303,8 +280,7 @@ A linear model can finally be constructed using this data. Since there are only 
 
 ``` {r feature-engineering-linear-model}
 model = lm(Mouse_Age_Days ~ Sex + Strain_Corrected + Tissue_Corrected + 
-               Genotype + `CGI-mean` + `CTCF-mean` + `Clock-mean` + 
-               `SNP-mean` + `SpermMeth-mean` + `VMR-mean`, data=data)
+    Genotype + CGI + CTCF + Clock + SpermMeth + VMR, data=data)
 ```
 
 # Session Info

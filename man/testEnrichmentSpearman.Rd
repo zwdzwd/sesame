@@ -5,12 +5,12 @@
 \title{testEnrichmentSpearman uses the Spearman statistical test to estimate the 
 association between two continuous variables.}
 \usage{
-testEnrichmentSpearman(querySet, databaseSet)
+testEnrichmentSpearman(query, database)
 }
 \arguments{
-\item{querySet}{Vector of probes of interest (e.g., significant probes)}
+\item{query}{Vector of probes of interest (e.g., significant probes)}
 
-\item{databaseSet}{List of vectors corresponding to the database set of
+\item{database}{List of vectors corresponding to the database set of
 interest with associated meta data as an attribute to each element.}
 }
 \value{

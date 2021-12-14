@@ -5,15 +5,15 @@
 \title{testEnrichment1 tests for the enrichment of set of probes (query set) in a
 single given feature (database set)}
 \usage{
-testEnrichment1(querySet, databaseSet, universeSet, estimate.type = "ES")
+testEnrichment1(query, database, universe, estimate.type = "ES")
 }
 \arguments{
-\item{querySet}{Vector of probes of interest (e.g., significant probes)}
+\item{query}{Vector of probes of interest (e.g., significant probes)}
 
-\item{databaseSet}{Vector corresponding to the database sets of
+\item{database}{Vector corresponding to the database sets of
 interest with associated meta data as an attribute to each element.}
 
-\item{universeSet}{Vector of probes in the universe set containing all of
+\item{universe}{Vector of probes in the universe set containing all of
 the probes to be considered in the test.}
 
 \item{estimate.type}{String indicating the estimate to report. (Default:

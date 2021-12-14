@@ -5,19 +5,11 @@
 \title{plotVolcano creates a volcano plot of -log2(p.value) and log(estimate)
 given data with fields estimate and p.value.}
 \usage{
-plotVolcano(data, title = NA, subtitle = NA, n.fdr = FALSE, alpha = 0.05)
+plotVolcano(data, alpha = 0.05)
 }
 \arguments{
 \item{data}{DataFrame where each field is a database name with two fields
 for the estimate and p.value.}
-
-\item{title}{String representing the title label. Optional. (Default: NA)}
-
-\item{subtitle}{String representing the subtitle label. Optional. (Default:
-NA)}
-
-\item{n.fdr}{Integer corresponding to the number of comparisons made. 
-Optional. (Default: NA).}
 
 \item{alpha}{Float representing the cut-off alpha value for the plot. 
 Optional. (Default: 0.05)}
@@ -31,7 +23,7 @@ given data with fields estimate and p.value.
 }
 \examples{
 
-data=data.frame(estimate=c(runif(10)), p.value=c(runif(10)))
+data=data.frame(estimate=c(runif(10)), fdr=c(runif(10)))
 plotVolcano(data)
 
 }

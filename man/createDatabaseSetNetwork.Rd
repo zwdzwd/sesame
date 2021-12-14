@@ -2,25 +2,25 @@
 % Please edit documentation in R/kyCG.R
 \name{createDatabaseSetNetwork}
 \alias{createDatabaseSetNetwork}
-\title{createGeneNetwork creates databaseSet network using the Jaccard index.}
+\title{createGeneNetwork creates database network using the Jaccard index.}
 \usage{
-createDatabaseSetNetwork(databaseSets)
+createDatabaseSetNetwork(databases)
 }
 \arguments{
-\item{databaseSets}{Vector of probes corresponding to a single database set
+\item{databases}{Vector of probes corresponding to a single database set
 of interest.}
 }
 \value{
 ggplot lollipop plot
 }
 \description{
-createGeneNetwork creates databaseSet network using the Jaccard index.
+createGeneNetwork creates database network using the Jaccard index.
 }
 \examples{
 
-databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
-databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
-createDatabaseSetNetwork(databaseSets)
+databaseNames = c('KYCG.MM285.seqContextN.20210630')
+databases = do.call(c, lapply(databaseNames, sesameDataGet))
+createDatabaseSetNetwork(databases)
 sesameDataClearCache()
 
 }

@@ -5,14 +5,10 @@
 \title{calculates the pariwise overlap between given list
 of database sets using a distance metric.}
 \usage{
-compareDatbaseSetOverlap(
-  databaseSets = NA,
-  metric = "Jaccard",
-  verbose = FALSE
-)
+compareDatbaseSetOverlap(databases = NA, metric = "Jaccard", verbose = FALSE)
 }
 \arguments{
-\item{databaseSets}{List of vectors corresponding to the database sets of
+\item{databases}{List of vectors corresponding to the database sets of
 interest with associated meta data as an attribute to each element. Optional.
 (Default: NA)}
 
@@ -32,9 +28,9 @@ of database sets using a distance metric.
 }
 \examples{
 
-databaseSetNames = c('KYCG.MM285.seqContextN.20210630')
-databaseSets = do.call(c, lapply(databaseSetNames, sesameDataGet))
-compareDatbaseSetOverlap(databaseSets)
+databaseNames = c('KYCG.MM285.seqContextN.20210630')
+databases = do.call(c, lapply(databaseNames, sesameDataGet))
+compareDatbaseSetOverlap(databases)
 sesameDataClearCache()
 
 }

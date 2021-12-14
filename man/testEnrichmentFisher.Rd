@@ -5,15 +5,15 @@
 \title{testEnrichmentFisher uses Fisher's exact test to estimate the association
 between two categorical variables.}
 \usage{
-testEnrichmentFisher(querySet, databaseSet, universeSet)
+testEnrichmentFisher(query, database, universe)
 }
 \arguments{
-\item{querySet}{Vector of probes of interest (e.g., significant probes)}
+\item{query}{Vector of probes of interest (e.g., significant probes)}
 
-\item{databaseSet}{Vectors corresponding to the database set of
+\item{database}{Vectors corresponding to the database set of
 interest with associated meta data as an attribute to each element.}
 
-\item{universeSet}{Vector of probes in the universe set containing all of
+\item{universe}{Vector of probes in the universe set containing all of
 the probes to be considered in the test. (Default: NULL)}
 }
 \value{
