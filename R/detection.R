@@ -132,6 +132,7 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE,
     funcR = ecdf(bgR)
 
     ## p-value is the minimium detection p-value of the 2 alleles
+    ## the order is preserved
     pvals = setNames(pmin(
         1-funcR(pmax(sdf$MR, sdf$UR, na.rm=TRUE)),
         1-funcG(pmax(sdf$MG, sdf$UG, na.rm=TRUE))), sdf$Probe_ID)

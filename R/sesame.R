@@ -147,7 +147,7 @@ SDFcollapseToPfx = function(sdf) {
     sdf$Probe_ID = vapply(strsplit(sdf$Probe_ID, '_'),
         function(x) x[1], character(1))
     sdf$pval = pOOBAH(sdf, return.pval = TRUE)
-    ## take the max by p-value
+    ## take the best by p-value
     slice_min(group_by(sdf, Probe_ID), pval,n=1, with_ties = FALSE)
 }
 
@@ -275,7 +275,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
         attr(d, 'platform') <- platform
     } else {
         ## this is not always accurate
-        ## TODO should identify unique tengo IDs.
+        ## TODO should identify unique tango IDs.
         attr(d, 'platform') <- inferPlatform(ida.red)
     }
     d
