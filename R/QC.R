@@ -59,7 +59,6 @@ qualityRank <- function(
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesamePlotIntensVsBetas(sdf)
 #' @import graphics
-#' @import KernSmooth
 #' @importFrom grDevices colorRampPalette
 #' @export
 sesamePlotIntensVsBetas <- function(

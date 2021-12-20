@@ -115,7 +115,7 @@ inferSpecies <- function(sdf, df_as = NULL, topN = 3000,
 #' @export
 mapToMammal40 = function(sdf) {
     addr = sesameDataGet("Mammal40.address")
-    betas = getBetas(sdf, collapseToPfx=T)[addr$ordering$Probe_ID]
+    betas = getBetas(sdf, collapseToPfx = TRUE)[addr$ordering$Probe_ID]
     names(betas) = addr$ordering$Probe_ID
     betas
 }

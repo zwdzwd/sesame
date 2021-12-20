@@ -136,11 +136,17 @@ totalIntensities <- function(sdf, mask = FALSE) {
     setNames(s$M+s$U, s$Probe_ID)
 }
 
-
+#' collapse to probe prefix
+#'
+#' @param sdf a SigDF object
+#' @return a data frame with updated Probe_ID
+#' @importFrom dplyr slice_min
+#' @importFrom dplyr group_by
 SDFcollapseToPfx = function(sdf) {
+    Probe_ID = pval = NULL
     sdf$Probe_ID = vapply(strsplit(sdf$Probe_ID, '_'),
         function(x) x[1], character(1))
-    sdf$pval = pOOBAH(sdf, return.pval=TRUE)
+    sdf$pval = pOOBAH(sdf, return.pval = TRUE)
     ## take the max by p-value
     slice_min(group_by(sdf, Probe_ID), pval,n=1, with_ties = FALSE)
 }

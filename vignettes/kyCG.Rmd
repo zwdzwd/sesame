@@ -279,8 +279,8 @@ data$Mouse_Age_Months = as.numeric(data$Mouse_Age_Months)
 A linear model can finally be constructed using this data. Since there are only 20 samples, we will use use four of the database summary statistics.
 
 ``` {r feature-engineering-linear-model}
-model = lm(Mouse_Age_Days ~ Sex + Strain_Corrected + Tissue_Corrected + 
-    Genotype + CGI + CTCF + Clock + SpermMeth + VMR, data=data)
+model = lm(Mouse_Age_Days ~ Sex + Strain_Corrected + Tissue_Corrected +
+    Genotype, data=data)
 ```
 
 # Session Info
