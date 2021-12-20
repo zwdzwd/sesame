@@ -1,3 +1,6 @@
+
+
+
 #' Infer Species
 #'
 #' We infer species based on probes pvalues and alignment score.
@@ -99,4 +102,20 @@ inferSpecies <- function(sdf, df_as = NULL, topN = 3000,
     } else { # return all
         return(auc)
     }
+}
+
+#' Map the SDF (from overlap array platforms)
+#' Replicates are merged by picking the best detection
+#'
+#' @param sdf a \code{SigDF} object
+#' @return a named numeric vector for beta values
+#' @examples
+#' sdf = sesameDataGet("MM285.1.SigDF")
+#' betas = mapToMammal40(sdf)
+#' @export
+mapToMammal40 = function(sdf) {
+    addr = sesameDataGet("Mammal40.address")
+    betas = getBetas(sdf, collapseToPfx=T)[addr$ordering$Probe_ID]
+    names(betas) = addr$ordering$Probe_ID
+    betas
 }

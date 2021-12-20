@@ -467,7 +467,9 @@ testEnrichmentSpearman = function(query, database) {
 #' 
 dbStats = function(betas, dbs, fun = mean, na.rm = TRUE) {
     if (is.character(dbs)) {
-        dbs = do.call(c, lapply(dbs, function(nm) sesameDataGet(nm)))
+        nms = dbs
+        dbs = do.call(c, lapply(nms, sesameDataGet))
+        names(dbs) = nms
     }
     stats = do.call(cbind, lapply(names(dbs), function(db_nm) {
         db = dbs[[db_nm]]

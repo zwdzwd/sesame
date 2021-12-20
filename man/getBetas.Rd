@@ -4,7 +4,7 @@
 \alias{getBetas}
 \title{Get beta Values}
 \usage{
-getBetas(sdf, mask = TRUE, sum.TypeI = FALSE)
+getBetas(sdf, mask = TRUE, sum.TypeI = FALSE, collapseToPfx = FALSE)
 }
 \arguments{
 \item{sdf}{\code{SigDF}}
@@ -12,6 +12,9 @@ getBetas(sdf, mask = TRUE, sum.TypeI = FALSE)
 \item{mask}{whether to use mask}
 
 \item{sum.TypeI}{whether to sum type I channels}
+
+\item{collapseToPfx}{remove replicate to prefix (e.g., cg number) and
+remove the suffix}
 }
 \value{
 a numeric vector, beta values

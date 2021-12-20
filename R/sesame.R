@@ -136,6 +136,15 @@ totalIntensities <- function(sdf, mask = FALSE) {
     setNames(s$M+s$U, s$Probe_ID)
 }
 
+
+SDFcollapseToPfx = function(sdf) {
+    sdf$Probe_ID = vapply(strsplit(sdf$Probe_ID, '_'),
+        function(x) x[1], character(1))
+    sdf$pval = pOOBAH(sdf, return.pval=TRUE)
+    ## take the max by p-value
+    slice_min(group_by(sdf, Probe_ID), pval,n=1, with_ties = FALSE)
+}
+
 #' Get beta Values
 #'
 #' sum.typeI is used for rescuing beta values on
@@ -146,15 +155,20 @@ totalIntensities <- function(sdf, mask = FALSE) {
 #' @param sdf \code{SigDF}
 #' @param sum.TypeI whether to sum type I channels
 #' @param mask whether to use mask
+#' @param collapseToPfx remove replicate to prefix (e.g., cg number) and
+#' remove the suffix
 #' @return a numeric vector, beta values
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' betas <- getBetas(sdf)
 #' @export
-getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
+getBetas <- function(
+    sdf, mask=TRUE, sum.TypeI = FALSE, collapseToPfx = FALSE) {
 
     stopifnot(is(sdf, "SigDF"))
+
+    if (collapseToPfx) { sdf = SDFcollapseToPfx(sdf); }
 
     if (sum.TypeI) {
         d1 = InfI(sdf); d2 = InfII(sdf)
@@ -174,6 +188,7 @@ getBetas <- function(sdf, mask=TRUE, sum.TypeI = FALSE) {
     if (mask) {
         betas[sdf$mask] = NA
     }
+
     betas
 }
 
