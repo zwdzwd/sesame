@@ -183,7 +183,7 @@ testEnrichment = function(
                 sesameData:::df_master$Title)]
         databases = do.call(c, lapply(databaseNames, sesameDataGet))
     } else if (is.character(databases)) { # db given in names
-        databases = do.call(c, lapply(databases, sesameDataGet))
+        databases = do.call(c, lapply(guess_dbnames(databases), sesameDataGet))
     }
     
     results = data.frame(do.call(rbind, lapply(
@@ -446,6 +446,25 @@ testEnrichmentSpearman = function(query, database) {
     )
 }
 
+guess_dbnames = function(nms) {
+    df = sesameDataList()
+    vapply(nms, function(nm) {
+        if (nm %in% df$Title) {
+            return(nm)
+        } else if (length(grep(nm, df$Title)) == 1) {
+            return(grep(nm, df$Title, value=TRUE))
+        } else if (length(grep(nm, df$Title)) == 0) {
+            res = df$Title[apply(do.call(cbind, lapply(
+                strsplit(nm, "\\.")[[1]], function(q1) grepl(q1, df$Title))),
+                1, all)]
+            if (length(res) == 1) {
+                return(res[1])
+            }
+        }
+        return(nm)
+    }, character(1))
+}
+
 #' dbStats builds dataset for a given betas matrix 
 #' composed of engineered features from the given database sets
 #'
@@ -466,14 +485,14 @@ testEnrichmentSpearman = function(query, database) {
 #' sesameDataClearCache()
 #' 
 dbStats = function(betas, dbs, fun = mean, na.rm = TRUE) {
+    if (is(betas, "numeric")) { betas = cbind(sample = betas); }
     if (is.character(dbs)) {
-        nms = dbs
+        nms = guess_dbnames(dbs)
         dbs = do.call(c, lapply(nms, sesameDataGet))
-        names(dbs) = nms
     }
     stats = do.call(cbind, lapply(names(dbs), function(db_nm) {
         db = dbs[[db_nm]]
-        betas1 = betas[db[db %in% rownames(betas)],]
+        betas1 = betas[db[db %in% rownames(betas)],,drop=FALSE]
         if (nrow(betas1) == 0) { return(rep(NA, ncol(betas))); }
         apply(betas1, 2, fun, na.rm = na.rm)
     }))
