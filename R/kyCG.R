@@ -332,9 +332,11 @@ testEnrichmentFisher = function(query, database, universe) {
             overlap = 0
         ))
     }
-    d_min_q = length(setdiff(database, query))
-    q_min_d = length(setdiff(query, database))
-    min_q_d = length(setdiff(universe, union(database, query)))
+    l_d = length(database)
+    l_q = length(query)
+    d_min_q = l_d - q_and_d
+    q_min_d = l_q - q_and_d
+    min_q_d = length(universe) - l_q - l_d + q_and_d
     
     res = fisher.test(matrix(c(
         q_and_d, d_min_q, q_min_d, min_q_d), nrow = 2))
