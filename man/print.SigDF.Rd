@@ -19,6 +19,6 @@ Print SigDF object
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sdf = sesameDataGet('EPIC.1.SigDF')
+sdf <- sesameDataGet('EPIC.1.SigDF')
 sdf
 }

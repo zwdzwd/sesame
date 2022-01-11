@@ -2,8 +2,8 @@
 % Please edit documentation in R/kyCG.R
 \name{testEnrichmentSpearman}
 \alias{testEnrichmentSpearman}
-\title{testEnrichmentSpearman uses the Spearman statistical test to estimate the 
-association between two continuous variables.}
+\title{testEnrichmentSpearman uses the Spearman statistical test to estimate
+the association between two continuous variables.}
 \usage{
 testEnrichmentSpearman(query, database)
 }
@@ -14,10 +14,10 @@ testEnrichmentSpearman(query, database)
 interest with associated meta data as an attribute to each element.}
 }
 \value{
-A DataFrame with the estimate/statistic, p-value, and name of test
-for the given results.
+A DataFrame with the estimate/statistic, p-value, and name
+of test for the given results.
 }
 \description{
-testEnrichmentSpearman uses the Spearman statistical test to estimate the 
-association between two continuous variables.
+testEnrichmentSpearman uses the Spearman statistical test to estimate
+the association between two continuous variables.
 }

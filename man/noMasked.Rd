@@ -17,9 +17,9 @@ remove masked probes from SigDF
 }
 \examples{
 sesameDataCache("EPIC")
-sdf = sesameDataGet("EPIC.1.SigDF")
-sdf = pOOBAH(sdf)
+sdf <- sesameDataGet("EPIC.1.SigDF")
+sdf <- pOOBAH(sdf)
 
-sdf_noMasked = noMasked(sdf)
+sdf_noMasked <- noMasked(sdf)
 
 }

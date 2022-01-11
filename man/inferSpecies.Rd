@@ -47,7 +47,7 @@ for pval < threshold.pos or pval > threshold.neg, respeceively,
 }
 \examples{
 if (FALSE) { ## remove this, testing doesn't allow large file caching
-  sdf = sesameDataGet("MM285.1.SigDF")
+  sdf <- sesameDataGet("MM285.1.SigDF")
   inferSpecies(sdf)
 }
 }

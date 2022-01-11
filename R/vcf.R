@@ -63,7 +63,7 @@ formatVCF <- function(
         annoI <- sesameDataGetAnno(sprintf("%s/%s.%s.typeI_overlap_b151.rds",
             platform, platform, refversion))
     }
-    af = getAFTypeIbySumAlleles(sdf, known.ccs.only=FALSE)
+    af <- getAFTypeIbySumAlleles(sdf, known.ccs.only=FALSE)
     af <- af[names(annoI)]
     vafs <- ifelse(annoI$In.band == 'REF', af, 1-af)
     gts <- lapply(vafs, genotyper)

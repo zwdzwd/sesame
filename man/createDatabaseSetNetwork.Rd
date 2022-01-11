@@ -18,8 +18,8 @@ createGeneNetwork creates database network using the Jaccard index.
 }
 \examples{
 
-databaseNames = c('KYCG.MM285.seqContextN.20210630')
-databases = do.call(c, lapply(databaseNames, sesameDataGet))
+databaseNames <- c('KYCG.MM285.seqContextN.20210630')
+databases <- do.call(c, lapply(databaseNames, sesameDataGet))
 createDatabaseSetNetwork(databases)
 sesameDataClearCache()
 

@@ -19,45 +19,28 @@ library(sesame)
 sesameDataCacheAll()
 ```
 
+Probe detection success rate is the main QC metric for an array
+experiment.
 Sesame provide convenient function to compare your sample with
 public data sets processed with the same pipeline. All you need
 is a raw SigSet.
 ```{r}
 sdf <- sesameDataGet('EPIC.1.SigDF')
-as.data.frame(qualityRank(sdf))
-```
-
-# Quality Metrics
-
-SeSAMe provides a set of quality control steps.
-Be sure to pre-cache HM450 annotation data from ExperimentHub.
-This only needs to be done once per sesame installation.
-```{r message = FALSE}
-sdfs = sesameDataGet("EPIC.5.SigDF.normal")
-```
-
-The SeSAMe QC function returns an `sesameQC` object which can be
-directly printed onto the screen.
-```{r}
-sesameQC(sdfs[[1]])
-```
-
-The `sesameQC` object can be coerced into data.frame and linked
-using the following code
-```{r}
-qc5 <- do.call(rbind, lapply(sdfs, function(x)
-    as.data.frame(sesameQC(x))))
-qc5$sample_name <- names(sdfs)
-
-qc5[,c('mean_beta_cg','frac_meth_cg','frac_unmeth_cg')]
+sesameQC_rankDetectionSuccess(sdf)
+sesameQC_rankMeanIntensity(sdf)
 ```
 
 ## Signal Background
 
 The background level is given by `mean_oob_grn` and `mean_oob_red`
+```{r message = FALSE}
+sdfs = sesameDataGet("EPIC.5.SigDF.normal")
+```
+
 ```{r}
 library(ggplot2)
-ggplot(qc5,
+qc5_intens = sesameQC_calcStats(sdfs, sesameQC_calcStats_intens)
+ggplot(qc5_intens,
     aes(x = mean_oob_grn, y= mean_oob_red, label = sample_name)) +
     geom_point() + geom_text(hjust = -0.1, vjust = 0.1) +
     geom_abline(intercept = 0, slope = 1, linetype = 'dotted') +
@@ -74,14 +57,14 @@ input or poor hybridization.
 
 ```{r warning = FALSE}
 library(wheatmap)
-p1 <- ggplot(qc5) +
+p1 <- ggplot(qc5_intens) +
     geom_bar(aes(sample_name, mean_intensity), stat='identity') +
-    xlab('Sample Name') + ylab('Mean Intensity') +
+    xlab('Sample') + ylab('Mean Intensity') +
     ylim(0,18000) +
     theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-p2 <- ggplot(qc5) +
+p2 <- ggplot(qc5_intens) +
     geom_bar(aes(sample_name, mean_intensity_total), stat='identity') +
-    xlab('Sample Name') + ylab('Mean M+U Intensity') +
+    xlab('Sample') + ylab('Mean M+U Intensity') +
     ylim(0,18000) +
     theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
 WGG(p1) + WGG(p2, RightOf())
@@ -95,13 +78,14 @@ probes etc. This number can be reached in `frac_na_cg` and
 `num_na_cg` (the cg stands for CpG probes, so we also have
 `num_na_ch` and `num_na_rs`)
 ```{r}
-p1 <- ggplot(qc5) +
+qc5_detection = sesameQC_calcStats(sdfs, sesameQC_calcStats_detection)
+p1 <- ggplot(qc5_detection) +
     geom_bar(aes(sample_name, num_na_cg), stat='identity') +
-    xlab('Sample Name') + ylab('Number of NAs') +
+    xlab('Sample') + ylab('Number of NAs') +
     theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-p2 <- ggplot(qc5) +
-    geom_bar(aes(sample_name, frac_na_cg), stat='identity') +
-    xlab('Sample Name') + ylab('Fraction of NAs (%)') +
+p2 <- ggplot(qc5_detection) +
+    geom_bar(aes(sample_name, frac_na_cg*100), stat='identity') +
+    xlab('Sample') + ylab('Fraction of NAs (%)') +
     theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
 WGG(p1) + WGG(p2, RightOf())
 ```
@@ -112,9 +96,16 @@ The fraction of color channel switch can be found in
 `InfI_switch_G2R` and `InfI_switch_R2G`. These numbers are 
 symptomatic of how Infinium I probes are affected by SNP-induced
 color channel switching.
-```{r}
-ggplot(qc5) +
-    geom_point(aes(InfI_switch_G2R, InfI_switch_R2G))
+```{r fig.height=3, fig.width=8}
+qc5_channel = sesameQC_calcStats(sdfs, sesameQC_calcStats_channel)
+p1 = ggplot(qc5_channel) +
+   geom_bar(aes(sample_name, InfI_switch_R2G),
+   fill="seagreen", stat="identity") +
+   xlab("Sample") + ylab("Infinium-I R>G switch")
+p2 = ggplot(qc5_channel) +
+   geom_bar(aes(sample_name, InfI_switch_G2R), fill="red", stat="identity") +
+   xlab("Sample") + ylab("Infinium-I G>R switch")
+WGG(p1) + WGG(p2, RightOf())
 ```
 
 ## Bisulfite Conversion
@@ -143,6 +134,19 @@ head(formatVCF(sdf, annoS=annoS, annoI=annoI))
 
 One can output to actual VCF file with a header by `formatVCF(sdf,
 vcf=path_to_vcf)`.
+
+# Other Quality Metrics
+
+SeSAMe provides a set of quality control functions. These include
+`sesameQC_calcStats_intens`, `sesameQC_calcStats_numProbes`,
+`sesameQC_calcStats_channel`, `sesameQC_calcStats_detection`,
+and `sesameQC_calcStats_betas`, and sesameQC_calcStats, which calculates
+all the qc stats. Each sesameQC_calcStats_ function returns a data
+frame. Using `verbose=TRUE` print readable information to the console.
+```{r}
+sdf = sesameDataGet("EPIC.1.SigDF")
+sesameQC_calcStats_channel(sdfs[[1]])
+```
 
 # Session Info
 

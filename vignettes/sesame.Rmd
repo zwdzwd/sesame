@@ -274,9 +274,9 @@ sdf.sb = scrub(sdf)         # more aggressive background subtraction
 One can use following beta to total signal intensity to check the effect of
 background subtraction.
 ```{r fig.width=5}
-sesamePlotIntensVsBetas(sdf)
-sesamePlotIntensVsBetas(sdf.nb) # with noob
-sesamePlotIntensVsBetas(sdf.sb) # with scrub
+sesameQC_plotIntensVsBetas(sdf)
+sesameQC_plotIntensVsBetas(sdf.nb) # with noob
+sesameQC_plotIntensVsBetas(sdf.sb) # with scrub
 ```
 
 ## Dye Bias Correction
@@ -288,7 +288,7 @@ equalize the mean of all probes from the two color channel.
 ```{r fig.width=5}
 library(sesame)
 sdf.dbLinear = dyeBiasCorr(sdf)
-sesamePlotRedGrnQQ(sdf.dbLinear)
+sesameQC_plotRedGrnQQ(sdf.dbLinear)
 ```
 
 Residual dye bias can be corrected using nonlinear quantile interpolation with
@@ -299,7 +299,7 @@ sdf.dbNonlinear = dyeBiasCorrTypeINorm(sdf)
 Under this correction, Infinium-I Red probes and
 Infinium-I Grn probes have the same distribution of signal.
 ```{r fig.width=5}
-sesamePlotRedGrnQQ(sdf.dbNonlinear)
+sesameQC_plotRedGrnQQ(sdf.dbNonlinear)
 ```
 
 Note that linear scaling does not shift beta values of Type-I probes while

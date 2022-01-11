@@ -22,6 +22,6 @@ a new data.frame with manifest attached
 Annotate a data.frame using manifest
 }
 \examples{
-df = data.frame(Probe_ID = c("cg00101675_BC21", "cg00116289_BC21"))
+df <- data.frame(Probe_ID = c("cg00101675_BC21", "cg00116289_BC21"))
 attachManifest(df)
 }

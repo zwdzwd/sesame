@@ -39,14 +39,14 @@
 #' @export
 signalMU <- function(sdf, mask = TRUE) {
     stopifnot(is(sdf, "SigDF"))
-    dG = InfIG(sdf); dR = InfIR(sdf); d2 = InfII(sdf)
-    sdf2 = rbind(
+    dG <- InfIG(sdf); dR <- InfIR(sdf); d2 <- InfII(sdf)
+    sdf2 <- rbind(
         data.frame(M = dG$MG, U = dG$UG, Probe_ID = dG$Probe_ID),
         data.frame(M = dR$MR, U = dR$UR, Probe_ID = dR$Probe_ID),
         data.frame(M = d2$UG, U = d2$UR, Probe_ID = d2$Probe_ID))
-    sdf2 = sdf2[match(sdf$Probe_ID, sdf2$Probe_ID),]
-    if (mask) { sdf2 = sdf2[!sdf$mask,] }
-    rownames(sdf2) = NULL
+    sdf2 <- sdf2[match(sdf$Probe_ID, sdf2$Probe_ID),]
+    if (mask) { sdf2 <- sdf2[!sdf$mask,] }
+    rownames(sdf2) <- NULL
     sdf2
 }
 
@@ -71,7 +71,7 @@ signalMU <- function(sdf, mask = TRUE) {
 #' @export
 meanIntensity <- function(sdf, mask = TRUE) {
     stopifnot(is(sdf, "SigDF"))
-    s = signalMU(sdf, mask = mask)
+    s <- signalMU(sdf, mask = mask)
     mean(c(s$M,s$U), na.rm=TRUE)
 }
 
@@ -89,9 +89,9 @@ meanIntensity <- function(sdf, mask = TRUE) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' medianTotalIntensity(sdf)
 #' @export
-medianTotalIntensity = function(sdf, mask = TRUE) {
+medianTotalIntensity <- function(sdf, mask = TRUE) {
     stopifnot(is(sdf, "SigDF"))
-    s = signalMU(sdf, mask = mask)
+    s <- signalMU(sdf, mask = mask)
     median(c(s$M + s$U), na.rm=TRUE)
 }
 
@@ -106,13 +106,13 @@ medianTotalIntensity = function(sdf, mask = TRUE) {
 #' @return a fraction number as probe success rate
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' probeSuccessRate(sdf)
 #' @export
-probeSuccessRate = function(sdf, mask = TRUE, max_pval = 0.05) {
-    pval = pOOBAH(sdf, return.pval = TRUE)
-    if (mask) { pval = pval[!sdf$mask] }
-    pval = na.omit(pval)
+probeSuccessRate <- function(sdf, mask = TRUE, max_pval = 0.05) {
+    pval <- pOOBAH(sdf, return.pval = TRUE)
+    if (mask) { pval <- pval[!sdf$mask] }
+    pval <- na.omit(pval)
     stopifnot(length(pval) > 100)
     sum(pval < max_pval) / length(pval)
 }
@@ -132,7 +132,7 @@ probeSuccessRate = function(sdf, mask = TRUE, max_pval = 0.05) {
 #' @export
 totalIntensities <- function(sdf, mask = FALSE) {
     stopifnot(is(sdf, "SigDF"))
-    s = signalMU(sdf, mask = mask)
+    s <- signalMU(sdf, mask = mask)
     setNames(s$M+s$U, s$Probe_ID)
 }
 
@@ -142,11 +142,11 @@ totalIntensities <- function(sdf, mask = FALSE) {
 #' @return a data frame with updated Probe_ID
 #' @importFrom dplyr slice_min
 #' @importFrom dplyr group_by
-SDFcollapseToPfx = function(sdf) {
-    Probe_ID = pval = NULL
-    sdf$Probe_ID = vapply(strsplit(sdf$Probe_ID, '_'),
+SDFcollapseToPfx <- function(sdf) {
+    Probe_ID <- pval <- NULL
+    sdf$Probe_ID <- vapply(strsplit(sdf$Probe_ID, '_'),
         function(x) x[1], character(1))
-    sdf$pval = pOOBAH(sdf, return.pval = TRUE)
+    sdf$pval <- pOOBAH(sdf, return.pval = TRUE)
     ## take the best by p-value
     slice_min(group_by(sdf, Probe_ID), pval,n=1, with_ties = FALSE)
 }
@@ -174,25 +174,25 @@ getBetas <- function(
 
     stopifnot(is(sdf, "SigDF"))
 
-    if (collapseToPfx) { sdf = SDFcollapseToPfx(sdf); }
+    if (collapseToPfx) { sdf <- SDFcollapseToPfx(sdf); }
 
     if (sum.TypeI) {
-        d1 = InfI(sdf); d2 = InfII(sdf)
-        betas = c(setNames(
+        d1 <- InfI(sdf); d2 <- InfII(sdf)
+        betas <- c(setNames(
             pmax(d1$MG+d1$MR,1)/pmax(d1$MG+d1$MR+d1$UG+d1$UR,2), d1$Probe_ID),
             setNames(pmax(d2$UG,1) / pmax(d2$UG+d2$UR,2), d2$Probe_ID))
     } else {
-        dG = InfIG(sdf); dR = InfIR(sdf); d2 = InfII(sdf)
-        betas = c(
+        dG <- InfIG(sdf); dR <- InfIR(sdf); d2 <- InfII(sdf)
+        betas <- c(
             setNames(pmax(dG$MG,1) / pmax(dG$MG+dG$UG,2), dG$Probe_ID),
             setNames(pmax(dR$MR,1) / pmax(dR$MR+dR$UR,2), dR$Probe_ID),
             setNames(pmax(d2$UG,1) / pmax(d2$UG+d2$UR,2), d2$Probe_ID))
     }
     
     ## always use the original order
-    betas = setNames(betas[match(sdf$Probe_ID, names(betas))], sdf$Probe_ID)
+    betas <- setNames(betas[match(sdf$Probe_ID, names(betas))], sdf$Probe_ID)
     if (mask) {
-        betas[sdf$mask] = NA
+        betas[sdf$mask] <- NA
     }
 
     betas
@@ -217,14 +217,14 @@ getAFTypeIbySumAlleles <- function(sdf, known.ccs.only = TRUE) {
 
     stopifnot(is(sdf, "SigDF"))
 
-    dG = InfIG(sdf); dR = InfIR(sdf)
-    af = c(setNames(
+    dG <- InfIG(sdf); dR <- InfIR(sdf)
+    af <- c(setNames(
         pmax(dG$MR+dG$UR,1)/pmax(dG$MR+dG$UR+dG$MG+dG$UG,2), dG$Probe_ID),
         setNames(
             pmax(dR$MG+dR$UG,1)/pmax(dR$MR+dR$UR+dR$MG+dR$UG,2), dR$Probe_ID))
 
     if (known.ccs.only) {
-        af = af[intersect(
+        af <- af[intersect(
             names(af), sesameDataGet('ethnicity.inference')$ccs.probes)]
     }
     
@@ -240,13 +240,13 @@ inferPlatform <- function(res) {
 }
 
 inferPlatformFromProbeIDs <- function(probeIDs) {
-    sig = sesameDataGet("probeIDSignature")
+    sig <- sesameDataGet("probeIDSignature")
     names(which.max(vapply(
         sig, function(x) sum(probeIDs %in% x), integer(1))))
 }
 
 defaultAssembly <- function(platform) {
-    platform2build = c(
+    platform2build <- c(
         "HM27"="hg38",
         "HM450"="hg38",
         "EPIC"="hg38",
@@ -267,8 +267,8 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
     ida.grn <- suppressWarnings(illuminaio::readIDAT(grn.name))
     ida.red <- suppressWarnings(illuminaio::readIDAT(red.name))
     d <- cbind(
-        cy3=ida.grn$Quants[,"Mean"],
-        cy5=ida.red$Quants[,"Mean"])
+        cy3 = ida.grn$Quants[,"Mean"],
+        cy5 = ida.red$Quants[,"Mean"])
     colnames(d) <- c('G', 'R')
 
     if (platform != '') {
@@ -324,15 +324,15 @@ readIDATpair <- function(
 
     dm <- readIDAT1(grn.name, red.name, platform=platform)
     if (is.null(manifest)) { # pre-built platforms, EPIC, HM450, HM27 etc
-        df_address = sesameDataGet(paste0(
+        df_address <- sesameDataGet(paste0(
             attr(dm, 'platform'), '.address'))
         manifest <- df_address$ordering
         controls <- df_address$controls
     }
 
-    sdf = chipAddressToSignal(dm, manifest)
+    sdf <- chipAddressToSignal(dm, manifest)
     if (!is.null(controls) && nrow(controls) > 0) {
-        attr(sdf, "controls") = readControls(dm, controls)
+        attr(sdf, "controls") <- readControls(dm, controls)
     }
     sdf
 }
@@ -343,9 +343,9 @@ readControls <- function(dm, controls) {
         rownames(ctl) <- make.names(controls$Name, unique=TRUE)
         ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
         colnames(ctl) <- c('G','R','col','type')
-        ctl = ctl[!(is.na(ctl$G)|is.na(ctl$R)),] # no NA in controls
+        ctl <- ctl[!(is.na(ctl$G)|is.na(ctl$R)),] # no NA in controls
     } else {
-        ctl = as.data.frame(chipAddressToSignal(dm, controls))
+        ctl <- as.data.frame(chipAddressToSignal(dm, controls))
     }
     ctl
 }
@@ -422,34 +422,34 @@ searchIDATprefixes <- function(dir.name,
 #' @return a SigDF, indexed by probe ID address
 chipAddressToSignal <- function(dm, mft) {
 
-    mft1 = mft[!is.na(mft$col),]
-    tmpM = dm[match(mft1$M, rownames(dm)),]
-    tmpU = dm[match(mft1$U, rownames(dm)),]
-    sdf = data.frame(
+    mft1 <- mft[!is.na(mft$col),]
+    tmpM <- dm[match(mft1$M, rownames(dm)),]
+    tmpU <- dm[match(mft1$U, rownames(dm)),]
+    sdf <- data.frame(
         Probe_ID=mft1$Probe_ID,
         MG=tmpM[,"G"], MR=tmpM[,"R"], UG=tmpU[,"G"], UR=tmpU[,"R"],
         col=mft1$col, mask=FALSE)
-    if ("mask" %in% colnames(mft1)) { sdf$mask = mft1$mask; }
+    if ("mask" %in% colnames(mft1)) { sdf$mask <- mft1$mask; }
 
-    mft2 = mft[is.na(mft$col),]
+    mft2 <- mft[is.na(mft$col),]
     if (nrow(mft2) > 0) {
-        tmp = dm[match(mft2$U, rownames(dm)),]
-        s2 = data.frame(
+        tmp <- dm[match(mft2$U, rownames(dm)),]
+        s2 <- data.frame(
             Probe_ID=mft2$Probe_ID,
             MG=NA, MR=NA, UG=tmp[,"G"], UR=tmp[,"R"], col="2", mask=FALSE)
-        if ("mask" %in% colnames(mft2)) { s2$mask = mft2$mask; }
-        sdf = rbind(sdf, s2)
+        if ("mask" %in% colnames(mft2)) { s2$mask <- mft2$mask; }
+        sdf <- rbind(sdf, s2)
     }
-    sdf$col = factor(sdf$col, levels=c("G","R","2"))
-    sdf = sdf[match(mft$Probe_ID, sdf$Probe_ID),] # always the mft order
-    sdf = structure(sdf, class=c("SigDF", "data.frame"))
-    attr(sdf, "platform") = attr(dm, 'platform')
-    rownames(sdf) = NULL
+    sdf$col <- factor(sdf$col, levels=c("G","R","2"))
+    sdf <- sdf[match(mft$Probe_ID, sdf$Probe_ID),] # always the mft order
+    sdf <- structure(sdf, class=c("SigDF", "data.frame"))
+    attr(sdf, "platform") <- attr(dm, 'platform')
+    rownames(sdf) <- NULL
     sdf
 }
 
-SigSetToSigDF = function(sset) {
-    df = rbind(
+SigSetToSigDF <- function(sset) {
+    df <- rbind(
         data.frame(
             Probe_ID = rownames(sset@IG),
             MG = sset@IG[,"M"], MR = sset@oobR[,"M"],
@@ -462,11 +462,11 @@ SigSetToSigDF = function(sset) {
             Probe_ID = rownames(sset@II),
             MG = NA, MR = NA,
             UG = sset@II[,"M"], UR = sset@II[,"U"], col="2", mask=FALSE))
-    sdf = structure(df, class=c("SigDF", "data.frame"))
-    sdf$col = factor(sdf$col, levels=c("G","R","2"))
-    attr(sdf, "platform") = sset@platform
-    attr(sdf, "controls") = sset@ctl
-    rownames(sdf) = NULL
+    sdf <- structure(df, class=c("SigDF", "data.frame"))
+    sdf$col <- factor(sdf$col, levels=c("G","R","2"))
+    attr(sdf, "platform") <- sset@platform
+    attr(sdf, "controls") <- sset@ctl
+    rownames(sdf) <- NULL
     sdf
 }
 
@@ -490,11 +490,11 @@ bisConversionControl <- function(sdf) {
     extC <- sesameDataGet(paste0(sdfPlatform(sdf), '.probeInfo'))$typeI.extC
     extT <- sesameDataGet(paste0(sdfPlatform(sdf), '.probeInfo'))$typeI.extT
     ## prbs <- rownames(oobG(sset))
-    df = InfIR(sdf)
-    extC = intersect(df$Probe_ID, extC)
-    extT = intersect(df$Probe_ID, extT)
-    dC = df[match(extC, df$Probe_ID),]
-    dT = df[match(extT, df$Probe_ID),]
+    df <- InfIR(sdf)
+    extC <- intersect(df$Probe_ID, extC)
+    extT <- intersect(df$Probe_ID, extT)
+    dC <- df[match(extC, df$Probe_ID),]
+    dT <- df[match(extT, df$Probe_ID),]
     mean(c(dC$MG, dC$UG), na.rm=TRUE) / mean(c(dT$MG, dT$UG), na.rm=TRUE)
 }
 

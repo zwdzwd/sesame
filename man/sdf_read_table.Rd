@@ -21,8 +21,8 @@ read a table file to SigDF
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sdf = sesameDataGet('EPIC.1.SigDF')
-fname = sprintf("\%s/sigdf.txt", tempdir())
+sdf <- sesameDataGet('EPIC.1.SigDF')
+fname <- sprintf("\%s/sigdf.txt", tempdir())
 sdf_write_table(sdf, file=fname)
-sdf2 = sdf_read_table(fname)
+sdf2 <- sdf_read_table(fname)
 }

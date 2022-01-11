@@ -18,7 +18,7 @@ a \code{SigDF} with updated color channel and mask
 Set mask using species-specific manifest
 }
 \examples{
-sdf = sesameDataGet('Mammal40.1.SigDF')
-sdf_mouse = setMaskBySpecies(sdf, "mus_musculus")
+sdf <- sesameDataGet('Mammal40.1.SigDF')
+sdf_mouse <- setMaskBySpecies(sdf, "mus_musculus")
 
 }

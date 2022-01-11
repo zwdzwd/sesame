@@ -64,10 +64,10 @@ dyeBiasCorr <- function(sdf, ref=NULL) {
     fR <- ref/normctl['R']
     fG <- ref/normctl['G']
 
-    sdf$MG = sdf$MG * fG
-    sdf$UG = sdf$UG * fG
-    sdf$MR = sdf$MR * fR
-    sdf$UR = sdf$UR * fR
+    sdf$MG <- sdf$MG * fG
+    sdf$UG <- sdf$UG * fG
+    sdf$MR <- sdf$MR * fR
+    sdf$UR <- sdf$UR * fR
 
     sdf
 }
@@ -117,7 +117,7 @@ dyeBiasCorrTypeINorm <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
 
     ## we use all Inf-I probes so we capture the entire support range
-    dG = InfIG(noMasked(sdf)); dR = InfIR(noMasked(sdf))
+    dG <- InfIG(noMasked(sdf)); dR <- InfIR(noMasked(sdf))
     IG0 <- c(dG$MG, dG$UG)
     IR0 <- c(dR$MR, dR$UR)
     
@@ -160,10 +160,10 @@ dyeBiasCorrTypeINorm <- function(sdf) {
         data
     }
 
-    sdf$MR = fitfunRed(sdf$MR)
-    sdf$UR = fitfunRed(sdf$UR)
-    sdf$MG = fitfunGrn(sdf$MG)
-    sdf$UG = fitfunGrn(sdf$UG)
+    sdf$MR <- fitfunRed(sdf$MR)
+    sdf$UR <- fitfunRed(sdf$UR)
+    sdf$MG <- fitfunGrn(sdf$MG)
+    sdf$UG <- fitfunGrn(sdf$UG)
     sdf
 }
 
@@ -178,50 +178,3 @@ dyeBiasNL <- dyeBiasCorrTypeINorm
 ## dyeBiasCorrTypeINormMpU, dyeBiasCorrTypeINormG2R, dyeBiasCorrTypeINormR2G
 
 
-#' Plot red-green QQ-Plot using Infinium-I Probes
-#'
-#' @param sdf a \code{SigDF}
-#' @return create a qqplot
-#' @examples
-#' sesameDataCache("EPIC")  # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sesamePlotRedGrnQQ(sdf)
-#' @import graphics
-#' @export
-sesamePlotRedGrnQQ <- function(sdf) {
-    dG = InfIG(noMasked(sdf)); dR = InfIR(noMasked(sdf))
-    m = max(c(dR$MR,dR$UR,dG$MG,dG$UG), na.rm=TRUE)
-    
-    qqplot(
-        c(dR$MR, dR$UR), c(dG$MG, dG$UG),
-        xlab = 'Infinium-I Red Signal', ylab = 'Infinium-I Grn Signal',
-        main = 'Red-Green QQ-Plot', cex = 0.5,
-        xlim = c(0,m), ylim = c(0,m))
-    abline(0,1,lty = 'dashed')
-}
-
-#' Quantify how much dye bias in high signal range deviates from the
-#' global median
-#'
-#' Positive value indicates augmentation of high-end dye bias over
-#' low-end. negative value represents high-end dye bias contradicts
-#' that at low-end (a distorted dye bias). Negative distortion score
-#' (< -1) suggests low experiment quality. 0 suggests a consistent
-#' dye bias at high and low-end.
-#'
-#' @param sdf a \code{SigDF}
-#' @return a numeric score
-#' @examples
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' dyeBiasDistortion(sdf)
-#' @export
-dyeBiasDistortion = function(sdf) {
-    t1 = InfI(sdf)
-    intens = totalIntensities(sdf)
-    intens[t1[t1$col == "G", "Probe_ID"]]
-    medR = median(sort(intens[t1[t1$col == "R", "Probe_ID"]]))
-    medG = median(sort(intens[t1[t1$col == "G", "Probe_ID"]]))
-    topR = median(tail(sort(intens[t1[t1$col == "R", "Probe_ID"]]), n=20))
-    topG = median(tail(sort(intens[t1[t1$col == "G", "Probe_ID"]]), n=20))
-    log(topR / topG) / log(medR / medG)
-}

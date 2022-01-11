@@ -8,21 +8,21 @@
 #' sesameDataCache("EPIC") # if not done yet
 #' df <- as.data.frame(sesameDataGet('EPIC.1.SigDF'))
 #' @export
-SigDF = function(df, platform = "EPIC", ctl=NULL) {
+SigDF <- function(df, platform = "EPIC", ctl=NULL) {
 
-    df = df[,c("Probe_ID", "MG","MR","UG","UR","col","mask")]
+    df <- df[,c("Probe_ID", "MG","MR","UG","UR","col","mask")]
 
     ## in case following the manifest
     if (is.factor(df$col) && length(levels(df$col)) == 2) {
-        df$col = as.character(df$col)
-        df$col[is.na(df$col)] = "2"
-        df$col = factor(df$col, levels=c("G","R","2"))
+        df$col <- as.character(df$col)
+        df$col[is.na(df$col)] <- "2"
+        df$col <- factor(df$col, levels=c("G","R","2"))
     }
     
-    sdf = structure(df, class=c("SigDF", "data.frame"))
-    attr(sdf, "platform") = platform
-    attr(sdf, "controls") = ctl
-    rownames(sdf) = NULL
+    sdf <- structure(df, class=c("SigDF", "data.frame"))
+    attr(sdf, "platform") <- platform
+    attr(sdf, "controls") <- ctl
+    rownames(sdf) <- NULL
     sdf
 }
 
@@ -33,26 +33,26 @@ SigDF = function(df, platform = "EPIC", ctl=NULL) {
 #' @return print SigDF result on screen
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf
 #' @export
-print.SigDF = function(x, ...) {
+print.SigDF <- function(x, ...) {
     stopifnot(is(x, "SigDF"))
-    cat(paste0(
+    message(sprintf("%s%s%s%s%s",
         sprintf("SigDF - %s\n", sdfPlatform(x)),
         sprintf(" - %d Infinium-I Probes\n", nrow(InfI(x))),
         sprintf(" - %d Infinium-II Probes\n", nrow(InfII(x))),
         sprintf(" - %d Control Probes\n",
             ifelse(is.null(controls(x)), 0, nrow(controls(x)))),
-        sprintf(" - %d Number of Masked Probes\n", sum(x$mask))))
+        sprintf(" - %d Number of Masked Probes", sum(x$mask))))
     if (nrow(x) < 4) {
-        print(cbind("-"="-",
+        cbind("-"="-",
             Row=seq_len(nrow(x)),
-            as.data.frame(x)), row.names=FALSE)
+            as.data.frame(x))
     } else {
-        print(cbind("-"="-",
+        cbind("-"="-",
             Row=c(1,2,nrow(x)-1,nrow(x)),
-            as.data.frame(x[c(1,2,nrow(x)-1,nrow(x)),])), row.names=FALSE)
+            as.data.frame(x[c(1,2,nrow(x)-1,nrow(x)),]))
     }
 }
 
@@ -62,11 +62,11 @@ print.SigDF = function(x, ...) {
 #' @return the platform string for the SigDF object
 #' @examples
 #' sesameDataCache("EPIC")
-#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdfPlatform(sdf)
 #' 
 #' @export
-sdfPlatform = function(sdf) {
+sdfPlatform <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
     attr(sdf, "platform")
 }
@@ -78,39 +78,39 @@ sdfPlatform = function(sdf) {
 #' @export
 #' @examples
 #' sesameDataCache("EPIC")
-#' sdf = sesameDataGet("EPIC.1.SigDF")
-#' sdf = pOOBAH(sdf)
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' sdf <- pOOBAH(sdf)
 #'
-#' sdf_noMasked = noMasked(sdf)
+#' sdf_noMasked <- noMasked(sdf)
 #'
 #' @export
-noMasked = function(sdf) { # filter masked probes
+noMasked <- function(sdf) { # filter masked probes
     sdf[!sdf$mask,,drop=FALSE]
 }
 
-InfIR = function(sdf) {
+InfIR <- function(sdf) {
     sdf[sdf$col == "R",,drop=FALSE]
 }
 
-InfIG = function(sdf) {
+InfIG <- function(sdf) {
     sdf[sdf$col == "G",,drop=FALSE]
 }
 
-InfI = function(sdf) {
+InfI <- function(sdf) {
     sdf[sdf$col != "2",,drop=FALSE]
 }
 
-InfII = function(sdf) {
+InfII <- function(sdf) {
     sdf[sdf$col == "2",,drop=FALSE]
 }
 
-oobG = function(sdf) {
-    dR = InfIR(sdf)
+oobG <- function(sdf) {
+    dR <- InfIR(sdf)
     c(dR$MG, dR$UG)
 }
 
-oobR = function(sdf) {
-    dG = InfIG(sdf)
+oobR <- function(sdf) {
+    dG <- InfIG(sdf)
     c(dG$MR, dG$UR)
 }
 
@@ -120,10 +120,10 @@ oobR = function(sdf) {
 #' @return the controls data frame
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' head(controls(sdf))
 #' @export
-controls = function(sdf) {
+controls <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
     attr(sdf, "controls")
 }
@@ -135,10 +135,10 @@ controls = function(sdf) {
 #' @return write SigDF to table file
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf_write_table(sdf, file=sprintf("%s/sigdf.txt", tempdir()))
 #' @export
-sdf_write_table = function(sdf, ...) {
+sdf_write_table <- function(sdf, ...) {
     write.table(sdf, row.names=FALSE, ...)
 }
 
@@ -150,18 +150,18 @@ sdf_write_table = function(sdf, ...) {
 #' @return read table file to SigDF
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf = sesameDataGet('EPIC.1.SigDF')
-#' fname = sprintf("%s/sigdf.txt", tempdir())
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' fname <- sprintf("%s/sigdf.txt", tempdir())
 #' sdf_write_table(sdf, file=fname)
-#' sdf2 = sdf_read_table(fname)
+#' sdf2 <- sdf_read_table(fname)
 #' @export
-sdf_read_table = function(fname, platform = NULL, ...) {
-    df = read.table(fname, header=TRUE, ...)
-    sdf = structure(df, class=c("SigDF", "data.frame"))
-    sdf$col = factor(sdf$col, levels=c("G","R","2"))
-    sdf$mask = as.logical(sdf$mask)
+sdf_read_table <- function(fname, platform = NULL, ...) {
+    df <- read.table(fname, header=TRUE, ...)
+    sdf <- structure(df, class=c("SigDF", "data.frame"))
+    sdf$col <- factor(sdf$col, levels=c("G","R","2"))
+    sdf$mask <- as.logical(sdf$mask)
     if (is.null(platform)) {
-        attr(sdf, "platform") = inferPlatformFromProbeIDs(sdf$Probe_ID)
+        attr(sdf, "platform") <- inferPlatformFromProbeIDs(sdf$Probe_ID)
     }
     sdf
 }

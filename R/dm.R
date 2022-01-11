@@ -7,15 +7,15 @@
 #' @return a boolean vector whether there is non-NA value for each tested
 #' group for each probe
 #' @examples
-#' se0 = sesameDataGet("MM285.10.tissues")[1:1000,]
-#' se_ok = checkLevels(SummarizedExperiment::assay(se0),
+#' se0 <- sesameDataGet("MM285.10.tissues")[1:1000,]
+#' se_ok <- checkLevels(SummarizedExperiment::assay(se0),
 #'     SummarizedExperiment::colData(se0)$tissue)
 #' sum(se_ok) # number of good probes
-#' se1 = se0[se_ok,]
+#' se1 <- se0[se_ok,]
 #'
 #' sesameDataClearCache()
 #' @export
-checkLevels = function(betas, fc) {
+checkLevels <- function(betas, fc) {
     stopifnot(is(fc, "factor") || is(fc, "character"))
     apply(betas, 1, function(dt) {
         all(vapply(split(dt, fc), function(x) sum(!is.na(x))>0, logical(1)))
@@ -42,52 +42,52 @@ checkLevels = function(betas, fc) {
 #' @import parallel
 #' @examples
 #' sesameDataCache("HM450") # in case not done yet
-#' data = sesameDataGet('HM450.76.TCGA.matched')
-#' smry = DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' data <- sesameDataGet('HM450.76.TCGA.matched')
+#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #'
 #' sesameDataClearCache()
 #' @export
 DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 
     if(is(betas, "SummarizedExperiment")) {
-        betas0 = betas
-        betas = assay(betas0)
-        meta = colData(betas0)
+        betas0 <- betas
+        betas <- assay(betas0)
+        meta <- colData(betas0)
     }
 
-    mm = model.matrix(fm, meta)
+    mm <- model.matrix(fm, meta)
     ## clean the level names
-    colnames(mm) = make.names(colnames(mm))
+    colnames(mm) <- make.names(colnames(mm))
 
-    contrs = names(attr(mm, "contrasts"))
-    contr2lvs = setNames(lapply(contrs, function(cont) {
+    contrs <- names(attr(mm, "contrasts"))
+    contr2lvs <- setNames(lapply(contrs, function(cont) {
         ## avoid X-prepended to levels that start with number
-        x = make.names(paste0("X",levels(factor(meta[[cont]]))))
+        x <- make.names(paste0("X",levels(factor(meta[[cont]]))))
         substr(x,2,nchar(x))
     }), contrs)
     
     ## prepare holdout models
-    mm_holdout = lapply(names(contr2lvs), function(cont) {
+    mm_holdout <- lapply(names(contr2lvs), function(cont) {
         mm[, !(colnames(mm) %in% paste0(cont, contr2lvs[[cont]]))] })
-    names(mm_holdout) = names(contr2lvs)
-    smry = parallel::mclapply(seq_len(nrow(betas)), function(i) {
-        m0 = lm(betas[i,]~.+0, data=as.data.frame(mm))
-        sm = summary(lm(betas[i,]~.+0, data=as.data.frame(mm)))
+    names(mm_holdout) <- names(contr2lvs)
+    smry <- parallel::mclapply(seq_len(nrow(betas)), function(i) {
+        m0 <- lm(betas[i,]~.+0, data=as.data.frame(mm))
+        sm <- summary(lm(betas[i,]~.+0, data=as.data.frame(mm)))
         ## the following is removed to reduce the size of return
-        sm$cov.unscaled = NULL
-        sm$residuals = NULL
-        sm$terms = NULL
-        sm$Ftest = do.call(cbind, lapply(mm_holdout, function(mm_) {
-            m1 = lm(betas[i,]~.+0, data=as.data.frame(mm_))
-            anv = anova(m1, m0)
+        sm$cov.unscaled <- NULL
+        sm$residuals <- NULL
+        sm$terms <- NULL
+        sm$Ftest <- do.call(cbind, lapply(mm_holdout, function(mm_) {
+            m1 <- lm(betas[i,]~.+0, data=as.data.frame(mm_))
+            anv <- anova(m1, m0)
             c(stat = anv[["F"]][2], pval = anv[["Pr(>F)"]][2])
         }))
         sm
     }, mc.cores=mc.cores)
-    names(smry) = rownames(betas)
-    class(smry) = "DMLSummary"
-    attr(smry, "model.matrix") = mm
-    attr(smry, "contr2lvs") = contr2lvs
+    names(smry) <- rownames(betas)
+    class(smry) <- "DMLSummary"
+    attr(smry, "model.matrix") <- mm
+    attr(smry, "contr2lvs") <- contr2lvs
     smry
 }
 
@@ -105,10 +105,10 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 #' sesameDataClearCache()
 #' @export
 print.DMLSummary <- function(x, ...) {
-    mm = attr(x, "model.matrix")
-    cat(sprintf("DMLSummary Object with %d Loci, %d samples.\n",
+    mm <- attr(x, "model.matrix")
+    message(sprintf("DMLSummary Object with %d Loci, %d samples.\n",
         length(x), nrow(mm)))
-    cat("Contrasts:", names(attr(mm, "contrasts")), "\n")
+    message("Contrasts: ", names(attr(mm, "contrasts")), "\n")
 }
 
 #' Extract slope information from DMLSummary
@@ -116,40 +116,40 @@ print.DMLSummary <- function(x, ...) {
 #' @return a table of slope and p-value
 #' @examples
 #' sesameDataCache("HM450") # in case not done yet
-#' data = sesameDataGet('HM450.76.TCGA.matched')
-#' smry = DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
-#' slopes = summaryExtractTest(smry)
+#' data <- sesameDataGet('HM450.76.TCGA.matched')
+#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' slopes <- summaryExtractTest(smry)
 #'
 #' sesameDataClearCache()
 #' @export
-summaryExtractTest = function(smry) {
-    est = as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
+summaryExtractTest <- function(smry) {
+    est <- as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
         x$coefficients[,'Estimate']; }))))
     rownames(est) <- names(smry)
-    colnames(est) = paste0("Est_", colnames(est))
-    pvals = as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
+    colnames(est) <- paste0("Est_", colnames(est))
+    pvals <- as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
         x$coefficients[,"Pr(>|t|)"] }))))
-    rownames(pvals) = names(smry)
-    colnames(pvals) = paste0("Pval_", colnames(pvals))
-    f_pvals = do.call(rbind, lapply(smry, function(x) {
+    rownames(pvals) <- names(smry)
+    colnames(pvals) <- paste0("Pval_", colnames(pvals))
+    f_pvals <- do.call(rbind, lapply(smry, function(x) {
         x$Ftest["pval",,drop=FALSE] }))
-    rownames(f_pvals) = names(smry)
-    colnames(f_pvals) = paste0("FPval_", colnames(f_pvals))
-    contr2lvs = attr(smry, "contr2lvs")
-    effsize = do.call(cbind, lapply(names(contr2lvs), function(cont) {
-        lvs = contr2lvs[[cont]]
-        lvs = lvs[2:length(lvs)]
+    rownames(f_pvals) <- names(smry)
+    colnames(f_pvals) <- paste0("FPval_", colnames(f_pvals))
+    contr2lvs <- attr(smry, "contr2lvs")
+    effsize <- do.call(cbind, lapply(names(contr2lvs), function(cont) {
+        lvs <- contr2lvs[[cont]]
+        lvs <- lvs[2:length(lvs)]
         apply(est[, paste0("Est_", cont, lvs),drop=FALSE], 1, function(x) {
             max(x,0) - min(x,0) }) }))
-    colnames(effsize) = paste0("Eff_", names(contr2lvs))
+    colnames(effsize) <- paste0("Eff_", names(contr2lvs))
     cbind(est, pvals, f_pvals, effsize)
 }
 
-summaryExtractCf = function(smry, contrast) {
-    cf = do.call(rbind, lapply(smry, function(x) {
+summaryExtractCf <- function(smry, contrast) {
+    cf <- do.call(rbind, lapply(smry, function(x) {
         x$coefficients[contrast,]
     }))
-    rownames(cf) = names(smry)
+    rownames(cf) <- names(smry)
     cf # probes x c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
 }
 
@@ -203,7 +203,7 @@ dmr_merge_cpgs <- function(betas, probe.coords, dist.cutoff, seg.per.locus) {
         start = seg.start, end = seg.end, cpg.ids = cpg.ids)
 }
 
-dmr_combine_pval = function(cf, segs) {
+dmr_combine_pval <- function(cf, segs) {
     ## mean of Estimate
     seg.est <- as.vector(tapply(
         cf[segs$cpg.ids, 'Estimate'], segs$id,
@@ -214,7 +214,7 @@ dmr_combine_pval = function(cf, segs) {
         function(x) pnorm(sum(qnorm(x))/sqrt(length(x)))))
     seg.pval.adj <- p.adjust(seg.pval, method="BH")
     seg.ids.cf <- match(rownames(cf), segs$cpg.ids)
-    s = segs$id[seg.ids.cf]
+    s <- segs$id[seg.ids.cf]
     cf <- cbind(data.frame(
         Seg_ID = s,
         Seg_Chrm = segs$chrm[s],
@@ -231,17 +231,17 @@ dmr_combine_pval = function(cf, segs) {
     message(sprintf(
         ' - %d significant segments (after BH).',
         sum(seg.pval.adj<0.05, na.rm=TRUE)))
-    cf = cf[order(cf$Seg_Est, cf$Seg_Chrm, cf$Seg_Start),]
-    rownames(cf) = NULL
+    cf <- cf[order(cf$Seg_Est, cf$Seg_Chrm, cf$Seg_Start),]
+    rownames(cf) <- NULL
     cf
 }
 
 DMGetProbeInfo <- function(platform, refversion) {
-    mft = sesameDataGet(sprintf("%s.%s.manifest", platform, refversion))
-    mft = mft[GenomicRanges::seqnames(mft) != "*"]
-    GenomicRanges::mcols(mft) = NULL
-    GenomicRanges::strand(mft) = "*"
-    mft = sort(mft)
+    mft <- sesameDataGet(sprintf("%s.%s.manifest", platform, refversion))
+    mft <- mft[GenomicRanges::seqnames(mft) != "*"]
+    GenomicRanges::mcols(mft) <- NULL
+    GenomicRanges::strand(mft) <- "*"
+    mft <- sort(mft)
     mft
 }
 
@@ -272,11 +272,11 @@ DMGetProbeInfo <- function(platform, refversion) {
 #'
 #' sesameDataCache("HM450") # in case not done yet
 #' 
-#' data = sesameDataGet('HM450.76.TCGA.matched')
-#' smry = DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' data <- sesameDataGet('HM450.76.TCGA.matched')
+#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' colnames(attr(smry, "model.matrix")) # pick a contrast from here
 #' ## showing on a small set of 100 CGs
-#' merged_segs = DMR(data$betas[1:100,], smry, "typeTumour")
+#' merged_segs <- DMR(data$betas[1:100,], smry, "typeTumour")
 #'
 #' sesameDataClearCache()
 #' 
@@ -287,27 +287,27 @@ DMR <- function(betas, smry, contrast,
 
     stopifnot(is(smry, "DMLSummary"))
     if (is.null(platform)) {
-        platform = inferPlatformFromProbeIDs(rownames(betas))
+        platform <- inferPlatformFromProbeIDs(rownames(betas))
     }
     
     if (is.null(refversion)) {
-        refversion = defaultAssembly(platform)
+        refversion <- defaultAssembly(platform)
     }
 
     if(is(betas, "SummarizedExperiment")) {
-        betas = assay(betas)
+        betas <- assay(betas)
     }
 
     ## sort by coordinates
-    probe.coords = DMGetProbeInfo(platform, refversion)
+    probe.coords <- DMGetProbeInfo(platform, refversion)
     message("Merging correlated CpGs ... ", appendLF=FALSE)
-    segs = dmr_merge_cpgs(betas, probe.coords, dist.cutoff, seg.per.locus)
+    segs <- dmr_merge_cpgs(betas, probe.coords, dist.cutoff, seg.per.locus)
     message(sprintf('Generated %d segments.', segs$id[length(segs$id)]))
     message("Combine p-values ... ")
-    cf = summaryExtractCf(smry, contrast)
+    cf <- summaryExtractCf(smry, contrast)
     ## make sure the beta values and coefficients match
     stopifnot(all(segs$cpg.ids %in% rownames(cf)))
-    cf = dmr_combine_pval(cf, segs)
+    cf <- dmr_combine_pval(cf, segs)
     message("Done.")
     cf
 }
@@ -324,7 +324,7 @@ DMR <- function(betas, smry, contrast,
 #'
 #' sesameDataClearCache()
 #' @export
-dmContrasts = function(smry) {
+dmContrasts <- function(smry) {
     stopifnot(is(smry, "DMLSummary"))
     colnames(attr(smry, "model.matrix"))
 }

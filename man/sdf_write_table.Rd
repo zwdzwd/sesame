@@ -19,6 +19,6 @@ write SigDF to table file
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-sdf = sesameDataGet('EPIC.1.SigDF')
+sdf <- sesameDataGet('EPIC.1.SigDF')
 sdf_write_table(sdf, file=sprintf("\%s/sigdf.txt", tempdir()))
 }

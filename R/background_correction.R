@@ -18,10 +18,10 @@
 scrub <- function(sdf) {
     bG <- median(oobG(noMasked(sdf)), na.rm=TRUE)
     bR <- median(oobR(noMasked(sdf)), na.rm=TRUE)
-    sdf$MG = pmax(sdf$MG - bG, 1)
-    sdf$MR = pmax(sdf$MR - bR, 1)
-    sdf$UG = pmax(sdf$UG - bG, 1)
-    sdf$UR = pmax(sdf$UR - bR, 1)
+    sdf$MG <- pmax(sdf$MG - bG, 1)
+    sdf$MR <- pmax(sdf$MR - bR, 1)
+    sdf$UG <- pmax(sdf$UG - bG, 1)
+    sdf$UR <- pmax(sdf$UR - bR, 1)
     sdf
 }
 
@@ -52,10 +52,10 @@ scrubSoft <- function(sdf) {
     bgR <- oobR(noMasked(sdf))
     bgG <- oobG(noMasked(sdf))
 
-    sdf$MG = noobSub(sdf$MG, bgG)
-    sdf$MR = noobSub(sdf$MR, bgR)
-    sdf$UG = noobSub(sdf$UG, bgG)
-    sdf$UR = noobSub(sdf$UR, bgR)
+    sdf$MG <- noobSub(sdf$MG, bgG)
+    sdf$MR <- noobSub(sdf$MR, bgR)
+    sdf$UG <- noobSub(sdf$UG, bgG)
+    sdf$UR <- noobSub(sdf$UR, bgR)
     sdf
 }
 
@@ -80,29 +80,29 @@ noob <- function(sdf, offset=15) {
     if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
 
     ## background
-    oobG = oobG(noMasked(sdf))
-    oobR = oobR(noMasked(sdf))
+    oobG <- oobG(noMasked(sdf))
+    oobR <- oobR(noMasked(sdf))
     ## if not enough out-of-band signal
     if (sum(oobG > 0, na.rm=TRUE) < 100 ||
             sum(oobR > 0, na.rm=TRUE) < 100) { return(sdf) }
-    oobR[oobR == 0] = 1
-    oobG[oobG == 0] = 1
+    oobR[oobR == 0] <- 1
+    oobG[oobG == 0] <- 1
 
     ## foreground
-    ibG = c(InfIG(sdf)$MG, InfIG(sdf)$UG, InfII(sdf)$UG)
-    ibR = c(InfIR(sdf)$MR, InfIR(sdf)$UR, InfII(sdf)$UR)
-    ibG[ibG == 0] = 1 # set signal to 1 if 0
-    ibR[ibR == 0] = 1 # set signal to 1 if 0
+    ibG <- c(InfIG(sdf)$MG, InfIG(sdf)$UG, InfII(sdf)$UG)
+    ibR <- c(InfIR(sdf)$MR, InfIR(sdf)$UR, InfII(sdf)$UR)
+    ibG[ibG == 0] <- 1 # set signal to 1 if 0
+    ibR[ibR == 0] <- 1 # set signal to 1 if 0
 
     ## grn channel
-    fitG = backgroundCorrectionNoobFit(ibG, oobG)
-    sdf$MG = normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + 15
-    sdf$UG = normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + 15
+    fitG <- backgroundCorrectionNoobFit(ibG, oobG)
+    sdf$MG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + 15
+    sdf$UG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + 15
 
     ## red channel
-    fitR = backgroundCorrectionNoobFit(ibR, oobR)
-    sdf$MR = normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + 15
-    sdf$UR = normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + 15
+    fitR <- backgroundCorrectionNoobFit(ibR, oobR)
+    sdf$MR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + 15
+    sdf$UR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + 15
     
     sdf
 }
@@ -130,30 +130,30 @@ neob <- function(sdf, offset=15) {
     if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
 
     ## background
-    neg = negControls(sdf)
-    bgG = c(oobG(noMasked(sdf)), neg$G)
-    bgR = c(oobR(noMasked(sdf)), neg$R)
+    neg <- negControls(sdf)
+    bgG <- c(oobG(noMasked(sdf)), neg$G)
+    bgR <- c(oobR(noMasked(sdf)), neg$R)
     ## if not enough out-of-band signal
     if (sum(bgG > 0, na.rm=TRUE) < 100 ||
             sum(bgR > 0, na.rm=TRUE) < 100) { return(sdf) }
-    bgR[bgR == 0] = 1
-    bgG[bgG == 0] = 1
+    bgR[bgR == 0] <- 1
+    bgG[bgG == 0] <- 1
 
     ## foreground
-    ibG = c(InfIG(sdf)$MG, InfIG(sdf)$UG, InfII(sdf)$UG)
-    ibR = c(InfIR(sdf)$MR, InfIR(sdf)$UR, InfII(sdf)$UR)
-    ibG[ibG == 0] = 1 # set signal to 1 if 0
-    ibR[ibR == 0] = 1 # set signal to 1 if 0
+    ibG <- c(InfIG(sdf)$MG, InfIG(sdf)$UG, InfII(sdf)$UG)
+    ibR <- c(InfIR(sdf)$MR, InfIR(sdf)$UR, InfII(sdf)$UR)
+    ibG[ibG == 0] <- 1 # set signal to 1 if 0
+    ibR[ibR == 0] <- 1 # set signal to 1 if 0
 
     ## grn channel
-    fitG = backgroundCorrectionNoobFit(ibG, bgG)
-    sdf$MG = normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + 15
-    sdf$UG = normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + 15
+    fitG <- backgroundCorrectionNoobFit(ibG, bgG)
+    sdf$MG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + 15
+    sdf$UG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + 15
 
     ## red channel
-    fitR = backgroundCorrectionNoobFit(ibR, bgR)
-    sdf$MR = normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + 15
-    sdf$UR = normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + 15
+    fitR <- backgroundCorrectionNoobFit(ibR, bgR)
+    sdf$MR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + 15
+    sdf$UR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + 15
     
     sdf
 }
@@ -166,10 +166,10 @@ neob <- function(sdf, offset=15) {
 ## offset padding for normalized signal
 ## return normalized in-band signal
 backgroundCorrectionNoobFit <- function(ib, bg) {
-    e = MASS::huber(bg)
-    mu = e$mu
-    sigma = e$s
-    alpha = pmax(MASS::huber(ib)$mu-mu, 10)
+    e <- MASS::huber(bg)
+    mu <- e$mu
+    sigma <- e$s
+    alpha <- pmax(MASS::huber(ib)$mu-mu, 10)
     list(mu = mu, sigma = sigma, alpha = alpha)
 }
 

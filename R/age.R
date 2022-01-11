@@ -1,7 +1,7 @@
 
 Hv.age2response <- function(x, adult.age=20) {
     ## trafo
-    x=(x+1)/(adult.age+1)
+    x <- (x+1)/(adult.age+1)
     ifelse(x<=1,log(x),x-1)
 }
 
@@ -79,17 +79,17 @@ predictAge <- function(betas, cf) {
 #' @return age in month
 #' @examples
 #'
-#' betas = SummarizedExperiment::assay(sesameDataGet('MM285.10.SE.tissue'))[,1]
+#' betas <- SummarizedExperiment::assay(sesameDataGet('MM285.10.SE.tissue'))[,1]
 #' predictMouseAgeInMonth(betas)
 #' sesameDataClearCache()
 #' 
 #' @export
-predictMouseAgeInMonth = function(betas, na_fallback=TRUE) {
-    coefs = sesameDataGet("MM285.clock347")
-    dat = betas[names(coefs$slopes)]
+predictMouseAgeInMonth <- function(betas, na_fallback=TRUE) {
+    coefs <- sesameDataGet("MM285.clock347")
+    dat <- betas[names(coefs$slopes)]
     if (sum(is.na(dat)) > 0 && na_fallback) {
-        k = is.na(dat)
-        dat[k] = coefs$na_fallback[names(k[k])]
+        k <- is.na(dat)
+        dat[k] <- coefs$na_fallback[names(k[k])]
     }
     sum(dat * coefs$slopes) + coefs$intercept
 }

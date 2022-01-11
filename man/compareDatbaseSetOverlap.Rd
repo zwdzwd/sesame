@@ -28,8 +28,8 @@ of database sets using a distance metric.
 }
 \examples{
 
-databaseNames = c('KYCG.MM285.seqContextN.20210630')
-databases = do.call(c, lapply(databaseNames, sesameDataGet))
+databaseNames <- c('KYCG.MM285.seqContextN.20210630')
+databases <- do.call(c, lapply(databaseNames, sesameDataGet))
 compareDatbaseSetOverlap(databases)
 sesameDataClearCache()
 

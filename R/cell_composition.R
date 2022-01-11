@@ -346,7 +346,8 @@ twoCompsEst2 <- function(
     pb <- intersect(
         intersect(rownames(pop1), rownames(pop2)),
         rownames(target))
-    cat(length(pb), "probes are shared among data sets. Starting from there.\n")
+    message(length(pb),
+        " probes are shared among data sets. Starting from there.\n")
     
     pop1 <- pop1[pb,]
     pop2 <- pop2[pb,]
@@ -374,10 +375,10 @@ twoCompsEst2 <- function(
         }
     }
     
-    cat(length(diff_1u2m),
-        "probes methylated in 2 and unmethylated in 1.\n")
-    cat(length(diff_1m2u),
-        "probes methylated in 1 and unmethylated in 2.\n")
+    message(length(diff_1u2m),
+        " probes methylated in 2 and unmethylated in 1.\n")
+    message(length(diff_1m2u),
+        " probes methylated in 1 and unmethylated in 2.\n")
 
     bnd_1u2m_hi <- rowMaxs(pop2[diff_1u2m,])
     bnd_1u2m_lo <- rowMins(pop1[diff_1u2m,])

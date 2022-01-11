@@ -14,9 +14,9 @@
 #' @export
 addMask <- function(sdf, probes) {
     if (is.logical(probes)) {
-        sdf$mask[probes[sdf$Probe_ID]] = TRUE
+        sdf$mask[probes[sdf$Probe_ID]] <- TRUE
     } else {
-        sdf$mask[match(probes, sdf$Probe_ID)] = TRUE
+        sdf$mask[match(probes, sdf$Probe_ID)] <- TRUE
     }
     sdf
 }
@@ -43,19 +43,19 @@ setMask <- function(sdf, probes) {
 #' @param species the species the sample is considered to be
 #' @return a \code{SigDF} with updated color channel and mask
 #' @examples
-#' sdf = sesameDataGet('Mammal40.1.SigDF')
-#' sdf_mouse = setMaskBySpecies(sdf, "mus_musculus")
+#' sdf <- sesameDataGet('Mammal40.1.SigDF')
+#' sdf_mouse <- setMaskBySpecies(sdf, "mus_musculus")
 #' 
 #' @export
 setMaskBySpecies <- function(sdf, species = "homo_sapiens") {
-    addr = sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
+    addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
     stopifnot(species %in% names(addr$species))
 
-    tmp = addr$species[[species]][match(sdf$Probe_ID, addr$ordering$Probe_ID),]
-    tmp$col = as.character(tmp$col)
-    tmp$col[is.na(tmp$col)] = "2"
-    sdf$col = factor(tmp$col, levels=c("G","R","2"))
-    sdf$mask = tmp$mask
+    tmp <- addr$species[[species]][match(sdf$Probe_ID, addr$ordering$Probe_ID),]
+    tmp$col <- as.character(tmp$col)
+    tmp$col[is.na(tmp$col)] <- "2"
+    sdf$col <- factor(tmp$col, levels=c("G","R","2"))
+    sdf$mask <- tmp$mask
     sdf
 }
 
@@ -74,7 +74,7 @@ setMaskBySpecies <- function(sdf, species = "homo_sapiens") {
 #' sum(resetMask(sdf)$mask)
 #' @export
 resetMask <- function(sdf) {
-    sdf$mask = FALSE
+    sdf$mask <- FALSE
     sdf
 }
 
@@ -117,7 +117,7 @@ qualityMask <- function(
             return(sdf)
         }
         stopifnot(sdfPlatform(sdf) == 'HM450')
-        sdf = addMask(sdf, sesameDataGet('HM450.probeInfo')$mask.tcga)
+        sdf <- addMask(sdf, sesameDataGet('HM450.probeInfo')$mask.tcga)
     }
 
     sdf

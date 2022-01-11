@@ -61,11 +61,6 @@ MValueToBetaValue <- function(m) {
     2^m/(1+2^m)
 }
 
-## print message
-smessage <- function(...) {
-    cat('[', as.character(Sys.time()),'] ', ..., '\n', sep='')
-}
-
 pkgTest <- function(x) {
     if (!require(x, character.only = TRUE)) {
         stop("Optional package ", x, " not found.
@@ -129,7 +124,7 @@ getProbesByChromosome <- function(
 
     platform <- match.arg(platform)
     if (is.null(refversion)) {
-        refversion = defaultAssembly(platform)
+        refversion <- defaultAssembly(platform)
     } else {
         stopifnot(refversion %in% c('hg19','hg38','mm10'))
     }
@@ -151,7 +146,7 @@ getAutosomeProbes <- function(
 
     platform <- match.arg(platform)
     if (is.null(refversion)) {
-        refversion = defaultAssembly(platform)
+        refversion <- defaultAssembly(platform)
     } else {
         stopifnot(refversion %in% c('hg19','hg38','mm10'))
     }
@@ -220,7 +215,7 @@ bSubComplete <- function(betas) {
 #' @param genome the genome build, use default if not given
 #' @return a new data.frame with manifest attached
 #' @examples
-#' df = data.frame(Probe_ID = c("cg00101675_BC21", "cg00116289_BC21"))
+#' df <- data.frame(Probe_ID = c("cg00101675_BC21", "cg00116289_BC21"))
 #' attachManifest(df)
 #' @export
 attachManifest <- function(df, probe_id="Probe_ID", pfm=NULL, genome=NULL) {
@@ -228,14 +223,14 @@ attachManifest <- function(df, probe_id="Probe_ID", pfm=NULL, genome=NULL) {
     stopifnot(probe_id %in% colnames(df))
 
     if (is.null(pfm)) {
-        pfm = inferPlatformFromProbeIDs(df[[probe_id]])
+        pfm <- inferPlatformFromProbeIDs(df[[probe_id]])
     }
 
     if (is.null(genome)) {
-        genome = defaultAssembly(pfm)
+        genome <- defaultAssembly(pfm)
     }
 
-    mft = sesameDataGet(sprintf("%s.%s.manifest", pfm, genome))
+    mft <- sesameDataGet(sprintf("%s.%s.manifest", pfm, genome))
     cbind(df, as.data.frame(mft)[match(df[[probe_id]], names(mft)),])
 }
 

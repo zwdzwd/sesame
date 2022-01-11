@@ -381,7 +381,7 @@ visualizeRegion <- function(
         plt.txns <- plotTranscripts(
             target.txns, target.region, plt.beg, plt.end, txn2gene)
         if (is.null(heat.height)) {
-            heat.height = 10 / length(target.txns);
+            heat.height <- 10 / length(target.txns);
         }
     } else {
         plt.txns <- gList(

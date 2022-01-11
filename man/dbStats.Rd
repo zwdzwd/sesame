@@ -28,8 +28,8 @@ composed of engineered features from the given database sets
 \examples{
 
 library(SummarizedExperiment)
-se = sesameDataGet('MM285.20Kx467.SE')
-stats = dbStats(assay(se), c('KYCG.MM285.probeType.20210630'))
+se <- sesameDataGet('MM285.20Kx467.SE')
+stats <- dbStats(assay(se), c('KYCG.MM285.probeType.20210630'))
 head(stats)
 sesameDataClearCache()
 

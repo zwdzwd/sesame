@@ -33,7 +33,7 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
 
     if (is.null(sdfs.normal)) {
         if (sdfPlatform(sdf) == "EPIC") {
-            sdfs.normal = sesameDataGet("EPIC.5.SigDF.normal")
+            sdfs.normal <- sesameDataGet("EPIC.5.SigDF.normal")
         } else {
             stop(sprintf("For %s, please provide the sdfs.normal argument.",
                 sdfPlatform(sdf)))

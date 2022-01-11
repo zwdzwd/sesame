@@ -33,9 +33,9 @@ testEnrichmentGene tests for the enrichment of set of probes
 \examples{
 
 library(SummarizedExperiment)
-MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
-df = rowData(MM285.tissueSignature)
-query = df$Probe_ID[df$branch == "B_cell"]
+MM285.tissueSignature <- sesameDataGet('MM285.tissueSignature')
+df <- rowData(MM285.tissueSignature)
+query <- df$Probe_ID[df$branch == "B_cell"]
 testEnrichmentGene(query, platform="MM285", verbose=FALSE)
 
 }

@@ -18,65 +18,66 @@
 #' @examples
 #'
 #' library(SummarizedExperiment)
-#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
-#' df = rowData(MM285.tissueSignature)
-#' query = df$Probe_ID[df$branch == "B_cell"]
-#' databaseNames = c('KYCG.MM285.seqContextN.20210630', 
+#' MM285.tissueSignature <- sesameDataGet('MM285.tissueSignature')
+#' df <- rowData(MM285.tissueSignature)
+#' query <- df$Probe_ID[df$branch == "B_cell"]
+#' databaseNames <- c('KYCG.MM285.seqContextN.20210630', 
 #' 'KYCG.MM285.designGroup.20210210')
-#' databases = do.call(c, lapply(databaseNames, sesameDataGet))
+#' databases <- do.call(c, lapply(databaseNames, sesameDataGet))
 #' getDatabaseSetOverlap(query, databases)
 #' sesameDataClearCache()
 #' 
-getDatabaseSetOverlap = function(
+getDatabaseSetOverlap <- function(
     query, databases, platform=NA, verbose=TRUE) {
     
     if (all(is.na(databases))) {
         if (verbose) {
-            cat("The databases were not defined.", 
+            message("The databases were not defined. ", 
                 "Loading in databases based on platform.")
         }
         if (is.na(platform)) {
             if (verbose) {
-                cat("The platform was not defined.",
+                message("The platform was not defined. ",
                     "Inferring platform from probeIDs.")
             }
             if (is.numeric(query)) {
-                platform = inferPlatformFromProbeIDs(names(query))
+                platform <- inferPlatformFromProbeIDs(names(query))
             } else {
-                platform = inferPlatformFromProbeIDs(query)
+                platform <- inferPlatformFromProbeIDs(query)
             }
         }
-        databaseNames = sesameData:::df_master$Title[
+        databaseNames <- sesameData:::df_master$Title[
             grepl(paste("KYCG.", platform, sep=''), 
                 sesameData:::df_master$Title)]
-        databases = do.call(c, lapply(databaseNames, sesameDataGet))
+        databases <- do.call(c, lapply(databaseNames, sesameDataGet))
     }
     
-    metadata = as.data.frame(
+    metadata <- as.data.frame(
         do.call(rbind,
             lapply(databases,
                 function(database) {
-                    rowmeta = attr(database, "meta")
-                    if (!is.null(rowmeta)) 
-                        rowmeta = c(meta=TRUE, rowmeta)
-                    else
-                        rowmeta = c(meta=FALSE, rowmeta)
-                    nQ = length(query)
-                    nD = length(database)
-                    overlap = length(intersect(query, database))
-                    rowmeta = c(rowmeta, nQ=nQ, nD=nD, overlap=overlap)
+                    rowmeta <- attr(database, "meta")
+                    if (!is.null(rowmeta)) {
+                        rowmeta <- c(meta=TRUE, rowmeta)
+                    } else {
+                        rowmeta <- c(meta=FALSE, rowmeta)
+                    }
+                    nQ <- length(query)
+                    nD <- length(database)
+                    overlap <- length(intersect(query, database))
+                    rowmeta <- c(rowmeta, nQ=nQ, nD=nD, overlap=overlap)
                     return(rowmeta)
                 })
         ))
     
-    metadata$meta = as.logical(metadata$meta)
+    metadata$meta <- as.logical(metadata$meta)
     
     metadata
 }
 
 
-#' testEnrichment1 tests for the enrichment of set of probes (query set) in a
-#' single given feature (database set)
+#' testEnrichment1 tests for the enrichment of set of probes (query set)
+#' in a single given feature (database set)
 #'
 #' @param query Vector of probes of interest (e.g., significant probes)
 #' @param database Vector corresponding to the database sets of
@@ -88,28 +89,28 @@ getDatabaseSetOverlap = function(
 #' @import utils
 #' @return One list containing features corresponding the test estimate,
 #' p-value, and type of test.
-testEnrichment1 = function(
+testEnrichment1 <- function(
     query, database, universe, estimate.type="ES") {
     
     if (is.numeric(query)) { # a named vector of continuous value
         if(is.numeric(database)) { # numeric db
-            results = testEnrichmentSpearman(
+            results <- testEnrichmentSpearman(
                 query=query,
                 database=database)
         } else {
-            results = testEnrichmentFGSEA(
+            results <- testEnrichmentFGSEA(
                 query = query,
                 database = database,
                 estimate.type=estimate.type)
         }
     } else { # categorical query
         if(is.numeric(database)) { # numeric db
-            results = testEnrichmentFGSEA(
+            results <- testEnrichmentFGSEA(
                 query = database,
                 database = query,
                 estimate.type=estimate.type)
         } else { # categorical db
-            results = testEnrichmentFisher(
+            results <- testEnrichmentFisher(
                 query = query,
                 database = database,
                 universe = universe)
@@ -118,7 +119,7 @@ testEnrichment1 = function(
     results
 }
 
-inferPlatformFromQuery = function(query) {
+inferPlatformFromQuery <- function(query) {
     if (is.numeric(query)) {
         inferPlatformFromProbeIDs(names(query))
     } else {
@@ -148,45 +149,56 @@ inferPlatformFromQuery = function(query) {
 #'
 #' @return One list containing features corresponding the test estimate,
 #' p-value, and type of test.
-#'
+#' @importFrom dplyr bind_rows
 #' @examples
 #' 
 #' library(SummarizedExperiment)
-#' df = rowData(sesameDataGet('MM285.tissueSignature'))
-#' query = df$Probe_ID[df$branch == "B_cell"]
+#' df <- rowData(sesameDataGet('MM285.tissueSignature'))
+#' query <- df$Probe_ID[df$branch == "B_cell"]
 #' testEnrichment(query, 'KYCG.MM285.designGroup.20210210')
 #' sesameDataClearCache()
 #'
 #' @export
-testEnrichment = function(
+testEnrichment <- function(
     query, databases = NA, universe=NA,
     platform=NA, estimate.type="ES", return.meta=FALSE, verbose=FALSE) {
 
     if (all(is.na(universe))) { # infer uset from platform if not given
         if (is.na(platform)) {     # infer platform from probe ID
-            platform = inferPlatformFromQuery(query)
+            platform <- inferPlatformFromQuery(query)
         }
         
-        manifests = c("MM285.mm10.manifest", "EPIC.hg19.manifest",
+        manifests <- c("MM285.mm10.manifest", "EPIC.hg19.manifest",
             "HM450.hg19.manifest", "HM27.hg19.manifest")
-        manifest = manifests[grepl(platform, manifests)]
+        manifest <- manifests[grepl(platform, manifests)]
         stopifnot(length(manifest) == 1 && all(manifest %in% manifests))
-        universe = names(sesameDataGet(manifest))
+        universe <- names(sesameDataGet(manifest))
     }
-    
-    if (all(is.na(databases))) { # load a default set
-        if (is.na(platform)) {
-            platform = inferPlatformFromQuery(query)
-        }
-        databaseNames = sesameData:::df_master$Title[
-            grepl(paste("KYCG.", platform, sep=''), 
-                sesameData:::df_master$Title)]
-        databases = do.call(c, lapply(databaseNames, sesameDataGet))
+
+    if (all(is.na(databases))) { # db not give, load a default set
+        if (is.na(platform)) { platform <- inferPlatformFromQuery(query); }
+        query_names <- grep("(chromHMM)|(designGroup|probeType)",
+            sesameData:::df_master$Title[
+                grepl(paste("KYCG.", platform, sep=''), 
+                    sesameData:::df_master$Title)], value=TRUE)
     } else if (is.character(databases)) { # db given in names
-        databases = do.call(c, lapply(guess_dbnames(databases), sesameDataGet))
+        query_names <- guess_dbnames(databases)
+    } else {
+        query_names <- NULL
+    }
+
+    if (!is.null(query_names)) { # needs sesameDataGet
+        dblist <- lapply(query_names, sesameDataGet)
+        gpnames <- do.call(c, lapply(seq_along(dblist), function(ii) {
+            rep(names(dblist)[ii], length(dblist[[ii]]))}))
+        dbnames <- do.call(c, lapply(dblist, names))
+        databases <- do.call(c, dblist)
+    } else { # given explicitly
+        gpnames <- rep("", length(databases))
+        dbnames <- names(databases)
     }
     
-    results = data.frame(do.call(rbind, lapply(
+    res <- data.frame(do.call(rbind, lapply(
         databases, function(db) {
             testEnrichment1(
                 query = query,
@@ -194,31 +206,22 @@ testEnrichment = function(
                 universe = universe,
                 estimate.type = estimate.type)
         })))
-    
-    results$fdr = p.adjust(results$p.value, method='fdr')
-    
-    ## rank = list()
-    ## rank$estimate.rank = rank(-results$estimate, ties.method='first')
-    ## rank$p.value.rank = rank(results$p.value, ties.method='first')
-    ## rank$overlap.rank = rank(results$overlap, ties.method='first')
-    ## rank$max.rank = apply(data.frame(rank), 1, max)
-    ## rank$mean.rank = apply(data.frame(rank), 1, mean)
-    ## rank = data.frame(rank, row.names=row.names(results))
-    if (return.meta) {
-        metadata = data.frame(do.call(rbind, lapply(
-            databases, function(db) {
-                output = attr(db, "meta")
-                if (!is.null(output)) 
-                    return(data.frame(append(c(meta=TRUE), 
-                        output)))
-                return(data.frame(meta=FALSE))
-            })))
-        output = cbind(results, metadata)
-    } else {
-        output = cbind(results)
-    }
-    
-    output[order(-output$estimate), ]
+
+    res$db <- dbnames
+    res$group <- gpnames
+    res$fdr <- p.adjust(res$p.value, method='fdr')
+    rownames(res) <- NULL
+
+    meta <- do.call(bind_rows, lapply(databases, function(db) {
+        m1 <- attr(db, "meta")
+        if (is.null(m1)) {
+            data.frame(hasMeta = FALSE)
+        } else {
+            c(m1, hasMeta = TRUE)
+        }
+    }))
+    res <- cbind(res, meta)
+    res[order(-res$estimate), ]
 }
 
 #' testEnrichmentGene tests for the enrichment of set of probes
@@ -241,60 +244,35 @@ testEnrichment = function(
 #' @examples
 #' 
 #' library(SummarizedExperiment)
-#' MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
-#' df = rowData(MM285.tissueSignature)
-#' query = df$Probe_ID[df$branch == "B_cell"]
+#' MM285.tissueSignature <- sesameDataGet('MM285.tissueSignature')
+#' df <- rowData(MM285.tissueSignature)
+#' query <- df$Probe_ID[df$branch == "B_cell"]
 #' testEnrichmentGene(query, platform="MM285", verbose=FALSE)
 #'
 #' @export
-testEnrichmentGene = function(
+testEnrichmentGene <- function(
     query, databases=NA, platform=NA, verbose=FALSE) {
 
     if (is.na(platform)) {
         if (verbose)
-            print("The platform was not defined.',
+            message("The platform was not defined.',
                 'Inferring platform from probeIDs.")
         if (is.numeric(query)) {
-            platform = inferPlatformFromProbeIDs(names(query))
+            platform <- inferPlatformFromProbeIDs(names(query))
         } else {
-            platform = inferPlatformFromProbeIDs(query)
+            platform <- inferPlatformFromProbeIDs(query)
         }
     }
     if (is.na(databases)) {
-        databases = tryCatch({
-            sesameDataGet(
-                sprintf('KYCG.%s.gene.20210923', platform))
-        },
-        error = function (condition) {
-            print("ERROR:")
-            print(paste("  Message:",conditionMessage(condition)))
-            print(paste("  Call: ",conditionCall(condition)))
-            return(NULL)
-        },
-        finally= function() {
-            print(sprintf("Invalid platform [%s]", platform))
-            return(NULL)
-        })
+        databases <- sesameDataGet(
+            sprintf('KYCG.%s.gene.20210923', platform))
     }
     
-    probeID2gene = tryCatch({
-        attr(databases, 'probeID2gene')
-    },
-    error = function(condition) {
-        print("ERROR:")
-        print(paste("  Message:",conditionMessage(condition)))
-        print(paste("  Call: ",conditionCall(condition)))
-        return(NULL)
-    }, finally = function() {
-        print(sprintf("Invalid database sets"))
-        return(NULL)
-    })
-    
-    
-    databaseNames = probeID2gene$genesUniq[match(query, 
+    probeID2gene <- attr(databases, 'probeID2gene')
+    databaseNames <- probeID2gene$genesUniq[match(query, 
         probeID2gene$probeID)]
     
-    databaseNames = na.omit(unique(
+    databaseNames <- na.omit(unique(
         unlist(lapply(databaseNames,
             function(databaseName) {
                 strsplit(databaseName, ";")
@@ -302,7 +280,7 @@ testEnrichmentGene = function(
     
     if (length(databaseNames) == 0) return(NULL)
     
-    databases = databases[names(databases) %in% databaseNames]
+    databases <- databases[names(databases) %in% databaseNames]
     testEnrichment(query, databases, platform=platform)
 }
 
@@ -320,25 +298,25 @@ testEnrichmentGene = function(
 #' 
 #' @return A DataFrame with the estimate/statistic, p-value, and name of test
 #' for the given results.
-testEnrichmentFisher = function(query, database, universe) {
-    q_and_d = length(intersect(query, database))
-    if (q_and_d == 0) {
-        return(data.frame(
-            estimate = NA,
-            p.value = 1,
-            test = "Fisher",
-            nQ = length(query),
-            nD = length(database),
-            overlap = 0
-        ))
-    }
-    l_d = length(database)
-    l_q = length(query)
-    d_min_q = l_d - q_and_d
-    q_min_d = l_q - q_and_d
-    min_q_d = length(universe) - l_q - l_d + q_and_d
+testEnrichmentFisher <- function(query, database, universe) {
+    q_and_d <- length(intersect(query, database))
+    ## if (q_and_d == 0) {
+    ##     return(data.frame(
+    ##         estimate = NA,
+    ##         p.value = 1,
+    ##         test = "Fisher",
+    ##         nQ = length(query),
+    ##         nD = length(database),
+    ##         overlap = 0
+    ##     ))
+    ## }
+    l_d <- length(database)
+    l_q <- length(query)
+    d_min_q <- l_d - q_and_d
+    q_min_d <- l_q - q_and_d
+    min_q_d <- length(universe) - l_q - l_d + q_and_d
     
-    res = fisher.test(matrix(c(
+    res <- fisher.test(matrix(c(
         q_and_d, d_min_q, q_min_d, min_q_d), nrow = 2))
     
     data.frame(
@@ -367,10 +345,10 @@ testEnrichmentFisher = function(query, database, universe) {
 #'
 #' @return A DataFrame with the estimate/statistic, p-value, and name of test
 #' for the given results.
-testEnrichmentFGSEA = function(query, database, p.value.adj=FALSE,
+testEnrichmentFGSEA <- function(query, database, p.value.adj=FALSE,
     estimate.type="ES") {
-    test="fgsea"
-    overlap = length((intersect(names(query), database)))
+    test <- "fgsea"
+    overlap <- length((intersect(names(query), database)))
     if (overlap == 0) {
         return(data.frame(estimate=0,
             p.value=1,
@@ -380,25 +358,25 @@ testEnrichmentFGSEA = function(query, database, p.value.adj=FALSE,
             overlap=overlap
         ))
     }
-    res = fgsea(pathways=list(pathway=database), 
+    res <- fgsea(pathways=list(pathway=database), 
         stats=na.omit(query))
     
     if (p.value.adj) {
-        p.value = res$padj
+        p.value <- res$padj
     } else {
-        p.value = res$pval
+        p.value <- res$pval
     }
     
     if (estimate.type == "log2err") {
-        estimate = res$log2err
+        estimate <- res$log2err
     } else if (estimate.type == "NES") {
-        estimate = res$NES
+        estimate <- res$NES
     } else if (estimate.type == "leadingEdge") {
-        estimate = res$leadingEdge
+        estimate <- res$leadingEdge
     } else if (estimate.type == "ES") {
-        estimate = res$ES
+        estimate <- res$ES
     } else {
-        print(sprintf("Incorrect estimate.type: [%s].", estimate.type))
+        message(sprintf("Incorrect estimate.type: [%s].", estimate.type))
         return(NULL)
     }
     
@@ -413,8 +391,8 @@ testEnrichmentFGSEA = function(query, database, p.value.adj=FALSE,
 }
 
 
-#' testEnrichmentSpearman uses the Spearman statistical test to estimate the 
-#' association between two continuous variables.
+#' testEnrichmentSpearman uses the Spearman statistical test to estimate
+#' the association between two continuous variables.
 #'
 #' @param query Vector of probes of interest (e.g., significant probes)
 #' @param database List of vectors corresponding to the database set of
@@ -422,10 +400,10 @@ testEnrichmentFGSEA = function(query, database, p.value.adj=FALSE,
 #'
 #' @import stats
 #'
-#' @return A DataFrame with the estimate/statistic, p-value, and name of test
-#' for the given results.
-testEnrichmentSpearman = function(query, database) {
-    test = "spearman"
+#' @return A DataFrame with the estimate/statistic, p-value, and name
+#' of test for the given results.
+testEnrichmentSpearman <- function(query, database) {
+    test <- "spearman"
     if (length(intersect(names(query), names(database))) == 0) {
         return(data.frame(
             estimate = 0,
@@ -437,9 +415,9 @@ testEnrichmentSpearman = function(query, database) {
         ))
     }
     
-    database = database[match(names(query), names(database))]
+    database <- database[match(names(query), names(database))]
     
-    res = cor.test(query, database, method = "spearman")
+    res <- cor.test(query, database, method = "spearman")
     data.frame(
         estimate = res$estimate[[1]],
         p.value = res$p.value,
@@ -448,15 +426,16 @@ testEnrichmentSpearman = function(query, database) {
     )
 }
 
-guess_dbnames = function(nms) {
-    df = sesameDataList()
+guess_dbnames <- function(nms) {
+    df <- sesameDataList()
+    df <- df[grep("KYCG", df$Title),]
     vapply(nms, function(nm) {
         if (nm %in% df$Title) {
             return(nm)
         } else if (length(grep(nm, df$Title)) == 1) {
             return(grep(nm, df$Title, value=TRUE))
         } else if (length(grep(nm, df$Title)) == 0) {
-            res = df$Title[apply(do.call(cbind, lapply(
+            res <- df$Title[apply(do.call(cbind, lapply(
                 strsplit(nm, "\\.")[[1]], function(q1) grepl(q1, df$Title))),
                 1, all)]
             if (length(res) == 1) {
@@ -481,130 +460,26 @@ guess_dbnames = function(nms) {
 #' @examples
 #' 
 #' library(SummarizedExperiment)
-#' se = sesameDataGet('MM285.20Kx467.SE')
-#' stats = dbStats(assay(se), c('KYCG.MM285.probeType.20210630'))
+#' se <- sesameDataGet('MM285.20Kx467.SE')
+#' stats <- dbStats(assay(se), c('KYCG.MM285.probeType.20210630'))
 #' head(stats)
 #' sesameDataClearCache()
 #' 
-dbStats = function(betas, dbs, fun = mean, na.rm = TRUE) {
-    if (is(betas, "numeric")) { betas = cbind(sample = betas); }
+dbStats <- function(betas, dbs, fun = mean, na.rm = TRUE) {
+    if (is(betas, "numeric")) { betas <- cbind(sample = betas); }
     if (is.character(dbs)) {
-        nms = guess_dbnames(dbs)
-        dbs = do.call(c, lapply(nms, sesameDataGet))
+        nms <- guess_dbnames(dbs)
+        dbs <- do.call(c, lapply(nms, sesameDataGet))
     }
-    stats = do.call(cbind, lapply(names(dbs), function(db_nm) {
-        db = dbs[[db_nm]]
-        betas1 = betas[db[db %in% rownames(betas)],,drop=FALSE]
+    stats <- do.call(cbind, lapply(names(dbs), function(db_nm) {
+        db <- dbs[[db_nm]]
+        betas1 <- betas[db[db %in% rownames(betas)],,drop=FALSE]
         if (nrow(betas1) == 0) { return(rep(NA, ncol(betas))); }
         apply(betas1, 2, fun, na.rm = na.rm)
     }))
-    colnames(stats) = names(dbs)
-    rownames(stats) = colnames(betas)
+    colnames(stats) <- names(dbs)
+    rownames(stats) <- colnames(betas)
     stats
-}
-
-#' plotVolcano creates a volcano plot of -log2(p.value) and log(estimate)
-#' given data with fields estimate and p.value.
-#'
-#' @param data DataFrame where each field is a database name with two fields
-#' for the estimate and p.value.
-#' @param alpha Float representing the cut-off alpha value for the plot. 
-#' Optional. (Default: 0.05)
-#' @return ggplot volcano plot
-#' @import ggplot2
-#' @import ggrepel
-#' @examples
-#' 
-#' data=data.frame(estimate=c(runif(10)), fdr=c(runif(10)))
-#' plotVolcano(data)
-#'
-#' @export
-plotVolcano = function(data, alpha=0.05) {
-    ## suppress R CMD CHECK no visible binding warning
-    estimate = fdr = label = NULL
-    
-    if ("Target" %in% colnames(data)) {
-        data["label"] = unlist(data[["Target"]])
-    } else {
-        data["label"] = rownames(data)
-    }
-    
-    ## TODO: replace with column specifying sig vs non sig
-    if (any(data$fdr <= alpha)) {
-        g = ggplot(data=data, aes(x=log2(estimate), y=-log10(fdr),
-            color = cut(fdr, c(-Inf, alpha))))
-    } else {
-        g = ggplot(data=data, aes(x=estimate, y=fdr))
-    }
-    g = g + geom_point() + xlab("log2 Fold Change")
-    
-    g = g + 
-        ylab("-log10 q-value") +
-        scale_colour_discrete(
-            name = sprintf("Significance (q < %s)", alpha),
-            labels=c("Significant", "Not Significant"))
-
-    options(ggrepel.max.overlaps = 10)
-    g + geom_text_repel(
-        data = subset(data, fdr < 0.0005),
-        aes(label = label),
-        size = 5,
-        box.padding = unit(0.35, "lines"),
-        point.padding = unit(0.3, "lines"))
-}
-
-
-#' plotLollipop creates a lollipop plot of log(estimate) given data with fields
-#' estimate.
-#'
-#' @param data DataFrame where each field is a database name with its estimate.
-#' @param n Integer representing the number of top enrichments to report.
-#' Optional. (Default: 10)
-#' @return ggplot lollipop plot
-#'
-#' @import ggplot2
-#'
-#' @examples
-#' data = data.frame(estimate=c(runif(10, 0, 10)))
-#' plotLollipop(data)
-#'
-#' @export
-plotLollipop = function(data, n=10) {
-    ## suppress R CMD CHECK no visible binding warning
-    estimate = fdr = label = NULL
-    
-    if ("Target" %in% colnames(data))
-        data["label"] = unlist(data[["Target"]])
-    else
-        data["label"] = rownames(data)
-    
-    data = head(data[order(data$estimate, decreasing=TRUE), ], n=n)
-    
-    ggplot(data, aes(x=label, 
-        y=log2(estimate), 
-        label=sprintf('%.2f',log2(estimate)))
-    ) + geom_hline(yintercept=0
-    ) + geom_segment(aes(y=0, 
-        x=reorder(label, -estimate), 
-        yend=log2(estimate), xend=label), color='black'
-    ) + geom_point(aes(fill=pmax(-1.5,log2(estimate))), 
-        stat='identity', 
-        size=10, 
-        alpha=0.95, 
-        shape=21
-    ) + scale_fill_gradientn(name='Fold Change',
-        colours=c('#2166ac','#333333','#b2182b')
-    ) + geom_text(color='white', size=3
-    ) + geom_label(aes(x=label,
-        y=ifelse(estimate>1,
-            log2(estimate) + 0.8,
-            log2(estimate) - 0.5),
-        label=label),
-        alpha=0.8
-    ) + ylab("Log2 Enrichment"
-    ) + theme(axis.title.x = element_blank(),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank())
 }
 
 #' createGeneNetwork creates database network using the Jaccard index.
@@ -617,16 +492,17 @@ plotLollipop = function(data, n=10) {
 #' @export
 #' @examples
 #'
-#' databaseNames = c('KYCG.MM285.seqContextN.20210630')
-#' databases = do.call(c, lapply(databaseNames, sesameDataGet))
+#' databaseNames <- c('KYCG.MM285.seqContextN.20210630')
+#' databases <- do.call(c, lapply(databaseNames, sesameDataGet))
 #' createDatabaseSetNetwork(databases)
 #' sesameDataClearCache()
 #'
-createDatabaseSetNetwork = function(databases) {
-    m = compareDatbaseSetOverlap(databases, metric="jaccard")
+createDatabaseSetNetwork <- function(databases) {
+    m <- compareDatbaseSetOverlap(databases, metric="jaccard")
     
-    m_melted = melt(m); colnames(m_melted) = c("gene1", "gene2", "metric")
-    m_melted = m_melted[m_melted$metric != 0, ]
+    m_melted <- melt(m)
+    colnames(m_melted) <- c("gene1", "gene2", "metric")
+    m_melted <- m_melted[m_melted$metric != 0, ]
     
     nodes <- data.frame(id=colnames(m),
         stringsAsFactors=FALSE)
@@ -653,24 +529,23 @@ createDatabaseSetNetwork = function(databases) {
 #' @export
 #' @examples
 #' 
-#' databaseNames = c('KYCG.MM285.seqContextN.20210630')
-#' databases = do.call(c, lapply(databaseNames, sesameDataGet))
+#' databaseNames <- c('KYCG.MM285.seqContextN.20210630')
+#' databases <- do.call(c, lapply(databaseNames, sesameDataGet))
 #' compareDatbaseSetOverlap(databases)
 #' sesameDataClearCache()
 #'
-compareDatbaseSetOverlap = function(databases=NA,
-    metric = "Jaccard",
-    verbose = FALSE) {
+compareDatbaseSetOverlap <- function(
+    databases=NA, metric = "Jaccard", verbose = FALSE) {
     
-    ndatabases = length(databases)
-    names = names(databases)
-    m = matrix(0, nrow=ndatabases, ncol=ndatabases)
-    colnames(m) = names
-    rownames(m) = names
+    ndatabases <- length(databases)
+    names <- names(databases)
+    m <- matrix(0, nrow=ndatabases, ncol=ndatabases)
+    colnames(m) <- names
+    rownames(m) <- names
     for (i in seq(ndatabases - 1)) { 
         for (j in seq(i + 1, ndatabases)) {
-            cat(i, j, '\n')
-            m[i, j] = length(intersect(databases[[i]], databases[[j]])) /
+            message(i, " ", j, '\n')
+            m[i, j] <- length(intersect(databases[[i]], databases[[j]])) /
                 length(union(databases[[i]], databases[[j]]))
         }
     }

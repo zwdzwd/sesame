@@ -1,7 +1,7 @@
-getIntensityRatioYvsAuto = function(sdf) {
-    intens = totalIntensities(sdf)
-    prbA = getAutosomeProbes(sdfPlatform(sdf))
-    prbY = getProbesByChromosome("chrY", sdfPlatform(sdf))
+getIntensityRatioYvsAuto <- function(sdf) {
+    intens <- totalIntensities(sdf)
+    prbA <- getAutosomeProbes(sdfPlatform(sdf))
+    prbY <- getProbesByChromosome("chrY", sdfPlatform(sdf))
     median(intens[prbY], na.rm=TRUE) / median(intens[prbA], na.rm=TRUE)
 }
 
@@ -22,20 +22,20 @@ getIntensityRatioYvsAuto = function(sdf) {
 #' @export
 getSexInfo <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
-    cleanY = sesameDataGet(paste0(
+    cleanY <- sesameDataGet(paste0(
         sdfPlatform(sdf),'.probeInfo'))$chrY.clean
 
-    xLinked = sesameDataGet(paste0(
+    xLinked <- sesameDataGet(paste0(
         sdfPlatform(sdf),'.probeInfo'))$chrX.xlinked
 
-    probe2chr = sesameDataGet(paste0(
+    probe2chr <- sesameDataGet(paste0(
         sdfPlatform(sdf),'.probeInfo'))$probe2chr.hg19
 
-    xLinkedBeta = getBetas(sdf, mask=FALSE)[xLinked]
-    intens = totalIntensities(sdf)
-    probes = intersect(names(intens), names(probe2chr))
-    intens = intens[probes]
-    probe2chr = probe2chr[probes]
+    xLinkedBeta <- getBetas(sdf, mask=FALSE)[xLinked]
+    intens <- totalIntensities(sdf)
+    probes <- intersect(names(intens), names(probe2chr))
+    intens <- intens[probes]
+    probe2chr <- probe2chr[probes]
 
     c(
         medianY = median(intens[names(intens) %in% cleanY]),
@@ -121,33 +121,33 @@ inferSexKaryotypes <- function(sdf) {
 #' @import e1071
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' sdf = sesameDataGet('EPIC.1.SigDF')
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' inferSex(sdf)
 #' @export
-inferSex = function(x, pfm = NULL) {
+inferSex <- function(x, pfm = NULL) {
 
     if (is.null(pfm)) {
         if (is.numeric(x)) {
-            pfm = inferPlatformFromProbeIDs(names(x))
+            pfm <- inferPlatformFromProbeIDs(names(x))
         } else if (is(x, "SigDF")) {
-            pfm = sdfPlatform(x)
+            pfm <- sdfPlatform(x)
         }
     }
     
     stopifnot(pfm %in% c('EPIC','HM450','MM285'))
     if (pfm == 'MM285'){
         pkgTest("e1071")
-        inf = sesameDataGet("MM285.inferences")$sex
+        inf <- sesameDataGet("MM285.inferences")$sex
         if (is(x, "SigDF")) { # if possible use signal intensity
-            intensYvsAuto = getIntensityRatioYvsAuto(x)
+            intensYvsAuto <- getIntensityRatioYvsAuto(x)
 
             ## assuming unnormalized data
-            betas = getBetas(pOOBAH(resetMask(dyeBiasNL(noob(x)))))
+            betas <- getBetas(pOOBAH(resetMask(dyeBiasNL(noob(x)))))
 
             ## if probe success rate is low, give up
             if (sum(is.na(betas)) / length(betas) > 0.3) { return(NA); }
 
-            betasXiH = median(betas[inf$XiH], na.rm=TRUE)
+            betasXiH <- median(betas[inf$XiH], na.rm=TRUE)
             return(predict(inf$XY,
                 data.frame(
                     betasXiH=betasXiH,
@@ -157,8 +157,8 @@ inferSex = function(x, pfm = NULL) {
             
             ## if probe success rate is low, give up
             if (sum(is.na(x)) / length(x) > 0.3) { return(NA); }
-            betasXiH = median(x[inf$XiH], na.rm=TRUE)
-            betasXiL = median(x[inf$XiL], na.rm=TRUE)
+            betasXiH <- median(x[inf$XiH], na.rm=TRUE)
+            betasXiL <- median(x[inf$XiL], na.rm=TRUE)
             
             return(predict(inf$X2,
                 data.frame(betasXiL=betasXiL, betasXiH=betasXiH))[[1]])

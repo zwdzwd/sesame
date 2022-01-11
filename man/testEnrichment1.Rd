@@ -2,8 +2,8 @@
 % Please edit documentation in R/kyCG.R
 \name{testEnrichment1}
 \alias{testEnrichment1}
-\title{testEnrichment1 tests for the enrichment of set of probes (query set) in a
-single given feature (database set)}
+\title{testEnrichment1 tests for the enrichment of set of probes (query set)
+in a single given feature (database set)}
 \usage{
 testEnrichment1(query, database, universe, estimate.type = "ES")
 }
@@ -24,6 +24,6 @@ One list containing features corresponding the test estimate,
 p-value, and type of test.
 }
 \description{
-testEnrichment1 tests for the enrichment of set of probes (query set) in a
-single given feature (database set)
+testEnrichment1 tests for the enrichment of set of probes (query set)
+in a single given feature (database set)
 }

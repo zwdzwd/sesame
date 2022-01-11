@@ -1,46 +1,46 @@
-reference_plot_se = function(
+reference_plot_se <- function(
     betas, se, color=c("blueYellow","jet"), show_sample_names=FALSE) {
 
     ## top N probes ordered by delta_beta, will
     ## be dominated by certain tissue otherwise
-    ## rd = as.data.frame(rowData(se))
-    ## topN = do.call(c, lapply(split(rd, rd$branch), function(x) {
+    ## rd <- as.data.frame(rowData(se))
+    ## topN <- do.call(c, lapply(split(rd, rd$branch), function(x) {
     ##     x$Probe_ID[order(x$delta_beta)][seq_len(min(nrow(x), 200))] }))
-    ## se = se[rd$Probe_ID %in% topN,]
+    ## se <- se[rd$Probe_ID %in% topN,]
     
     pkgTest("wheatmap")
-    color = match.arg(color)
+    color <- match.arg(color)
     if (color == "blueYellow") {
-        stop.points = c("blue","yellow")
+        stop.points <- c("blue","yellow")
     } else {
-        stop.points = NULL
+        stop.points <- NULL
     }
 
-    cd = as_tibble(colData(se))
-    rd = as_tibble(rowData(se))
-    md = metadata(se)
+    cd <- as_tibble(colData(se))
+    rd <- as_tibble(rowData(se))
+    md <- metadata(se)
     if (!is.null(betas) && is.null(dim(betas))) { # in case a vector
-        betas = cbind(betas)
+        betas <- cbind(betas)
     }
 
-    g = WHeatmap(assay(se), cmp=CMPar(stop.points=stop.points,
+    g <- WHeatmap(assay(se), cmp=CMPar(stop.points=stop.points,
         dmin=0, dmax=1), xticklabels = show_sample_names, name="b1") # reference
     if (!is.null(betas)) {          # query samples
-        g = g + WHeatmap(betas[rd$Probe_ID,], RightOf("b1"),
+        g <- g + WHeatmap(betas[rd$Probe_ID,], RightOf("b1"),
             cmp=CMPar(stop.points=stop.points, dmin=0, dmax=1),
             name="b2", xticklabels=TRUE, xticklabels.n=ncol(betas))
-        right = "b2"
+        right <- "b2"
     } else { # in case target is not given, plot just the reference
-        right = "b1"
+        right <- "b1"
     }
     ## branch color bar (vertical)
-    g = g + WColorBarV(rd$branch, RightOf(right, width=0.03),
+    g <- g + WColorBarV(rd$branch, RightOf(right, width=0.03),
         cmp=CMPar(label2color=md$branch_color), name="bh")
     ## tissue color bar (horizontal)
-    g = g + WColorBarH(cd$branch, TopOf("b1",height=0.03),
+    g <- g + WColorBarH(cd$branch, TopOf("b1",height=0.03),
         cmp=CMPar(label2color=md$branch_color), name="ti")
     ## legends
-    g = g + WLegendV("ti", TopRightOf("bh", just=c('left','top'), h.pad=0.02),
+    g <- g + WLegendV("ti", TopRightOf("bh", just=c('left','top'), h.pad=0.02),
         height=0.02)
     g + WCustomize(mar.bottom=0.15, mar.right=0.06)
 }
@@ -62,8 +62,8 @@ reference_plot_se = function(
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment rowData
-compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
-    se = sesameDataGet("MM285.tissueSignature")
+compareMouseTissueReference <- function(betas=NULL, color="blueYellow") {
+    se <- sesameDataGet("MM285.tissueSignature")
 
     reference_plot_se(betas, se, color=color)
 }
@@ -91,33 +91,33 @@ compareMouseTissueReference = function(betas=NULL, color="blueYellow") {
 #' @return inferred tissue as a string
 #' @examples
 #' sesameDataCache("MM285") # if not done yet
-#' sdf = sesameDataGet("MM285.1.SigDF")
+#' sdf <- sesameDataGet("MM285.1.SigDF")
 #' inferTissue(getBetas(dyeBiasNL(noob(sdf))))
 #'
 #' sesameDataClearCache()
 #'
 #' @export
-inferTissue = function(betas, reference = NULL, platform = NULL,
+inferTissue <- function(betas, reference = NULL, platform = NULL,
     abs_delta_beta_min = 0.3, auc_min = 0.99, coverage_min = 0.80, topN = 15) {
 
     stopifnot(is.numeric(betas))
 
     if (is.null(reference)) {
         if (is.null(platform)) {
-            platform = inferPlatformFromProbeIDs(names(betas))
+            platform <- inferPlatformFromProbeIDs(names(betas))
         }
         stopifnot(platform %in% c("MM285")) # TODO: add human
-        reference = sesameDataGet(sprintf("%s.tissueSignature", platform))
+        reference <- sesameDataGet(sprintf("%s.tissueSignature", platform))
     }
     
-    rd = rowData(reference)
-    fracs = sort(vapply(unique(rd$branch), function(branch) {
-        rd1 = rd[
+    rd <- rowData(reference)
+    fracs <- sort(vapply(unique(rd$branch), function(branch) {
+        rd1 <- rd[
             rd$branch == branch & abs(rd$delta_beta) >= abs_delta_beta_min, ]
 
-        rd1 = head(rd1[order(-abs(rd1$delta_beta)), ], n = topN)
+        rd1 <- head(rd1[order(-abs(rd1$delta_beta)), ], n = topN)
         
-        fracs1 = c(1 - betas[rd1[rd1$delta_beta < 0, "Probe_ID"]],
+        fracs1 <- c(1 - betas[rd1[rd1$delta_beta < 0, "Probe_ID"]],
             betas[rd1[rd1$delta_beta > 0, "Probe_ID"]])
 
         mean(fracs1, na.rm = TRUE)
@@ -125,11 +125,11 @@ inferTissue = function(betas, reference = NULL, platform = NULL,
     sprintf("[%s](%1.1f) [%s](%1.1f)",
         names(fracs)[1], fracs[1], names(fracs)[2], fracs[2])
     
-    ## results = results[!(names(results) %in% ignore_branches)]
-    ## cd = meta[match(colnames(results), meta$betas),]
-    ## se = SummarizedExperiment(assays=list(results=results), colData=cd)
-    ## metadata(se)$tissue_color = metadata(reference)$tissue_color
-    ## metadata(se)$branchID_color = metadata(reference)$branchID_color
+    ## results <- results[!(names(results) %in% ignore_branches)]
+    ## cd <- meta[match(colnames(results), meta$betas),]
+    ## se <- SummarizedExperiment(assays=list(results=results), colData=cd)
+    ## metadata(se)$tissue_color <- metadata(reference)$tissue_color
+    ## metadata(se)$branchID_color <- metadata(reference)$branchID_color
     ## se
 }
 

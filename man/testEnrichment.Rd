@@ -50,8 +50,8 @@ a number of features (database sets).
 \examples{
 
 library(SummarizedExperiment)
-df = rowData(sesameDataGet('MM285.tissueSignature'))
-query = df$Probe_ID[df$branch == "B_cell"]
+df <- rowData(sesameDataGet('MM285.tissueSignature'))
+query <- df$Probe_ID[df$branch == "B_cell"]
 testEnrichment(query, 'KYCG.MM285.designGroup.20210210')
 sesameDataClearCache()
 

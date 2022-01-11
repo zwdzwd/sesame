@@ -11,17 +11,32 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-SeSAMe implements an automated discovery tool named knowYourCG for discovering hidden biological and technical elements. The goal is to find a link between these elements and observed DNA methylation.
+SeSAMe implements an automated discovery tool named knowYourCG for discovering
+hidden biological and technical elements. The goal is to find a link between
+these elements and observed DNA methylation.
 
 # knowYourCG
 
 ## Introduction
 
-knowYourCG is a tool for evaluating CpG feature enrichment using Illumina probe IDs. One feature in this tool automates the hypothesis testing by asking whether a set of CpGs (represented by Illumina methylation chip probes) is enriched in certain categories or features. These categories or features can be categorical (e.g., CpGs related to tissue-specific transcription factors) or continuous (e.g., CpG Island density). Additionally, the set of CpGs to which the test will be applied can be categorical or continuous as well.
+knowYourCG is a tool for evaluating CpG feature enrichment using Illumina probe
+IDs. One feature in this tool automates the hypothesis testing by asking
+whether a set of CpGs (represented by Illumina methylation chip probes) is
+enriched in certain categories or features. These categories or features can be
+categorical (e.g., CpGs related to tissue-specific transcription factors) or
+continuous (e.g., CpG Island density). Additionally, the set of CpGs to which
+the test will be applied can be categorical or continuous as well.
 
-The set of CpGs that will be tested for enrichment is called the query set, and the set of CpGs that will be used to determine enrichment of a given factor is called the database set. A query set, for example, might be the results of an epigenome-wide association study. We have taken the time to curate our own database sets from a variety of sources that describe different categorical and continuous features such as transcription factor binding sites, CpG density, technical factors, etc. 
+The set of CpGs that will be tested for enrichment is called the query set, and
+the set of CpGs that will be used to determine enrichment of a given factor is
+called the database set. A query set, for example, might be the results of an
+epigenome-wide association study. We have taken the time to curate our own
+database sets from a variety of sources that describe different categorical and
+continuous features such as transcription factor binding sites, CpG density,
+technical factors, etc.
 
-Additionally, knowYourCG has support for feature selection and feature engineering, which is currently in development. 
+Additionally, knowYourCG has support for feature selection and feature
+engineering, which is currently in development.
 
 ```{r load-depenencies, echo=FALSE, message=FALSE, warning=FALSE}
 library(sesame)
@@ -35,11 +50,13 @@ library(sesameData)
 
 ## Database Sets
 
-We have organized our database sets in terms of different releases. The following block lists the database sets in the most recent release under sesameData.
+We have organized our database sets in terms of different releases. The
+following block lists the database sets in the most recent release under
+sesameData.
 
 ``` {r list-data, eval=TRUE, echo=TRUE}
 sesameDataCache(keyword='KYCG')
-databaseSetNames = sesameData:::df_master$Title[grepl('KYCG', sesameData:::df_master$Title)]
+databaseSetNames = grep('KYCG', sesameData:::df_master$Title, value=TRUE)
 ```
 
 The function returns a vector containing these accessions.
@@ -48,9 +65,18 @@ The function returns a vector containing these accessions.
 head(databaseSetNames)
 ```
 
-The ```sesameDataGet()``` function returns a nested list of database sets identified by their accessions shown in ```sesameData:::df_master()```. When this function is ran for the first time, none of the database sets have been cached. Caching on the local machine is important on two fronts: firstly it limits the number of requests sent to our server, and secondly it limits the amount of time the user needs to wait when re-downloading database sets. For this reason, one should run ```sesameDataCache(keyword='KYCG')``` before loading in any database sets. This will take some time to download all of the database sets from a given release.
+The ```sesameDataGet()``` function returns a nested list of database sets
+identified by their accessions shown in ```sesameData:::df_master()```. When
+this function is ran for the first time, none of the database sets have been
+cached. Caching on the local machine is important on two fronts: firstly it
+limits the number of requests sent to our server, and secondly it limits the
+amount of time the user needs to wait when re-downloading database sets. For
+this reason, one should run ```sesameDataCache(keyword='KYCG')``` before
+loading in any database sets. This will take some time to download all of the
+database sets from a given release.
 
-Using a subset of the available database sets, we will download them and load them in into memory using their accessions.
+Using a subset of the available database sets, we will download them and load
+them in into memory using their accessions.
 
 ``` {r cache-data, eval=TRUE, warning=FALSE}
 db_nms = c(
@@ -79,11 +105,17 @@ And display a summary of its contents.
 summary(databases[1:3])
 ```
 
-On subsequent runs of the ```sesameDataGet()``` function, loading specific database sets from the same release will be much faster. These database sets will be persistent between R sessions so long as the directory to which they are downloaded is not deleted. Otherwise, the database sets will have to be downloaded again.
+On subsequent runs of the ```sesameDataGet()``` function, loading specific
+database sets from the same release will be much faster. These database sets
+will be persistent between R sessions so long as the directory to which they
+are downloaded is not deleted. Otherwise, the database sets will have to be
+downloaded again.
 
 ## Query Sets
 
-A query set represents probes of interest. It may either be in the form of a character vector where the values correspond to probe IDs or a named numeric vector where the names correspond to probe IDs.
+A query set represents probes of interest. It may either be in the form of a
+character vector where the values correspond to probe IDs or a named numeric
+vector where the names correspond to probe IDs.
 
 A list of test query sets can be obtained from the following URL. 
 
@@ -93,32 +125,47 @@ df = rowData(MM285.tissueSignature)
 query = df$Probe_ID[df$branch == "B_cell"]
 ```
 
-This query set represents hypomethylated probes in Mouse brain tissue from the MM285 platform. This specific query set has 71 probes.
+This query set represents hypomethylated probes in Mouse brain tissue from the
+MM285 platform. This specific query set has 71 probes.
 
 ``` {r view-data4, eval=TRUE, echo=FALSE}
 cat(sprintf("length(query) = %s probes", length(query)))
 ```
 
-Using the obtained database sets and query set, the user may analyze their overlap and enrichment. 
+Using the obtained database sets and query set, the user may analyze their
+overlap and enrichment.
 
 # Functionality
 
-There are many functions in this package that make investigating the biological significance of a set of probes easier.
+There are many functions in this package that make investigating the biological
+significance of a set of probes easier.
 
 ## Obtaining Database Annotation
 
-Using the ```getDatabaseSetOverlap()``` function, the user can investigate the database sets that overlap with the given query set, the degree of overlap, and any provided annotation.
+Using the ```getDatabaseSetOverlap()``` function, the user can investigate the
+database sets that overlap with the given query set, the degree of overlap, and
+any provided annotation.
 
 ``` {r run-annotation, echo=TRUE, eval=TRUE}
 annotation = getDatabaseSetOverlap(query, databases)
 head(annotation)
 ```
 
-The ```meta``` column indicates whether the respective database set contains annotation. The ```nQ``` and ```nD``` columns indicate the length of the query set and database set respectively, and the ```overlap``` column indicates the amount of overlap. In some cases, this annotation data.frame will be sparse as not all database sets have the same annotation columns. None of these overlapping database sets have annotation, so no additional columns were returned.
+The ```meta``` column indicates whether the respective database set contains
+annotation. The ```nQ``` and ```nD``` columns indicate the length of the query
+set and database set respectively, and the ```overlap``` column indicates the
+amount of overlap. In some cases, this annotation data.frame will be sparse as
+not all database sets have the same annotation columns. None of these
+overlapping database sets have annotation, so no additional columns were
+returned.
 
 ## Single Query vs Multiple DBs
 
-The ```testEnrichment()``` function is the main work horse to knowYourCG. It tests the enrichment of the given database sets in a single query set. There are four testing scenarios depending on the type format of the query set and database sets. They are shown with the respective testing scenario in the table below.
+The ```testEnrichment()``` function is the main work horse to knowYourCG. It
+tests the enrichment of the given database sets in a single query set. There
+are four testing scenarios depending on the type format of the query set and
+database sets. They are shown with the respective testing scenario in the table
+below.
 
 ```{r echo = FALSE, results="asis"}
 library(knitr)
@@ -129,34 +176,58 @@ rownames(df) = c("Continuous Query", "Discrete Query")
 kable(df, caption="Four KnowYourCG Testing Scenarios")
 ```
 
-The ```testEnrichment()``` will automate statistical tests and report metrics about each of the the loaded database sets. Another set that is needed for the test is called the universe set. This is the set of all probes for a given platform. It can either be passed in as an argument called ```universeSet``` or the platform name can be passed with argument ```platform```. If neither of these are supplied, the universe set will be implied from the probes. In all subsequent runs of ```testEnrichment()``` in this vignette, the platform will be specified. 
+The ```testEnrichment()``` will automate statistical tests and report metrics
+about each of the the loaded database sets. Another set that is needed for the
+test is called the universe set. This is the set of all probes for a given
+platform. It can either be passed in as an argument called ```universeSet``` or
+the platform name can be passed with argument ```platform```. If neither of
+these are supplied, the universe set will be implied from the probes. In all
+subsequent runs of ```testEnrichment()``` in this vignette, the platform will
+be specified.
 
 ```{r run-test-single, echo=TRUE, eval=TRUE}
 results = testEnrichment(query, databases)
 head(results)
 ```
 
-The output of each test contains at least four variables: the estimate, p-value, type of test, and whether meta data is included in the tested database set. The name of the database set is also recorded as well. By default, the p-value column is sorted. 
+The output of each test contains at least four variables: the estimate,
+p-value, type of test, and whether meta data is included in the tested database
+set. The name of the database set is also recorded as well. By default, the
+p-value column is sorted.
 
-It should be noted that the estimate (or test statistic) is test dependent and comparison between p-values should be limited to within the same type of test. For instance, the test statistics for Fisher's exact test and FGSEA are log fold change and the test statistic for Spearman's test is simply the rank order correlation coefficient. For simplicity, we report all of the test types in one data frame. 
+It should be noted that the estimate (or test statistic) is test dependent and
+comparison between p-values should be limited to within the same type of
+test. For instance, the test statistics for Fisher's exact test and FGSEA are
+log fold change and the test statistic for Spearman's test is simply the rank
+order correlation coefficient. For simplicity, we report all of the test types
+in one data frame.
 
-The ```nQ``` and ```nD``` columns identify the length of the query set and the database set, respectively. Often, it's important to examine the extent of overlap between the two sets, so that metric is reported as well in the ```overlap``` column.
+The ```nQ``` and ```nD``` columns identify the length of the query set and the
+database set, respectively. Often, it's important to examine the extent of
+overlap between the two sets, so that metric is reported as well in the
+```overlap``` column.
  
 Using these results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
-plotVolcano(results)
+KYCG_plotVolcano(results)
 ```
 
 ```{r plot-lollipop, fig.width=7, fig.height=6, echo=TRUE}
-plotLollipop(results)
+KYCG_plotLollipop(results)
 ```
 
 ## Example Testing Scenarios
 
-The query may be a named continuous vector. In that case, either a gene enrichment score will be calculated (if the database is discrete) or a Spearman correlation will be calculated (if the database is continuous as well). The three other cases are shown below using biologically relevant examples.
+The query may be a named continuous vector. In that case, either a gene
+enrichment score will be calculated (if the database is discrete) or a Spearman
+correlation will be calculated (if the database is continuous as well). The
+three other cases are shown below using biologically relevant examples.
 
-To display this functionality, let's load two numeric database sets individually. One is a database set for CpG density and the other is a database set corresponding to the distance of the nearest transcriptional start site (TSS) to each probe.
+To display this functionality, let's load two numeric database sets
+individually. One is a database set for CpG density and the other is a database
+set corresponding to the distance of the nearest transcriptional start site
+(TSS) to each probe.
 
 ``` {r run-test-data, echo=TRUE, eval=TRUE}
 dbs = sesameDataGet('KYCG.MM285.seqContextN.20210630')
@@ -166,7 +237,8 @@ distToTSS = dbs['distToTSS']
 
 ### Example 1
 
-Our first test will look at whether the query set is significantly enriched in either of the database sets individually.
+Our first test will look at whether the query set is significantly enriched in
+either of the database sets individually.
 
 ``` {r run-test-other1, echo=TRUE, eval=TRUE}
 testEnrichment(query, CpGDesity50, platform="MM285")
@@ -175,23 +247,35 @@ testEnrichment(query, CpGDesity50, platform="MM285")
 ``` {r run-test-other2, echo=TRUE, eval=TRUE}
 testEnrichment(query, distToTSS, platform="MM285")
 ```
-Both of the tests result in a p-value greater than 0.05, so there is little evidence to suggest that either of the query set is enriched in either of these database sets. 
+
+Both of the tests result in a p-value greater than 0.05, so there is little
+evidence to suggest that either of the query set is enriched in either of these
+database sets.
 
 ### Example 2
 
-A third test might be whether there is a significant correlation between these two database sets.
+A third test might be whether there is a significant correlation between these
+two database sets.
 
 ``` {r run-test-other3, echo=TRUE, eval=TRUE}
 testEnrichment(CpGDesity50[[1]], databases=distToTSS, platform="MM285")
 ```
 
-This test is statistically significant with a p-value less than 0.05 and a moderately weak negative correlation. It is known in biology that the distance to TSS are negatively correlated with CpG islands, which is shown to be the case here from the data as well.
+This test is statistically significant with a p-value less than 0.05 and a
+moderately weak negative correlation. It is known in biology that the distance
+to TSS are negatively correlated with CpG islands, which is shown to be the
+case here from the data as well.
 
-In the above four examples, the database sets were specified explicitly. This is not necessarily needed as the function can load a default set of database sets based a release specified the ```release``` parameter. The default is ```release=2```.
+In the above four examples, the database sets were specified explicitly. This
+is not necessarily needed as the function can load a default set of database
+sets based a release specified the ```release``` parameter. The default is
+```release=2```.
 
 ### Example 3
 
-We may want to look specifically at query our query set is significantly enriched in the set of all Transcription Factor Binding Sites (TFBS). Let's first load in the TFBS database set.
+We may want to look specifically at query our query set is significantly
+enriched in the set of all Transcription Factor Binding Sites (TFBS). Let's
+first load in the TFBS database set.
 
 ``` {r load-data-tfbs, echo=TRUE, eval=TRUE}
 databases = sesameDataGet("KYCG.MM285.TFBS.20210817")
@@ -209,16 +293,21 @@ head(resultsTFBS)
 Using these sample results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano-tfbs, fig.width=7, fig.height=6, echo=TRUE}
-plotVolcano(resultsTFBS, alpha=0.0005)
+KYCG_plotVolcano(resultsTFBS, alpha=0.0005)
 ```
 
 ```{r plot-lollipop-tfbs, fig.width=7, fig.height=6, echo=TRUE}
-plotLollipop(resultsTFBS)
+KYCG_plotLollipop(resultsTFBS)
 ```
 
 ## Gene Enrichment Ananlysis
 
-Automating the enrichment test process only works when the number of database sets is small. This is important when targeting all genes as there are tens of thousands of genes on each platform. By testing only those genes that overlap with the query set, we can greatly reduce the number of tests. For this reason, the gene enrichment analysis is a special case of these enrichment tests. We can perform this analysis using the ```testEnrichmentGene()``` function.
+Automating the enrichment test process only works when the number of database
+sets is small. This is important when targeting all genes as there are tens of
+thousands of genes on each platform. By testing only those genes that overlap
+with the query set, we can greatly reduce the number of tests. For this reason,
+the gene enrichment analysis is a special case of these enrichment tests. We
+can perform this analysis using the ```testEnrichmentGene()``` function.
 
 ``` {r run-test-gene, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
 resultsGene = testEnrichmentGene(query, platform="MM285", verbose=FALSE)
@@ -228,18 +317,25 @@ head(resultsGene)
 Using these sample results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano-gene, fig.width=7, fig.height=6, echo=TRUE}
-plotVolcano(resultsGene)
+KYCG_plotVolcano(resultsGene)
 ```
 
 ```{r plot-lollipop-gene, fig.width=7, fig.height=6, echo=TRUE}
-plotLollipop(data=resultsGene)
+KYCG_plotLollipop(resultsGene)
 ```
 
-For example, this given query set is tissue specific hypomethylation of mouse brain. Rufy3 is shown to be significantly enriched in this set and it is known to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
+For example, this given query set is tissue specific hypomethylation of mouse
+brain. Rufy3 is shown to be significantly enriched in this set and it is known
+to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
 
 # Feature Engineering
 
-In addition to hypothesis testing, knowYourCG also uses the curated database sets for feature engineering. We have a pre-curated summarized experiment containing a samplesheet and beta value matrix corresponding to about 467 MM285 samples with 20k probes. The samplesheet includes UIDs pertaining to the sample and several categorical/numerical features. To use this data for a linear model, we will extract the most relevant prevalent features. 
+In addition to hypothesis testing, knowYourCG also uses the curated database
+sets for feature engineering. We have a pre-curated summarized experiment
+containing a samplesheet and beta value matrix corresponding to about 467 MM285
+samples with 20k probes. The samplesheet includes UIDs pertaining to the sample
+and several categorical/numerical features. To use this data for a linear
+model, we will extract the most relevant prevalent features.
 
 ``` {r run-feature-engineering-get-data, echo=TRUE, eval=TRUE}
 se = sesameDataGet('MM285.20Kx467.SE')
@@ -251,18 +347,27 @@ betas = assay(se)
 print(head(samplesheet))
 ```
 
-We have found that it is incredibly computationally expensive to perform a linear model/generalized linear model on a feature set of individual CpGs. Additionally, interpreting the mechanism the significantly contributing CpGs is non-trivial due to their complex interactions. We hope to leverage these pre-curated database sets by using their beta value summary statistics as features instead. 
+We have found that it is incredibly computationally expensive to perform a
+linear model/generalized linear model on a feature set of individual
+CpGs. Additionally, interpreting the mechanism the significantly contributing
+CpGs is non-trivial due to their complex interactions. We hope to leverage
+these pre-curated database sets by using their beta value summary statistics as
+features instead.
 
-We will calculate the summary statistics for the betas matrix using a list of database sets. The default is to calculate the mean.
+We will calculate the summary statistics for the betas matrix using a list of
+database sets. The default is to calculate the mean.
 
 ``` {r run-feature-engineering-statistics}
 statistics = dbStats(betas, db_nms)
 head(statistics[, 1:5])
 ```
 
-Just from the few database set means above, we can see that CpG islands are consistently hypomethylated, which is consistent with known biology. 
+Just from the few database set means above, we can see that CpG islands are
+consistently hypomethylated, which is consistent with known biology.
 
-Using the samplesheet and beta values, we can create a singular data for linear models. Each categorical variable should be caste as a factor with a reference level. Each numerical variable should be expressed appropriately as well.
+Using the samplesheet and beta values, we can create a singular data for linear
+models. Each categorical variable should be caste as a factor with a reference
+level. Each numerical variable should be expressed appropriately as well.
 
 ``` {r feature-engineering-data-curation, warning=FALSE}
 data = cbind(data.frame(samplesheet), statistics)
@@ -276,7 +381,8 @@ data$Mouse_Age_Days = as.numeric(data$Mouse_Age_Days)
 data$Mouse_Age_Months = as.numeric(data$Mouse_Age_Months)
 ```
 
-A linear model can finally be constructed using this data. Since there are only 20 samples, we will use use four of the database summary statistics.
+A linear model can finally be constructed using this data. Since there are only
+20 samples, we will use use four of the database summary statistics.
 
 ``` {r feature-engineering-linear-model}
 model = lm(Mouse_Age_Days ~ Sex + Strain_Corrected + Tissue_Corrected +

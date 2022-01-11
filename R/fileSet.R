@@ -70,8 +70,8 @@ initFileSet <- function(map_path, platform, samples,
         samples = sort(samples),
         inc = inc # bytes per storage
     ), class='fileSet')
-    fset$n = length(fset$probes)
-    fset$m = length(fset$samples)
+    fset$n <- length(fset$probes)
+    fset$m <- length(fset$samples)
 
     message(
         'Allocating space for ', fset$m, ' ',
@@ -232,7 +232,7 @@ sliceFileSet <- function(
 #' 
 #' @export
 print.fileSet <- function(x, ...) {
-    cat('File Set for', x$n,
+    message('File Set for', x$n,
         'probes and', x$m, 'samples.\n')
 }
 
