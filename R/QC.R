@@ -56,137 +56,10 @@ setMethod("show", "sesameQC", function(object)  {
         }
         cat("\n")
     }
-
-    ## if ("rankDetect" %in% names(s)) {
-    ##     cat('=======================\n')
-    ##     cat('=     Quality Rank    =\n')
-    ##     cat('=======================\n')
-    ##     cat(sprintf("Probe detection rate beats %1.2f%% of %d public %s data.\n",
-    ##         s$rankDetect * 100, s$rankN, s$rankPfm))
-    ##     cat(sprintf("Mean signal intensity beats %1.2f%% of %d public %s data.\n",
-    ##         s$rankIntens * 100, s$rankN, s$rankPfm))
-    ##     cat("\n")
-    ## }
-    
-    ## if ("num_probes" %in% names(s)) {
-    ##     cat('=======================\n')
-    ##     cat('=   Number of Probes  =\n')
-    ##     cat('=======================\n')
-    ##     cat('No. probes (num_probes_all)    ', s$num_probes_all, '\n')
-    ##     cat(sprintf(
-    ##         'No. probes: (num_probes_II)     %d (%1.3f%%)\n',
-    ##         s$num_probes_II, s$num_probes_II / s$num_probes_all * 100))
-    ##     cat(sprintf(
-    ##         'No. probes: (num_probes_IR)     %d (%1.3f%%)\n',
-    ##         s$num_probes_IR, s$num_probes_IR / s$num_probes_all * 100))
-    ##     cat(sprintf(
-    ##         'No. probes: (num_probes_IG)     %d (%1.3f%%)\n',
-    ##         s$num_probes_IG, s$num_probes_IG / s$num_probes_all * 100))
-    ##     cat('\n')
-    ## }
-
-    ## if ("mean_intensity" %in% names(s)) {
-    ##     cat('=======================\n')
-    ##     cat('=      Intensities    =\n')
-    ##     cat('=======================\n')
-    ##     cat('M/U (mean_intensity):          ', s$mean_intensity, '\n')
-    ##     cat('M+U (mean_intensity_total):    ', s$mean_intensity_total,'\n')
-
-    ##     cat('\n-- Infinium II --\n')
-    ##     cat('Mean Intensity (mean_ii):      ', s$mean_ii, '\n')
-        
-    ##     cat('\n-- Infinium I (Red) -- \n')
-    ##     cat('Mean Intensity (in-band):      ', s$mean_inb_red, '\n')
-    ##     cat('Mean Intensity (out-of-band):  ', s$mean_oob_red, '\n')
-        
-    ##     cat('\n-- Infinium I (Grn) -- \n')
-    ##     cat('Mean Intensity (in-band):      ', s$mean_inb_grn, '\n')
-    ##     cat('Mean Intensity (out-of-band):  ', s$mean_oob_grn, '\n')
-    ##     cat('\n')
-    ## }
-
-    ## if ("InfI_switch_R2R" %in% names(s)) {
-    ##     cat('===================\n')
-    ##     cat('=  Color Channel  =\n')
-    ##     cat('===================\n')
-    ##     cat('\n-- Infinium I (Red) -- \n')
-    ##     cat('No. Probes Consistent Channel: ', s$InfI_switch_R2R, '\n')
-    ##     cat('No. Probes Swapped Channel:    ', s$InfI_switch_R2G, '\n')
-        
-    ##     cat('\n-- Infinium I (Grn) -- \n')
-    ##     cat('No. Probes Consistent Channel: ', s$InfI_switch_G2G, '\n')
-    ##     cat('No. Probes Swapped Channel:    ', s$InfI_switch_G2R, '\n')
-    ##     cat('\n')
-    ## }
-
-    ## if ("medR" %in% names(s)) {
-    ##     cat('=================\n')
-    ##     cat('=    Dye bias   =\n')
-    ##     cat('=================\n')
-    ##     cat('\n-- Infinium I (Red) -- \n')
-    ##     cat('All Probe Median Signal (medR): ', s$medR, '\n')
-    ##     cat('Top 20 Probe Median (topR):     ', s$topR, '\n')
-    ##     cat('\n-- Infinium I (Grn) -- \n')
-    ##     cat('All Probe Median Signal (medG): ', s$medG, '\n')
-    ##     cat('Top 20 Probe Median (topG):     ', s$topG, '\n')
-    ##     cat('\n-- Dye Bias --\n')
-    ##     cat('Median R/G Ratio (RGratio):     ', s$RGratio, '\n')
-    ##     cat('Top R/G vs global (RGdistort):  ', s$RGdistort, '\n')
-    ##     cat('\n')
-    ## }
-
-    ## if("num_nondt" %in% names(s)) {
-    ##     cat('===================\n')
-    ##     cat('=    Detection    =\n')
-    ##     cat('===================\n')
-    ##     cat('N. detection fail.(num_nondt):',
-    ##         sprintf('%d (%1.1f%%)\n', s$num_nondt, s$frac_nondt*100))
-        
-    ##     for (pt in c('cg','ch','rs')) {
-    ##         cat(sprintf('\n-- %s probes --\n', pt))
-    ##         cat('N. probes:                    ',
-    ##             s[[paste0('num_probes_', pt)]], '\n')
-    ##         cat('N. detection failure:         ',
-    ##             sprintf('%d (%1.1f%%)\n',
-    ##                 s[[paste0('num_nondt_', pt)]],
-    ##                 s[[paste0('frac_nondt_', pt)]]*100))
-    ##     }
-    ## }
-
-    ## if("mean_beta" %in% names(s)) {
-    ##     cat('=======================\n')
-    ##     cat('=      Beta Values    =\n')
-    ##     cat('=======================\n')
-    ##     cat('Mean Betas (mean_beta):        ', s$mean_beta, '\n')
-    ##     cat('Median Betas (median_beta):    ', s$median_beta, '\n')
-    ##     cat(sprintf('%%Unmethylated (B < 0.3):     %1.1f%%\n', s$Frac_Unmeth))
-    ##     cat(sprintf('%%Methylated (B > 0.7):       %1.1f%%\n', s$Frac_Meth))
-    ##     cat('No. probes w/ NA (num_na):     ',
-    ##         sprintf('%d (%1.1f%%)\n', s$num_na, s$frac_na * 100))
-
-    ##     for (pt in c('cg','ch','rs')) {
-    ##         cat(sprintf('\n-- %s probes --\n', pt))
-    ##         cat('Mean Betas:                    ',
-    ##             s[[paste0('mean_beta_', pt)]], '\n')
-    ##         cat('Median Betas:                  ',
-    ##             s[[paste0('median_beta_', pt)]], '\n')
-    ##         cat(sprintf(
-    ##             '%%Unmethylated (B < 0.3):        %1.1f%%\n',
-    ##             s[[paste0('frac_unmeth_', pt)]]))
-    ##         cat(sprintf(
-    ##             '%%Methylated (B > 0.7):          %1.1f%%\n',
-    ##             s[[paste0('frac_meth_', pt)]]))
-    ##         cat('No. probes w/ NA (num_na):     ',
-    ##             sprintf('%d (%1.1f%%)\n',
-    ##                 s[[paste0('num_na_', pt)]],
-    ##                 s[[paste0('frac_na_', pt)]] * 100))
-    ##     }
-    ##     cat('\n')
-    ## }
 })
 
-#' This function compares the input sample with public data
-#' in terms of detection success rate.
+#' This function compares the input sample with public data.
+#' Only overlapping metrics will be compared.
 #'
 #' @param sdf a raw (unprocessed) \code{SigDF}
 #' @param publicQC output of sesameQC_publicQC, optional
@@ -214,43 +87,6 @@ sesameQC_rankStats <- function(qc, publicQC=NULL) {
     s$rankN <- nrow(publicQC)
     new("sesameQC", stat=s, group=g)
 }
-
-## #' Calculate QC stat data frame from multiple SigDFs
-## #'
-## #' @param sdfs a list of SigDFs
-## #' @param funs a sesameQC_calcStats_* function or a list of them
-## #' default to sesameQC_calcStats_detection
-## #' @return a data frame
-## #' @examples
-## #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-## #' sesameQC_calcStatDF(sdfs)
-## #' sesameQC_calcStatDF(sdfs, sesameQC_calcStats_numProbes)
-## #' sesameQC_calcStatDF(sdfs,
-## #'     c(sesameQC_calcStats_numProbes, sesameQC_calcStats_channel))
-## #' @export
-## sesameQC_calcStatDF <- function(sdfs, funs = NULL) {
-
-##     if (is.null(funs)) {
-##         funs <- c(sesameQC_calcStats_detection,
-##             sesameQC_calcStats_rank)
-##     }
-
-##     if (is(sdfs, "SigDF")) { # 1 sample is given
-##         sdfs = list(sample=sdfs)
-##     }
-    
-##     ## return a data frame on a list of SigDF
-##     stopifnot(is(sdfs,"list") && is(sdfs[[1]],"SigDF"))
-##     if (is(funs, "function")) { funs <- c(funs) }
-    
-##     qc <- do.call(cbind, lapply(funs, function(func) {
-##         do.call(rbind, lapply(sdfs, function(x) {
-##             as.data.frame(func(x)@stat)
-##         }))
-##     }))
-##     qc$sample_name <- names(sdfs)
-##     qc
-## }
 
 #' A convenience function to call one or multiple
 #' sesameQC_calcStats functions
@@ -630,63 +466,63 @@ sesameQC_plotIntensVsBetas <- function(
     }
 }
 
-#' Bar plot of probe detection success rate
-#'
-#' @param sdfs a list of SigDFs
-#' @return a bar plot comparing probe success rates
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-#' sesameQC_plotBarDetection(sdfs)
-#' @import ggplot2
-#' @importFrom wheatmap WGG
-#' @export
-sesameQC_plotBarDetection <- function(sdfs) {
-    sample_name <- mean_intensity <- mean_intensity_total <- NULL
-    x <- sesameQC_calcStats(sdfs, sesameQC_calcStats_detection)
+## #' Bar plot of probe detection success rate
+## #'
+## #' @param sdfs a list of SigDFs
+## #' @return a bar plot comparing probe success rates
+## #' @examples
+## #' sesameDataCache("EPIC") # if not done yet
+## #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
+## #' sesameQC_plotBarDetection(sdfs)
+## #' @import ggplot2
+## #' @importFrom wheatmap WGG
+## #' @export
+## sesameQC_plotBarDetection <- function(sdfs) {
+##     sample_name <- mean_intensity <- mean_intensity_total <- NULL
+##     x <- sesameQC_calcStats(sdfs, sesameQC_calcStats_detection)
 
-    p1 <- ggplot(x) +
-        geom_bar(aes(sample_name, num_na_cg), stat='identity') +
-        xlab('Sample') + ylab('N. detection failure') +
-        theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+##     p1 <- ggplot(x) +
+##         geom_bar(aes(sample_name, num_na_cg), stat='identity') +
+##         xlab('Sample') + ylab('N. detection failure') +
+##         theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
     
-    p2 <- ggplot(x) +
-        geom_bar(aes(sample_name, (1-frac_na_cg)*100), stat='identity') +
-        xlab('Sample') + ylab('Detection success (%)') +
-        theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+##     p2 <- ggplot(x) +
+##         geom_bar(aes(sample_name, (1-frac_na_cg)*100), stat='identity') +
+##         xlab('Sample') + ylab('Detection success (%)') +
+##         theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
     
-    WGG(p1) + WGG(p2, RightOf())
-}
+##     WGG(p1) + WGG(p2, RightOf())
+## }
 
-#' Bar plot of signal intensities
-#'
-#' @param sdfs a list of SigDFs
-#' @return a bar plot comparing signal intensities
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-#' sesameQC_plotBarIntens(sdfs)
-#' @import ggplot2
-#' @importFrom wheatmap WGG
-#' @export
-sesameQC_plotBarIntens <- function(sdfs) {
-    sample_name <- mean_intensity <- mean_intensity_total <- NULL
-    x <- sesameQC_calcStats(sdfs, sesameQC_calcStats_intens)
+## #' Bar plot of signal intensities
+## #'
+## #' @param sdfs a list of SigDFs
+## #' @return a bar plot comparing signal intensities
+## #' @examples
+## #' sesameDataCache("EPIC") # if not done yet
+## #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
+## #' sesameQC_plotBarIntens(sdfs)
+## #' @import ggplot2
+## #' @importFrom wheatmap WGG
+## #' @export
+## sesameQC_plotBarIntens <- function(sdfs) {
+##     sample_name <- mean_intensity <- mean_intensity_total <- NULL
+##     x <- sesameQC_calcStats(sdfs, sesameQC_calcStats_intens)
 
-    p1 <- ggplot(x) +
-        geom_bar(aes(sample_name, mean_intensity), stat='identity') +
-        xlab('Sample') + ylab('Mean Intensity') +
-        ylim(0, max(x$mean_intensity)*1.2) +
-        theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+##     p1 <- ggplot(x) +
+##         geom_bar(aes(sample_name, mean_intensity), stat='identity') +
+##         xlab('Sample') + ylab('Mean Intensity') +
+##         ylim(0, max(x$mean_intensity)*1.2) +
+##         theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
 
-    p2 <- ggplot(x) +
-        geom_bar(aes(sample_name, mean_intensity_total), stat='identity') +
-        xlab('Sample') + ylab('Mean M+U Intensity') +
-        ylim(0, max(x$mean_intensity_total)*1.2) +
-        theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+##     p2 <- ggplot(x) +
+##         geom_bar(aes(sample_name, mean_intensity_total), stat='identity') +
+##         xlab('Sample') + ylab('Mean M+U Intensity') +
+##         ylim(0, max(x$mean_intensity_total)*1.2) +
+##         theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
 
-    WGG(p1) + WGG(p2, RightOf())
-}
+##     WGG(p1) + WGG(p2, RightOf())
+## }
 
 #' Bar plot of color channel switch
 #'
@@ -695,33 +531,30 @@ sesameQC_plotBarIntens <- function(sdfs) {
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-#' sesameQC_plotBarChannel(sdfs)
+#' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats_detection))
 #' @import ggplot2
 #' @importFrom wheatmap WGG
 #' @export
-sesameQC_plotBarChannel <- function(sdfs) {
-    sample_name <- mean_intensity <- mean_intensity_total <- NULL
-    x <- sesameQC_calcStats(sdfs, sesameQC_calcStats_channel)
+sesameQC_plotBar <- function(qcs) {
+    if (is(qcs, "sesameQC")) { qcs <- list(qcs); }
+    df <- do.call(cbind, lapply(qcs, as.data.frame))
 
-    p1 <- ggplot(x) +
-        geom_bar(aes(sample_name, InfI_switch_R2G),
-            fill="seagreen", stat="identity") +
-        xlab("Sample") + ylab("Infinium-I R>G switch") +
-        theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-    
-    p2 <- ggplot(x) +
-        geom_bar(aes(sample_name, InfI_switch_G2R),
-            fill="red", stat="identity") +
-        xlab("Sample") + ylab("Infinium-I G>R switch") +
-        theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-    
-    WGG(p1) + WGG(p2, RightOf())
+    plt <- NULL
+    for (x in colnames(df)) {
+        if (x == "sample_name") { next; }
+        p <- ggplot(df) + geom_bar(aes_string("sample_name", x), stat="identity") + ylab(x)
+        if (is.null(plt)) {
+            plt <- WGG(p)
+        } else {
+            plt <- plt + WGG(p, Beneath())
+        }
+    }
 }
 
-sesameQC_plotHeatSNPs <- function(betas) {
-    vafs <- betas[grep('^rs', rownames(betas)),]
-    WHeatmap(vafs)
-}
+## sesameQC_plotHeatSNPs <- function(betas) {
+##     vafs <- betas[grep('^rs', rownames(betas)),]
+##     WHeatmap(vafs)
+## }
 
 #' Retrieve stats of public data of similar nature
 #' e.g., tissue, FFPE vs non-FFPE, etc.

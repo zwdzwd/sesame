@@ -5,10 +5,12 @@
 \title{Generate summary numbers that indicative of experiment quality
 based on detection.}
 \usage{
-sesameQC_calcStats_detection(sdf)
+sesameQC_calcStats_detection(sdf, qc = NULL)
 }
 \arguments{
 \item{sdf}{a \code{SigDF} object}
+
+\item{qc}{existing sesameQC object to add to (optional)}
 }
 \value{
 a sesameQC

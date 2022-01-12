@@ -5,10 +5,12 @@
 \title{Generate summary numbers that indicative of experiment quality
 based on intensity.}
 \usage{
-sesameQC_calcStats_intens(sdf)
+sesameQC_calcStats_intens(sdf, qc = NULL)
 }
 \arguments{
 \item{sdf}{a \code{SigDF} object}
+
+\item{qc}{existing sesameQC object to add to (optional)}
 }
 \value{
 a sesameQC

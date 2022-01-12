@@ -2,26 +2,23 @@
 % Please edit documentation in R/QC.R
 \name{sesameQC_calcStats}
 \alias{sesameQC_calcStats}
-\title{Calculate QC stats on multiple SigDFs}
+\title{A convenience function to call one or multiple
+sesameQC_calcStats functions}
 \usage{
-sesameQC_calcStats(sdfs, funs = NULL)
+sesameQC_calcStats(sdf, funs = NULL, use_all = FALSE)
 }
 \arguments{
-\item{sdfs}{a list of SigDFs}
+\item{sdf}{a SigDF object}
 
 \item{funs}{a sesameQC_calcStats_* function or a list of them
 default to sesameQC_calcStats_detection}
 }
-\value{
-a data frame
-}
 \description{
-Calculate QC stats on multiple SigDFs
+A convenience function to call one or multiple
+sesameQC_calcStats functions
 }
 \examples{
-sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-sesameQC_calcStats(sdfs)
-sesameQC_calcStats(sdfs, sesameQC_calcStats_numProbes)
-sesameQC_calcStats(sdfs,
-    c(sesameQC_calcStats_numProbes, sesameQC_calcStats_channel))
+sesameDataCache("EPIC") # if not done yet
+sdf <- sesameDataGet('EPIC.1.SigDF')
+sesameQC_calcStats(sdf)
 }

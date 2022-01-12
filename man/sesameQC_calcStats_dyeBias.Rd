@@ -5,10 +5,12 @@
 \title{Quantify deviation of dye bias in the high signal range from the
 global median}
 \usage{
-sesameQC_calcStats_dyeBias(sdf)
+sesameQC_calcStats_dyeBias(sdf, qc = NULL)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
+
+\item{qc}{existing sesameQC object to add to (optional)}
 }
 \value{
 a sesameQC

@@ -17,5 +17,5 @@ The function outputs the number of probes in each category and the first
 few signal measurements.
 }
 \examples{
-print(new("sesameQC"))
+new("sesameQC")
 }

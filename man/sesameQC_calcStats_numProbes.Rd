@@ -5,10 +5,12 @@
 \title{Generate summary numbers that indicative of experiment quality
 based on number of probes.}
 \usage{
-sesameQC_calcStats_numProbes(sdf)
+sesameQC_calcStats_numProbes(sdf, qc = NULL)
 }
 \arguments{
 \item{sdf}{a \code{SigDF} object}
+
+\item{qc}{existing sesameQC object to add to (optional)}
 }
 \value{
 a sesameQC
