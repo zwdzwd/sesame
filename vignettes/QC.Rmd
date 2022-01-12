@@ -11,52 +11,153 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Quality Ranking
-
-```{r echo=FALSE, message=FALSE}
-options(rmarkdown.html_vignette.check_title = FALSE)
+```{r message=FALSE, results="hide"}
 library(sesame)
 sesameDataCacheAll()
+```
+
+# Rank quality
+
+```{r echo=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 Probe detection success rate is the main QC metric for an array
 experiment.
 Sesame provide convenient function to compare your sample with
-public data sets processed with the same pipeline. All you need
-is a raw SigSet.
+public data sets. All you need is a raw SigSet.
 ```{r}
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sesameQC_rankDetectionSuccess(sdf)
 sesameQC_rankMeanIntensity(sdf)
 ```
 
-## Signal Background
+# Calculate quality metrics
 
-The background level is given by `mean_oob_grn` and `mean_oob_red`
-```{r message = FALSE}
-sdfs = sesameDataGet("EPIC.5.SigDF.normal")
-```
+`sesameQC_calcStats` calculates QC stats from one or a list of SigDFs. Instead
+of returning a single `sesameQC` object, a data.frame combining multiple
+samples will be returned.
 
 ```{r}
-library(ggplot2)
-qc5_intens = sesameQC_calcStats(sdfs, sesameQC_calcStats_intens)
-ggplot(qc5_intens,
-    aes(x = mean_oob_grn, y= mean_oob_red, label = sample_name)) +
-    geom_point() + geom_text(hjust = -0.1, vjust = 0.1) +
-    geom_abline(intercept = 0, slope = 1, linetype = 'dotted') +
-    xlab('Green Background') + ylab('Red Background') +
-    xlim(c(200,600)) + ylim(c(200,600))
+sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
+sesameQC_calcStats(sdfs)
 ```
 
-## Mean Intensity
+The 2nd argument of the function is optional and specifies one of the
+`sesameQC_calcStats_` function listed below (the "Available quality metrics"
+section).
 
-The mean {M,U} intensity can be reached by `mean_intensity`.
-Similarly, the mean M+U intensity can be reached by
-`mean_intensity_total`. Low intensities are symptomatic of low
-input or poor hybridization.
+By default, sesame calculates detection metrics
+
+```{r}
+sesameQC_calcStats(sdfs, sesameQC_calcStats_detection)
+```
+
+But one can choose to calculate other metrics or a combination of metrics:
+
+```{r}
+sesameQC_calcStats(sdfs,
+    c(sesameQC_calcStats_dyeBias, sesameQC_calcStats_detection))
+```
+
+# Available quality metrics
+
+SeSAMe divides sample quality metrics into multiple groups. Each group of
+quality metrics can be generated using a dedicated function. These functions
+share a `sesameQC_calcStats_` prefix.
+
+For example, `sesameQC_calcStats_intens`, generates signal intensity related
+quality metrics. The following demonstrates the use of these functions.
+
+## Signal intensity
+
+```{r}
+sesameQC_calcStats_intens(sdf)
+```
+
+## Signal detection
+
+```{r}
+sesameQC_calcStats_detection(sdf)
+```
+
+## Dye bias
+
+```{r}
+sesameQC_calcStats_dyeBias(sdf)
+```
+
+## Probe count
+
+```{r}
+sesameQC_calcStats_numProbes(sdf)
+```
+
+## Color channel switch
+
+```{r}
+sesameQC_calcStats_channel(sdf)
+```
+
+## Beta value distribution
+
+```{r}
+sesameQC_calcStats_betas(sdf)
+```
+
+# Example quality control plots
+
+```{r result="hide", message=FALSE}
+library(ggplot2)
+library(wheatmap)
+```
+
+## Probe success rate comparison
+
+The fraction of detection failures are signs of masking due to variety of
+reasons including failed detection, high background, putative low quality
+probes etc. This number can be reached in `frac_na_cg` and `num_na_cg` (the cg
+stands for CpG probes, so we also have `num_na_ch` and `num_na_rs`)
+
+```{r}
+qc5_detection <- sesameQC_calcStats(sdfs, sesameQC_calcStats_detection)
+p1 <- ggplot(qc5_detection) +
+    geom_bar(aes(sample_name, num_na_cg), stat='identity') +
+    xlab('Sample') + ylab('N. Probes with detection failure') +
+    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+p2 <- ggplot(qc5_detection) +
+    geom_bar(aes(sample_name, frac_na_cg*100), stat='identity') +
+    xlab('Sample') + ylab('Fraction of NAs (%)') +
+    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
+WGG(p1) + WGG(p2, RightOf())
+```
+
+## Dye bias Q-Q plot
+
+Dye bias is shown by an off-diagonal q-q plot of the red (x-axis) and green
+signal (y-axis).
+
+```{r fig.height=5, fig.width=5, fig.align="center"}
+sesameQC_plotRedGrnQQ(sdf)
+```
+
+## Intensity-beta plot
+
+Beta value is more influenced by signal background for probes with low signal
+intensities. The following plot shows this dependency and the extent of probes
+with low signal intensity.
+
+```{r fig.height=5, fig.width=5, fig.align="center"}
+sesameQC_plotIntensVsBetas(sdf)
+```
+
+## Signal intensity
+
+Low intensities are symptomatic of low input or poor hybridization.
+The following compares mean intensity among samples.
 
 ```{r warning = FALSE}
-library(wheatmap)
+qc5_intens <- sesameQC_calcStats(sdfs, sesameQC_calcStats_intens)
 p1 <- ggplot(qc5_intens) +
     geom_bar(aes(sample_name, mean_intensity), stat='identity') +
     xlab('Sample') + ylab('Mean Intensity') +
@@ -70,45 +171,26 @@ p2 <- ggplot(qc5_intens) +
 WGG(p1) + WGG(p2, RightOf())
 ```
 
-## Probe Success Rate
-
-The fraction of NAs are signs of masking due to variety of reasons
-including failed detection, high background, putative low quality
-probes etc. This number can be reached in `frac_na_cg` and 
-`num_na_cg` (the cg stands for CpG probes, so we also have
-`num_na_ch` and `num_na_rs`)
-```{r}
-qc5_detection = sesameQC_calcStats(sdfs, sesameQC_calcStats_detection)
-p1 <- ggplot(qc5_detection) +
-    geom_bar(aes(sample_name, num_na_cg), stat='identity') +
-    xlab('Sample') + ylab('Number of NAs') +
-    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-p2 <- ggplot(qc5_detection) +
-    geom_bar(aes(sample_name, frac_na_cg*100), stat='identity') +
-    xlab('Sample') + ylab('Fraction of NAs (%)') +
-    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-WGG(p1) + WGG(p2, RightOf())
-```
-
-## Color Channel Switch
+## Color channel switch
 
 The fraction of color channel switch can be found in 
 `InfI_switch_G2R` and `InfI_switch_R2G`. These numbers are 
 symptomatic of how Infinium I probes are affected by SNP-induced
 color channel switching.
+
 ```{r fig.height=3, fig.width=8}
-qc5_channel = sesameQC_calcStats(sdfs, sesameQC_calcStats_channel)
-p1 = ggplot(qc5_channel) +
+qc5_channel <- sesameQC_calcStats(sdfs, sesameQC_calcStats_channel)
+p1 <- ggplot(qc5_channel) +
    geom_bar(aes(sample_name, InfI_switch_R2G),
    fill="seagreen", stat="identity") +
    xlab("Sample") + ylab("Infinium-I R>G switch")
-p2 = ggplot(qc5_channel) +
+p2 <- ggplot(qc5_channel) +
    geom_bar(aes(sample_name, InfI_switch_G2R), fill="red", stat="identity") +
    xlab("Sample") + ylab("Infinium-I G>R switch")
 WGG(p1) + WGG(p2, RightOf())
 ```
 
-## Bisulfite Conversion
+## Bisulfite conversion
 
 Infinium platforms are intrinsically robust to incomplete bisulfite conversion
 as non-converted probes would fail to hybridize to the target. Residual
@@ -116,37 +198,25 @@ incomplete bisulfite conversion can be quantified using GCT score based on
 C/T-extension probes. Details of this method can be found in
 [Zhou et al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
 The closer the score to 1.0, the more complete the bisulfite conversion.
+
 ```{r}
 sdf <- sesameDataGet('EPIC.1.SigDF')
 bisConversionControl(sdf)
 ```
 
-# Extract Genotypes
+# Extract genotypes
 
 SeSAMe can output explicit and Infinium-I-derived SNP to VCF.
 This information can be used to identify sample swaps.
 
 ```{r}
-annoS = sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
-annoI = sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
+annoS <- sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
+annoI <- sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
 head(formatVCF(sdf, annoS=annoS, annoI=annoI))
 ```
 
 One can output to actual VCF file with a header by `formatVCF(sdf,
 vcf=path_to_vcf)`.
-
-# Other Quality Metrics
-
-SeSAMe provides a set of quality control functions. These include
-`sesameQC_calcStats_intens`, `sesameQC_calcStats_numProbes`,
-`sesameQC_calcStats_channel`, `sesameQC_calcStats_detection`,
-and `sesameQC_calcStats_betas`, and sesameQC_calcStats, which calculates
-all the qc stats. Each sesameQC_calcStats_ function returns a data
-frame. Using `verbose=TRUE` print readable information to the console.
-```{r}
-sdf = sesameDataGet("EPIC.1.SigDF")
-sesameQC_calcStats_channel(sdfs[[1]])
-```
 
 # Session Info
 

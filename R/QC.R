@@ -60,7 +60,7 @@ setMethod("show", "sesameQC", function(object)  {
         cat('===================\n')
         cat('\n-- Infinium I (Red) -- \n')
         cat('No. Probes Consistent Channel: ', s$InfI_switch_R2R, '\n')
-        cat('No. Porbes Swapped Channel:    ', s$InfI_switch_R2G, '\n')
+        cat('No. Probes Swapped Channel:    ', s$InfI_switch_R2G, '\n')
         
         cat('\n-- Infinium I (Grn) -- \n')
         cat('No. Probes Consistent Channel: ', s$InfI_switch_G2G, '\n')
@@ -149,6 +149,10 @@ sesameQC_calcStats <- function(sdfs, funs = NULL) {
         funs <- c(sesameQC_calcStats_detection)
     }
 
+    if (is(sdfs, "SigDF")) { # 1 sample is given
+        sdfs = list(sample=sdfs)
+    }
+    
     ## return a data frame on a list of SigDF
     stopifnot(is(sdfs,"list") && is(sdfs[[1]],"SigDF"))
     if (is(funs, "function")) { funs <- c(funs) }
@@ -161,33 +165,6 @@ sesameQC_calcStats <- function(sdfs, funs = NULL) {
     qc$sample_name <- names(sdfs)
     qc
 }
-
-## #' Generate summary numbers that indicative of experiment quality
-## #' Please provide a raw SigDF(before any preprocessing). Usually
-## #' directly from readIDATpair
-## #' 
-## #' @param sdf a \code{SigDF} object
-## #' @return a sesameQC class object
-## #' @examples
-## #' sesameDataCache("EPIC") # if not done yet
-## #' sdf <- sesameDataGet('EPIC.1.SigDF')
-## #' sesameQC_calcStats(sdf)
-## #' @export
-## sesameQC_calcStats <- function(sdf) {
-##     if (is(sdf,"list") && is(sdf[[1]],"SigDF")) { # if given a list of SigDF
-##         qc <- do.call(rbind, lapply(
-##             sdf, function(x) as.data.frame(sesameQC_calcStats(x))))
-##         qc$sample_name <- names(sdf)
-##         return(qc)
-##     }
-##     qc <- list()
-##     qc <- c(qc, sesameQC_calcStats_numProbes(sdf))
-##     qc <- c(qc, sesameQC_calcStats_intens(sdf))
-##     qc <- c(qc, sesameQC_calcStats_channel(sdf))
-##     qc <- c(qc, sesameQC_calcStats_detection(sdf))
-##     qc <- c(qc, sesameQC_calcStats_betas(sdf))
-##     invisible(qc)
-## }
 
 #' Generate summary numbers that indicative of experiment quality
 #' based on number of probes.
@@ -205,11 +182,11 @@ sesameQC_calcStats <- function(sdfs, funs = NULL) {
 sesameQC_calcStats_numProbes <- function(sdf) {
 
     s <- list(
-        num_probes <- nrow(sdf),
-        num_probes_all <- nrow(sdf),
-        num_probes_II <- nrow(InfII(sdf)),
-        num_probes_IR <- nrow(InfIR(sdf)),
-        num_probes_IG <- nrow(InfIG(sdf)))
+        num_probes = nrow(sdf),
+        num_probes_all = nrow(sdf),
+        num_probes_II = nrow(InfII(sdf)),
+        num_probes_IR = nrow(InfIR(sdf)),
+        num_probes_IG = nrow(InfIG(sdf)))
     new("sesameQC", stat=s)
 }
 
@@ -355,41 +332,6 @@ sesameQC_calcStats_betas <- function(sdf) {
     }
     new("sesameQC", stat=s)
 }
-
-## #' Print sesameQC object
-## #'
-## #' @param x a sesameQC object
-## #' @param ... extra parameter for print
-## #' @return print sesameQC result on screen
-## #' @examples
-## #' sesameDataCache("EPIC") # if not done yet
-## #' sdf <- sesameDataGet('EPIC.1.SigDF')
-## #' sesameQC_printStats(sesameQC_calcStats(sdf))
-## #' @export
-## sesameQC_printStats <- function(x, ...) {
-## }
-
-
-## #' Coerce a sesameQC into a dataframe
-## #'
-## #' @param x          a sesameQC object
-## #' @param row.names  see as.data.frame
-## #' @param optional   see as.data.frame
-## #' @param ...        see as.data.frame
-## #' @return           a data.frame
-## #' @examples
-## #' sesameDataCache("EPIC") # if not done yet
-## #' sdf <- sesameDataGet('EPIC.1.SigDF')
-## #' qc <- sesameQC(sdf)
-## #' df <- as.data.frame(qc)
-## #' @method as.data.frame sesameQC
-## #' @export
-## as.data.frame.sesameQC <- function(
-##     x, row.names = NULL, optional = FALSE, ...) {
-
-##     class(x) <- NULL;
-##     as.data.frame(x)
-## }
 
 #' Plot red-green QQ-Plot using Infinium-I Probes
 #'
