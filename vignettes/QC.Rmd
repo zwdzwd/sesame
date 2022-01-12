@@ -25,11 +25,19 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 Probe detection success rate is the main QC metric for an array
 experiment.
 Sesame provide convenient function to compare your sample with
-public data sets. All you need is a raw SigSet.
+public data sets. One will need a raw SigSet. The function returns
+the fraction of public data sets the target data has beaten in
+detection success rate.
+
 ```{r}
 sdf <- sesameDataGet('EPIC.1.SigDF')
-sesameQC_rankDetectionSuccess(sdf)
-sesameQC_rankMeanIntensity(sdf)
+sesameQC_calcStats_rank(sdf)
+```
+
+One can calculate the quality rank
+```{r}
+sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
+lapply(sdfs, sesameQC_rankStats)
 ```
 
 # Calculate quality metrics
@@ -39,12 +47,11 @@ of returning a single `sesameQC` object, a data.frame combining multiple
 samples will be returned.
 
 ```{r}
-sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
 sesameQC_calcStats(sdfs)
 ```
 
 The 2nd argument of the function is optional and specifies one of the
-`sesameQC_calcStats_` function listed below (the "Available quality metrics"
+`sesameQC_calcStats_*` function listed below (the "Available quality metrics"
 section).
 
 By default, sesame calculates detection metrics
@@ -112,24 +119,35 @@ library(ggplot2)
 library(wheatmap)
 ```
 
-## Probe success rate comparison
+## Probe success rate
 
 The fraction of detection failures are signs of masking due to variety of
 reasons including failed detection, high background, putative low quality
 probes etc. This number can be reached in `frac_na_cg` and `num_na_cg` (the cg
 stands for CpG probes, so we also have `num_na_ch` and `num_na_rs`)
 
-```{r}
-qc5_detection <- sesameQC_calcStats(sdfs, sesameQC_calcStats_detection)
-p1 <- ggplot(qc5_detection) +
-    geom_bar(aes(sample_name, num_na_cg), stat='identity') +
-    xlab('Sample') + ylab('N. Probes with detection failure') +
-    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-p2 <- ggplot(qc5_detection) +
-    geom_bar(aes(sample_name, frac_na_cg*100), stat='identity') +
-    xlab('Sample') + ylab('Fraction of NAs (%)') +
-    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-WGG(p1) + WGG(p2, RightOf())
+```{r fig.height=3, fig.width=8}
+sesameQC_plotBarDetection(sdfs)
+```
+
+## Signal intensity
+
+Low intensities are symptomatic of low input or poor hybridization.
+The following compares mean intensity among samples.
+
+```{r fig.height=3, fig.width=8}
+sesameQC_plotBarIntens(sdfs)
+```
+
+## Color channel switch
+
+The fraction of color channel switch can be found in 
+`InfI_switch_G2R` and `InfI_switch_R2G`. These numbers are 
+symptomatic of how Infinium I probes are affected by SNP-induced
+color channel switching.
+
+```{r fig.height=3, fig.width=8}
+sesameQC_plotBarChannel(sdfs) 
 ```
 
 ## Dye bias Q-Q plot
@@ -151,46 +169,26 @@ with low signal intensity.
 sesameQC_plotIntensVsBetas(sdf)
 ```
 
-## Signal intensity
+# Extract genotypes
 
-Low intensities are symptomatic of low input or poor hybridization.
-The following compares mean intensity among samples.
+sesameDataGetAnno("")
 
-```{r warning = FALSE}
-qc5_intens <- sesameQC_calcStats(sdfs, sesameQC_calcStats_intens)
-p1 <- ggplot(qc5_intens) +
-    geom_bar(aes(sample_name, mean_intensity), stat='identity') +
-    xlab('Sample') + ylab('Mean Intensity') +
-    ylim(0,18000) +
-    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-p2 <- ggplot(qc5_intens) +
-    geom_bar(aes(sample_name, mean_intensity_total), stat='identity') +
-    xlab('Sample') + ylab('Mean M+U Intensity') +
-    ylim(0,18000) +
-    theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-WGG(p1) + WGG(p2, RightOf())
+SeSAMe can output explicit and Infinium-I-derived SNPs to create a VCF file.
+This information can be used to identify sample swaps.
+
+```{r message=FALSE, results="hide"}
+annoS <- sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
+annoI <- sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
 ```
 
-## Color channel switch
-
-The fraction of color channel switch can be found in 
-`InfI_switch_G2R` and `InfI_switch_R2G`. These numbers are 
-symptomatic of how Infinium I probes are affected by SNP-induced
-color channel switching.
-
-```{r fig.height=3, fig.width=8}
-qc5_channel <- sesameQC_calcStats(sdfs, sesameQC_calcStats_channel)
-p1 <- ggplot(qc5_channel) +
-   geom_bar(aes(sample_name, InfI_switch_R2G),
-   fill="seagreen", stat="identity") +
-   xlab("Sample") + ylab("Infinium-I R>G switch")
-p2 <- ggplot(qc5_channel) +
-   geom_bar(aes(sample_name, InfI_switch_G2R), fill="red", stat="identity") +
-   xlab("Sample") + ylab("Infinium-I G>R switch")
-WGG(p1) + WGG(p2, RightOf())
+```{r}
+head(formatVCF(sdf, annoS=annoS, annoI=annoI))
 ```
 
-## Bisulfite conversion
+One can output to actual VCF file with a header by `formatVCF(sdf,
+vcf=path_to_vcf)`.
+
+# Bisulfite conversion
 
 Infinium platforms are intrinsically robust to incomplete bisulfite conversion
 as non-converted probes would fail to hybridize to the target. Residual
@@ -203,20 +201,6 @@ The closer the score to 1.0, the more complete the bisulfite conversion.
 sdf <- sesameDataGet('EPIC.1.SigDF')
 bisConversionControl(sdf)
 ```
-
-# Extract genotypes
-
-SeSAMe can output explicit and Infinium-I-derived SNP to VCF.
-This information can be used to identify sample swaps.
-
-```{r}
-annoS <- sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
-annoI <- sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
-head(formatVCF(sdf, annoS=annoS, annoI=annoI))
-```
-
-One can output to actual VCF file with a header by `formatVCF(sdf,
-vcf=path_to_vcf)`.
 
 # Session Info
 
