@@ -135,6 +135,7 @@ sesameQC_calcStats <- function(sdf, funs = NULL) {
 
 .setGroup_detection <- function() {
     list("Detection" = c(
+        num_dtna    = "N. Probes w/ Missing Raw Intensity  ",
         num_dt      = "N. Probes w/ Detection Success      ",
         frac_dt     = "% Detection Success                 ",
         num_dt_cg   = "N. Probes w/ Detection Success (CG) ",
@@ -153,7 +154,9 @@ sesameQC_calcStats_detection <- function(sdf, qc = NULL) {
     if (group_nm %in% names(g)) { return(qc); }
     g[[group_nm]] <- g1[[group_nm]]
 
-    pvals <- pOOBAH(sdf, return.pval = TRUE)
+    pvals0 <- pOOBAH(sdf, return.pval = TRUE)
+    pvals <- na.omit(pvals0)
+    s$num_dtna <- sum(is.na(pvals0))
     s$num_dt <- sum(pvals <= 0.05)
     s$frac_dt <- s$num_dt / length(pvals)
     for (pt in c('cg','ch','rs')) {
@@ -202,8 +205,8 @@ sesameQC_calcStats_numProbes <- function(sdf, qc = NULL) {
         mean_inb_red      = "Mean sig. intens.(I.Red IB) ",
         mean_oob_grn      = "Mean sig. intens.(I.Grn OOB)",
         mean_oob_red      = "Mean sig. intens.(I.Red OOB)",
-        na_M              = "N. NA in M (all probes)     ",
-        na_U              = "N. NA in U (all probes)     ",
+        na_intensity_M    = "N. NA in M (all probes)     ",
+        na_intensity_U    = "N. NA in U (all probes)     ",
         na_intensity_ig   = "N. NA in raw intensity (IG) ",
         na_intensity_ir   = "N. NA in raw intensity (IR) ",
         na_intensity_ii   = "N. NA in raw intensity (II) "))
@@ -226,8 +229,8 @@ sesameQC_calcStats_intensity <- function(sdf, qc = NULL) {
     s$mean_oob_grn <- mean(c(dR$MG, dR$UG), na.rm = TRUE)
     s$mean_oob_red <- mean(c(dG$MR, dG$UR), na.rm = TRUE)
     mu <- signalMU(sdf)
-    s$na_M <- sum(is.na(mu$M))
-    s$na_U <- sum(is.na(mu$U))
+    s$na_intensity_M <- sum(is.na(mu$M))
+    s$na_intensity_U <- sum(is.na(mu$U))
     s$na_intensity_ig <- sum(is.na(c(dG$MG, dG$MR, dG$UG, dG$UR)))
     s$na_intensity_ir <- sum(is.na(c(dR$MG, dR$MR, dR$UG, dR$UR)))
     s$na_intensity_ii <- sum(is.na(c(d2$UG, d2$UR)))
