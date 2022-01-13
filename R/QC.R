@@ -202,6 +202,8 @@ sesameQC_calcStats_numProbes <- function(sdf, qc = NULL) {
         mean_inb_red      = "Mean sig. intens.(I.Red IB) ",
         mean_oob_grn      = "Mean sig. intens.(I.Grn OOB)",
         mean_oob_red      = "Mean sig. intens.(I.Red OOB)",
+        na_M              = "N. NA in M (all probes)     ",
+        na_U              = "N. NA in U (all probes)     ",
         na_intensity_ig   = "N. NA in raw intensity (IG) ",
         na_intensity_ir   = "N. NA in raw intensity (IR) ",
         na_intensity_ii   = "N. NA in raw intensity (II) "))
@@ -223,9 +225,12 @@ sesameQC_calcStats_intensity <- function(sdf, qc = NULL) {
     s$mean_inb_red <- mean(c(dR$MR, dR$UR), na.rm = TRUE)
     s$mean_oob_grn <- mean(c(dR$MG, dR$UG), na.rm = TRUE)
     s$mean_oob_red <- mean(c(dG$MR, dG$UR), na.rm = TRUE)
+    mu <- signalMU(sdf)
+    s$na_M <- sum(is.na(mu$M))
+    s$na_U <- sum(is.na(mu$U))
     s$na_intensity_ig <- sum(is.na(c(dG$MG, dG$MR, dG$UG, dG$UR)))
     s$na_intensity_ir <- sum(is.na(c(dR$MG, dR$MR, dR$UG, dR$UR)))
-    s$na_intensity_ii <- sum(is.na(c(dR$UG, dR$UR)))
+    s$na_intensity_ii <- sum(is.na(c(d2$UG, d2$UR)))
     
     new("sesameQC", stat=s, group=g)
 }
