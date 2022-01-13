@@ -136,6 +136,7 @@ sesameQC_calcStats <- function(sdf, funs = NULL) {
 .setGroup_detection <- function() {
     list("Detection" = c(
         num_dtna    = "N. Probes w/ Missing Raw Intensity  ",
+        frac_dtna   = "% Probes w/ Missing Raw Intensity   ",
         num_dt      = "N. Probes w/ Detection Success      ",
         frac_dt     = "% Detection Success                 ",
         num_dt_cg   = "N. Probes w/ Detection Success (CG) ",
@@ -157,6 +158,7 @@ sesameQC_calcStats_detection <- function(sdf, qc = NULL) {
     pvals0 <- pOOBAH(sdf, return.pval = TRUE)
     pvals <- na.omit(pvals0)
     s$num_dtna <- sum(is.na(pvals0))
+    s$frac_dtna <- s$num_dtna / length(pvals0)
     s$num_dt <- sum(pvals <= 0.05)
     s$frac_dt <- s$num_dt / length(pvals)
     for (pt in c('cg','ch','rs')) {
