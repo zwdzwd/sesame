@@ -3,13 +3,6 @@
 #' @slot stat a list to store qc stats
 setClass("sesameQC", representation(stat="list", group="list"))
 
-##' Convert sesameQC to data.frame
-##'
-##' @param x a sesameQC object
-##' @param ... additional argument to as.data.frame
-##' @return a data.frame
-##' @rdname as.data.frame-methods
-##' @aliases as.data.frame,sesameQC-method
 setMethod("as.data.frame", signature="sesameQC",
     definition = function(x, ...) as.data.frame(x@stat))
 

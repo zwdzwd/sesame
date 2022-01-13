@@ -12,51 +12,52 @@ vignette: >
 ---
 
 SeSAMe implements an automated discovery tool named knowYourCG for discovering
-hidden biological and technical elements. The goal is to find a link between
-these elements and observed DNA methylation.
+hidden biological and technical links.
 
 # knowYourCG
 
 ## Introduction
 
 knowYourCG is a tool for evaluating CpG feature enrichment using Illumina probe
-IDs. One feature in this tool automates the hypothesis testing by asking
-whether a set of CpGs (represented by Illumina methylation chip probes) is
-enriched in certain categories or features. These categories or features can be
-categorical (e.g., CpGs related to tissue-specific transcription factors) or
-continuous (e.g., CpG Island density). Additionally, the set of CpGs to which
-the test will be applied can be categorical or continuous as well.
+IDs. Tthis tool automates the hypothesis testing by asking whether a set of
+CpGs (indexed by Illumina methylation chip IDs, hence a sparse representation
+of the methylome) is enriched in certain categories or features. These
+categories or features can be categorical (e.g., CpGs located at specific
+tissue-specific transcription factors) or continuous (e.g., the local CpG
+density of CpGs). Additionally, the set of CpGs to which the test will be
+applied can be categorical or continuous as well.
 
 The set of CpGs that will be tested for enrichment is called the query set, and
-the set of CpGs that will be used to determine enrichment of a given factor is
-called the database set. A query set, for example, might be the results of an
-epigenome-wide association study. We have taken the time to curate our own
-database sets from a variety of sources that describe different categorical and
-continuous features such as transcription factor binding sites, CpG density,
-technical factors, etc.
+the set of CpGs that will be used to determine enrichment is called the
+database set. A query set, for example, might be the results of a differential
+methylation analysis or from an epigenome-wide association study. We have taken
+the time to curate our own database sets from a variety of sources that
+describe different categorical and continuous features such as technical
+characterization of the probes, CpGs associated with certain chromatin states,
+gene association, transcription factor binding sites, CpG density, etc.
 
 Additionally, knowYourCG has support for feature selection and feature
 engineering, which is currently in development.
 
-```{r load-depenencies, echo=FALSE, message=FALSE, warning=FALSE}
+The following commands prepares the use of KnowYourCG:
+
+```{r load-depenencies, results="hide", message=FALSE, warning=FALSE}
 library(sesame)
 sesameDataCacheAll()
 library(SummarizedExperiment)
 library(stats4)
-library(sesameData)
 ```
 
 # Input Data
 
 ## Database Sets
 
-We have organized our database sets in terms of different releases. The
-following block lists the database sets in the most recent release under
-sesameData.
+We have organized our database sets into different groups. Each group contains
+one or multiple database sets. One can find the current group of database sets
+by looking for a "KYCG" prefix in the title:
 
 ``` {r list-data, eval=TRUE, echo=TRUE}
-sesameDataCache(keyword='KYCG')
-databaseSetNames = grep('KYCG', sesameData:::df_master$Title, value=TRUE)
+databaseSetNames = grep('KYCG', sesameDataList()$Title, value=TRUE)
 ```
 
 The function returns a vector containing these accessions.
