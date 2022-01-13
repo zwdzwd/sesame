@@ -327,8 +327,8 @@ sesameQC_calcStats_betas <- function(sdf, qc = NULL) {
     betas <- getBetas(pOOBAH(noob(dyeBiasNL(sdf))))
     s$mean_beta <- mean(betas, na.rm = TRUE)
     s$median_beta <- median(betas, na.rm = TRUE)
-    s$frac_unmeth <- sum(betas < 0.3, na.rm = TRUE)/sum(!is.na(betas))*100
-    s$frac_meth <- sum(betas > 0.7, na.rm = TRUE)/sum(!is.na(betas))*100
+    s$frac_unmeth <- sum(betas < 0.3, na.rm = TRUE)/sum(!is.na(betas))
+    s$frac_meth <- sum(betas > 0.7, na.rm = TRUE)/sum(!is.na(betas))
     s$num_na <- sum(is.na(betas))
     s$frac_na <- sum(is.na(betas)) / length(betas)
 
@@ -337,9 +337,9 @@ sesameQC_calcStats_betas <- function(sdf, qc = NULL) {
         s[[paste0('mean_beta_', pt)]] <- mean(b1, na.rm = TRUE)
         s[[paste0('median_beta_', pt)]] <- median(b1, na.rm = TRUE)
         s[[paste0('frac_unmeth_', pt)]] <-
-            sum(b1 < 0.3, na.rm = TRUE) / sum(!is.na(b1)) * 100
+            sum(b1 < 0.3, na.rm = TRUE) / sum(!is.na(b1))
         s[[paste0('frac_meth_', pt)]] <-
-            sum(b1 > 0.7, na.rm = TRUE) / sum(!is.na(b1)) * 100
+            sum(b1 > 0.7, na.rm = TRUE) / sum(!is.na(b1))
         s[[paste0('num_na_', pt)]] <- sum(is.na(b1))
         s[[paste0('frac_na_', pt)]] <- sum(is.na(b1)) / length(b1)
     }
