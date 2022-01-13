@@ -231,6 +231,21 @@ getAFTypeIbySumAlleles <- function(sdf, known.ccs.only = TRUE) {
     af[order(names(af))] # TODO: avoid sorting
 }
 
+#' Get allele frequency
+#'
+#' @param sdf \code{SigDF}
+#' @param ... additional options to getBetas
+#' @return allele frequency
+#' @examples
+#' sesameDataCache("EPIC") # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' af <- getAFs(sdf)
+#' @export
+getAFs <- function(sdf, ...) {
+    betas <- getBetas(sdf, ...)
+    c(betas[startsWith(names(betas), "rs")], getAFTypeIbySumAlleles(sdf))
+}
+
 ## res is the output of illuminaio::readIDAT
 ## Infer platform from IDATs
 inferPlatform <- function(res) {

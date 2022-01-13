@@ -2,23 +2,30 @@
 % Please edit documentation in R/QC.R
 \name{sesameQC_calcStats}
 \alias{sesameQC_calcStats}
-\title{A convenience function to call one or multiple
-sesameQC_calcStats functions}
+\title{Calculate QC statistics}
 \usage{
-sesameQC_calcStats(sdf, funs = NULL, use_all = FALSE)
+sesameQC_calcStats(sdf, funs = NULL)
 }
 \arguments{
 \item{sdf}{a SigDF object}
 
 \item{funs}{a sesameQC_calcStats_* function or a list of them
-default to sesameQC_calcStats_detection}
+default to all functions. One can also use a string such as
+"detection" or c("detection", "intensity") to reduce typing}
 }
 \description{
-A convenience function to call one or multiple
+It is a function to call one or multiple
 sesameQC_calcStats functions
+}
+\details{
+currently supporting: detection, intensity, numProbes, channel,
+dyeBias, betas
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sesameQC_calcStats(sdf)
+sesameQC_calcStats(sdf, "detection")
+sesameQC_calcStats(sdf, c("detection", "channel"))
+
 }

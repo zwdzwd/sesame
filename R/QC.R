@@ -15,6 +15,20 @@ setClass("sesameQC", representation(stat="list", group="list"))
 setMethod("as.data.frame", signature="sesameQC",
     definition = function(x, ...) as.data.frame(x@stat))
 
+DF2sesameQC <- function(df) {
+    groups <- c(
+        .setGroup_detection(),
+        .setGroup_numProbes(),
+        .setGroup_intensity(),
+        .setGroup_channel(),
+        .setGroup_dyeBias(),
+        .setGroup_betas())
+    groups <- groups[vapply(groups, function(g) {
+        if (all(names(g) %in% colnames(df))) {
+            TRUE } else { FALSE }}, logical(1))]
+    apply(df, 1, function(s) new("sesameQC", group=groups, stat=s))
+}
+
 #' The display method for sesameQC
 #'
 #' The function outputs the number of probes in each category and the first
@@ -45,7 +59,7 @@ setMethod("show", "sesameQC", function(object)  {
                 s_display <- sprintf("%d", s_display)
             }
             if (is.numeric(s_display)) {
-                s_display <- sprintf("%1.1f", s_display)
+                s_display <- sprintf("%1.2f", s_display)
             }
             cat(g1[metric], ":", s_display, sprintf("(%s)", metric))
             if (paste0("rank_", metric) %in% names(s)) {
@@ -68,7 +82,7 @@ setMethod("show", "sesameQC", function(object)  {
 #'
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sesameQC_rankStats(sesameQC_calcStats_intens(sdf))
+#' sesameQC_rankStats(sesameQC_calcStats(sdf, "intensity"))
 #' 
 #' @export
 sesameQC_rankStats <- function(qc, publicQC=NULL) {
@@ -88,105 +102,127 @@ sesameQC_rankStats <- function(qc, publicQC=NULL) {
     new("sesameQC", stat=s, group=g)
 }
 
-#' A convenience function to call one or multiple
+#' Calculate QC statistics
+#' 
+#' It is a function to call one or multiple
 #' sesameQC_calcStats functions
+#'
+#' currently supporting: detection, intensity, numProbes, channel,
+#' dyeBias, betas
 #'
 #' @param sdf a SigDF object
 #' @param funs a sesameQC_calcStats_* function or a list of them
-#' default to sesameQC_calcStats_detection
+#' default to all functions. One can also use a string such as
+#' "detection" or c("detection", "intensity") to reduce typing
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesameQC_calcStats(sdf)
+#' sesameQC_calcStats(sdf, "detection")
+#' sesameQC_calcStats(sdf, c("detection", "channel"))
+#' 
 #' @export
-sesameQC_calcStats <- function(sdf, funs = NULL, use_all = FALSE) {
+sesameQC_calcStats <- function(sdf, funs = NULL) {
     if (is.null(funs)) {
-        if (use_all) {
-            funs <- c(
-                sesameQC_calcStats_detection,
-                sesameQC_calcStats_numProbes,
-                sesameQC_calcStats_intens,
-                sesameQC_calcStats_channel,
-                sesameQC_calcStats_dyeBias,
-                sesameQC_calcStats_betas)
-        } else {
-            funs <- c(sesameQC_calcStats_detection)
-        }
+        funs <- c(
+            sesameQC_calcStats_detection,
+            sesameQC_calcStats_intensity,
+            sesameQC_calcStats_numProbes,
+            sesameQC_calcStats_channel,
+            sesameQC_calcStats_dyeBias,
+            sesameQC_calcStats_betas)
     }
-    if (is(funs, "function")) { funs <- c(funs) }
+    if (!is(funs, "list")) { funs <- c(funs) }
     qc <- new("sesameQC")
+
     for (func in funs) {
+        if (is.character(func)) {
+            func <- get(paste0("sesameQC_calcStats_",func))
+            stopifnot(is(func, "function"))
+        }
         qc <- func(sdf, qc = qc)
     }
     qc
 }
 
-#' Generate summary numbers that indicative of experiment quality
-#' based on number of probes.
-#' 
-#' Please provide a raw SigDF(before any preprocessing). Usually
-#' directly from readIDATpair.
-#' 
-#' @param sdf a \code{SigDF} object
-#' @param qc existing sesameQC object to add to (optional)
-#' @return a sesameQC
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sesameQC_calcStats_numProbes(sdf)
-#' @export
-sesameQC_calcStats_numProbes <- function(sdf, qc = NULL) {
+.setGroup_detection <- function() {
+    list("Detection" = c(
+        num_dt      = "N. Probes w/ Detection Success      ",
+        frac_dt     = "% Detection Success                 ",
+        num_dt_cg   = "N. Probes w/ Detection Success (CG) ",
+        frac_dt_cg  = "% Detection Success (CG)            ",
+        num_dt_ch   = "N. Probes w/ Detection Success (CH) ",
+        frac_dt_ch  = "% Detection Success (CH)            ",
+        num_dt_rs   = "N. Probes w/ Detection Success (RS) ",
+        frac_dt_rs  = "% Detection Success (RS)            "))
+}
+sesameQC_calcStats_detection <- function(sdf, qc = NULL) {
 
-    group_nm <- "Number of Probes"
+    g1 <- .setGroup_detection()
+    group_nm <- names(g1)[1]
     if (is.null(qc)) { s <- list(); g <- list()
     } else { s <- qc@stat; g <- qc@group }
     if (group_nm %in% names(g)) { return(qc); }
+    g[[group_nm]] <- g1[[group_nm]]
 
-    g[[group_nm]] <- c(
+    pvals <- pOOBAH(sdf, return.pval = TRUE)
+    s$num_dt <- sum(pvals <= 0.05)
+    s$frac_dt <- s$num_dt / length(pvals)
+    for (pt in c('cg','ch','rs')) {
+        p1 <- pvals[grep(paste0('^', pt), names(pvals))]
+        s[[paste0('num_dt_', pt)]] <- sum(p1 <= 0.05)
+        s[[paste0('frac_dt_', pt)]] <- sum(p1 <= 0.05) / length(p1)
+    }
+    new("sesameQC", stat=s, group=g)
+}
+
+.setGroup_numProbes <- function() {
+    list("Number of Probes" = c(
         num_probes    = "N. Probes         ",
         num_probes_II = "N. Inf.-II Probes ",
         num_probes_IR = "N. Inf.-I (Red)   ",
         num_probes_IG = "N. Inf.-I (Grn)   ",
         num_probes_cg = "N. Probes (CG)    ",
         num_probes_ch = "N. Probes (CH)    ",
-        num_probes_rs = "N. Probes (RS)    ")
+        num_probes_rs = "N. Probes (RS)    "))
+}
+sesameQC_calcStats_numProbes <- function(sdf, qc = NULL) {
+
+    g1 <- .setGroup_numProbes()
+    group_nm <- names(g1)[1]
+    if (is.null(qc)) { s <- list(); g <- list()
+    } else { s <- qc@stat; g <- qc@group }
+    if (group_nm %in% names(g)) { return(qc); }
+    g[[group_nm]] <- g1[[group_nm]]
     
     s$num_probes = nrow(sdf)
     s$num_probes_II = nrow(InfII(sdf))
     s$num_probes_IR = nrow(InfIR(sdf))
     s$num_probes_IG = nrow(InfIG(sdf))
+    s$num_probes_cg = sum(startsWith(sdf$Probe_ID,"cg"))
+    s$num_probes_ch = sum(startsWith(sdf$Probe_ID,"ch"))
+    s$num_probes_rs = sum(startsWith(sdf$Probe_ID,"rs"))
     new("sesameQC", stat=s, group=g)
 }
 
-#' Generate summary numbers that indicative of experiment quality
-#' based on intensity.
-#' 
-#' Please provide a raw SigDF(before any preprocessing). Usually
-#' directly from readIDATpair.
-#' 
-#' @param sdf a \code{SigDF} object
-#' @param qc existing sesameQC object to add to (optional)
-#' @return a sesameQC
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sesameQC_calcStats_intens(sdf)
-#' @export
-sesameQC_calcStats_intens <- function(sdf, qc = NULL) {
-
-    group_nm <- "Signal Intensity"
-    if (is.null(qc)) { s <- list(); g <- list()
-    } else { s <- qc@stat; g <- qc@group }
-    if (group_nm %in% names(g)) { return(qc); }
-
-    g[[group_nm]] <- c(
+.setGroup_intensity <- function() {
+    list("Signal Intensity" = c(
         mean_intensity    = "Mean sig. intensity         ",
         mean_intensity_MU = "Mean sig. intensity (M+U)   ",
         mean_ii           = "Mean sig. intensity (Inf.II)",
         mean_inb_grn      = "Mean sig. intens.(I.Grn IB) ",
         mean_inb_red      = "Mean sig. intens.(I.Red IB) ",
         mean_oob_grn      = "Mean sig. intens.(I.Grn OOB)",
-        mean_oob_red      = "Mean sig. intens.(I.Red OOB)")
+        mean_oob_red      = "Mean sig. intens.(I.Red OOB)"))
+}
+sesameQC_calcStats_intensity <- function(sdf, qc = NULL) {
+
+    g1 <- .setGroup_intensity()
+    group_nm <- names(g1)[1]
+    if (is.null(qc)) { s <- list(); g <- list()
+    } else { s <- qc@stat; g <- qc@group }
+    if (group_nm %in% names(g)) { return(qc); }
+    g[[group_nm]] <- g1[[group_nm]]
 
     dG <- InfIG(sdf); dR <- InfIR(sdf); d2 <- InfII(sdf)
     s$mean_intensity <- meanIntensity(sdf) # excluding type-I out-of-band
@@ -200,33 +236,22 @@ sesameQC_calcStats_intens <- function(sdf, qc = NULL) {
     new("sesameQC", stat=s, group=g)
 }
 
-#' Generate summary numbers that indicative of experiment quality
-#' based on channel.
-#' 
-#' Please provide a raw SigDF(before any preprocessing). Usually
-#' directly from readIDATpair.
-#' 
-#' @param sdf a \code{SigDF} object
-#' @param qc existing sesameQC object to add to (optional)
-#' @return a sesameQC
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sesameQC_calcStats_channel(sdf)
-#' @export
+.setGroup_channel <- function() {
+    list("Color Channel" = c(
+        InfI_switch_R2R = "N. Inf.I Probes Red -> Red ",
+        InfI_switch_G2G = "N. Inf.I Probes Grn -> Grn ",
+        InfI_switch_R2G = "N. Inf.I Probes Red -> Grn ",
+        InfI_switch_G2R = "N. Inf.I Probes Grn -> Red "))
+}
 sesameQC_calcStats_channel <- function(sdf, qc = NULL) {
 
-    group_nm <- "Color Channel"
+    g1 <- .setGroup_channel()
+    group_nm <- names(g1)[1]
     if (is.null(qc)) { s <- list(); g <- list()
     } else { s <- qc@stat; g <- qc@group }
     if (group_nm %in% names(g)) { return(qc); }
-
-    g[[group_nm]] <- c(
-        InfI_switch_R2R = "N. Inf.I Probes Red > Red ",
-        InfI_switch_G2G = "N. Inf.I Probes Grn > Grn ",
-        InfI_switch_R2G = "N. Inf.I Probes Red > Grn ",
-        InfI_switch_G2R = "N. Inf.I Probes Grn > Red ")
-
+    g[[group_nm]] <- g1[[group_nm]]
+    
     res <- inferInfiniumIChannel(sdf, summary = TRUE)
     for (nm in names(res)) {
         s[[paste0('InfI_switch_', nm)]] <- unname(res[nm])
@@ -234,36 +259,23 @@ sesameQC_calcStats_channel <- function(sdf, qc = NULL) {
     new("sesameQC", stat=s, group=g)
 }
 
-#' Quantify deviation of dye bias in the high signal range from the
-#' global median
-#'
-#' Positive value indicates augmentation of high-end dye bias over
-#' low-end. negative value represents high-end dye bias contradicts
-#' that at low-end (a distorted dye bias). Negative distortion score
-#' (< -1) suggests low experiment quality. 0 suggests a consistent
-#' dye bias at high and low-end.
-#'
-#' @param sdf a \code{SigDF}
-#' @param qc existing sesameQC object to add to (optional)
-#' @return a sesameQC
-#' @examples
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sesameQC_calcStats_dyeBias(sdf)
-#' @export
-sesameQC_calcStats_dyeBias <- function(sdf, qc = NULL) {
-
-    group_nm <- "Dye Bias"
-    if (is.null(qc)) { s <- list(); g <- list()
-    } else { s <- qc@stat; g <- qc@group }
-    if (group_nm %in% names(g)) { return(qc); }
-
-    g[[group_nm]] <- c(
+.setGroup_dyeBias <- function() {
+    list("Dye Bias" = c(
         medR      = "Median Inf.I Intens. Red           ",
         medG      = "Median Inf.I Intens. Grn           ",
         topR      = "Median of Top 20 Inf.I Intens. Red ",
         topG      = "Median of Top 20 Inf.I Intens. Grn ",
-        RGratio   = "Ratio of Red-to-Grn median intens. ",
-        RGdistort = "Ratio of top vs. global R/G ratios ")
+        RGratio   = "Ratio of Red-to-Grn median Intens. ",
+        RGdistort = "Ratio of Top vs. Global R/G Ratios "))
+}
+sesameQC_calcStats_dyeBias <- function(sdf, qc = NULL) {
+
+    g1 <- .setGroup_dyeBias()
+    group_nm <- names(g1)[1]
+    if (is.null(qc)) { s <- list(); g <- list()
+    } else { s <- qc@stat; g <- qc@group }
+    if (group_nm %in% names(g)) { return(qc); }
+    g[[group_nm]] <- g1[[group_nm]]
     
     t1 <- InfI(sdf)
     intens <- totalIntensities(sdf)
@@ -277,70 +289,8 @@ sesameQC_calcStats_dyeBias <- function(sdf, qc = NULL) {
     new("sesameQC", stat=s, group=g)
 }
 
-#' Generate summary numbers that indicative of experiment quality
-#' based on detection.
-#' 
-#' Please provide a raw SigDF(before any preprocessing). Usually
-#' directly from readIDATpair.
-#' 
-#' @param sdf a \code{SigDF} object
-#' @param qc existing sesameQC object to add to (optional)
-#' @return a sesameQC
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sesameQC_calcStats_detection(sdf)
-#' @export
-sesameQC_calcStats_detection <- function(sdf, qc = NULL) {
-
-    group_nm <- "Detection"
-    if (is.null(qc)) { s <- list(); g <- list()
-    } else { s <- qc@stat; g <- qc@group }
-    if (group_nm %in% names(g)) { return(qc); }
-
-    g[[group_nm]] <- c(
-        num_dt      = "N. Probes w/ Detection Success      ",
-        frac_dt     = "% Detection Success                 ",
-        num_dt_cg   = "N. Probes w/ Detection Success (CG) ",
-        frac_dt_cg  = "% Detection Success (CG)            ",
-        num_dt_ch   = "N. Probes w/ Detection Success (CH) ",
-        frac_dt_ch  = "% Detection Success (CH)            ",
-        num_dt_rs   = "N. Probes w/ Detection Success (RS) ",
-        frac_dt_rs  = "% Detection Success (RS)            ")
-
-    pvals <- pOOBAH(sdf, return.pval = TRUE)
-    s$num_dt <- sum(pvals <= 0.05)
-    s$frac_dt <- s$num_dt / length(pvals)
-    for (pt in c('cg','ch','rs')) {
-        p1 <- pvals[grep(paste0('^', pt), names(pvals))]
-        s[[paste0('num_dt_', pt)]] <- sum(p1 <= 0.05)
-        s[[paste0('frac_dt_', pt)]] <- sum(p1 <= 0.05) / length(p1)
-    }
-    new("sesameQC", stat=s, group=g)
-}
-
-#' Generate summary numbers that indicative of experiment quality
-#' based on betas.
-#' 
-#' Please provide a raw SigDF(before any preprocessing). Usually
-#' directly from readIDATpair.
-#' 
-#' @param sdf a \code{SigDF} object
-#' @param qc existing sesameQC object to add to (optional)
-#' @return a sesameQC
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sesameQC_calcStats_betas(sdf)
-#' @export
-sesameQC_calcStats_betas <- function(sdf, qc = NULL) {
-
-    group_nm <- "Number of Probes"
-    if (is.null(qc)) { s <- list(); g <- list()
-    } else { s <- qc@stat; g <- qc@group }
-    if (group_nm %in% names(g)) { return(qc); }
-
-    g[[group_nm]] <- c(
+.setGroup_betas <- function() {
+    list("Beta Value" = c(
         mean_beta      = "Mean Beta           ",
         median_beta    = "Median Beta         ",
         frac_unmeth    = "% Beta < 0.3        ",
@@ -364,8 +314,17 @@ sesameQC_calcStats_betas <- function(sdf, qc = NULL) {
         frac_unmeth_rs = "% Beta < 0.3 (RS)   ",
         frac_meth_rs   = "% Beta > 0.7 (RS)   ",
         num_na_rs      = "N. is.na(Beta) (RS) ",
-        frac_na_rs     = "% is.na(Beta) (RS)  ")
+        frac_na_rs     = "% is.na(Beta) (RS)  "))
+}
+sesameQC_calcStats_betas <- function(sdf, qc = NULL) {
 
+    g1 <- .setGroup_betas()
+    group_nm <- names(g1)[1]
+    if (is.null(qc)) { s <- list(); g <- list()
+    } else { s <- qc@stat; g <- qc@group }
+    if (group_nm %in% names(g)) { return(qc); }
+    g[[group_nm]] <- g1[[group_nm]]
+    
     betas <- getBetas(pOOBAH(noob(dyeBiasNL(sdf))))
     s$mean_beta <- mean(betas, na.rm = TRUE)
     s$median_beta <- median(betas, na.rm = TRUE)
@@ -466,95 +425,93 @@ sesameQC_plotIntensVsBetas <- function(
     }
 }
 
-## #' Bar plot of probe detection success rate
-## #'
-## #' @param sdfs a list of SigDFs
-## #' @return a bar plot comparing probe success rates
-## #' @examples
-## #' sesameDataCache("EPIC") # if not done yet
-## #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-## #' sesameQC_plotBarDetection(sdfs)
-## #' @import ggplot2
-## #' @importFrom wheatmap WGG
-## #' @export
-## sesameQC_plotBarDetection <- function(sdfs) {
-##     sample_name <- mean_intensity <- mean_intensity_total <- NULL
-##     x <- sesameQC_calcStats(sdfs, sesameQC_calcStats_detection)
-
-##     p1 <- ggplot(x) +
-##         geom_bar(aes(sample_name, num_na_cg), stat='identity') +
-##         xlab('Sample') + ylab('N. detection failure') +
-##         theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-    
-##     p2 <- ggplot(x) +
-##         geom_bar(aes(sample_name, (1-frac_na_cg)*100), stat='identity') +
-##         xlab('Sample') + ylab('Detection success (%)') +
-##         theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-    
-##     WGG(p1) + WGG(p2, RightOf())
-## }
-
-## #' Bar plot of signal intensities
-## #'
-## #' @param sdfs a list of SigDFs
-## #' @return a bar plot comparing signal intensities
-## #' @examples
-## #' sesameDataCache("EPIC") # if not done yet
-## #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-## #' sesameQC_plotBarIntens(sdfs)
-## #' @import ggplot2
-## #' @importFrom wheatmap WGG
-## #' @export
-## sesameQC_plotBarIntens <- function(sdfs) {
-##     sample_name <- mean_intensity <- mean_intensity_total <- NULL
-##     x <- sesameQC_calcStats(sdfs, sesameQC_calcStats_intens)
-
-##     p1 <- ggplot(x) +
-##         geom_bar(aes(sample_name, mean_intensity), stat='identity') +
-##         xlab('Sample') + ylab('Mean Intensity') +
-##         ylim(0, max(x$mean_intensity)*1.2) +
-##         theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-
-##     p2 <- ggplot(x) +
-##         geom_bar(aes(sample_name, mean_intensity_total), stat='identity') +
-##         xlab('Sample') + ylab('Mean M+U Intensity') +
-##         ylim(0, max(x$mean_intensity_total)*1.2) +
-##         theme(axis.text.x = element_text(angle=90, vjust=0.5, hjust=1))
-
-##     WGG(p1) + WGG(p2, RightOf())
-## }
-
-#' Bar plot of color channel switch
+#' Bar plots for sesameQC
+#'
+#' By default, it plots median_beta_cg, median_beta_ch, RGratio,
+#' RGdistort, frac_dt
 #'
 #' @param sdfs a list of SigDFs
-#' @return a bar plot comparing color channel switches
+#' @param keys optional, other key to plot, instead of the default
+#' keys can be found in the parenthesis of the print output of each
+#' sesameQC output.
+#' @return a bar plot comparing different QC metrics
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-#' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats_detection))
+#' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, use_all=TRUE))
 #' @import ggplot2
 #' @importFrom wheatmap WGG
 #' @export
-sesameQC_plotBar <- function(qcs) {
+sesameQC_plotBar <- function(qcs, keys = NULL) {
     if (is(qcs, "sesameQC")) { qcs <- list(qcs); }
-    df <- do.call(cbind, lapply(qcs, as.data.frame))
+    df <- do.call(rbind, lapply(qcs, function(x) as.data.frame(x@stat)))
 
+    ## set display names
+    g <- qcs[[1]]@group
+    display_nms <- do.call(c, lapply(names(g), function(gn) { setNames(
+        sprintf("%s | %s", gn, str_trim(g[[gn]])), names(g[[gn]]))}))
+
+    if (is.null(keys)) {
+        keys <- c("frac_dt", "mean_intensity",
+            "median_beta_cg", "median_beta_ch",
+            "RGratio", "RGdistort")
+        df <- df[, keys[keys %in% colnames(df)], drop=FALSE]
+    }
+    if (ncol(df) == 0) { stop("There is no QC metrics to plot") }
+
+    df$sample_name <- names(qcs) # infer sample name
+    
     plt <- NULL
     for (x in colnames(df)) {
         if (x == "sample_name") { next; }
-        p <- ggplot(df) + geom_bar(aes_string("sample_name", x), stat="identity") + ylab(x)
+        p <- ggplot(df) +
+            geom_bar(aes_string("sample_name", x), stat="identity") +
+            ylab("") + xlab("") + ggtitle(display_nms[x]) +
+            theme(axis.text.x = element_text(angle=-90, vjust=0.5, hjust=0))
+        ## customization for the most important
+        if (x == "frac_dt") {
+            p <- p + scale_y_continuous(labels=scales::percent)
+        } else if (x == "median_beta_cg" || x == "median_beta_ch") {
+            p <- p + ylim(c(0,1))
+        }
+                
         if (is.null(plt)) {
             plt <- WGG(p)
         } else {
-            plt <- plt + WGG(p, Beneath())
+            plt <- plt + WGG(p, Beneath(pad=0))
         }
     }
+    plt
 }
 
-## sesameQC_plotHeatSNPs <- function(betas) {
-##     vafs <- betas[grep('^rs', rownames(betas)),]
-##     WHeatmap(vafs)
-## }
+#' Plot SNP heatmap
+#'
+#' @param betas beta value matrix, row: probes; column: samples
+#' @param cluster show clustered heatmap
+#' @param filter.nonvariant whether to filter nonvariant (range < 0.3)
+#' @import wheatmap
+#' @examples
+#'
+#' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
+#' sesameQC_plotHeatSNPs(betas)
+#' @export
+sesameQC_plotHeatSNPs <- function(
+    sdfs, cluster = TRUE, filter.nonvariant = TRUE) {
+    
+    afs <- openSesame(sdfs, func = getAFs)
+    if (cluster) {
+        afs <- both.cluster(afs)$mat
+    }
+    if (filter.nonvariant) {
+        rg <- apply(afs, 1, function(x) {
+            max(x, na.rm=TRUE) - min(x, na.rm=TRUE)})
+        afs <- afs[rg > 0.3,]
+    }
+    pkgTest("wheatmap")
+    WHeatmap(afs, xticklabels = TRUE,
+        cmp=CMPar(stop.points=c("white", "yellow", "red"), dmin=0, dmax=1)) +
+        WCustomize(mar.bottom=0.15)
+}
 
 #' Retrieve stats of public data of similar nature
 #' e.g., tissue, FFPE vs non-FFPE, etc.

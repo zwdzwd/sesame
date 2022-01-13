@@ -9,6 +9,7 @@
 #' @param x SigDF(s), IDAT prefix(es)
 #' @param platform optional platform string
 #' @param manifest optional dynamic manifest
+#' @param func either getBetas or getAFs
 #' @param ... parameters to getBetas
 #' @param BPPARAM get parallel with MulticoreParam(n)
 #' @return a numeric vector for processed beta values
@@ -20,7 +21,7 @@
 #' betas <- openSesame(IDATprefixes)
 #' @export
 openSesame <- function(
-    x, platform = '', manifest = NULL,
+    x, platform = '', manifest = NULL, func = getBetas,
     BPPARAM=SerialParam(), ...) {
 
     ## expand if a directory
@@ -30,17 +31,25 @@ openSesame <- function(
 
     ## TODO add inferInfiniumIChannel
     if (is(x, "SigDF")) {
-        getBetas(dyeBiasNL(noob(pOOBAH(qualityMask(x)))))
+        func(dyeBiasNL(noob(pOOBAH(qualityMask(x)))), ...)
     } else if (is(x, 'character')) {
         if (length(x) == 1) {
-            getBetas(dyeBiasNL(noob(pOOBAH(readIDATpair(
+            func(dyeBiasNL(noob(pOOBAH(readIDATpair(
                 x, platform = platform, manifest = manifest)
             ))))
-        } else { # multiple IDAT prefixes / sigsets
+        } else { # multiple IDAT prefixes / SigDFs
             do.call(
                 cbind, bplapply(x, openSesame,
-                    platform = platform,
+                    platform = platform, fun = func,
                     manifest = manifest, BPPARAM=BPPARAM, ...))
         }
+    } else if (is(x, "list") && is(x[[1]], "SigDF")) {
+        do.call(
+            cbind, bplapply(x, openSesame,
+                platform = platform, fun = func,
+                manifest = manifest, BPPARAM=BPPARAM, ...))
+    } else {
+        stop("Unsupported input")
     }
 }
+

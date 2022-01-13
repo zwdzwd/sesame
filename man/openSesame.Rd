@@ -4,7 +4,14 @@
 \alias{openSesame}
 \title{The openSesame pipeline}
 \usage{
-openSesame(x, platform = "", manifest = NULL, BPPARAM = SerialParam(), ...)
+openSesame(
+  x,
+  platform = "",
+  manifest = NULL,
+  func = getBetas,
+  BPPARAM = SerialParam(),
+  ...
+)
 }
 \arguments{
 \item{x}{SigDF(s), IDAT prefix(es)}
@@ -12,6 +19,8 @@ openSesame(x, platform = "", manifest = NULL, BPPARAM = SerialParam(), ...)
 \item{platform}{optional platform string}
 
 \item{manifest}{optional dynamic manifest}
+
+\item{func}{either getBetas or getAFs}
 
 \item{BPPARAM}{get parallel with MulticoreParam(n)}
 

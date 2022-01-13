@@ -2,21 +2,26 @@
 % Please edit documentation in R/QC.R
 \name{sesameQC_plotBar}
 \alias{sesameQC_plotBar}
-\title{Bar plot of color channel switch}
+\title{Bar plots for sesameQC}
 \usage{
-sesameQC_plotBar(qcs)
+sesameQC_plotBar(qcs, keys = NULL)
 }
 \arguments{
+\item{keys}{optional, other key to plot, instead of the default
+keys can be found in the parenthesis of the print output of each
+sesameQC output.}
+
 \item{sdfs}{a list of SigDFs}
 }
 \value{
-a bar plot comparing color channel switches
+a bar plot comparing different QC metrics
 }
 \description{
-Bar plot of color channel switch
+By default, it plots median_beta_cg, median_beta_ch, RGratio,
+RGdistort, frac_dt
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
 sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats_detection))
+sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, use_all=TRUE))
 }
