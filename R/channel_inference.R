@@ -33,16 +33,17 @@ inferInfiniumIChannel <- function(
 
     ## revert to the original for failed probes if so desire
     if (!switch_failed) {
-        idx <- pmax(red_max, grn_max) < bg_max
+        idx <- (is.na(red_max) | is.na(grn_max) |
+                    pmax(red_max, grn_max) < bg_max)
         new_col[idx] <- sdf1$col[idx]
     }
     sdf$col[inf1_idx] <- factor(new_col, levels=c("G","R","2"))
 
     smry <- c(
-        R2R = sum(sdf1$col == "R" & new_col == "R"),
-        G2G = sum(sdf1$col == "G" & new_col == "G"),
-        R2G = sum(sdf1$col == "R" & new_col == "G"),
-        G2R = sum(sdf1$col == "G" & new_col == "R"))
+        R2R = sum(sdf1$col == "R" & new_col == "R", na.rm=TRUE),
+        G2G = sum(sdf1$col == "G" & new_col == "G", na.rm=TRUE),
+        R2G = sum(sdf1$col == "R" & new_col == "G", na.rm=TRUE),
+        G2R = sum(sdf1$col == "G" & new_col == "R", na.rm=TRUE))
     
     if (summary) { return(smry) }
 

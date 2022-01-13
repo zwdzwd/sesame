@@ -57,27 +57,21 @@ one or multiple database sets. One can find the current group of database sets
 by looking for a "KYCG" prefix in the title:
 
 ``` {r list-data, eval=TRUE, echo=TRUE}
-databaseSetNames = grep('KYCG', sesameDataList()$Title, value=TRUE)
+head(sesameDataList("KYCG")$Title)
 ```
 
-The function returns a vector containing these accessions.
-
-``` {r print-data, eval=TRUE, echo=TRUE}
-head(databaseSetNames)
-```
-
-The ```sesameDataGet()``` function returns a nested list of database sets
-identified by their accessions shown in ```sesameData:::df_master()```. When
-this function is ran for the first time, none of the database sets have been
-cached. Caching on the local machine is important on two fronts: firstly it
-limits the number of requests sent to our server, and secondly it limits the
-amount of time the user needs to wait when re-downloading database sets. For
-this reason, one should run ```sesameDataCache(keyword='KYCG')``` before
-loading in any database sets. This will take some time to download all of the
-database sets from a given release.
-
-Using a subset of the available database sets, we will download them and load
-them in into memory using their accessions.
+The `sesameDataList()` function returns a vector containing these accessions.
+With the accessions, one can use the ```sesameDataGet()``` function to get a
+list of database sets. When this function is ran for the first time, none of
+the database sets have been cached. Caching on the local machine is important
+on two fronts: firstly it limits the number of requests sent to the
+Bioconductor server, and secondly it limits the amount of time the user needs
+to wait when re-downloading database sets. For this reason, one should run
+```sesameDataCache(keyword='KYCG')``` before loading in any database sets. This
+will take some time to download all of the database sets from a given release.
+During the analysis the database sets can be identified using these
+accessions. Sesame also support some degree of guessing when a unique substring
+is given.
 
 ``` {r cache-data, eval=TRUE, warning=FALSE}
 db_nms = c(
