@@ -72,7 +72,6 @@ Collate:
     'fileSet.R'
     'mask.R'
     'open.R'
-    'snp.R'
     'strain.R'
     'tissue.R'
     'track.R'

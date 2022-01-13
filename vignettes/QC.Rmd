@@ -86,7 +86,7 @@ input sample as well as the number of datasets compared.
 sdf <- sesameDataGet('EPIC.1.SigDF')
 qc <- sesameQC_calcStats(sdf, "intensity")
 qc
-sesameQC_rankStats(qc)
+sesameQC_rankStats(qc, sesameQC_publicQC("EPIC"))
 ```
 
 # Quality control plots

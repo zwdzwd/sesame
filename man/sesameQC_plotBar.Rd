@@ -7,11 +7,11 @@
 sesameQC_plotBar(qcs, keys = NULL)
 }
 \arguments{
+\item{qcs}{a list of SigDFs}
+
 \item{keys}{optional, other key to plot, instead of the default
 keys can be found in the parenthesis of the print output of each
 sesameQC output.}
-
-\item{sdfs}{a list of SigDFs}
 }
 \value{
 a bar plot comparing different QC metrics
@@ -23,5 +23,5 @@ RGdistort, frac_dt
 \examples{
 sesameDataCache("EPIC") # if not done yet
 sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, use_all=TRUE))
+sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats))
 }

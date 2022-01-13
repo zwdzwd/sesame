@@ -17,6 +17,3 @@ a data.frame
 \description{
 Convert sesameQC to data.frame
 }
-\examples{
-as.data.frame(new("sesameQC"))
-}

@@ -13,6 +13,9 @@ sesameQC_calcStats(sdf, funs = NULL)
 default to all functions. One can also use a string such as
 "detection" or c("detection", "intensity") to reduce typing}
 }
+\value{
+a sesameQC object
+}
 \description{
 It is a function to call one or multiple
 sesameQC_calcStats functions

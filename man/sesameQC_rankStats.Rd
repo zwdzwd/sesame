@@ -8,9 +8,9 @@ Only overlapping metrics will be compared.}
 sesameQC_rankStats(qc, publicQC = NULL)
 }
 \arguments{
-\item{publicQC}{output of sesameQC_publicQC, optional}
+\item{qc}{a sesameQC object}
 
-\item{sdf}{a raw (unprocessed) \code{SigDF}}
+\item{publicQC}{output of sesameQC_publicQC, optional}
 }
 \value{
 a sesameQC

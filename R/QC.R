@@ -3,15 +3,13 @@
 #' @slot stat a list to store qc stats
 setClass("sesameQC", representation(stat="list", group="list"))
 
-#' Convert sesameQC to data.frame
-#'
-#' @param x a sesameQC object
-#' @param ... additional argument to as.data.frame
-#' @return a data.frame
-#' @rdname as.data.frame-methods
-#' @aliases as.data.frame,sesameQC-method
-#' @examples
-#' as.data.frame(new("sesameQC"))
+##' Convert sesameQC to data.frame
+##'
+##' @param x a sesameQC object
+##' @param ... additional argument to as.data.frame
+##' @return a data.frame
+##' @rdname as.data.frame-methods
+##' @aliases as.data.frame,sesameQC-method
 setMethod("as.data.frame", signature="sesameQC",
     definition = function(x, ...) as.data.frame(x@stat))
 
@@ -29,17 +27,15 @@ DF2sesameQC <- function(df) {
     apply(df, 1, function(s) new("sesameQC", group=groups, stat=s))
 }
 
-#' The display method for sesameQC
-#'
-#' The function outputs the number of probes in each category and the first
-#' few signal measurements.
-#'
-#' @param object object to be displayed
-#' @return None
-#' @rdname show-methods
-#' @aliases show,sesameQC-method
-#' @examples
-#' new("sesameQC")
+## ' The display method for sesameQC
+## '
+## ' The function outputs the number of probes in each category and the first
+## ' few signal measurements.
+## '
+## ' @param object object to be displayed
+## ' @return None
+## ' @rdname show-methods
+## ' @aliases show,sesameQC-method
 setMethod("show", "sesameQC", function(object)  {
     s <- object@stat
     g <- object@group
@@ -75,7 +71,7 @@ setMethod("show", "sesameQC", function(object)  {
 #' This function compares the input sample with public data.
 #' Only overlapping metrics will be compared.
 #'
-#' @param sdf a raw (unprocessed) \code{SigDF}
+#' @param qc a sesameQC object
 #' @param publicQC output of sesameQC_publicQC, optional
 #' @return a sesameQC
 #' @examples
@@ -86,10 +82,8 @@ setMethod("show", "sesameQC", function(object)  {
 #' 
 #' @export
 sesameQC_rankStats <- function(qc, publicQC=NULL) {
-    if (is.null(publicQC)) {
-        publicQC <- sesameQC_publicQC(platform=sdfPlatform(sdf))
-    }
-
+    publicQC <- sesameQC_publicQC()
+    
     s <- qc@stat; g <- qc@group
     metrics <- intersect(names(qc@stat), colnames(publicQC))
     if (length(metrics) == 0) { return(qc); }
@@ -114,6 +108,7 @@ sesameQC_rankStats <- function(qc, publicQC=NULL) {
 #' @param funs a sesameQC_calcStats_* function or a list of them
 #' default to all functions. One can also use a string such as
 #' "detection" or c("detection", "intensity") to reduce typing
+#' @return a sesameQC object
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
@@ -195,13 +190,13 @@ sesameQC_calcStats_numProbes <- function(sdf, qc = NULL) {
     if (group_nm %in% names(g)) { return(qc); }
     g[[group_nm]] <- g1[[group_nm]]
     
-    s$num_probes = nrow(sdf)
-    s$num_probes_II = nrow(InfII(sdf))
-    s$num_probes_IR = nrow(InfIR(sdf))
-    s$num_probes_IG = nrow(InfIG(sdf))
-    s$num_probes_cg = sum(startsWith(sdf$Probe_ID,"cg"))
-    s$num_probes_ch = sum(startsWith(sdf$Probe_ID,"ch"))
-    s$num_probes_rs = sum(startsWith(sdf$Probe_ID,"rs"))
+    s$num_probes <- nrow(sdf)
+    s$num_probes_II <- nrow(InfII(sdf))
+    s$num_probes_IR <- nrow(InfIR(sdf))
+    s$num_probes_IG <- nrow(InfIG(sdf))
+    s$num_probes_cg <- sum(startsWith(sdf$Probe_ID,"cg"))
+    s$num_probes_ch <- sum(startsWith(sdf$Probe_ID,"ch"))
+    s$num_probes_rs <- sum(startsWith(sdf$Probe_ID,"rs"))
     new("sesameQC", stat=s, group=g)
 }
 
@@ -430,7 +425,7 @@ sesameQC_plotIntensVsBetas <- function(
 #' By default, it plots median_beta_cg, median_beta_ch, RGratio,
 #' RGdistort, frac_dt
 #'
-#' @param sdfs a list of SigDFs
+#' @param qcs a list of SigDFs
 #' @param keys optional, other key to plot, instead of the default
 #' keys can be found in the parenthesis of the print output of each
 #' sesameQC output.
@@ -438,7 +433,7 @@ sesameQC_plotIntensVsBetas <- function(
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
 #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-#' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, use_all=TRUE))
+#' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats))
 #' @import ggplot2
 #' @importFrom wheatmap WGG
 #' @export
@@ -486,14 +481,15 @@ sesameQC_plotBar <- function(qcs, keys = NULL) {
 
 #' Plot SNP heatmap
 #'
-#' @param betas beta value matrix, row: probes; column: samples
+#' @param sdfs beta value matrix, row: probes; column: samples
 #' @param cluster show clustered heatmap
 #' @param filter.nonvariant whether to filter nonvariant (range < 0.3)
 #' @import wheatmap
+#' @return a grid graphics object
 #' @examples
 #'
 #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-#' sesameQC_plotHeatSNPs(betas)
+#' sesameQC_plotHeatSNPs(sdfs)
 #' @export
 sesameQC_plotHeatSNPs <- function(
     sdfs, cluster = TRUE, filter.nonvariant = TRUE) {

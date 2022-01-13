@@ -7,11 +7,14 @@
 sesameQC_plotHeatSNPs(sdfs, cluster = TRUE, filter.nonvariant = TRUE)
 }
 \arguments{
+\item{sdfs}{beta value matrix, row: probes; column: samples}
+
 \item{cluster}{show clustered heatmap}
 
 \item{filter.nonvariant}{whether to filter nonvariant (range < 0.3)}
-
-\item{betas}{beta value matrix, row: probes; column: samples}
+}
+\value{
+a grid graphics object
 }
 \description{
 Plot SNP heatmap
@@ -19,5 +22,5 @@ Plot SNP heatmap
 \examples{
 
 sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-sesameQC_plotHeatSNPs(betas)
+sesameQC_plotHeatSNPs(sdfs)
 }
