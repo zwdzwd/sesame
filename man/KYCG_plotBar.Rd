@@ -20,13 +20,13 @@ grid plot object
 }
 \description{
 The input data frame should have an "estimate" and
-a "fdr" columns.
+a "FDR" columns.
 }
 \details{
 Top CG groups are determined by estimate (descending order).
 }
 \examples{
 KYCG_plotBar(data.frame(
-  estimate=runif(10,0,10), fdr=runif(10,0,1),
+  estimate=runif(10,0,10), FDR=runif(10,0,1),
   overlap=as.integer(runif(10,0,30)), group="g", db=seq_len(10)))
 }

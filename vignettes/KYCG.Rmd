@@ -14,7 +14,7 @@ vignette: >
 SeSAMe implements an automated discovery tool named knowYourCG for discovering
 hidden biological and technical links.
 
-# KYCG Introduction
+# Introduction
 
 knowYourCG is a tool for evaluating CpG feature enrichment using Illumina probe
 IDs. Tthis tool automates the hypothesis testing by asking whether a set of
@@ -46,9 +46,9 @@ library(SummarizedExperiment)
 library(stats4)
 ```
 
-# Input Data
+# Input data
 
-## Database Sets
+## Databases
 
 We have organized our database sets into different groups. Each group contains
 one or multiple databases. Here is how to find the names of these database
@@ -98,7 +98,7 @@ summary(dbs[1:3])
 On subsequent runs of the ```KYCG_getDBs()``` function, loading specific
 database sets from the same release will be much faster.
 
-## Query Sets
+## The query set
 
 A query set represents probes of interest. It may either be in the form of a
 character vector where the values correspond to probe IDs or a named numeric
@@ -117,16 +117,9 @@ head(query)
 ```
 
 This query set represents hypomethylated probes in Mouse B-cells from the MM285
-platform. This specific query set has 168 probes:
+platform. This specific query set has 168 probes.
 
-``` {r view-data4, eval=TRUE, echo=FALSE}
-length(query)
-```
-
-Using the obtained databases and query, the user may analyze their overlap and
-enrichment.
-
-# Test Enrichment
+# Test enrichment
 
 The main work horse function for test enrichment of the query in the databases
 is `testEnrichment` (no surprise). This function calculates the extent of
@@ -137,8 +130,8 @@ sets. They are shown with the respective testing scenario in the table below.
 ```{r echo = FALSE, results="asis"}
 library(knitr)
 df = data.frame(
-    "Continuous DB"=c("Correlation","FGSEA"),
-    "Discrete DB"=c("FGSEA","Fisher's Exact Test"))
+    "Continuous DB"=c("Correlation","GSEA"),
+    "Discrete DB"=c("GSEA","Fisher's Exact Test"))
 rownames(df) = c("Continuous Query", "Discrete Query")
 kable(df, caption="Four KnowYourCG Testing Scenarios")
 ```
@@ -172,7 +165,7 @@ sorted.
 
 It should be noted that the estimate (or test statistic) is test dependent and
 comparison between p-values should be limited to within the same type of
-test. For instance, the test statistics for Fisher's exact test and FGSEA are
+test. For instance, the test statistics for Fisher's exact test and GSEA are
 log fold change and the test statistic for Spearman's test is simply the rank
 order correlation coefficient. For simplicity, we report all of the test types
 in one data frame.
@@ -185,7 +178,7 @@ overlap between the two sets, so that metric is reported as well in the
 We can visualize the results in a bar plot.
 
 ```{r fig.width=8, fig.height=5}
-KYCG_plotBar(results, n_max=20)
+KYCG_plotBar(results, n_max=15)
 ```
  
 or volcano plot and lollipop plot.
@@ -198,7 +191,37 @@ KYCG_plotVolcano(results)
 KYCG_plotLollipop(results)
 ```
 
-## Example Testing Scenarios
+# Gene enrichment
+
+Automating the enrichment test process only works when the number of database
+sets is small. This is important when targeting all genes as there are tens of
+thousands of genes on each platform. By testing only those genes that overlap
+with the query set, we can greatly reduce the number of tests. For this reason,
+the gene enrichment analysis is a special case of these enrichment tests. We
+can perform this analysis using the ```testEnrichmentGene()``` function.
+
+``` {r run-test-gene, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
+df <- rowData(sesameDataGet('MM285.tissueSignature'))
+query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
+results <- testEnrichmentGene(query, platform="MM285")
+head(results)
+```
+
+Using these sample results, we can plot a volcano plot and lollipop plot.
+
+```{r plot-volcano-gene, fig.width=7, fig.height=6, echo=TRUE}
+KYCG_plotVolcano(results)
+```
+
+```{r plot-lollipop-gene, fig.width=7, fig.height=6, echo=TRUE}
+KYCG_plotLollipop(results)
+```
+
+For example, this given query set is tissue specific hypomethylation of mouse
+brain. Rufy3 is shown to be significantly enriched in this set and it is known
+to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
+
+# Continuous data
 
 The query may be a named continuous vector. In that case, either a gene
 enrichment score will be calculated (if the database is discrete) or a Spearman
@@ -211,96 +234,20 @@ set corresponding to the distance of the nearest transcriptional start site
 (TSS) to each probe.
 
 ``` {r run-test-data, echo=TRUE, eval=TRUE}
-dbs = sesameDataGet('KYCG.MM285.seqContextN.20210630')
-CpGDesity50 = dbs['CpGDesity50']
-distToTSS = dbs['distToTSS']
+query <- KYCG_getDBs("KYCG.MM285.designGroup")[["TSS"]]
+str(query)
 ```
 
-### Example 1
-
-Our first test will look at whether the query set is significantly enriched in
-either of the database sets individually.
-
-``` {r run-test-other1, echo=TRUE, eval=TRUE}
-testEnrichment(query, CpGDesity50, platform="MM285")
+``` {r echo=TRUE, eval=TRUE, message=FALSE}
+testEnrichment(query, "MM285.seqContextN")
 ```
 
-``` {r run-test-other2, echo=TRUE, eval=TRUE}
-testEnrichment(query, distToTSS, platform="MM285")
-```
+The estimate here is enrichment score. Negative enrichment score suggest
+enrichment with the higher values of the database. As expected, the designed
+TSS CpGs are significantly enriched in smaller TSS distance and higher CpG
+density.
 
-Both of the tests result in a p-value greater than 0.05, so there is little
-evidence to suggest that either of the query set is enriched in either of these
-database sets.
-
-### Example 2
-
-A third test might be whether there is a significant correlation between these
-two database sets.
-
-``` {r run-test-other3, echo=TRUE, eval=TRUE}
-testEnrichment(CpGDesity50[[1]], databases=distToTSS, platform="MM285")
-```
-
-This test is statistically significant with a p-value less than 0.05 and a
-moderately weak negative correlation. It is known in biology that the distance
-to TSS are negatively correlated with CpG islands, which is shown to be the
-case here from the data as well.
-
-In the above four examples, the database sets were specified explicitly. This
-is not necessarily needed as the function can load a default set of database
-sets based a release specified the ```release``` parameter. The default is
-```release=2```.
-
-### Example 3
-
-We may want to look specifically at query our query set is significantly
-enriched in the set of all Transcription Factor Binding Sites (TFBS). Let's
-first load in the TFBS database set.
-
-``` {r run-test-tfbs, echo=TRUE, eval=TRUE, warning=FALSE}
-resultsTFBS = testEnrichment(query, "MM285.TFBS")
-```
-
-Using these sample results, we can plot a volcano plot and lollipop plot.
-
-```{r plot-volcano-tfbs, fig.width=7, fig.height=6, echo=TRUE}
-KYCG_plotVolcano(resultsTFBS, alpha=0.0005)
-```
-
-```{r plot-lollipop-tfbs, fig.width=7, fig.height=6, echo=TRUE}
-KYCG_plotLollipop(resultsTFBS)
-```
-
-## Gene Enrichment Ananlysis
-
-Automating the enrichment test process only works when the number of database
-sets is small. This is important when targeting all genes as there are tens of
-thousands of genes on each platform. By testing only those genes that overlap
-with the query set, we can greatly reduce the number of tests. For this reason,
-the gene enrichment analysis is a special case of these enrichment tests. We
-can perform this analysis using the ```testEnrichmentGene()``` function.
-
-``` {r run-test-gene, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
-resultsGene = testEnrichmentGene(query, platform="MM285", verbose=FALSE)
-head(resultsGene)
-```
-
-Using these sample results, we can plot a volcano plot and lollipop plot.
-
-```{r plot-volcano-gene, fig.width=7, fig.height=6, echo=TRUE}
-KYCG_plotVolcano(resultsGene)
-```
-
-```{r plot-lollipop-gene, fig.width=7, fig.height=6, echo=TRUE}
-KYCG_plotLollipop(resultsGene)
-```
-
-For example, this given query set is tissue specific hypomethylation of mouse
-brain. Rufy3 is shown to be significantly enriched in this set and it is known
-to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
-
-# Feature Engineering
+# Feature engineering
 
 In addition to hypothesis testing, knowYourCG also uses the curated database
 sets for feature engineering. We have a pre-curated summarized experiment
@@ -310,55 +257,29 @@ and several categorical/numerical features. To use this data for a linear
 model, we will extract the most relevant prevalent features.
 
 ``` {r run-feature-engineering-get-data, echo=TRUE, eval=TRUE}
-se = sesameDataGet('MM285.20Kx467.SE')
-samplesheet = colData(se)[, c("Mouse_Age_Months",
-         "Mouse_Age_Days", "Sex", "Strain_Corrected",
-         "Tissue_Corrected", 'Genotype')]
-betas = assay(se)
-
-print(head(samplesheet))
+betas = assay(sesameDataGet('MM285.20Kx467.SE'))
 ```
 
-We have found that it is incredibly computationally expensive to perform a
-linear model/generalized linear model on a feature set of individual
+We have found that it is computationally expensive to perform a linear
+model/generalized linear model on a feature set of individual
 CpGs. Additionally, interpreting the mechanism the significantly contributing
 CpGs is non-trivial due to their complex interactions. We hope to leverage
 these pre-curated database sets by using their beta value summary statistics as
-features instead.
+features instead. We will calculate the summary statistics for the betas matrix
+using a list of database sets. The default is to calculate the mean.
 
-We will calculate the summary statistics for the betas matrix using a list of
-database sets. The default is to calculate the mean.
-
-``` {r run-feature-engineering-statistics}
-statistics = dbStats(betas, 'KYCG.MM285.designGroup.20210210')
-head(statistics[, 1:5])
+```{r run-feature-engineering-statistics}
+stats <- dbStats(betas, 'MM285.chromHMM')
+head(stats[, 1:5])
 ```
 
-Just from the few database set means above, we can see that CpG islands are
+Just from the few database set means above, we can see that TSS are
 consistently hypomethylated, which is consistent with known biology.
 
-Using the samplesheet and beta values, we can create a singular data for linear
-models. Each categorical variable should be caste as a factor with a reference
-level. Each numerical variable should be expressed appropriately as well.
-
-``` {r feature-engineering-data-curation, warning=FALSE}
-data = cbind(data.frame(samplesheet), statistics)
-
-data$Sex = relevel(factor(data$Sex), 'Female')
-data$Strain_Corrected = relevel(factor(data$Strain_Corrected), '129/Sv')
-data$Tissue_Corrected = relevel(factor(data$Tissue_Corrected),  'Colon')
-data$Genotype = relevel(factor(data$Genotype), 'WT')
-
-data$Mouse_Age_Days = as.numeric(data$Mouse_Age_Days)
-data$Mouse_Age_Months = as.numeric(data$Mouse_Age_Months)
-```
-
-A linear model can finally be constructed using this data. Since there are only
-20 samples, we will use use four of the database summary statistics.
-
-``` {r feature-engineering-linear-model}
-model = lm(Mouse_Age_Days ~ Sex + Strain_Corrected + Tissue_Corrected +
-    Genotype, data=data)
+```{r fig.width=6, fig.height=6, fig.align="center"}
+library(wheatmap)
+WHeatmap(both.cluster(stats)$mat, xticklabels=TRUE,
+    cmp=CMPar(stop.points=c("blue","yellow")))
 ```
 
 # Session Info

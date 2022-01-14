@@ -36,7 +36,6 @@ Imports: BiocParallel,
          stats,
          SummarizedExperiment,
          e1071,
-         fgsea,
          dplyr,
          ggrepel, 
          reshape2

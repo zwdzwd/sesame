@@ -23,7 +23,7 @@ given data with fields estimate and p.value.
 }
 \examples{
 
-data=data.frame(estimate=c(runif(10)), fdr=c(runif(10)))
+data=data.frame(estimate=c(runif(10)), FDR=c(runif(10)))
 KYCG_plotVolcano(data)
 
 }

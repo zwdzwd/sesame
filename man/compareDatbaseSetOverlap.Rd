@@ -5,7 +5,7 @@
 \title{calculates the pariwise overlap between given list
 of database sets using a distance metric.}
 \usage{
-compareDatbaseSetOverlap(databases = NA, metric = "Jaccard", verbose = FALSE)
+compareDatbaseSetOverlap(databases = NA, metric = "Jaccard")
 }
 \arguments{
 \item{databases}{List of vectors corresponding to the database sets of
@@ -14,9 +14,6 @@ interest with associated meta data as an attribute to each element. Optional.
 
 \item{metric}{String representing the similarity metric to use. Optional.
 (Default: "Jaccard").}
-
-\item{verbose}{Logical value indicating whether to display intermediate
-text output about the type of test. Optional. (Default: FALSE)}
 }
 \value{
 An upper triangular matrix containing a metric (Jaccard) comparing

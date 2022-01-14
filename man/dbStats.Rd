@@ -5,18 +5,18 @@
 \title{dbStats builds dataset for a given betas matrix 
 composed of engineered features from the given database sets}
 \usage{
-dbStats(betas, dbs, fun = mean, na.rm = TRUE)
+dbStats(betas, databases, fun = mean, na.rm = TRUE)
 }
 \arguments{
 \item{betas}{matrix of beta values where probes are on the rows and
 samples are on the columns}
 
-\item{dbs}{List of vectors corresponding to probe locations for
-which the features will be extracted}
-
 \item{fun}{aggregation function, default to mean}
 
 \item{na.rm}{whether to remove NA}
+
+\item{dbs}{List of vectors corresponding to probe locations for
+which the features will be extracted}
 }
 \value{
 matrix with samples on the rows and database set on the columns
@@ -29,8 +29,7 @@ composed of engineered features from the given database sets
 
 library(SummarizedExperiment)
 se <- sesameDataGet('MM285.20Kx467.SE')
-stats <- dbStats(assay(se), c('KYCG.MM285.probeType.20210630'))
-head(stats)
+head(dbStats(assay(se), "MM285.probeType")[,1:3])
 sesameDataClearCache()
 
 }

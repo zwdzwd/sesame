@@ -5,7 +5,7 @@
 \title{testEnrichmentGene tests for the enrichment of set of probes
 (query) in gene regions.}
 \usage{
-testEnrichmentGene(query, databases = NA, platform = NA, verbose = FALSE)
+testEnrichmentGene(query, databases = NULL, platform = NULL)
 }
 \arguments{
 \item{query}{Vector of probes of interest (e.g., probes belonging to a
@@ -18,9 +18,6 @@ interest with associated meta data as an attribute to each element. Optional.
 \item{platform}{String corresponding to the type of platform to use. Either
 MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 from the query set query (Default: NA)}
-
-\item{verbose}{Logical value indicating whether to display intermediate
-text output about the type of test. Optional. (Default: FALSE)}
 }
 \value{
 One list containing features corresponding the test estimate,
@@ -36,6 +33,6 @@ library(SummarizedExperiment)
 MM285.tissueSignature <- sesameDataGet('MM285.tissueSignature')
 df <- rowData(MM285.tissueSignature)
 query <- df$Probe_ID[df$branch == "B_cell"]
-testEnrichmentGene(query, platform="MM285", verbose=FALSE)
+testEnrichmentGene(query, platform="MM285")
 
 }

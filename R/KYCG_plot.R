@@ -1,7 +1,7 @@
 #' Bar plot to show most enriched CG groups from testEnrichment
 #'
 #' The input data frame should have an "estimate" and
-#' a "fdr" columns.
+#' a "FDR" columns.
 #' 
 #' Top CG groups are determined by estimate (descending order).
 #'
@@ -14,22 +14,22 @@
 #' @import ggplot2
 #' @examples
 #' KYCG_plotBar(data.frame(
-#'   estimate=runif(10,0,10), fdr=runif(10,0,1),
+#'   estimate=runif(10,0,10), FDR=runif(10,0,1),
 #'   overlap=as.integer(runif(10,0,30)), group="g", db=seq_len(10)))
 #' @export
 KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 
-    db1 <- fdr <- overlap <- estimate <- NULL
-    stopifnot("estimate" %in% colnames(df) && "fdr" %in% colnames(df))
+    db1 <- FDR <- overlap <- estimate <- NULL
+    stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
 
     df <- df[df$nD >0,]
-    df$fdr[df$fdr==0] <- .Machine$double.xmin
-    df <- df[order(df[["fdr"]]),]
-    if (sum(df[["fdr"]] < max_fdr) < n_min) {
+    df$FDR[df$FDR==0] <- .Machine$double.xmin
+    df <- df[order(df$FDR),]
+    if (sum(df$FDR < max_fdr) < n_min) {
         df1 <- head(df, n=n_min)
     } else {
         df <- df[df$estimate > 1,] # enrichment only, exclude depletion
-        df1 <- df[df[["fdr"]] < max_fdr,]
+        df1 <- df[df$FDR < max_fdr,]
         df1 <- head(df1, n=n_max)
     }
     
@@ -41,11 +41,11 @@ KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
     }
     df1$db1 <- factor(df1$db1, levels=rev(df1$db1))
 
-    p1 <- ggplot(df1, aes(db1, -log10(fdr))) + geom_bar(stat="identity") +
+    p1 <- ggplot(df1, aes(db1, -log10(FDR))) + geom_bar(stat="identity") +
         coord_flip() + ylab("-log10(P-value)") + xlab("CpG Group") +
-        geom_label(aes(x=db1, y=-log10(fdr)/2,
+        geom_label(aes(x=db1, y=-log10(FDR)/2,
             label=sprintf("%d CGs", overlap)),
-            data = df1[df1$fdr < 0.05,], alpha=0.6, hjust=0.5)
+            data = df1[df1$FDR < 0.05,], alpha=0.6, hjust=0.5)
     p2 <- ggplot(df1, aes(db1, estimate)) + geom_bar(stat="identity") +
         coord_flip() + ylab("Enrichment Score") + xlab("") +
         theme(axis.text.y = element_blank())
@@ -64,13 +64,13 @@ KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 #' @import ggrepel
 #' @examples
 #' 
-#' data=data.frame(estimate=c(runif(10)), fdr=c(runif(10)))
+#' data=data.frame(estimate=c(runif(10)), FDR=c(runif(10)))
 #' KYCG_plotVolcano(data)
 #'
 #' @export
 KYCG_plotVolcano <- function(data, alpha=0.05) {
     ## suppress R CMD CHECK no visible binding warning
-    estimate <- fdr <- label <- NULL
+    estimate <- FDR <- label <- NULL
     
     if ("Target" %in% colnames(data)) {
         data["label"] <- unlist(data[["Target"]])
@@ -79,11 +79,11 @@ KYCG_plotVolcano <- function(data, alpha=0.05) {
     }
     
     ## TODO: replace with column specifying sig vs non sig
-    if (any(data$fdr <= alpha)) {
-        g <- ggplot(data=data, aes(x=log2(estimate), y=-log10(fdr),
-            color = cut(fdr, c(-Inf, alpha))))
+    if (any(data$FDR <= alpha)) {
+        g <- ggplot(data=data, aes(x=log2(estimate), y=-log10(FDR),
+            color = cut(FDR, c(-Inf, alpha))))
     } else {
-        g <- ggplot(data=data, aes(x=estimate, y=fdr))
+        g <- ggplot(data=data, aes(x=estimate, y=FDR))
     }
     g <- g + geom_point() + xlab("log2 Fold Change")
     
@@ -95,7 +95,7 @@ KYCG_plotVolcano <- function(data, alpha=0.05) {
 
     options(ggrepel.max.overlaps = 10)
     g + geom_text_repel(
-        data = subset(data, fdr < 0.0005),
+        data = subset(data, FDR < 0.0005),
         aes(label = label),
         size = 5,
         box.padding = unit(0.35, "lines"),
@@ -120,7 +120,7 @@ KYCG_plotVolcano <- function(data, alpha=0.05) {
 #' @export
 KYCG_plotLollipop <- function(df, n=10) {
     ## suppress R CMD CHECK no visible binding warning
-    estimate <- fdr <- label <- NULL
+    estimate <- label <- NULL
     
     if ("Target" %in% colnames(df))
         df["label"] <- unlist(df[["Target"]])
