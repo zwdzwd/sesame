@@ -381,16 +381,16 @@ KYCG_listDBGroups <- function(filter = NULL) {
 #' @param group_nms database group names
 #' @return a list of databases
 #' @examples
-#' dbs <- KYCG_getDBs("EPIC.chromHMM")
+#' dbs <- KYCG_getDBs("MM285.chromHMM")
 #' @export
-KYCG_getDBs <- function(group_nms, verbose = TRUE) {
+KYCG_getDBs <- function(group_nms) {
     if (!is.character(group_nms)) {
         return(group_nms)
     }
     group_nms <- guess_dbnames(group_nms)
     group_nms_ <- paste(group_nms, sep="\n")
     message(sprintf(
-        "Selected the following database groups: %s\n", group_nms_))
+        "Selected the following database groups:\n%s", group_nms_))
     do.call(c, lapply(unname(group_nms), function(nm) {
         dbs <- sesameDataGet(nm)
         setNames(lapply(seq_along(dbs), function(ii) {
@@ -406,7 +406,7 @@ KYCG_getDBs <- function(group_nms, verbose = TRUE) {
 #'
 #' @param betas matrix of beta values where probes are on the rows and
 #' samples are on the columns
-#' @param dbs List of vectors corresponding to probe locations for
+#' @param databases List of vectors corresponding to probe locations for
 #' which the features will be extracted
 #' @param fun aggregation function, default to mean
 #' @param na.rm whether to remove NA
@@ -443,16 +443,13 @@ dbStats <- function(betas, databases, fun = mean, na.rm = TRUE) {
 #' of interest.
 #' @return ggplot lollipop plot
 #' @import reshape2
-#'
-#' @examples
-#'
-#' databaseNames <- c('KYCG.MM285.seqContextN.20210630')
-#' databases <- do.call(c, lapply(databaseNames, sesameDataGet))
-#' createDatabaseSetNetwork(databases)
-#' sesameDataClearCache()
-#'
 createDBNetwork <- function(databases) {
     m <- compareDatbaseSetOverlap(databases, metric="jaccard")
+
+    ## databaseNames <- c('KYCG.MM285.seqContextN.20210630')
+    ## databases <- do.call(c, lapply(databaseNames, sesameDataGet))
+    ## createDatabaseSetNetwork(databases)
+    ## sesameDataClearCache()
     
     m_melted <- melt(m)
     colnames(m_melted) <- c("gene1", "gene2", "metric")
@@ -478,16 +475,14 @@ createDBNetwork <- function(databases) {
 #' (Default: "Jaccard").
 #' @return An upper triangular matrix containing a metric (Jaccard) comparing
 #' the pairwise distances between database sets.
-#' @examples
-#' 
-#' databaseNames <- c('KYCG.MM285.seqContextN.20210630')
-#' databases <- do.call(c, lapply(databaseNames, sesameDataGet))
-#' compareDatbaseSetOverlap(databases)
-#' sesameDataClearCache()
-#'
 compareDatbaseSetOverlap <- function(
     databases=NA, metric = "Jaccard") {
-    
+
+    ## databaseNames <- c('KYCG.MM285.seqContextN.20210630')
+    ## databases <- do.call(c, lapply(databaseNames, sesameDataGet))
+    ## compareDatbaseSetOverlap(databases)
+    ## sesameDataClearCache()
+
     ndatabases <- length(databases)
     names <- names(databases)
     m <- matrix(0, nrow=ndatabases, ncol=ndatabases)

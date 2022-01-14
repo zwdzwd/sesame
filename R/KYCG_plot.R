@@ -1,27 +1,4 @@
-#' Bar plot to show most enriched CG groups from testEnrichment
-#'
-#' The input data frame should have an "estimate" and
-#' a "FDR" columns.
-#' 
-#' Top CG groups are determined by estimate (descending order).
-#'
-#' @param df KYCG result data frame
-#' @param n_min minimum number of databases to report
-#' @param n_max maximum number of databases to report
-#' @param max_fdr maximum FDR
-#' @return grid plot object
-#'
-#' @import ggplot2
-#' @examples
-#' KYCG_plotBar(data.frame(
-#'   estimate=runif(10,0,10), FDR=runif(10,0,1),
-#'   overlap=as.integer(runif(10,0,30)), group="g", db=seq_len(10)))
-#' @export
-KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
-
-    db1 <- FDR <- overlap <- estimate <- NULL
-    stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
-
+preparePlotDF <- function(df, n_min, n_max, max_fdr) {
     df <- df[df$nD >0,]
     df$FDR[df$FDR==0] <- .Machine$double.xmin
     df <- df[order(df$FDR),]
@@ -40,7 +17,34 @@ KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
         df1$db1 <- sprintf("%s: %s", gp, df1$db)
     }
     df1$db1 <- factor(df1$db1, levels=rev(df1$db1))
+    df1
+}
 
+#' Bar plot to show most enriched CG groups from testEnrichment
+#'
+#' The input data frame should have an "estimate" and
+#' a "FDR" columns.
+#' 
+#' Top CG groups are determined by estimate (descending order).
+#'
+#' @param df KYCG result data frame
+#' @param n_min minimum number of databases to report
+#' @param n_max maximum number of databases to report
+#' @param max_fdr maximum FDR
+#' @return grid plot object
+#'
+#' @import ggplot2
+#' @examples
+#' KYCG_plotBar(data.frame(
+#'   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=10,
+#'   overlap=as.integer(runif(10,0,30)), group="g", db=seq_len(10)))
+#' @export
+KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
+
+    db1 <- FDR <- overlap <- estimate <- NULL
+    stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
+
+    df1 <- preparePlotDF(df, n_min, n_max, max_fdr)
     p1 <- ggplot(df1, aes(db1, -log10(FDR))) + geom_bar(stat="identity") +
         coord_flip() + ylab("-log10(P-value)") + xlab("CpG Group") +
         geom_label(aes(x=db1, y=-log10(FDR)/2,
@@ -50,6 +54,40 @@ KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
         coord_flip() + ylab("Enrichment Score") + xlab("") +
         theme(axis.text.y = element_blank())
     WGG(p1) + WGG(p2, RightOf(width=0.5, pad=0))
+}
+
+
+
+#' Dot plot to show most enriched CG groups from testEnrichment
+#'
+#' The input data frame should have an "estimate" and
+#' a "FDR" columns.
+#' 
+#' Top CG groups are determined by estimate (descending order).
+#'
+#' @param df KYCG result data frame
+#' @param n_min minimum number of databases to report
+#' @param n_max maximum number of databases to report
+#' @param max_fdr maximum FDR
+#' @return grid plot object
+#'
+#' @import ggplot2
+#' @examples
+#' KYCG_plotDot(data.frame(
+#'   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=runif(10,10,20),
+#'   overlap=as.integer(runif(10,0,30)), group="g", db=seq_len(10)))
+#' @export
+KYCG_plotDot <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
+
+    db1 <- FDR <- overlap <- estimate <- NULL
+    stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
+
+    df1 <- preparePlotDF(df, n_min, n_max, max_fdr)
+    ggplot(df1) +
+        geom_point(aes(db1, -log10(FDR), size=overlap, color=estimate)) +
+        coord_flip() + ggtitle("Enriched Databases") +
+        scale_color_gradient(low="blue",high="red") +
+        ylab("-log10(FDR)") + xlab("")
 }
 
 #' creates a volcano plot of -log2(p.value) and log(estimate)

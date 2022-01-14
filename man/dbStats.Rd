@@ -11,12 +11,12 @@ dbStats(betas, databases, fun = mean, na.rm = TRUE)
 \item{betas}{matrix of beta values where probes are on the rows and
 samples are on the columns}
 
+\item{databases}{List of vectors corresponding to probe locations for
+which the features will be extracted}
+
 \item{fun}{aggregation function, default to mean}
 
 \item{na.rm}{whether to remove NA}
-
-\item{dbs}{List of vectors corresponding to probe locations for
-which the features will be extracted}
 }
 \value{
 matrix with samples on the rows and database set on the columns
