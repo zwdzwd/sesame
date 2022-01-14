@@ -65,7 +65,9 @@ setMethod("show", "sesameQC", function(object)  {
 #' Only overlapping metrics will be compared.
 #'
 #' @param qc a sesameQC object
-#' @param publicQC output of sesameQC_publicQC, optional
+#' @param publicQC public QC statistics, filtered from e.g.: EPIC.publicQC,
+#' MM285.publicQC and Mammal40.publicQC
+#' @param platform EPIC, MM285 or Mammal40, used when publicQC is not given
 #' @return a sesameQC
 #' @examples
 #'
@@ -74,9 +76,11 @@ setMethod("show", "sesameQC", function(object)  {
 #' sesameQC_rankStats(sesameQC_calcStats(sdf, "intensity"))
 #' 
 #' @export
-sesameQC_rankStats <- function(qc, publicQC=NULL) {
-    publicQC <- sesameQC_publicQC()
-    
+sesameQC_rankStats <- function(qc, publicQC=NULL, platform="EPIC") {
+
+    if (is.null(publicQC)) {
+        publicQC <- sesameDataGet(sprintf("%s.publicQC", platform))
+    }
     s <- qc@stat; g <- qc@group
     metrics <- intersect(names(qc@stat), colnames(publicQC))
     if (length(metrics) == 0) { return(qc); }
@@ -518,28 +522,29 @@ sesameQC_plotHeatSNPs <- function(
         WCustomize(mar.bottom=0.15)
 }
 
-#' Retrieve stats of public data of similar nature
-#' e.g., tissue, FFPE vs non-FFPE, etc.
-#' @param platform HM450, EPIC, MM285 etc.
-#' @param tissue optional, blood, buccal, saliva, etc.
-#' @param samplePrep optional, fresh, FF, etc.
-#' @return a data frame of public data QC stats
-#'
-#' @examples
-#' publicQC <- sesameQC_publicQC()
-#' 
-#' @export
-sesameQC_publicQC <- function(platform = NULL, tissue=NULL, samplePrep=NULL) {
-    df <- sesameDataGet('detection.stats')
-    if (!is.null(platform) && platform %in% df$Platform) {
-        df <- df[df$Platform == platform,]
-    }
-    if (!is.null(tissue) && tissue %in% df$Tissue) {
-        df <- df[df$Tissue==tissue,]
-    }
-    if (!is.null(samplePrep) && samplePrep %in% df$SamplePrep) {
-        df <- df[df$SamplePrep==samplePrep,]
-    }
-    stopifnot(nrow(df) >= 5) # stop if there are too few number of samples
-    df
-}
+## #' Retrieve stats of public data of similar nature
+## #' e.g., tissue, FFPE vs non-FFPE, etc.
+## #' @param platform HM450, EPIC, MM285 etc.
+## #' @param tissue optional, blood, buccal, saliva, etc.
+## #' @param samplePrep optional, fresh, FF, etc.
+## #' @return a data frame of public data QC stats
+## #'
+## #' @examples
+## #' publicQC <- sesameQC_publicQC()
+## #' 
+## #' @export
+## sesameQC_publicQC <- function(platform, tissue=NULL, samplePrep=NULL) {
+##     df <- sesame
+##     df <- sesameDataGet('detection.stats')
+##     if (!is.null(platform) && platform %in% df$Platform) {
+##         df <- df[df$Platform == platform,]
+##     }
+##     if (!is.null(tissue) && tissue %in% df$Tissue) {
+##         df <- df[df$Tissue==tissue,]
+##     }
+##     if (!is.null(samplePrep) && samplePrep %in% df$SamplePrep) {
+##         df <- df[df$SamplePrep==samplePrep,]
+##     }
+##     stopifnot(nrow(df) >= 5) # stop if there are too few number of samples
+##     df
+## }

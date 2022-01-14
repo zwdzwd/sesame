@@ -5,12 +5,15 @@
 \title{This function compares the input sample with public data.
 Only overlapping metrics will be compared.}
 \usage{
-sesameQC_rankStats(qc, publicQC = NULL)
+sesameQC_rankStats(qc, publicQC = NULL, platform = "EPIC")
 }
 \arguments{
 \item{qc}{a sesameQC object}
 
-\item{publicQC}{output of sesameQC_publicQC, optional}
+\item{publicQC}{public QC statistics, filtered from e.g.: EPIC.publicQC,
+MM285.publicQC and Mammal40.publicQC}
+
+\item{platform}{EPIC, MM285 or Mammal40, used when publicQC is not given}
 }
 \value{
 a sesameQC

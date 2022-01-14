@@ -1,6 +1,6 @@
 ---
 title: "knowYourCG"
-shorttitle: "kyCG"
+shorttitle: "KYCG"
 package: knowYourCG
 output: rmarkdown::html_vignette
 fig_width: 6
@@ -14,9 +14,7 @@ vignette: >
 SeSAMe implements an automated discovery tool named knowYourCG for discovering
 hidden biological and technical links.
 
-# knowYourCG
-
-## Introduction
+# KYCG Introduction
 
 knowYourCG is a tool for evaluating CpG feature enrichment using Illumina probe
 IDs. Tthis tool automates the hypothesis testing by asking whether a set of
@@ -53,114 +51,88 @@ library(stats4)
 ## Database Sets
 
 We have organized our database sets into different groups. Each group contains
-one or multiple database sets. One can find the current group of database sets
-by looking for a "KYCG" prefix in the title:
+one or multiple databases. Here is how to find the names of these database
+groups:
 
 ``` {r list-data, eval=TRUE, echo=TRUE}
-head(sesameDataList("KYCG")$Title)
+KYCG_listDBGroups("MM285")
 ```
 
-The `sesameDataList()` function returns a vector containing these accessions.
-With the accessions, one can use the ```sesameDataGet()``` function to get a
-list of database sets. When this function is ran for the first time, none of
-the database sets have been cached. Caching on the local machine is important
-on two fronts: firstly it limits the number of requests sent to the
-Bioconductor server, and secondly it limits the amount of time the user needs
-to wait when re-downloading database sets. For this reason, one should run
-```sesameDataCache(keyword='KYCG')``` before loading in any database sets. This
-will take some time to download all of the database sets from a given release.
-During the analysis the database sets can be identified using these
-accessions. Sesame also support some degree of guessing when a unique substring
-is given.
+The `KYCG_listDBGroups()` function returns a vector containing these
+accessions.  With the accessions, one can use the ```KYCG_getDBs()``` function
+to get a list of databases. When this function is ran for the first time, none
+of the databases have been cached. Caching on the local machine is important on
+two fronts: firstly it limits the number of requests sent to the Bioconductor
+server, and secondly it limits the amount of time the user needs to wait when
+re-downloading database sets. For this reason, one should run
+```sesameDataCacheAll()``` before loading in any database sets. This will take
+some time to download all of the database sets from a given release.  During
+the analysis the database sets can be identified using these accessions. Sesame
+also support some degree of guessing when a unique substring is given.
+
+For example, the following retrieves the "KYCG.MM285.designGroup.20210210"
+database.
 
 ``` {r cache-data, eval=TRUE, warning=FALSE}
-db_nms = c(
-    'KYCG.MM285.seqContextN.20210630',
-    'KYCG.MM285.designGroup.20210210',
-    'KYCG.MM285.chromosome.mm10.20210630',
-    'KYCG.MM285.probeType.20210630')
-databases = do.call(c, lapply(db_nms, sesameDataGet))
+dbs <- KYCG_getDBs("MM285.design")
 ```
 
-In total, 61 database sets have been loaded from this command.
+In total, 32 database sets have been loaded from this command.
 
 ``` {r view-data0, eval=TRUE, warning=FALSE}
-length(databases)
+length(dbs)
 ```
 
 We will show the first three for simplicity.
 
 ``` {r view-data1, eval=TRUE, warning=FALSE}
-str(databases[1:3])
+str(dbs[1:3])
 ```
 
 And display a summary of its contents.
 
 ``` {r view-data2, eval=TRUE, warning=FALSE}
-summary(databases[1:3])
+summary(dbs[1:3])
 ```
 
-On subsequent runs of the ```sesameDataGet()``` function, loading specific
-database sets from the same release will be much faster. These database sets
-will be persistent between R sessions so long as the directory to which they
-are downloaded is not deleted. Otherwise, the database sets will have to be
-downloaded again.
+On subsequent runs of the ```KYCG_getDBs()``` function, loading specific
+database sets from the same release will be much faster.
 
 ## Query Sets
 
 A query set represents probes of interest. It may either be in the form of a
 character vector where the values correspond to probe IDs or a named numeric
-vector where the names correspond to probe IDs.
+vector where the names correspond to probe IDs. The query and database
+definition is rather arbitrary. One can regard a database as a query and turn a
+query into a database.
 
-A list of test query sets can be obtained from the following URL. 
+Here we will demonstrate by considering CpGs that show tissue-specific
+methylation as the query. We are getting the B-cell-specific hypomethylation
+and using that for the following analysis.
 
 ```{r cache-data2, eval=TRUE, echo=TRUE}
-MM285.tissueSignature = sesameDataGet('MM285.tissueSignature')
-df = rowData(MM285.tissueSignature)
-query = df$Probe_ID[df$branch == "B_cell"]
+df <- rowData(sesameDataGet('MM285.tissueSignature'))
+query <- df$Probe_ID[df$branch == "B_cell"]
+head(query)
 ```
 
-This query set represents hypomethylated probes in Mouse brain tissue from the
-MM285 platform. This specific query set has 71 probes.
+This query set represents hypomethylated probes in Mouse B-cells from the MM285
+platform. This specific query set has 168 probes:
 
 ``` {r view-data4, eval=TRUE, echo=FALSE}
-cat(sprintf("length(query) = %s probes", length(query)))
+length(query)
 ```
 
-Using the obtained database sets and query set, the user may analyze their
-overlap and enrichment.
+Using the obtained databases and query, the user may analyze their overlap and
+enrichment.
 
-# Functionality
+# Test Enrichment
 
-There are many functions in this package that make investigating the biological
-significance of a set of probes easier.
-
-## Obtaining Database Annotation
-
-Using the ```getDatabaseSetOverlap()``` function, the user can investigate the
-database sets that overlap with the given query set, the degree of overlap, and
-any provided annotation.
-
-``` {r run-annotation, echo=TRUE, eval=TRUE}
-annotation = getDatabaseSetOverlap(query, databases)
-head(annotation)
-```
-
-The ```meta``` column indicates whether the respective database set contains
-annotation. The ```nQ``` and ```nD``` columns indicate the length of the query
-set and database set respectively, and the ```overlap``` column indicates the
-amount of overlap. In some cases, this annotation data.frame will be sparse as
-not all database sets have the same annotation columns. None of these
-overlapping database sets have annotation, so no additional columns were
-returned.
-
-## Single Query vs Multiple DBs
-
-The ```testEnrichment()``` function is the main work horse to knowYourCG. It
-tests the enrichment of the given database sets in a single query set. There
-are four testing scenarios depending on the type format of the query set and
-database sets. They are shown with the respective testing scenario in the table
-below.
+The main work horse function for test enrichment of the query in the databases
+is `testEnrichment` (no surprise). This function calculates the extent of
+overlap and apply different statistics for enrichment testing. There are four
+testing scenarios depending on the type format of the query set and database
+sets. They are shown with the respective testing scenario in the table below.
 
 ```{r echo = FALSE, results="asis"}
 library(knitr)
@@ -171,24 +143,32 @@ rownames(df) = c("Continuous Query", "Discrete Query")
 kable(df, caption="Four KnowYourCG Testing Scenarios")
 ```
 
-The ```testEnrichment()``` will automate statistical tests and report metrics
-about each of the the loaded database sets. Another set that is needed for the
-test is called the universe set. This is the set of all probes for a given
-platform. It can either be passed in as an argument called ```universeSet``` or
-the platform name can be passed with argument ```platform```. If neither of
-these are supplied, the universe set will be implied from the probes. In all
-subsequent runs of ```testEnrichment()``` in this vignette, the platform will
-be specified.
+The ```testEnrichment()``` will automatically perform statistical tests and
+report metrics about each of the the loaded database sets. Another critical set
+is the universe set. This is the set of all probes for a given platform. It can
+either be passed in as an argument called ```universeSet``` or the platform
+name can be passed with argument ```platform```. If neither of these are
+supplied, the universe set will be implied from the probes. In all subsequent
+runs of ```testEnrichment()``` in this vignette, the platform will be
+specified.
 
 ```{r run-test-single, echo=TRUE, eval=TRUE}
-results = testEnrichment(query, databases)
-head(results)
+df <- rowData(sesameDataGet('MM285.tissueSignature'))
+
+query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
+results <- testEnrichment(query, "MM285.TFBS")
+results %>% dplyr::filter(overlap>10) %>% head
+
+query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
+results <- testEnrichment(query, "MM285.TFBS")
+results %>% dplyr::filter(overlap>10) %>% head
 ```
 
-The output of each test contains at least four variables: the estimate,
-p-value, type of test, and whether meta data is included in the tested database
-set. The name of the database set is also recorded as well. By default, the
-p-value column is sorted.
+The output of each test contains at least four variables: the estimate (fold
+enrichment, not the test statistics), p-value, type of test, and whether meta
+data is included in the tested database set (hasMeta), as well as the name of
+the database set and the database group. By default, the estimate column is
+sorted.
 
 It should be noted that the estimate (or test statistic) is test dependent and
 comparison between p-values should be limited to within the same type of
@@ -201,8 +181,14 @@ The ```nQ``` and ```nD``` columns identify the length of the query set and the
 database set, respectively. Often, it's important to examine the extent of
 overlap between the two sets, so that metric is reported as well in the
 ```overlap``` column.
+
+We can visualize the results in a bar plot.
+
+```{r fig.width=8, fig.height=5}
+KYCG_plotBar(results, n_max=20)
+```
  
-Using these results, we can plot a volcano plot and lollipop plot.
+or volcano plot and lollipop plot.
 
 ```{r plot-volcano, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
 KYCG_plotVolcano(results)
@@ -272,17 +258,8 @@ We may want to look specifically at query our query set is significantly
 enriched in the set of all Transcription Factor Binding Sites (TFBS). Let's
 first load in the TFBS database set.
 
-``` {r load-data-tfbs, echo=TRUE, eval=TRUE}
-databases = sesameDataGet("KYCG.MM285.TFBS.20210817")
-```
-
-Next we can actually perform the test.
-
 ``` {r run-test-tfbs, echo=TRUE, eval=TRUE, warning=FALSE}
-resultsTFBS = testEnrichment(query=query, databases=databases,
-                                platform="MM285", verbose=FALSE, 
-                                return.meta=TRUE)
-head(resultsTFBS)
+resultsTFBS = testEnrichment(query, "MM285.TFBS")
 ```
 
 Using these sample results, we can plot a volcano plot and lollipop plot.
@@ -353,7 +330,7 @@ We will calculate the summary statistics for the betas matrix using a list of
 database sets. The default is to calculate the mean.
 
 ``` {r run-feature-engineering-statistics}
-statistics = dbStats(betas, db_nms)
+statistics = dbStats(betas, 'KYCG.MM285.designGroup.20210210')
 head(statistics[, 1:5])
 ```
 

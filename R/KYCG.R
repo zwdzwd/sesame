@@ -1,79 +1,79 @@
 
-#' getDatabaseSetOverlap tests for the overlap of set of probes (query) in a
-#' single given feature (database set)
-#'
-#' @param query Vector of probes corresponding to a single database set
-#' of interest.
-#' @param databases List of vectors corresponding to the database sets of
-#' interest with associated meta data as an attribute to each element.
-#' @param platform String corresponding to the type of platform to use. Either
-#' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
-#' from the query set probeIDs (Default: NA).
-#' @param verbose Logical value indicating whether to display intermediate
-#' text output about the type of test. Optional. (Default: FALSE)
-#'
-#' @return A sparse data.frame containing all of the meta data from all database
-#' sets.
-#' @export
-#' @examples
-#'
-#' library(SummarizedExperiment)
-#' MM285.tissueSignature <- sesameDataGet('MM285.tissueSignature')
-#' df <- rowData(MM285.tissueSignature)
-#' query <- df$Probe_ID[df$branch == "B_cell"]
-#' databaseNames <- c('KYCG.MM285.seqContextN.20210630', 
-#' 'KYCG.MM285.designGroup.20210210')
-#' databases <- do.call(c, lapply(databaseNames, sesameDataGet))
-#' getDatabaseSetOverlap(query, databases)
-#' sesameDataClearCache()
-#' 
-getDatabaseSetOverlap <- function(
-    query, databases, platform=NA, verbose=TRUE) {
+## #' getDatabaseSetOverlap tests for the overlap of set of probes (query) in a
+## #' single given feature (database set)
+## #'
+## #' @param query Vector of probes corresponding to a single database set
+## #' of interest.
+## #' @param databases List of vectors corresponding to the database sets of
+## #' interest with associated meta data as an attribute to each element.
+## #' @param platform String corresponding to the type of platform to use. Either
+## #' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
+## #' from the query set probeIDs (Default: NA).
+## #' @param verbose Logical value indicating whether to display intermediate
+## #' text output about the type of test. Optional. (Default: FALSE)
+## #'
+## #' @return A sparse data.frame containing all of the meta data from all database
+## #' sets.
+## #' @export
+## #' @examples
+## #'
+## #' library(SummarizedExperiment)
+## #' MM285.tissueSignature <- sesameDataGet('MM285.tissueSignature')
+## #' df <- rowData(MM285.tissueSignature)
+## #' query <- df$Probe_ID[df$branch == "B_cell"]
+## #' databaseNames <- c('KYCG.MM285.seqContextN.20210630', 
+## #' 'KYCG.MM285.designGroup.20210210')
+## #' databases <- do.call(c, lapply(databaseNames, sesameDataGet))
+## #' getDatabaseSetOverlap(query, databases)
+## #' sesameDataClearCache()
+## #' 
+## getDatabaseSetOverlap <- function(
+##     query, databases, platform=NA, verbose=TRUE) {
     
-    if (all(is.na(databases))) {
-        if (verbose) {
-            message("The databases were not defined. ", 
-                "Loading in databases based on platform.")
-        }
-        if (is.na(platform)) {
-            if (verbose) {
-                message("The platform was not defined. ",
-                    "Inferring platform from probeIDs.")
-            }
-            if (is.numeric(query)) {
-                platform <- inferPlatformFromProbeIDs(names(query))
-            } else {
-                platform <- inferPlatformFromProbeIDs(query)
-            }
-        }
-        databaseNames <- sesameData:::df_master$Title[
-            grepl(paste("KYCG.", platform, sep=''), 
-                sesameData:::df_master$Title)]
-        databases <- do.call(c, lapply(databaseNames, sesameDataGet))
-    }
+##     if (all(is.na(databases))) {
+##         if (verbose) {
+##             message("The databases were not defined. ", 
+##                 "Loading in databases based on platform.")
+##         }
+##         if (is.na(platform)) {
+##             if (verbose) {
+##                 message("The platform was not defined. ",
+##                     "Inferring platform from probeIDs.")
+##             }
+##             if (is.numeric(query)) {
+##                 platform <- inferPlatformFromProbeIDs(names(query))
+##             } else {
+##                 platform <- inferPlatformFromProbeIDs(query)
+##             }
+##         }
+##         databaseNames <- sesameData:::df_master$Title[
+##             grepl(paste("KYCG.", platform, sep=''), 
+##                 sesameData:::df_master$Title)]
+##         databases <- do.call(c, lapply(databaseNames, sesameDataGet))
+##     }
     
-    metadata <- as.data.frame(
-        do.call(rbind,
-            lapply(databases,
-                function(database) {
-                    rowmeta <- attr(database, "meta")
-                    if (!is.null(rowmeta)) {
-                        rowmeta <- c(meta=TRUE, rowmeta)
-                    } else {
-                        rowmeta <- c(meta=FALSE, rowmeta)
-                    }
-                    nQ <- length(query)
-                    nD <- length(database)
-                    overlap <- length(intersect(query, database))
-                    rowmeta <- c(rowmeta, nQ=nQ, nD=nD, overlap=overlap)
-                    return(rowmeta)
-                })
-        ))
+##     metadata <- as.data.frame(
+##         do.call(rbind,
+##             lapply(databases,
+##                 function(database) {
+##                     rowmeta <- attr(database, "meta")
+##                     if (!is.null(rowmeta)) {
+##                         rowmeta <- c(meta=TRUE, rowmeta)
+##                     } else {
+##                         rowmeta <- c(meta=FALSE, rowmeta)
+##                     }
+##                     nQ <- length(query)
+##                     nD <- length(database)
+##                     overlap <- length(intersect(query, database))
+##                     rowmeta <- c(rowmeta, nQ=nQ, nD=nD, overlap=overlap)
+##                     return(rowmeta)
+##                 })
+##         ))
     
-    metadata$meta <- as.logical(metadata$meta)
+##     metadata$meta <- as.logical(metadata$meta)
     
-    metadata
-}
+##     metadata
+## }
 
 
 #' testEnrichment1 tests for the enrichment of set of probes (query set)
@@ -94,29 +94,31 @@ testEnrichment1 <- function(
     
     if (is.numeric(query)) { # a named vector of continuous value
         if(is.numeric(database)) { # numeric db
-            results <- testEnrichmentSpearman(
+            res <- testEnrichmentSpearman(
                 query=query,
                 database=database)
         } else {
-            results <- testEnrichmentFGSEA(
+            res <- testEnrichmentFGSEA(
                 query = query,
                 database = database,
                 estimate.type=estimate.type)
         }
     } else { # categorical query
         if(is.numeric(database)) { # numeric db
-            results <- testEnrichmentFGSEA(
+            res <- testEnrichmentFGSEA(
                 query = database,
                 database = query,
                 estimate.type=estimate.type)
         } else { # categorical db
-            results <- testEnrichmentFisher(
+            res <- testEnrichmentFisher(
                 query = query,
                 database = database,
                 universe = universe)
         }
     }
-    results
+    res$db <- attr(database, "dbname")
+    res$group <- attr(database, "group")
+    res
 }
 
 inferPlatformFromQuery <- function(query) {
@@ -125,6 +127,14 @@ inferPlatformFromQuery <- function(query) {
     } else {
         inferPlatformFromProbeIDs(query)
     }
+}
+
+inferUniverse <- function(platform) {
+    mfts <- c("MM285.address", "EPIC.address",
+        "HM450.address", "HM27.address")
+    mft <- mfts[grepl(platform, mfts)]
+    stopifnot(length(mft) == 1 && all(mft %in% mfts))
+    sesameDataGet(mft)$ordering$Probe_ID
 }
 
 #' testEnrichment tests for the enrichment of set of probes (query set) in
@@ -142,10 +152,6 @@ inferPlatformFromQuery <- function(query) {
 #' from the query set probeIDs (Default: NA).
 #' @param estimate.type String indicating the estimate to report. (Default:
 #' "ES")
-#' @param return.meta Logical value indicating whether to return meta data 
-#' columns for those database sets containing sparse meta data information.
-#' @param verbose Logical value indicating whether to display intermediate
-#' text output about the type of test. Optional. (Default: FALSE).
 #'
 #' @return One list containing features corresponding the test estimate,
 #' p-value, and type of test.
@@ -160,59 +166,46 @@ inferPlatformFromQuery <- function(query) {
 #'
 #' @export
 testEnrichment <- function(
-    query, databases = NA, universe=NA,
-    platform=NA, estimate.type="ES", return.meta=FALSE, verbose=FALSE) {
+    query, databases = NULL, universe = NULL,
+    platform = NULL, estimate.type = "ES") {
 
-    if (all(is.na(universe))) { # infer uset from platform if not given
-        if (is.na(platform)) {     # infer platform from probe ID
+    ## length(query)
+    ## databases = dbs
+    ## length(databases)
+    ## attr(databases[[1]], "dbname")
+    ## universe = NULL
+    
+    if (is.null(universe)) {
+        if (is.null(platform)) {
             platform <- inferPlatformFromQuery(query)
         }
-        
-        manifests <- c("MM285.mm10.manifest", "EPIC.hg19.manifest",
-            "HM450.hg19.manifest", "HM27.hg19.manifest")
-        manifest <- manifests[grepl(platform, manifests)]
-        stopifnot(length(manifest) == 1 && all(manifest %in% manifests))
-        universe <- names(sesameDataGet(manifest))
-    }
-
-    if (all(is.na(databases))) { # db not give, load a default set
-        if (is.na(platform)) { platform <- inferPlatformFromQuery(query); }
-        query_names <- grep("(chromHMM)|(designGroup|probeType)",
-            sesameData:::df_master$Title[
-                grepl(paste("KYCG.", platform, sep=''), 
-                    sesameData:::df_master$Title)], value=TRUE)
-    } else if (is.character(databases)) { # db given in names
-        query_names <- guess_dbnames(databases)
-    } else {
-        query_names <- NULL
-    }
-
-    if (!is.null(query_names)) { # needs sesameDataGet
-        dblist <- lapply(query_names, sesameDataGet)
-        gpnames <- do.call(c, lapply(seq_along(dblist), function(ii) {
-            rep(names(dblist)[ii], length(dblist[[ii]]))}))
-        dbnames <- do.call(c, lapply(dblist, names))
-        databases <- do.call(c, dblist)
-    } else { # given explicitly
-        gpnames <- rep("", length(databases))
-        dbnames <- names(databases)
+        universe <- inferUniverse(platform)
     }
     
-    res <- data.frame(do.call(rbind, lapply(
-        databases, function(db) {
-            testEnrichment1(
-                query = query,
-                database = db,
-                universe = universe,
-                estimate.type = estimate.type)
-        })))
+    if (is.null(databases)) { # db not give, load a default set
+        if (is.null(platform)) {
+            platform <- inferPlatformFromQuery(query)
+        }
+        databases <- grep("(chromHMM)|(designGroup|probeType)",
+            KYCG_listDBGroups(platform), value=TRUE)
+    }
+    dbs <- KYCG_getDBs(databases)
+    ## there shouldn't be empty databases, but just in case
+    dbs <- dbs[vapply(dbs, length, integer(1)) > 0]
+    
+    res <- do.call(rbind, lapply(dbs, function(db) {
+        testEnrichment1(
+            query = query,
+            database = db,
+            universe = universe,
+            estimate.type = estimate.type)
+    }))
 
-    res$db <- dbnames
-    res$group <- gpnames
     res$fdr <- p.adjust(res$p.value, method='fdr')
     rownames(res) <- NULL
 
-    meta <- do.call(bind_rows, lapply(databases, function(db) {
+    ## bind meta data
+    meta <- do.call(bind_rows, lapply(dbs, function(db) {
         m1 <- attr(db, "meta")
         if (is.null(m1)) {
             data.frame(hasMeta = FALSE)
@@ -221,7 +214,7 @@ testEnrichment <- function(
         }
     }))
     res <- cbind(res, meta)
-    res[order(-res$estimate), ]
+    res[order(res$p.value), ]
 }
 
 #' testEnrichmentGene tests for the enrichment of set of probes
@@ -446,6 +439,46 @@ guess_dbnames <- function(nms) {
     }, character(1))
 }
 
+#' List database group names
+#'
+#' @param filter keywords for filtering
+#' @return a list of db group names
+#' @examples
+#' head(KYCG_listDBGroups("chromHMM"))
+#' @export
+KYCG_listDBGroups <- function(filter = NULL) {
+    gps <- sesameDataList("KYCG")$Title
+    if (!is.null(filter)) {
+        gps <- grep(filter, gps, value=TRUE)
+    }
+    gps
+}
+
+#' Get databases by full or partial names of the database group(s)
+#'
+#' @param group_nms database group names
+#' @return a list of databases
+#' @examples
+#' dbs <- KYCG_getDBs("EPIC.chromHMM")
+#' @export
+KYCG_getDBs <- function(group_nms, verbose = TRUE) {
+    if (!is(group_nms, "character")) {
+        return(group_nms)
+    }
+    group_nms <- guess_dbnames(group_nms)
+    group_nms_ <- paste(group_nms, sep="\n")
+    message(sprintf(
+        "Selected the following database groups: %s\n", group_nms_))
+    do.call(c, lapply(group_nms, function(nm) {
+        dbs <- sesameDataGet(nm)
+        lapply(seq_along(dbs), function(ii) {
+            db <- dbs[[ii]]
+            attr(db, "group") <- nm
+            attr(db, "dbname") <- names(dbs)[ii]
+            db
+        })}))
+}
+
 #' dbStats builds dataset for a given betas matrix 
 #' composed of engineered features from the given database sets
 #'
@@ -468,8 +501,7 @@ guess_dbnames <- function(nms) {
 dbStats <- function(betas, dbs, fun = mean, na.rm = TRUE) {
     if (is(betas, "numeric")) { betas <- cbind(sample = betas); }
     if (is.character(dbs)) {
-        nms <- guess_dbnames(dbs)
-        dbs <- do.call(c, lapply(nms, sesameDataGet))
+        dbs <- KYCG_getDBs(dbs)
     }
     stats <- do.call(cbind, lapply(names(dbs), function(db_nm) {
         db <- dbs[[db_nm]]

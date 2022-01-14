@@ -79,5 +79,5 @@ Collate:
     'vcf.R'
     'visualize.R'
     'zzz.R'
-    'kyCG.R'
-    'kyCG_plot.R'
+    'KYCG.R'
+    'KYCG_plot.R'

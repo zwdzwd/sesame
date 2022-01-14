@@ -18,9 +18,11 @@
 #'   overlap=as.integer(runif(10,0,30)), group="g", db=seq_len(10)))
 #' @export
 KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
+
     db1 <- fdr <- overlap <- estimate <- NULL
     stopifnot("estimate" %in% colnames(df) && "fdr" %in% colnames(df))
 
+    df <- df[df$nD >0,]
     df$fdr[df$fdr==0] <- .Machine$double.xmin
     df <- df[order(df[["fdr"]]),]
     if (sum(df[["fdr"]] < max_fdr) < n_min) {
