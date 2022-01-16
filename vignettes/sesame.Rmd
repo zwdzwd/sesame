@@ -38,19 +38,14 @@ This needs to be done only once per SeSAMe installation.
 ```{r}
 sesameDataCacheAll()
 ```
-This function caches the needed SeSAMe annotation for all the supported
-platforms. One optionally caches only one specific platform (e.g., EPIC)
-by calling
-```{r eval=FALSE}
-sesameDataCache("EPIC")
-```
 
-SeSAMe annotation data is managed by the
+This function caches the needed SeSAMe annotation for all the supported
+platforms. SeSAMe annotation data is managed by the
 [sesameData](https://bioconductor.org/packages/release/
 data/experiment/html/sesameData.html) package which is based on the
 [ExperimentHub](https://bioconductor.org/packages/release/
-bioc/html/ExperimentHub.html) package. You can find the path of
-the annotation data storage on your local computer using
+bioc/html/ExperimentHub.html) package. You can find the path of the annotation
+data storage on your local computer using
 
 ```{r}
 tools::R_user_dir("ExperimentHub", which="cache")

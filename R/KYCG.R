@@ -134,7 +134,7 @@ testEnrichment <- function(
         }
     }))
     res <- cbind(res, meta)
-    res[order(res$p.value), ]
+    res[order(res$p.value, -abs(res$estimate)), ]
 }
 
 #' testEnrichmentGene tests for the enrichment of set of probes
@@ -283,24 +283,35 @@ calcES_Significance <- function(dCont, dDisc, permut=100, precise=FALSE) {
 #' for the given results.
 testEnrichmentGSEA <- function(query, database, precise=FALSE) {
     test <- "GSEA Enrichment Score"
-    overlap <- length((intersect(names(query), database)))
-    if (overlap == 0) {
-        return(data.frame(
-            estimate=0, p.value=1, test=test,
-            nQ=length(database), nD=length(query),
-            overlap=overlap))
+    overlap <- intersect(names(query), database)
+
+    if (length(overlap) != length(database)) {
+        warning("Not every data in database has query.")
+        warning(sprintf("Using %d in %d data for testing.",
+            length(overlap), length(database)))
+        warning("Be careful interpreting results.")
     }
-    res <- calcES_Significance(query, database, precise=precise)
+    
+    if (length(overlap) == 0 || length(overlap) == length(query)) {
+        return(data.frame(
+            estimate = 0, p.value = 1, test = test,
+            nQ = length(database), nD = length(query),
+            overlap = length(overlap)))
+    }
+
+    res <- calcES_Significance(query, overlap, precise=precise)
 
     if (res$es_large > res$es_small) {
         ## negative sign represent enrichment for the large end
         data.frame(
             estimate = -res$es_large, p.value = res$pv_large, test = test,
-            nQ = length(database), nD = length(query), overlap = overlap)
+            nQ = length(database), nD = length(query),
+            overlap = length(overlap))
     } else {
         data.frame(
             estimate = res$es_small, p.value = res$pv_small, test = test,
-            nQ = length(database), nD = length(query), overlap = overlap)
+            nQ = length(database), nD = length(query),
+            overlap = length(overlap))
     }
 }
     
@@ -382,6 +393,7 @@ KYCG_listDBGroups <- function(filter = NULL) {
 #' @return a list of databases
 #' @examples
 #' dbs <- KYCG_getDBs("MM285.chromHMM")
+#' dbs <- KYCG_getDBs(c("MM285.chromHMM", "MM285.probeType"))
 #' @export
 KYCG_getDBs <- function(group_nms) {
     if (!is.character(group_nms)) {
@@ -389,8 +401,10 @@ KYCG_getDBs <- function(group_nms) {
     }
     group_nms <- guess_dbnames(group_nms)
     group_nms_ <- paste(group_nms, sep="\n")
-    message(sprintf(
-        "Selected the following database groups:\n%s", group_nms_))
+    message("Selected the following database groups:")
+    invisible(lapply(seq_along(group_nms_), function(i) {
+        message(sprintf("%d. %s", i, group_nms_[i]))
+    }))
     do.call(c, lapply(unname(group_nms), function(nm) {
         dbs <- sesameDataGet(nm)
         setNames(lapply(seq_along(dbs), function(ii) {
@@ -410,6 +424,9 @@ KYCG_getDBs <- function(group_nms) {
 #' which the features will be extracted
 #' @param fun aggregation function, default to mean
 #' @param na.rm whether to remove NA
+#' @param f_min min fraction of non-NA for aggregation function to apply
+#' @param n_min min number of non-NA for aggregation function to apply,
+#' overrides f_min
 #' @return matrix with samples on the rows and database set on the columns
 #' @examples
 #' 
@@ -419,7 +436,9 @@ KYCG_getDBs <- function(group_nms) {
 #' sesameDataClearCache()
 #' 
 #' @export
-dbStats <- function(betas, databases, fun = mean, na.rm = TRUE) {
+dbStats <- function(
+    betas, databases, fun = mean, na.rm = TRUE, n_min = NULL, f_min = 0.1) {
+
     if (is(betas, "numeric")) { betas <- cbind(sample = betas); }
     if (is.character(databases)) {
         dbs <- KYCG_getDBs(databases)
@@ -429,8 +448,17 @@ dbStats <- function(betas, databases, fun = mean, na.rm = TRUE) {
     stats <- do.call(cbind, lapply(names(dbs), function(db_nm) {
         db <- dbs[[db_nm]]
         betas1 <- betas[db[db %in% rownames(betas)],,drop=FALSE]
-        if (nrow(betas1) == 0) { return(rep(NA, ncol(betas))); }
-        apply(betas1, 2, fun, na.rm = na.rm)
+        n_probes <- nrow(betas1)
+        if (n_probes == 0) { return(rep(NA, ncol(betas))); }
+        nacnt <- colSums(!is.na(betas1), na.rm = TRUE)
+        stat1 <- apply(betas1, 2, fun, na.rm = na.rm)
+        if(is.null(n_min)) {
+            n_min1 <- n_probes * f_min
+        } else {
+            n_min1 <- n_min
+        }
+        stat1[nacnt < n_min1] <- NA
+        stat1
     }))
     colnames(stats) <- names(dbs)
     rownames(stats) <- colnames(betas)

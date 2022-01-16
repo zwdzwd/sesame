@@ -5,7 +5,7 @@
 \title{dbStats builds dataset for a given betas matrix 
 composed of engineered features from the given database sets}
 \usage{
-dbStats(betas, databases, fun = mean, na.rm = TRUE)
+dbStats(betas, databases, fun = mean, na.rm = TRUE, n_min = NULL, f_min = 0.1)
 }
 \arguments{
 \item{betas}{matrix of beta values where probes are on the rows and
@@ -17,6 +17,11 @@ which the features will be extracted}
 \item{fun}{aggregation function, default to mean}
 
 \item{na.rm}{whether to remove NA}
+
+\item{n_min}{min number of non-NA for aggregation function to apply,
+overrides f_min}
+
+\item{f_min}{min fraction of non-NA for aggregation function to apply}
 }
 \value{
 matrix with samples on the rows and database set on the columns

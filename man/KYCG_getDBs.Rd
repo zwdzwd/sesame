@@ -17,4 +17,5 @@ Get databases by full or partial names of the database group(s)
 }
 \examples{
 dbs <- KYCG_getDBs("MM285.chromHMM")
+dbs <- KYCG_getDBs(c("MM285.chromHMM", "MM285.probeType"))
 }

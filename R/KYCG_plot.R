@@ -113,7 +113,7 @@ KYCG_plotVolcano <- function(data, alpha=0.05) {
     if ("Target" %in% colnames(data)) {
         data["label"] <- unlist(data[["Target"]])
     } else {
-        data["label"] <- rownames(data)
+        data["label"] <- unlist(data[["db"]])
     }
     
     ## TODO: replace with column specifying sig vs non sig
@@ -134,10 +134,10 @@ KYCG_plotVolcano <- function(data, alpha=0.05) {
     options(ggrepel.max.overlaps = 10)
     g + geom_text_repel(
         data = subset(data, FDR < 0.0005),
-        aes(label = label),
-        size = 5,
+        aes(label = label), size = 5,
         box.padding = unit(0.35, "lines"),
-        point.padding = unit(0.3, "lines"))
+        point.padding = unit(0.3, "lines"),
+        show.legend = FALSE)
 }
 
 
