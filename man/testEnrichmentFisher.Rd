@@ -21,6 +21,5 @@ A DataFrame with the estimate/statistic, p-value, and name of test
 for the given results.
 }
 \description{
-testEnrichmentFisher uses Fisher's exact test to estimate the association
-between two categorical variables.
+Estimates log2 fold change of enrichment over background.
 }

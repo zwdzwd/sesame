@@ -1,0 +1,298 @@
+---
+title: "knowYourCG"
+shorttitle: "KYCG"
+package: knowYourCG
+output: rmarkdown::html_vignette
+fig_width: 6
+fig_height: 6
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{"6. knowYourCG"}
+  %\VignetteEncoding{UTF-8}
+---
+
+An automated discovery tool for discovering hidden biological and technical
+links
+
+# Introduction
+
+knowYourCG is a tool for evaluating CpG feature enrichment using Illumina probe
+IDs. Tthis tool automates the hypothesis testing by asking whether a set of
+CpGs (indexed by Illumina methylation chip IDs, hence a sparse representation
+of the methylome) is enriched in certain categories or features. These
+categories or features can be categorical (e.g., CpGs located at specific
+tissue-specific transcription factors) or continuous (e.g., the local CpG
+density of CpGs). Additionally, the set of CpGs to which the test will be
+applied can be categorical or continuous as well.
+
+The set of CpGs that will be tested for enrichment is called the query set, and
+the set of CpGs that will be used to determine enrichment is called the
+database set. A query set, for example, might be the results of a differential
+methylation analysis or from an epigenome-wide association study. We have taken
+the time to curate our own database sets from a variety of sources that
+describe different categorical and continuous features such as technical
+characterization of the probes, CpGs associated with certain chromatin states,
+gene association, transcription factor binding sites, CpG density, etc.
+
+Additionally, knowYourCG has support for feature selection and feature
+engineering, which is currently in development.
+
+The following commands prepares the use of KnowYourCG:
+
+```{r load-depenencies, results="hide", message=FALSE, warning=FALSE}
+library(sesame)
+sesameDataCacheAll()
+```
+
+# Input data
+
+## Databases
+
+We have organized our database sets into different groups. Each group contains
+one or multiple databases. Here is how to find the names of these database
+groups:
+
+``` {r list-data, eval=TRUE, echo=TRUE}
+KYCG_listDBGroups("MM285")
+```
+
+The `KYCG_listDBGroups()` function returns a vector containing these
+accessions.  With the accessions, one can use the ```KYCG_getDBs()``` function
+to get a list of databases. When this function is ran for the first time, none
+of the databases have been cached. Caching on the local machine is important on
+two fronts: firstly it limits the number of requests sent to the Bioconductor
+server, and secondly it limits the amount of time the user needs to wait when
+re-downloading database sets. For this reason, one should run
+```sesameDataCacheAll()``` before loading in any database sets. This will take
+some time to download all of the database sets from a given release.  During
+the analysis the database sets can be identified using these accessions. Sesame
+also support some degree of guessing when a unique substring is given.
+
+For example, the following retrieves the "KYCG.MM285.designGroup.20210210"
+database.
+
+``` {r cache-data, eval=TRUE, warning=FALSE}
+dbs <- KYCG_getDBs("MM285.design")
+```
+
+In total, 32 datasets have been loaded for this group. We will show the first
+two for brevity.
+
+``` {r view-data1, eval=TRUE, warning=FALSE}
+str(dbs[1:2])
+```
+
+On subsequent runs of the ```KYCG_getDBs()``` function, loading specific
+database sets from the same release will be much faster.
+
+## The query set
+
+A query set represents probes of interest. It may either be in the form of a
+character vector where the values correspond to probe IDs or a named numeric
+vector where the names correspond to probe IDs. The query and database
+definition is rather arbitrary. One can regard a database as a query and turn a
+query into a database.
+
+Here we will demonstrate by considering CpGs that show tissue-specific
+methylation as the query. We are getting the B-cell-specific hypomethylation
+and using that for the following analysis.
+
+```{r cache-data2, eval=TRUE, echo=TRUE, message=FALSE}
+library(SummarizedExperiment)
+df <- rowData(sesameDataGet('MM285.tissueSignature'))
+query <- df$Probe_ID[df$branch == "B_cell"]
+head(query)
+```
+
+This query set represents hypomethylated probes in Mouse B-cells from the MM285
+platform. This specific query set has 168 probes.
+
+# Test enrichment
+
+The main work horse function for test enrichment of the query in the databases
+is `testEnrichment` (no surprise). This function calculates the extent of
+overlap and apply different statistics for enrichment testing. There are four
+testing scenarios depending on the type format of the query set and database
+sets. They are shown with the respective testing scenario in the table below.
+
+```{r echo = FALSE, results="asis"}
+library(knitr)
+df = data.frame(
+    "Continuous DB"=c("Correlation","GSEA"),
+    "Discrete DB"=c("GSEA","Fisher's Exact Test"))
+rownames(df) = c("Continuous Query", "Discrete Query")
+kable(df, caption="Four KnowYourCG Testing Scenarios")
+```
+
+The ```testEnrichment()``` will automatically perform statistical tests and
+report metrics about each of the the loaded database sets. Another critical set
+is the universe set. This is the set of all probes for a given platform. It can
+either be passed in as an argument called ```universeSet``` or the platform
+name can be passed with argument ```platform```. If neither of these are
+supplied, the universe set will be implied from the probes. In all subsequent
+runs of ```testEnrichment()``` in this vignette, the platform will be
+specified.
+
+```{r run-test-single, echo=TRUE, eval=TRUE}
+df <- rowData(sesameDataGet('MM285.tissueSignature'))
+
+query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
+results <- testEnrichment(query, "MM285.TFBS")
+results %>% dplyr::filter(overlap>10) %>% head
+
+query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
+results <- testEnrichment(query, "MM285.TFBS")
+results %>% dplyr::filter(overlap>10) %>%
+    dplyr::select(dbname, Target, estimate, test, FDR) %>% head
+```
+
+The output of each test contains at least four variables: the estimate (fold
+enrichment, not the test statistics), p-value, type of test, and whether meta
+data is included in the tested database set (hasMeta), as well as the name of
+the database set and the database group. By default, the estimate column is
+sorted.
+
+It should be noted that the estimate (or test statistic) is test dependent and
+comparison between p-values should be limited to within the same type of
+test. For instance, the test statistics for Fisher's exact test and GSEA are
+log fold change and the test statistic for Spearman's test is simply the rank
+order correlation coefficient. For simplicity, we report all of the test types
+in one data frame.
+
+The ```nQ``` and ```nD``` columns identify the length of the query set and the
+database set, respectively. Often, it's important to examine the extent of
+overlap between the two sets, so that metric is reported as well in the
+```overlap``` column.
+
+We can visualize the results in a dot plot:
+
+```{r fig.width=5, fig.height=5, fig.align="center"}
+KYCG_plotDot(results, n_max=20)
+```
+
+or a bar plot:
+
+```{r fig.width=8, fig.height=5, message=FALSE, fig.align="center"}
+KYCG_plotBar(results, n_max=15)
+```
+ 
+or a volcano plot:
+
+```{r fig.width=7, fig.height=6, warning=FALSE, fig.align="center"}
+KYCG_plotVolcano(results)
+```
+
+and a lollipop plot:
+
+```{r plot-lollipop, fig.width=7, fig.height=6, fig.align="center"}
+KYCG_plotLollipop(results)
+```
+
+# Gene enrichment
+
+Automating the enrichment test process only works when the number of database
+sets is small. This is important when targeting all genes as there are tens of
+thousands of genes on each platform. By testing only those genes that overlap
+with the query set, we can greatly reduce the number of tests. For this reason,
+the gene enrichment analysis is a special case of these enrichment tests. We
+can perform this analysis using the ```testEnrichmentGene()``` function.
+
+```{r fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
+df <- rowData(sesameDataGet('MM285.tissueSignature'))
+query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
+results <- testEnrichmentGene(query)
+results[,c("dbname","estimate","test","FDR", "nQ", "nD", "overlap")]
+```
+
+Using these sample results, we can plot a volcano plot and lollipop plot.
+
+```{r plot-volcano-gene, fig.width=7, fig.height=6, echo=TRUE}
+KYCG_plotVolcano(results)
+```
+
+For example, this given query set is tissue specific hypomethylation of mouse
+brain. Rufy3 is shown to be significantly enriched in this set and it is known
+to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
+
+# Continuous data
+
+The query may be a named continuous vector. In that case, either a gene
+enrichment score will be calculated (if the database is discrete) or a Spearman
+correlation will be calculated (if the database is continuous as well). The
+three other cases are shown below using biologically relevant examples.
+
+To display this functionality, let's load two numeric database sets
+individually. One is a database set for CpG density and the other is a database
+set corresponding to the distance of the nearest transcriptional start site
+(TSS) to each probe.
+
+```{r run-test-data, echo=TRUE, eval=TRUE}
+query <- KYCG_getDBs("KYCG.MM285.designGroup")[["TSS"]]
+```
+
+```{r echo=TRUE, eval=TRUE, message=FALSE}
+res <- testEnrichment(query, "MM285.seqContextN")
+res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
+```
+
+The estimate here is enrichment score. **Negative enrichment score suggest
+enrichment with the higher values of the database and positive enrichment score
+represent enrichment with the smaller values**. As expected, the designed TSS
+CpGs are significantly enriched in smaller TSS distance and higher CpG density.
+
+Alternatively one can test the enrichment of a continuous query with discrete
+databases. Here we will use the methylation level from a sample as the query
+and test it against the chromHMM chromatin states.
+
+```{r warning=FALSE}
+beta_values <- getBetas(sesameDataGet("MM285.1.SigDF"))
+res <- testEnrichment(beta_values, "MM285.chromHMM")
+res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
+```
+
+As expected, chromatin states "Tss", "Enh" has negative enrichment score,
+meaning these databases are associated with small values of the query (DNA
+methylation level). On the contrary, "Quies" states are associated with high
+methylation level.
+
+# Feature engineering
+
+In addition to hypothesis testing, knowYourCG also uses the curated database
+sets for feature engineering. We have a pre-curated summarized experiment
+containing a samplesheet and beta value matrix corresponding to about 467 MM285
+samples with 20k probes. The samplesheet includes UIDs pertaining to the sample
+and several categorical/numerical features. To use this data for a linear
+model, we will extract the most relevant prevalent features.
+
+``` {r run-feature-engineering-get-data, echo=TRUE, eval=TRUE}
+library(SummarizedExperiment)
+betas = assay(sesameDataGet('MM285.20Kx467.SE'))
+```
+
+We have found that it is computationally expensive to perform a linear
+model/generalized linear model on a feature set of individual
+CpGs. Additionally, interpreting the mechanism the significantly contributing
+CpGs is non-trivial due to their complex interactions. We hope to leverage
+these pre-curated database sets by using their beta value summary statistics as
+features instead. We will calculate the summary statistics for the betas matrix
+using a list of database sets. The default is to calculate the mean.
+
+```{r run-feature-engineering-statistics}
+stats <- dbStats(betas, 'MM285.chromHMM')
+head(stats[, 1:5])
+```
+
+Just from the few database set means above, we can see that TSS are
+consistently hypomethylated, which is consistent with known biology.
+
+```{r fig.width=6, fig.height=6, fig.align="center"}
+library(wheatmap)
+WHeatmap(both.cluster(stats)$mat, xticklabels=TRUE,
+    cmp=CMPar(stop.points=c("blue","yellow")))
+```
+
+# Session Info
+
+```{r}
+sessionInfo()
+```

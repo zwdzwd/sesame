@@ -22,6 +22,10 @@ creates a lollipop plot of log(estimate) given data with
 fields estimate.
 }
 \examples{
-KYCG_plotLollipop(data.frame(estimate=c(runif(10, 0, 10))))
+
+KYCG_plotLollipop(data.frame(
+  estimate=runif(10,0,10), FDR=runif(10,0,1), nD=runif(10,10,20),
+  overlap=as.integer(runif(10,0,30)), group="g",
+  dbname=as.character(seq_len(10))))
 
 }

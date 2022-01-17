@@ -1,44 +1,39 @@
 
-#' testEnrichment1 tests for the enrichment of set of probes (query set)
-#' in a single given feature (database set)
-#'
-#' @param query Vector of probes of interest (e.g., significant probes)
-#' @param database Vector corresponding to the database sets of
-#' interest with associated meta data as an attribute to each element.
-#' @param universe Vector of probes in the universe set containing all of
-#' the probes to be considered in the test.
-#' @param estimate.type String indicating the estimate to report. (Default:
-#' "ES")
-#' @import utils
-#' @return One list containing features corresponding the test estimate,
-#' p-value, and type of test.
-testEnrichment1 <- function(
-    query, database, universe, estimate.type="ES") {
+databases_getMeta <- function(dbs) {
+    meta <- do.call(bind_rows, lapply(dbs, function(db) {
+        m1 <- attributes(db)
+        m1 <- m1[names(m1) != "names"] # a special attribute for continuous db
+        if ("meta" %in% names(m1)) { # backward compatibility, to delete
+            m1 <- c(m1[!(names(m1) %in% c("meta"))], m1$meta)
+        } else {
+            m1 <- m1[!(names(m1) %in% c("meta"))]
+        }
+        
+        if (is.null(m1)) {
+            data.frame(hasMeta = FALSE)
+        } else {
+            c(m1, hasMeta = TRUE)
+        }
+    }))
+    meta[,colnames(meta)!="hasMeta"]
+}
+
+testEnrichment1 <- function(query, database, universe) {
     
     if (is.numeric(query)) { # a named vector of continuous value
         if(is.numeric(database)) { # numeric db
-            res <- testEnrichmentSpearman(
-                query=query,
-                database=database)
+            res <- testEnrichmentSpearman(query=query, database=database)
         } else {
-            res <- testEnrichmentGSEA(
-                query = query,
-                database = database)
+            res <- testEnrichmentGSEA(query = query, database = database)
         }
     } else { # categorical query
         if(is.numeric(database)) { # numeric db
-            res <- testEnrichmentGSEA(
-                query = database,
-                database = query)
+            res <- testEnrichmentGSEA(query = database, database = query)
         } else { # categorical db
-            res <- testEnrichmentFisher(
-                query = query,
-                database = database,
+            res <- testEnrichmentFisher(query = query, database = database,
                 universe = universe)
         }
     }
-    res$db <- attr(database, "dbname")
-    res$group <- attr(database, "group")
     res
 }
 
@@ -71,8 +66,6 @@ inferUniverse <- function(platform) {
 #' @param platform String corresponding to the type of platform to use. Either
 #' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 #' from the query set probeIDs (Default: NA).
-#' @param estimate.type String indicating the estimate to report. (Default:
-#' "ES")
 #'
 #' @return One list containing features corresponding the test estimate,
 #' p-value, and type of test.
@@ -87,8 +80,7 @@ inferUniverse <- function(platform) {
 #'
 #' @export
 testEnrichment <- function(
-    query, databases = NULL, universe = NULL,
-    platform = NULL, estimate.type = "ES") {
+    query, databases = NULL, universe = NULL, platform = NULL) {
 
     if (is.null(universe)) {
         if (is.null(platform)) {
@@ -114,26 +106,13 @@ testEnrichment <- function(
     message(sprintf("Testing against %d database(s)...", length(dbs)))
     
     res <- do.call(rbind, lapply(dbs, function(db) {
-        testEnrichment1(
-            query = query,
-            database = db,
-            universe = universe,
-            estimate.type = estimate.type)
-    }))
+        testEnrichment1(query = query, database = db, universe = universe)}))
 
     res$FDR <- p.adjust(res$p.value, method='fdr')
     rownames(res) <- NULL
 
     ## bind meta data
-    meta <- do.call(bind_rows, lapply(dbs, function(db) {
-        m1 <- attr(db, "meta")
-        if (is.null(m1)) {
-            data.frame(hasMeta = FALSE)
-        } else {
-            c(m1, hasMeta = TRUE)
-        }
-    }))
-    res <- cbind(res, meta)
+    res <- cbind(res, databases_getMeta(dbs))
     res[order(res$p.value, -abs(res$estimate)), ]
 }
 
@@ -164,28 +143,55 @@ testEnrichment <- function(
 testEnrichmentGene <- function(
     query, databases = NULL, platform = NULL) {
 
-    if (is.null(platform)) {
-        if (is.numeric(query)) {
-            platform <- inferPlatformFromProbeIDs(names(query))
-        } else {
-            platform <- inferPlatformFromProbeIDs(query)
-        }
-    }
     if (is.null(databases)) {
+        if (is.null(platform)) {
+            if (is.numeric(query)) {
+                platform <- inferPlatformFromProbeIDs(names(query))
+            } else {
+                platform <- inferPlatformFromProbeIDs(query)
+            }
+        }
         dbs <- KYCG_getDBs(sprintf("%s.gene", platform))
+    } else if (is.character(databases)) {
+        dbs <- KYCG_getDBs(databases)
+    } else {
+        dbs <- databases
     }
 
     ## skip non-overlapping genes
     dbs <- dbs[vapply(dbs, function(db) any(db %in% query), logical(1))]
-
     if (length(dbs) == 0) {return(NULL);}
     
-    testEnrichment(query, dbs, platform=platform)
+    testEnrichment(query, dbs)
+}
+
+## The following is to be exported once the databases are updated
+## df <- rowData(sesameDataGet('MM285.tissueSignature'))
+## query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
+## genes <- KYCG_getGenesByLoc(query, "KYCG.MM285.gene.GENCODEvM25.20220116")
+KYCG_getGenesByLoc <- function(
+    query, database_group = NULL, platform = NULL) {
+    if (is.null(database_group)) {
+        if (is.null(platform)) {
+            if (is.numeric(query)) {
+                platform <- inferPlatformFromProbeIDs(names(query))
+            } else {
+                platform <- inferPlatformFromProbeIDs(query)
+            }
+        }
+        dbs <- KYCG_getDBs(sprintf("%s.gene", platform))
+    } else {
+        dbs <- KYCG_getDBs(database_group)
+    }
+    dbs <- dbs[vapply(dbs, function(db) any(db %in% query), logical(1))]
+    databases_getMeta(dbs)
 }
 
 
 #' testEnrichmentFisher uses Fisher's exact test to estimate the association
 #' between two categorical variables.
+#'
+#' Estimates log2 fold change of enrichment over background.
 #'
 #' @param query Vector of probes of interest (e.g., significant probes)
 #' @param database Vectors corresponding to the database set of
@@ -207,13 +213,13 @@ testEnrichmentFisher <- function(query, database, universe) {
     min_q_d <- length(universe) - l_q - l_d + q_and_d
     res <- fisher.test(matrix(c(
         q_and_d, d_min_q, q_min_d, min_q_d), nrow = 2))
-    
+
+    fc <- q_and_d / (q_and_d + q_min_d) / (q_and_d + d_min_q) *
+        (q_and_d + q_min_d + d_min_q + min_q_d)
     data.frame(
-        estimate = (
-            q_and_d / (q_and_d + q_min_d) / (q_and_d + d_min_q) *
-                (q_and_d + q_min_d + d_min_q + min_q_d)),
+        estimate = log2(fc),
         p.value = res$p.value,
-        test = "Fold Change",
+        test = "Log2FC",
         nQ = length(query),
         nD = length(database),
         overlap = q_and_d)

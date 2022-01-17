@@ -28,5 +28,5 @@ Top CG groups are determined by estimate (descending order).
 \examples{
 KYCG_plotBar(data.frame(
   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=10,
-  overlap=as.integer(runif(10,0,30)), group="g", db=seq_len(10)))
+  overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 }

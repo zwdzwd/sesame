@@ -5,16 +5,16 @@ preparePlotDF <- function(df, n_min, n_max, max_fdr) {
     if (sum(df$FDR < max_fdr) < n_min) {
         df1 <- head(df, n=n_min)
     } else {
-        df <- df[df$estimate > 1,] # enrichment only, exclude depletion
+        df <- df[df$estimate > 0,] # enrichment only, exclude depletion
         df1 <- df[df$FDR < max_fdr,]
         df1 <- head(df1, n=n_max)
     }
     
     gp <- vapply(str_split(df1$group, "\\."), function(x) x[3], character(1))
     if ("Target" %in% colnames(df1)) {
-        df1$db1 <- sprintf("%s: %s (%s)", gp, df1$Target, df1$db)
+        df1$db1 <- sprintf("%s: %s (%s)", gp, df1$Target, df1$dbname)
     } else {
-        df1$db1 <- sprintf("%s: %s", gp, df1$db)
+        df1$db1 <- sprintf("%s: %s", gp, df1$dbname)
     }
     df1$db1 <- factor(df1$db1, levels=rev(df1$db1))
     df1
@@ -37,7 +37,7 @@ preparePlotDF <- function(df, n_min, n_max, max_fdr) {
 #' @examples
 #' KYCG_plotBar(data.frame(
 #'   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=10,
-#'   overlap=as.integer(runif(10,0,30)), group="g", db=seq_len(10)))
+#'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #' @export
 KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 
@@ -75,7 +75,7 @@ KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 #' @examples
 #' KYCG_plotDot(data.frame(
 #'   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=runif(10,10,20),
-#'   overlap=as.integer(runif(10,0,30)), group="g", db=seq_len(10)))
+#'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #' @export
 KYCG_plotDot <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 
@@ -102,8 +102,9 @@ KYCG_plotDot <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 #' @import ggrepel
 #' @examples
 #' 
-#' data=data.frame(estimate=c(runif(10)), FDR=c(runif(10)))
-#' KYCG_plotVolcano(data)
+#' KYCG_plotVolcano(data.frame(
+#'   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=runif(10,10,20),
+#'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #'
 #' @export
 KYCG_plotVolcano <- function(data, alpha=0.05) {
@@ -111,14 +112,15 @@ KYCG_plotVolcano <- function(data, alpha=0.05) {
     estimate <- FDR <- label <- NULL
     
     if ("Target" %in% colnames(data)) {
-        data["label"] <- unlist(data[["Target"]])
+        data$label <- data$Target
     } else {
-        data["label"] <- unlist(data[["db"]])
+        data$label <- data$dbname
     }
-    
+
+    data <- data[data$estimate > -Inf,]
     ## TODO: replace with column specifying sig vs non sig
     if (any(data$FDR <= alpha)) {
-        g <- ggplot(data=data, aes(x=log2(estimate), y=-log10(FDR),
+        g <- ggplot(data=data, aes(x=estimate, y=-log10(FDR),
             color = cut(FDR, c(-Inf, alpha))))
     } else {
         g <- ggplot(data=data, aes(x=estimate, y=FDR))
@@ -133,7 +135,7 @@ KYCG_plotVolcano <- function(data, alpha=0.05) {
 
     options(ggrepel.max.overlaps = 10)
     g + geom_text_repel(
-        data = subset(data, FDR < 0.0005),
+        data = subset(data, FDR < 0.0005 & estimate > 0),
         aes(label = label), size = 5,
         box.padding = unit(0.35, "lines"),
         point.padding = unit(0.3, "lines"),
@@ -153,41 +155,38 @@ KYCG_plotVolcano <- function(data, alpha=0.05) {
 #' @import ggplot2
 #'
 #' @examples
-#' KYCG_plotLollipop(data.frame(estimate=c(runif(10, 0, 10))))
-#'
+#' 
+#' KYCG_plotLollipop(data.frame(
+#'   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=runif(10,10,20),
+#'   overlap=as.integer(runif(10,0,30)), group="g",
+#'   dbname=as.character(seq_len(10))))
+#' 
 #' @export
 KYCG_plotLollipop <- function(df, n=10) {
     ## suppress R CMD CHECK no visible binding warning
     estimate <- label <- NULL
     
     if ("Target" %in% colnames(df))
-        df["label"] <- unlist(df[["Target"]])
+        df$label <- df$Target
     else
-        df["label"] <- rownames(df)
+        df$label <- df$dbname
     
     df <- head(df[order(df$estimate, decreasing=TRUE), ], n=n)
     
-    ggplot(df, aes(x=label, 
-        y=log2(estimate), 
-        label=sprintf('%.2f',log2(estimate)))
-    ) + geom_hline(yintercept=0
-    ) + geom_segment(aes(y=0, 
-        x=reorder(label, -estimate), 
-        yend=log2(estimate), xend=label), color='black'
-    ) + geom_point(aes(fill=pmax(-1.5,log2(estimate))), 
-        stat='identity', 
-        size=10, 
-        alpha=0.95, 
-        shape=21
+    ggplot(df, aes(x = label, 
+        y = estimate, label = sprintf('%.2f', estimate))
+    ) + geom_hline(yintercept = 0
+    ) + geom_segment(aes(y = 0, 
+        x = reorder(label, -estimate), 
+        yend = estimate, xend=label), color='black'
+    ) + geom_point(aes(fill=pmax(-2, 2)),
+        stat='identity', size=10, alpha=0.95, shape=21
     ) + scale_fill_gradientn(name='Fold Change',
         colours=c('#2166ac','#333333','#b2182b')
     ) + geom_text(color='white', size=3
-    ) + geom_label(aes(x=label,
-        y=ifelse(estimate>1,
-            log2(estimate) + 0.8,
-            log2(estimate) - 0.5),
-        label=label),
-        alpha=0.8
+    ) + geom_label(aes(x = label,
+        y = ifelse(estimate > 0, estimate + 0.8, estimate - 0.5),
+        label = label), alpha=0.8
     ) + ylab("Log2 Enrichment"
     ) + theme(axis.title.x = element_blank(),
         axis.text.x = element_blank(),

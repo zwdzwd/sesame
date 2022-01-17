@@ -23,7 +23,8 @@ given data with fields estimate and p.value.
 }
 \examples{
 
-data=data.frame(estimate=c(runif(10)), FDR=c(runif(10)))
-KYCG_plotVolcano(data)
+KYCG_plotVolcano(data.frame(
+  estimate=runif(10,0,10), FDR=runif(10,0,1), nD=runif(10,10,20),
+  overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 
 }
