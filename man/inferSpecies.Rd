@@ -6,19 +6,17 @@
 \usage{
 inferSpecies(
   sdf,
-  df_as = NULL,
-  topN = 3000,
+  topN = 1000,
   threshold.pos = 0.01,
   threshold.neg = 0.1,
-  ret.max = TRUE,
+  return.auc = FALSE,
+  return.species = FALSE,
   balance = TRUE,
-  threshold.sucess.rate = 0.8
+  threshold.success.rate = 0.8
 )
 }
 \arguments{
 \item{sdf}{a \code{SigSet}}
-
-\item{df_as}{a data.frame of alignment score for each probe.}
 
 \item{topN}{Top n positive and negative probes used to infer species.}
 
@@ -28,17 +26,19 @@ inferSpecies(
 \item{threshold.neg}{pvalue > threshold.neg are considered negative
 (default: 0.2).}
 
-\item{ret.max}{whether to return the species with maximal AUC.}
+\item{return.auc}{return AUC calculated, override return.species}
+
+\item{return.species}{return a string to represent species}
 
 \item{balance}{whether to balance the postive and negative probe
 number (default: TRUE).}
 
-\item{threshold.sucess.rate}{threshold of success rate to determine
+\item{threshold.success.rate}{threshold of success rate to determine
 mouse species.}
 }
 \value{
-a list of auc, pvalue, species (NCBI official species names)
-and taxid.
+a new SigDF with updated color channel specification and
+masking unless return.auc or return.species is set to TRUE
 }
 \description{
 We infer species based on probes pvalues and alignment score.
@@ -48,6 +48,6 @@ for pval < threshold.pos or pval > threshold.neg, respeceively,
 \examples{
 if (FALSE) { ## remove this, testing doesn't allow large file caching
   sdf <- sesameDataGet("MM285.1.SigDF")
-  inferSpecies(sdf)
+  sdf <- inferSpecies(sdf)
 }
 }
