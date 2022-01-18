@@ -119,7 +119,7 @@ Infer species (obviously this is a mouse, but this is supposed to work on rat,
 human etc). Currently this feature supports both the mouse array and the mammal
 array.
 ```{r}
-inferSpecies(sdf)$species
+inferSpecies(sdf, return.species = TRUE)
 ```
 
 Calculate beta values using the following commands.

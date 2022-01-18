@@ -1,10 +1,31 @@
+speciesUpdateSDF <- function(sdf, addr, species) {
+    addr.sp <- addr$species[[species]]
+    message(sprintf("Species inferred: %s", species))
+    
+    ## set color
+    m <- match(sdf$Probe_ID, addr$ordering$Probe_ID)
+    ## matched Inf-I probes with non-NA value
+    ## (NA can be mapping issues)
+    m_idx <- (!is.na(m)) & !is.na(addr.sp$col[m]) & (sdf$col != "2")
+    nc <- as.character(addr.sp$col[m[m_idx]])
+    nc[is.na(nc)] <- '2'
+    sdf$col[m_idx] <- factor(nc, levels=c("G","R","2"))
+
+    ## set mask, NA is masked by default
+    m_idx <- (!is.na(m))
+    sdf$mask <- TRUE
+    nm <- addr.sp$mask[m[m_idx]]
+    sdf$mask[!nm] <- FALSE
+}
+
+
 #' Infer Species
 #'
 #' We infer species based on probes pvalues and alignment score.
 #' AUC was calculated for each specie, y_true is 1 or 0 
 #' for pval < threshold.pos or pval > threshold.neg, respeceively,
 #'
-#' @param sdf a \code{SigSet}
+#' @param sdf a \code{SigDF}
 #' @param topN Top n positive and negative probes used to infer species.
 #' @param threshold.pos pvalue < threshold.pos are considered positive
 #' (default: 0.01).
@@ -35,11 +56,6 @@ inferSpecies <- function(sdf, topN = 1000,
     df_as <- do.call(cbind, lapply(addr$species, function(x) x$AS))
     rownames(df_as) <- addr$ordering$Probe_ID
     
-    ## if (is.null(df_as)) {
-    ##     ## Load alignment score (df_as) for candidate species
-    ##     df_as <- sesameDataGet(sprintf("%s.alignmentScore", sdfPlatform(sdf)))
-    ## }
-
     pvalue <- pOOBAH(sdf, return.pval=TRUE)
     ## shared probes
     pvalue <- pvalue[intersect(names(pvalue),rownames(df_as))]
@@ -51,24 +67,21 @@ inferSpecies <- function(sdf, topN = 1000,
     
     ## if success.rate >0.8, return 'mouse'
     ## TODO: same decision for Mammal40?
+    ## Lack of negative probes. use reference
     if (success.rate >= threshold.success.rate && sdfPlatform(sdf) == 'MM285') {
-        message("Lack of negative probes. Likely is reference:")
+        message("Lack of negative probes. Use reference:")
+        species <- addr$reference
         if (return.auc){ return(NULL);
-        } else if (return.species) { return("mus_musculus");
-        } else { return(sdf); }
-    }
+        } else if (return.species) { return(species);
+        } else { return(speciesUpdateSDF(sdf, addr, species)); }}
     
     ## balance means keep the same number of positive and negative probes.
     if (balance) {
         topN <- min(length(neg_probes),length(pos_probes))
         if (topN > 1000) { topN <- 1000; }
     }
-    if (length(pos_probes) > topN){
-        pos_probes <- pos_probes[seq_len(topN)]
-    }
-    if (length(neg_probes) > topN){
-        neg_probes <- neg_probes[seq_len(topN)]
-    }
+    if (length(pos_probes) > topN){ pos_probes <- pos_probes[seq_len(topN)]; }
+    if (length(neg_probes) > topN){ neg_probes <- neg_probes[seq_len(topN)]; }
     
     ## for positive probes (pvalue <= 0.01), y_true = 1
     ## for negative probes (pvalue > 0.1), y_true = 0
@@ -79,12 +92,12 @@ inferSpecies <- function(sdf, topN = 1000,
     ## y_pred is the alignment score.
     df_as <- df_as[c(names(pos_probes), names(neg_probes)),]
     
+    ## No useful signal, use reference
     if (length(y_true) == 0){
-        warning(sprintf("No useful signal. Abort and return original"))
+        species <- addr$reference
         if (return.auc){ return(NULL);
         } else if (return.species) { return(NULL);
-        } else { return(sdf); }
-    }
+        } else { return(speciesUpdateSDF(sdf, addr, species)); }}
     
     ## calculate AUC based on y_true and y_pred
     auc <- vapply(colnames(df_as),function(s) {
@@ -95,31 +108,13 @@ inferSpecies <- function(sdf, topN = 1000,
         U1 <- R1 - n1 * (n1 + 1)/2
         U1/(n1 * n2)}, numeric(1))
     
+    species <- names(which.max(auc))
     if (return.auc) {
         auc
     } else if (return.species) {
-        names(which.max(auc))
+        species
     } else {
-        species <- names(which.max(auc))
-        addr.sp <- addr$species[[species]]
-        message(sprintf("Species inferred: %s", species))
-        
-        ## set color
-        m <- match(sdf$Probe_ID, addr$ordering$Probe_ID)
-        ## matched Inf-I probes with non-NA value
-        ## (NA can be mapping issues)
-        m_idx <- (!is.na(m)) & !is.na(addr.sp$col[m]) & (sdf$col != "2")
-        nc <- as.character(addr.sp$col[m[m_idx]])
-        nc[is.na(nc)] <- '2'
-        sdf$col[m_idx] <- factor(nc, levels=c("G","R","2"))
-
-        ## set mask, NA is masked by default
-        m_idx <- (!is.na(m))
-        sdf$mask <- TRUE
-        nm <- addr.sp$mask[m[m_idx]]
-        sdf$mask[!nm] <- FALSE
-        sdf
-    }
+        speciesUpdateSDF(sdf, addr, species)}
 }
 
 #' Map the SDF (from overlap array platforms)

@@ -16,7 +16,7 @@ inferSpecies(
 )
 }
 \arguments{
-\item{sdf}{a \code{SigSet}}
+\item{sdf}{a \code{SigDF}}
 
 \item{topN}{Top n positive and negative probes used to infer species.}
 
