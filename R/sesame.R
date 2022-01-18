@@ -171,6 +171,7 @@ SDFcollapseToPfx <- function(sdf) {
 #' @export
 getBetas <- function(
     sdf, mask=TRUE, sum.TypeI = FALSE, collapseToPfx = FALSE) {
+    ## TODO: document collapseToPfx = T feature
 
     stopifnot(is(sdf, "SigDF"))
 

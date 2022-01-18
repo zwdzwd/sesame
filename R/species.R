@@ -15,6 +15,7 @@ speciesInfo <- function(addr, species) {
 #' 
 #' @export
 updateSigBySpecies <- function(sdf, species, addr = NULL) {
+
     if (is.null(addr)) {
         addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
     }
