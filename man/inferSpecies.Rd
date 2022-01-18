@@ -11,7 +11,6 @@ inferSpecies(
   threshold.neg = 0.1,
   return.auc = FALSE,
   return.species = FALSE,
-  balance = TRUE,
   threshold.success.rate = 0.8
 )
 }
@@ -29,9 +28,6 @@ inferSpecies(
 \item{return.auc}{return AUC calculated, override return.species}
 
 \item{return.species}{return a string to represent species}
-
-\item{balance}{whether to balance the postive and negative probe
-number (default: TRUE).}
 
 \item{threshold.success.rate}{threshold of success rate to determine
 mouse species.}

@@ -53,8 +53,6 @@ updateSigBySpecies <- function(sdf, species, addr = NULL) {
 #' (default: 0.2).
 #' @param return.auc return AUC calculated, override return.species
 #' @param return.species return a string to represent species
-#' @param balance whether to balance the postive and negative probe
-#' number (default: TRUE).
 #' @param threshold.success.rate threshold of success rate to determine
 #' mouse species.
 #' @return a new SigDF with updated color channel specification and
@@ -69,7 +67,7 @@ updateSigBySpecies <- function(sdf, species, addr = NULL) {
 inferSpecies <- function(sdf, topN = 1000,
     threshold.pos = 0.01, threshold.neg = 0.1,
     return.auc = FALSE, return.species = FALSE,
-    balance = TRUE, threshold.success.rate = 0.8) {
+    threshold.success.rate = 0.8) {
 
     ##sdf = sdf; topN=1000; threshold.pos=0.01; threshold.neg=0.1; ret.max=TRUE; balance=TRUE; threshold.success.rate=0.8
     ## TODO remove use_alternative = TRUE
@@ -86,23 +84,10 @@ inferSpecies <- function(sdf, topN = 1000,
     neg_probes <- sort(pvalue[pvalue >= threshold.neg],decreasing=TRUE)
     success.rate <- length(pvalue[pvalue<=0.05]) / length(pvalue)
     
-    ## if success.rate >0.8, return 'mouse'
-    ## TODO: same decision for Mammal40?
-    ## Lack of negative probes. use reference
-    if (success.rate >= threshold.success.rate && sdfPlatform(sdf) == 'MM285') {
-        message("Lack of negative probes. Use reference.")
-        species <- addr$reference
-        if (return.auc){ return(NULL);
-        } else if (return.species) { return(speciesInfo(addr, species));
-        } else { return(updateSigBySpecies(sdf, species, addr)); }}
-    
-    ## balance means keep the same number of positive and negative probes.
-    if (balance) {
-        topN <- min(length(neg_probes),length(pos_probes))
-        if (topN > 1000) { topN <- 1000; }
-    }
-    if (length(pos_probes) > topN){ pos_probes <- pos_probes[seq_len(topN)]; }
-    if (length(neg_probes) > topN){ neg_probes <- neg_probes[seq_len(topN)]; }
+    ## keep the same number of positive and negative probes.
+    topN <- min(length(neg_probes),length(pos_probes), topN)
+    pos_probes <- pos_probes[seq_len(topN)]
+    neg_probes <- neg_probes[seq_len(topN)]
     
     ## for positive probes (pvalue <= 0.01), y_true = 1
     ## for negative probes (pvalue > 0.1), y_true = 0
@@ -129,6 +114,15 @@ inferSpecies <- function(sdf, topN = 1000,
         R1 <- sum(rank(df_as[,s])[labels])
         U1 <- R1 - n1 * (n1 + 1)/2
         U1/(n1 * n2)}, numeric(1))
+
+    ## if success rate is high but max(AUC) is low it can be because the target
+    ## species has issue with alignemnt score calibration
+    if (success.rate >= threshold.success.rate && max(auc) < 0.6) {
+        message("Lack of negative probes. Use reference.")
+        species <- addr$reference
+        if (return.auc){ return(auc);
+        } else if (return.species) { return(speciesInfo(addr, species));
+        } else { return(updateSigBySpecies(sdf, species, addr)); }}
     
     species <- names(which.max(auc))
     if (return.auc) {
