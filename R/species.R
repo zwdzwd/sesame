@@ -1,3 +1,8 @@
+speciesInfo <- function(addr, species) {
+    res <- addr$species[[species]]
+    res[c("scientificName", "taxonID", "commonName", "assembly")]
+}
+
 speciesUpdateSDF <- function(sdf, addr, species) {
     addr.sp <- addr$species[[species]]
     message(sprintf("Species inferred: %s", species))
@@ -69,10 +74,10 @@ inferSpecies <- function(sdf, topN = 1000,
     ## TODO: same decision for Mammal40?
     ## Lack of negative probes. use reference
     if (success.rate >= threshold.success.rate && sdfPlatform(sdf) == 'MM285') {
-        message("Lack of negative probes. Use reference:")
+        message("Lack of negative probes. Use reference.")
         species <- addr$reference
         if (return.auc){ return(NULL);
-        } else if (return.species) { return(species);
+        } else if (return.species) { return(speciesInfo(addr, species));
         } else { return(speciesUpdateSDF(sdf, addr, species)); }}
     
     ## balance means keep the same number of positive and negative probes.
@@ -94,9 +99,10 @@ inferSpecies <- function(sdf, topN = 1000,
     
     ## No useful signal, use reference
     if (length(y_true) == 0){
+        warning("Lack of useful signal. Use reference.")
         species <- addr$reference
         if (return.auc){ return(NULL);
-        } else if (return.species) { return(NULL);
+        } else if (return.species) { return(speciesInfo(addr, species));
         } else { return(speciesUpdateSDF(sdf, addr, species)); }}
     
     ## calculate AUC based on y_true and y_pred
@@ -112,7 +118,7 @@ inferSpecies <- function(sdf, topN = 1000,
     if (return.auc) {
         auc
     } else if (return.species) {
-        species
+        speciesInfo(addr, species)
     } else {
         speciesUpdateSDF(sdf, addr, species)}
 }
