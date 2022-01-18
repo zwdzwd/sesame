@@ -37,28 +37,6 @@ setMask <- function(sdf, probes) {
     addMask(resetMask(sdf), probes)
 }
 
-#' Set mask using species-specific manifest
-#'
-#' @param sdf a \code{SigDF}
-#' @param species the species the sample is considered to be
-#' @return a \code{SigDF} with updated color channel and mask
-#' @examples
-#' sdf <- sesameDataGet('Mammal40.1.SigDF')
-#' sdf_mouse <- setMaskBySpecies(sdf, "mus_musculus")
-#' 
-#' @export
-setMaskBySpecies <- function(sdf, species = "homo_sapiens") {
-    addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
-    stopifnot(species %in% names(addr$species))
-
-    tmp <- addr$species[[species]][match(sdf$Probe_ID, addr$ordering$Probe_ID),]
-    tmp$col <- as.character(tmp$col)
-    tmp$col[is.na(tmp$col)] <- "2"
-    sdf$col <- factor(tmp$col, levels=c("G","R","2"))
-    sdf$mask <- tmp$mask
-    sdf
-}
-
 ## TODO list all the candidate species to be used
 
 #' Reset Masking

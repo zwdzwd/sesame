@@ -3,9 +3,24 @@ speciesInfo <- function(addr, species) {
     res[c("scientificName", "taxonID", "commonName", "assembly")]
 }
 
-speciesUpdateSDF <- function(sdf, addr, species) {
+#' Set color and mask using species-specific manifest
+#'
+#' @param sdf a \code{SigDF}
+#' @param species the species the sample is considered to be
+#' @param addr species-specific address species, optional
+#' @return a \code{SigDF} with updated color channel and mask
+#' @examples
+#' sdf <- sesameDataGet('Mammal40.1.SigDF')
+#' sdf_mouse <- updateSigBySpecies(sdf, "mus_musculus")
+#' 
+#' @export
+updateSigBySpecies <- function(sdf, species, addr = NULL) {
+    if (is.null(addr)) {
+        addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
+    }
+    stopifnot(species %in% names(addr$species))
     addr.sp <- addr$species[[species]]
-    message(sprintf("Species inferred: %s", species))
+    message(sprintf("Update using species: %s", species))
     
     ## set color
     m <- match(sdf$Probe_ID, addr$ordering$Probe_ID)
@@ -21,8 +36,8 @@ speciesUpdateSDF <- function(sdf, addr, species) {
     sdf$mask <- TRUE
     nm <- addr.sp$mask[m[m_idx]]
     sdf$mask[!nm] <- FALSE
+    sdf
 }
-
 
 #' Infer Species
 #'
@@ -56,8 +71,9 @@ inferSpecies <- function(sdf, topN = 1000,
     return.auc = FALSE, return.species = FALSE,
     balance = TRUE, threshold.success.rate = 0.8) {
 
-    ##sdf = sdf; df_as=NULL; topN=3000; threshold.pos=0.01; threshold.neg=0.1; ret.max=TRUE; balance=TRUE; threshold.success.rate=0.8
-    addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
+    ##sdf = sdf; topN=1000; threshold.pos=0.01; threshold.neg=0.1; ret.max=TRUE; balance=TRUE; threshold.success.rate=0.8
+    ## TODO remove use_alternative = TRUE
+    addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)), use_alternative = TRUE)
     df_as <- do.call(cbind, lapply(addr$species, function(x) x$AS))
     rownames(df_as) <- addr$ordering$Probe_ID
     
@@ -78,7 +94,7 @@ inferSpecies <- function(sdf, topN = 1000,
         species <- addr$reference
         if (return.auc){ return(NULL);
         } else if (return.species) { return(speciesInfo(addr, species));
-        } else { return(speciesUpdateSDF(sdf, addr, species)); }}
+        } else { return(updateSigBySpecies(sdf, species, addr)); }}
     
     ## balance means keep the same number of positive and negative probes.
     if (balance) {
@@ -103,7 +119,7 @@ inferSpecies <- function(sdf, topN = 1000,
         species <- addr$reference
         if (return.auc){ return(NULL);
         } else if (return.species) { return(speciesInfo(addr, species));
-        } else { return(speciesUpdateSDF(sdf, addr, species)); }}
+        } else { return(updateSigBySpecies(sdf, species, addr)); }}
     
     ## calculate AUC based on y_true and y_pred
     auc <- vapply(colnames(df_as),function(s) {
@@ -120,7 +136,7 @@ inferSpecies <- function(sdf, topN = 1000,
     } else if (return.species) {
         speciesInfo(addr, species)
     } else {
-        speciesUpdateSDF(sdf, addr, species)}
+        updateSigBySpecies(sdf, species, addr)}
 }
 
 #' Map the SDF (from overlap array platforms)
