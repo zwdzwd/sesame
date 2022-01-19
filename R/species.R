@@ -108,10 +108,10 @@ inferSpecies <- function(sdf, topN = 1000,
         } else { return(updateSigBySpecies(sdf, species, addr)); }}
     
     ## calculate AUC based on y_true and y_pred
+    labels <- as.logical(y_true)
+    n1 <- as.numeric(sum(labels))
+    n2 <- as.numeric(sum(!labels))
     auc <- vapply(colnames(df_as),function(s) {
-        labels <- as.logical(y_true)
-        n1 <- as.numeric(sum(labels))
-        n2 <- as.numeric(sum(!labels))
         R1 <- sum(rank(df_as[,s])[labels])
         U1 <- R1 - n1 * (n1 + 1)/2
         U1/(n1 * n2)}, numeric(1))
