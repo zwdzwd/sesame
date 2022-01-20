@@ -86,18 +86,15 @@ inferSpecies <- function(sdf, topN = 1000,
     success.rate <- length(pvalue[pvalue<=0.05]) / length(pvalue)
     
     ## keep the same number of positive and negative probes.
-    topN <- min(length(neg_probes),length(pos_probes), topN)
-    pos_probes <- pos_probes[seq_len(topN)]
-    neg_probes <- neg_probes[seq_len(topN)]
+    topN1 <- min(length(neg_probes),length(pos_probes), topN)
+    pos_probes <- pos_probes[seq_len(topN1)]
+    neg_probes <- neg_probes[seq_len(topN1)]
     
     ## for positive probes (pvalue <= 0.01), y_true = 1
     ## for negative probes (pvalue > 0.1), y_true = 0
     y_true <- structure(c(
-        rep(1,length(pos_probes)),rep(0,length(neg_probes))),
+        rep(TRUE,length(pos_probes)),rep(FALSE,length(neg_probes))),
         names = c(names(pos_probes), names(neg_probes)))
-    
-    ## y_pred is the alignment score.
-    df_as <- df_as[c(names(pos_probes), names(neg_probes)),]
     
     ## No useful signal, use reference
     if (length(y_true) == 0){
@@ -108,11 +105,12 @@ inferSpecies <- function(sdf, topN = 1000,
         } else { return(updateSigBySpecies(sdf, species, addr)); }}
     
     ## calculate AUC based on y_true and y_pred
-    labels <- as.logical(y_true)
-    n1 <- as.numeric(sum(labels))
-    n2 <- as.numeric(sum(!labels))
+    n1 <- as.numeric(sum(y_true))
+    n2 <- as.numeric(sum(!y_true))
+    df_as <- df_as[names(y_true),,drop = FALSE]
+    ## df_as[df_as < 35] <- 35 # all under 35 is qualitatively the same
     auc <- vapply(colnames(df_as),function(s) {
-        R1 <- sum(rank(df_as[,s])[labels])
+        R1 <- sum(rank(df_as[,s])[seq_along(pos_probes)])
         U1 <- R1 - n1 * (n1 + 1)/2
         U1/(n1 * n2)}, numeric(1))
 
@@ -124,7 +122,7 @@ inferSpecies <- function(sdf, topN = 1000,
         if (return.auc){ return(auc);
         } else if (return.species) { return(speciesInfo(addr, species));
         } else { return(updateSigBySpecies(sdf, species, addr)); }}
-    
+
     species <- names(which.max(auc))
     if (return.auc) {
         auc
