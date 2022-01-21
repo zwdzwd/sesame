@@ -138,18 +138,20 @@ always measured as the M-allele, one needs to flip the beta values for some
 probes to calculate variant allele frequency.
 
 ```{r}
-strain <- inferStrain(betas)
-strain$pval
+inferStrain(sdf, return.strain = TRUE)
+p <- inferStrain(sdf, return.probability = TRUE)
 ```
 Let's visualize the probabilities of other strains.
 ```{r}
 library(ggplot2)
-df <- data.frame(strain=names(strain$probs), probs=strain$probs)
-ggplot(data = df,  aes(x = strain, y = log(probs))) +
+df <- data.frame(strain=names(p), probs=p)
+ggplot(data = df,  aes(x = strain, y = probs)) +
   geom_bar(stat = "identity", color="gray") +
-  ggtitle("strain probabilities") +
+  ggtitle("Strain Probabilities") +
+  ylab("Probability") + xlab("") +
   scale_x_discrete(position = "top") +
-  theme(axis.text.x = element_text(angle = 90), legend.position = "none")
+  theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=0),
+    legend.position = "none")
 ```
 
 ## Tissue Type Inference

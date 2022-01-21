@@ -7,6 +7,7 @@ speciesInfo <- function(addr, species) {
 #'
 #' @param sdf a \code{SigDF}
 #' @param species the species the sample is considered to be
+#' @param strain the strain the sample is considered to be
 #' @param addr species-specific address species, optional
 #' @return a \code{SigDF} with updated color channel and mask
 #' @examples
@@ -18,7 +19,8 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 
     if (!is.null(species)) {
         if (is.null(addr)) {
-            addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
+            addr <- sesameDataGet(sprintf(
+                "%s.addressSpecies", sdfPlatform(sdf)))
         }
         stopifnot(species %in% names(addr$species))
         addrS <- addr$species[[species]]
@@ -81,7 +83,8 @@ inferSpecies <- function(sdf, topN = 1000,
     threshold.success.rate = 0.8) {
 
     ## TODO remove use_alternative = TRUE
-    addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)), use_alternative = TRUE)
+    addr <- sesameDataGet(sprintf(
+        "%s.addressSpecies", sdfPlatform(sdf)), use_alternative = TRUE)
     df_as <- do.call(cbind, lapply(addr$species, function(x) x$AS))
     rownames(df_as) <- addr$ordering$Probe_ID
     

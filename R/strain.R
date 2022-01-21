@@ -1,21 +1,17 @@
-## mouseBetaToAF <- function(betas) {
-
-##     mft <- sesameDataGet('MM285.mm10.manifest')
-##     mft <- mft[grep('^rs', names(mft))]
-##     ## flip AF based on manifest annotation
-##     design <- GenomicRanges::mcols(mft)[['design']]
-##     toFlip <- !setNames(as.logical(substr(
-##         design, nchar(design), nchar(design))), names(mft))
-
-##     vafs <- betas[grep('^rs', names(betas))]
-##     vafs[toFlip[names(vafs)]] <- 1-vafs[toFlip[names(vafs)]]
-##     vafs
-## }
+mouseBetaToAF <- function(betas) {
+    se <- sesameDataGet('MM285.addressStrain')$strain_snps
+    rd <- rowData(se)
+    af <- betas[rd$Probe_ID]
+    af[rd$flipToAF] <- 1 - af[rd$flipToAF]
+    af
+}
 
 #' Infer strain information for mouse array
 #'
 #' @param sdf SigDF
-#' @param addr addressStrain, infer and download if not given
+#' @param return.probability return probability vector for all strains
+#' @param return.pval return p-value
+#' @param return.strain return strain name
 #' @return a list of best guess, p-value of the best guess
 #' and the probabilities of all strains
 #' @examples
@@ -26,17 +22,9 @@
 #' @import tibble
 #' @export
 inferStrain <- function(
-    sdf, addr = NULL,
-    return.strain = FALSE, return.probability = FALSE, return.pval = FALSE) {
+    sdf, return.strain = FALSE,
+    return.probability = FALSE, return.pval = FALSE) {
 
-    ## sdf <- sesameDataGet('MM285.1.SigDF'); betas <- getBetas(dyeBiasNL(noob(sdf)))
-    ## vafs <- mouseBetaToAF(betas)
-    ## vafs[is.na(vafs)] <- 0.5 # impute vaf if missing
-    ## if (is.null(strain_snp_table)) {
-    ##     ## TODO: use MM285.strainSNPs
-    ##     strain_snp_table <- sesameDataGet('MM285.strain.snp.table')
-    ## }
-    
     addr <- sesameDataGet("MM285.addressStrain")
     se <- addr$strain_snps
     cd <- SummarizedExperiment::colData(se)
@@ -55,11 +43,6 @@ inferStrain <- function(
     vafs <- vafs[probes]
     bbloglik <- vapply(strain_snps[match(probes, rd$Probe_ID),],
         function(x) sum(log(dnorm(x - vafs, mean=0, sd=0.8))), numeric(1))
-    ## bb <- vapply(probes, function(p) {
-    ##     ## vafs[p]; head(sort(setNames(dnorm(vafs[p], mean=as.numeric(strain_snps[match(p, rd$Probe_ID),]), sd=0.8), colnames(strain_snps)), decreasing=T),n=5)
-    ##     dnorm(vafs[p], mean=as.numeric(strain_snps[match(p, rd$Probe_ID),]), sd=0.8)
-    ## }, numeric(ncol(strain_snps)))
-    ## bbloglik <- apply(bb,1,function(x) sum(log(x),na.rm=TRUE))
     probs <- setNames(exp(bbloglik - max(bbloglik)), colnames(strain_snps))
     best.index <- which.max(probs)
 
@@ -92,18 +75,18 @@ compareMouseStrainReference <- function(
     betas = NULL, show_sample_names = FALSE) {
 
     ## betas = NULL; show_sample_names = FALSE;
-    se = sesameDataGet("MM285.addressStrain")$strain_snps
+    se <- sesameDataGet("MM285.addressStrain")$strain_snps
     pkgTest("wheatmap")
 
     cd <- as_tibble(SummarizedExperiment::colData(se))
     rd <- as_tibble(SummarizedExperiment::rowData(se))
     md <- metadata(se)
+    se <- se[rd$QC != "FAIL",]
+    rd <- rd[rd$QC != "FAIL",]
+
     if (!is.null(betas) && is.null(dim(betas))) { # in case a vector
         betas <- cbind(betas)
     }
-
-    se <- se[rd$QC != "FAIL",]
-    rd <- rd[rd$QC != "FAIL",]
 
     afs <- do.call(rbind, lapply(seq_along(rd$flipToAF), function(i)
         if(xor(rd$flipToAF[i], rd$flipForRefBias[i])) {

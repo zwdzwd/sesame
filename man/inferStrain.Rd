@@ -4,12 +4,21 @@
 \alias{inferStrain}
 \title{Infer strain information for mouse array}
 \usage{
-inferStrain(betas, strain_snp_table = NULL)
+inferStrain(
+  sdf,
+  return.strain = FALSE,
+  return.probability = FALSE,
+  return.pval = FALSE
+)
 }
 \arguments{
-\item{betas}{beta value vector from which VAFs are extracted}
+\item{sdf}{SigDF}
 
-\item{strain_snp_table}{if not given download the default from sesameData}
+\item{return.strain}{return strain name}
+
+\item{return.probability}{return probability vector for all strains}
+
+\item{return.pval}{return p-value}
 }
 \value{
 a list of best guess, p-value of the best guess
@@ -21,6 +30,6 @@ Infer strain information for mouse array
 \examples{
 sesameDataCache("MM285") # if not done yet
 sdf <- sesameDataGet('MM285.1.SigDF')
-betas <- getBetas(dyeBiasNL(noob(sdf)))
-inferStrain(betas)
+inferStrain(sdf, return.strain = TRUE)
+sdf.strain <- inferStrain(sdf)
 }
