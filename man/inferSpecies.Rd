@@ -17,7 +17,8 @@ inferSpecies(
 \arguments{
 \item{sdf}{a \code{SigDF}}
 
-\item{topN}{Top n positive and negative probes used to infer species.}
+\item{topN}{Top n positive and negative probes used to infer species.
+increase this number can sometimes improve accuracy (DEFAULT: 1000)}
 
 \item{threshold.pos}{pvalue < threshold.pos are considered positive
 (default: 0.01).}
@@ -42,8 +43,6 @@ AUC was calculated for each specie, y_true is 1 or 0
 for pval < threshold.pos or pval > threshold.neg, respeceively,
 }
 \examples{
-if (FALSE) { ## remove this, testing doesn't allow large file caching
-  sdf <- sesameDataGet("MM285.1.SigDF")
-  sdf <- inferSpecies(sdf)
-}
+sdf <- sesameDataGet("MM285.1.SigDF")
+sdf <- inferSpecies(sdf)
 }
