@@ -47,7 +47,7 @@ inferStrain <- function(
     best.index <- which.max(probs)
     strain <- names(best.index)
     if (return.strain) {
-        strain
+        addr$strain[[strain]][c("JAX_ID","MGP_ID")]
     } else if (return.probability) {
         probs / sum(probs)
     } else if (return.pval) {

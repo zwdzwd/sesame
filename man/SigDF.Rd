@@ -2,7 +2,7 @@
 % Please edit documentation in R/SigDFMethods.R
 \name{SigDF}
 \alias{SigDF}
-\title{SigDF constructor from a plain data frame}
+\title{SigDF validation from a plain data frame}
 \usage{
 SigDF(df, platform = "EPIC", ctl = NULL)
 }
@@ -17,9 +17,9 @@ SigDF(df, platform = "EPIC", ctl = NULL)
 a \code{SigDF} object
 }
 \description{
-SigDF constructor from a plain data frame
+SigDF validation from a plain data frame
 }
 \examples{
 sesameDataCache("EPIC") # if not done yet
-df <- as.data.frame(sesameDataGet('EPIC.1.SigDF'))
+sdf <- sesameDataGet('EPIC.1.SigDF')
 }

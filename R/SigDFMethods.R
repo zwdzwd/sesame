@@ -1,4 +1,4 @@
-#' SigDF constructor from a plain data frame
+#' SigDF validation from a plain data frame
 #'
 #' @param df a \code{data.frame} with Probe_ID, MG, MR, UG, UR, col and mask
 #' @param platform a string to specify the array platform
@@ -6,7 +6,7 @@
 #' @return a \code{SigDF} object
 #' @examples
 #' sesameDataCache("EPIC") # if not done yet
-#' df <- as.data.frame(sesameDataGet('EPIC.1.SigDF'))
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' @export
 SigDF <- function(df, platform = "EPIC", ctl=NULL) {
 
@@ -24,36 +24,6 @@ SigDF <- function(df, platform = "EPIC", ctl=NULL) {
     attr(sdf, "controls") <- ctl
     rownames(sdf) <- NULL
     sdf
-}
-
-#' Print SigDF object
-#'
-#' @param x a SigDF object
-#' @param ... extra parameter for print
-#' @return print SigDF result on screen
-#' @examples
-#' sesameDataCache("EPIC") # if not done yet
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdf
-#' @export
-print.SigDF <- function(x, ...) {
-    stopifnot(is(x, "SigDF"))
-    message(sprintf("%s%s%s%s%s",
-        sprintf("SigDF - %s\n", sdfPlatform(x)),
-        sprintf(" - %d Infinium-I Probes\n", nrow(InfI(x))),
-        sprintf(" - %d Infinium-II Probes\n", nrow(InfII(x))),
-        sprintf(" - %d Control Probes\n",
-            ifelse(is.null(controls(x)), 0, nrow(controls(x)))),
-        sprintf(" - %d Number of Masked Probes", sum(x$mask))))
-    if (nrow(x) < 4) {
-        cbind("-"="-",
-            Row=seq_len(nrow(x)),
-            as.data.frame(x))
-    } else {
-        cbind("-"="-",
-            Row=c(1,2,nrow(x)-1,nrow(x)),
-            as.data.frame(x[c(1,2,nrow(x)-1,nrow(x)),]))
-    }
 }
 
 #' Convenience function to output platform attribute of SigDF

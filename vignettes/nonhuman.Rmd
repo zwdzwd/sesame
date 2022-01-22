@@ -20,8 +20,6 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Mouse MM285 Array
 
-## Preprocessing
-
 To begin, we need to retrieve mouse annotation data from ExperimentHub.
 This only needs to be done once per sesame installation.
 ```{r echo=FALSE, message=FALSE}
@@ -46,28 +44,38 @@ To load IDAT into `SigSet`, one needs the readIDATpair function,
 sdf = readIDATpair(pfx)
 ```
 
-The default openSesame pipeline works for the mouse array
+## Preprocessing
+
+The default openSesame pipeline works for the default C57BL/6J strain.
+
 ```{r eval=FALSE}
 openSesame(idat_dir)
 ```
 
 Let's load a pre-built `SigSet` object
 ```{r include=FALSE}
-sdf = sesameDataGet('MM285.1.SigDF')
 ```
 
-Preprocess the sigset to produce beta values.
-The standard `noob`, `dyeBiasCorrTypeINorm` works as expected:
+Preprocess the sigset to produce beta values.  To work on a different strain,
+one can call inferStrain before the standard `noob`, `dyeBiasNL`, etc. More
+detail about `inferStrain` can be found below.
+
 ```{r}
-sdf_normalized = sdf %>%
-                 qualityMask %>%
-                 pOOBAH %>%
-                 noob %>%
-                 dyeBiasCorrTypeINorm
+sdf = sesameDataGet('MM285.1.SigDF')
+sdf_normalized = pOOBAH(noob(dyeBiasNL(inferStrain(sdf))))
 ```
+
 Retrieve beta values using the following commands
 ```{r}
-betas = getBetas(sdf_normalized)
+betas <- getBetas(sdf_normalized)
+head(betas)
+```
+
+or to cg prefix only
+
+```{r}
+betas_prefixOnly <- getBetas(sdf_normalized, collapseToPfx = TRUE)
+head(betas_prefixOnly)
 ```
 
 By default the repeat and suboptimally designed probes are masked by `NA`.
@@ -102,13 +110,7 @@ betas = getBetas(resetMask(sdf_normalized))
 sum(is.na(betas))
 ```
 
-## Track View
-```{r message=FALSE}
-betas = sesameDataGet("MM285.10.tissue")$betas
-visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
-```
-
-## Species, Strain Inference
+## Strain/species inference
 
 Let's load a pre-built `SigSet` object from SeSAMeData
 ```{r}
@@ -122,28 +124,27 @@ array.
 inferSpecies(sdf, return.species = TRUE)
 ```
 
-Calculate beta values using the following commands.
-```{r}
-betas <- sdf %>%
-         noob %>%
-         dyeBiasCorrTypeINorm %>%
-         getBetas
-```
-
-Infer strain information for mouse array. This will return a list containing
-the best guess, p-value of the best guess, and probabilities of all strains.
-Internally, the function converts the beta values to variant allele
-frequencies. It should be noted that since variant allele frequency is not
-always measured as the M-allele, one needs to flip the beta values for some
-probes to calculate variant allele frequency.
+Infer strain information for mouse array. This will return a new SigDF with col
+and mask updated to reflect the change of strain. Optionally, one can also
+specify `return.strain=TRUE`, `return.pval=TRUE` or return.probability = TRUE`
+to return the inferred strain, the p-value or the probabilities of all 37
+strain candidates.  Internally, the function converts the beta values to
+variant allele frequencies. It should be noted that since variant allele
+frequency is not always measured by the M-allele of the probe. SeSAMe flips the
+beta values for some probes to calculate variant allele frequency.
 
 ```{r}
-inferStrain(sdf, return.strain = TRUE)
-p <- inferStrain(sdf, return.probability = TRUE)
+inferStrain(sdf, return.strain = TRUE) # return strain as a string
+sdf1 <- inferStrain(sdf)
+sum(sdf$mask) # before strain inference
+sum(sdf1$mask) # after strain inference
 ```
+
 Let's visualize the probabilities of other strains.
-```{r}
+
+```{r fig.width=6, fig.height=4}
 library(ggplot2)
+p <- inferStrain(sdf, return.probability = TRUE)
 df <- data.frame(strain=names(p), probs=p)
 ggplot(data = df,  aes(x = strain, y = probs)) +
   geom_bar(stat = "identity", color="gray") +
@@ -152,6 +153,22 @@ ggplot(data = df,  aes(x = strain, y = probs)) +
   scale_x_discrete(position = "top") +
   theme(axis.text.x = element_text(angle = 90, vjust=0.5, hjust=0),
     legend.position = "none")
+```
+
+One can also visualize the actual SNP data for strain inference by the
+following. The target sample is plotted as a vertical bar on the right of the
+signature heatmap.
+
+```{r fig.width=6, fig.height=8}
+compareMouseStrainReference(getBetas(sdf))
+```
+
+As expected, the variant configuration is consistent with the NOD strain.
+
+## Track View
+```{r message=FALSE}
+betas = sesameDataGet("MM285.10.tissue")$betas
+visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
 ```
 
 ## Tissue Type Inference

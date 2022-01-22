@@ -6,7 +6,17 @@ setClass("sesameQC", representation(stat="list", group="list"))
 setMethod("as.data.frame", signature="sesameQC",
     definition = function(x, ...) as.data.frame(x@stat))
 
-DF2sesameQC <- function(df) {
+#' Convert data frame to sesameQC object
+#'
+#' The function convert a data frame back to a list of sesameQC objects
+#' 
+#' @param df a publicQC data frame
+#' @return a list sesameQC objects
+#' @examples
+#' df <- sesameDataGet("MM285.publicQC")
+#' qcs <- sesameQC_asDataFrame(df[1:2,])
+#' @export
+sesameQC_asDataFrame <- function(df) {
     groups <- c(
         .setGroup_detection(),
         .setGroup_numProbes(),
@@ -17,7 +27,8 @@ DF2sesameQC <- function(df) {
     groups <- groups[vapply(groups, function(g) {
         if (all(names(g) %in% colnames(df))) {
             TRUE } else { FALSE }}, logical(1))]
-    apply(df, 1, function(s) new("sesameQC", group=groups, stat=s))
+    lapply(seq_len(nrow(df)), function(i) {
+        new("sesameQC", group=groups, stat=df[i,])})
 }
 
 ## ' The display method for sesameQC
