@@ -34,8 +34,7 @@ inferStrain <- function(
     ## C57BL_6J is the first strain in the table
     strain_snps <- rd[,which(colnames(rd)=="C57BL_6J"):ncol(rd)]
 
-    betas <- getBetas(dyeBiasNL(noob(sdf)), mask=FALSE)
-    vafs <- betas[rd$Probe_ID]
+    vafs <- getBetas(dyeBiasNL(noob(sdf)), mask=FALSE)[rd$Probe_ID]
     vafs[is.na(vafs)] <- 0.5 # just in case
     vafs[rd$flipToAF] <- 1 - vafs[rd$flipToAF]
     
@@ -44,8 +43,8 @@ inferStrain <- function(
     bbloglik <- vapply(strain_snps[match(probes, rd$Probe_ID),],
         function(x) sum(log(dnorm(x - vafs, mean=0, sd=0.8))), numeric(1))
     probs <- setNames(exp(bbloglik - max(bbloglik)), colnames(strain_snps))
-    best.index <- which.max(probs)
 
+    best.index <- which.max(probs)
     strain <- names(best.index)
     if (return.strain) {
         strain
