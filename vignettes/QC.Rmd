@@ -18,6 +18,7 @@ sesameDataCacheAll()
 
 # Calculate quality metrics
 
+The central function to calculate the quality metrics is `sesameQC_calcStats`.
 SeSAMe divides sample quality metrics into multiple groups. Each group of
 quality metrics can be generated using a dedicated function. All these
 functions can be accessed through the `sesameQC_calcStats`
@@ -55,16 +56,22 @@ kable(data.frame(
         "Beta Value")))
 ```
 
-One can calculate a specific group of metrics by giving the 2nd argument: e.g.,
+One can calculate specific group(s) of metrics by giving the 2nd argument: e.g.,
 
 ```{r}
-sesameQC_calcStats(sdf, c("dyeBias", "detection"))
+qc <- sesameQC_calcStats(sdf, c("dyeBias", "detection"))
+qc
+```
+
+The `sesameQC_calcStats` function returns an S4 `sesameQC` object. One can retrieve the actual stats using the sesameQC_getStats
+
+```{r}
+sesameQC_getStats(qc, "frac_dt")
 ```
 
 One can combine multiple sesameQC into a data frame:
 
 ```{r}
-
 sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
 df <- do.call(rbind, lapply(sdfs, function(sdf)
    as.data.frame(sesameQC_calcStats(sdf, "detection"))))

@@ -32,15 +32,12 @@ BiocManager::install('zwdzwd/sesameData')
 BiocManager::install('zwdzwd/sesame')
 ```
 
-If you install directly from github, you need to make sure the compatible
-ExperimentHub is installed.
-
 **CRITICAL:** After a new installation, one needs to cache the associated
 annotation data using the following command.
 This needs to be done only once per SeSAMe installation.
 
 ```{r}
-sesameDataCacheAll()
+sesameDataCache()
 ```
 
 This function caches the needed SeSAMe annotation for all the supported
@@ -55,7 +52,10 @@ your local computer using:
 tools::R_user_dir("ExperimentHub", which="cache")
 ```
 
-You can verify the version of the installed sesame and ExperimentHub
+If you install directly from github, you need to make sure the compatible
+ExperimentHub is installed.
+
+You can verify the version of the installed sesame and ExperimentHub:
 
 ```{r}
 packageVersion("sesame")
@@ -85,59 +85,66 @@ annotations. The `SigDF` class will be discussed more below. Using the two
 examples above, one would run the following commands.
 
 ```{r eval=FALSE}
-sdf = readIDAT("204529320035_R06C01")  # Example 1
-sdf = readIDAT("GSM2178224")           # Example 2
+sdf = readIDAT("idat_folder/204529320035_R06C01")  # Example 1
+sdf = readIDAT("idat_folder/GSM2178224")           # Example 2
 ```
 
 Note that SeSAMe automatically detects and matches up the green and red signal
-files for the same sample. One can summarize resulting `SigDF` using the
-'sesameQC_calcStats' function. More QC can be found in [the quality control
-vignette](QC.html).
+files for the same sample. `SigDF` can be treated as a regular data.frame:
 
 ```{r}
 sdf = sesameDataGet('EPIC.1.SigDF') # an example SigDF
 head(sdf) # peek into the internals
+```
+
+One can summarize resulting `SigDF` using the 'sesameQC_calcStats'
+function. More QC can be found in the [quality control vignette](QC.html).
+
+```{r}
 sesameQC_calcStats(sdf, "numProbes")
 ```
 
-We will get back to the structure of `SigDF` below.
+We will get back to the structure of `SigDF` in detail below.
 
 # Custom Arrays
 
 If you are dealing with a custom-made array instead of the standard array
 (MM285, EPIC, HM450 etc) supported natively by SeSAMe, you would need to
 provide a manifest that describe the probe information. You should be able to
-obtain that from the Illumina support website.  The manifest should be made
-into a simple data frame with a minimum of four columns: `Probe_ID`, `M`, `U`
-and `col`. The easiest way to format the the manifest os that it is compatible
-with SeSAMe is by following internal manifests for a SeSAME-supported
-platform. They can be retrieved with the `sesameDataGet` function:
+obtain the probe information manifest from the Illumina support website.  The
+manifest should be formated as a data frame with four columns minimally:
+`Probe_ID`, `M`, `U` and `col`. A optional `mask` column may also be included
+as a default mask for the platform. The easiest way to format a
+SeSAMe-compatible manifest is by following internal manifests for a
+SeSAMe-supported platform. They can be retrieved with the `sesameDataGet`
+function:
 
 ```{r}
 mft = sesameDataGet("MM285.address")$ordering
 ```
 
-The `col` is either `G` (stand for Green) or `R` (stand for Red) or `2` (
-stand for both in the case of Infinium II design).
-For Infinium-II probes, the `M` column and `col` column is left to be `NA`.
-For example, one can check that both `M` and `col` columns are filled with
-the Infinium-I probes:
+The `col` is either `G` (which stands for Green) or `R` (which stands for Red)
+or `2` (which stands for Infinium II designs).  For Infinium-II probes, the `M`
+column and `col` column is left as `NA`.  For example, one can check that both
+`M` and `col` columns are filled with the Infinium-I probes (in mouse array
+this can be indicated by a `_[TBN][CON]1` suffix):
+
 ```{r}
 head(mft[!is.na(mft$col),])
 ```
-The last column `mask` is a logical vector that defines the default masking
-behavior of SeSAMe for the platform (see below for discussion of NA-masking).
 
-With the manifest, your data can be processed using
+The last column `mask` is a logical vector that defines the default masking
+behavior of SeSAMe for the platform (see below for discussion of
+NA-masking). With the manifest, your data can be processed using
+
 ```{r eval = FALSE}
-sdf = readIDATpair("your_sample_name", manifest = mft)
-betas = getBetas(sdf)
+sdf = readIDATpair("your_sample_prefix", manifest = mft)
 ```
 
 # Search IDAT Prefixes
 
 Most often we will be working with a folder that contains many IDATs. Here is
-where the `searchIDATprefixes` function comes in handy. It lets us search all
+where the `searchIDATprefixes` function comes in useful. It lets us search all
 the IDATs in a folder and its subfolders recursively. Combine this with the
 R looping functions lets you process many IDATs without having to specify
 all IDAT names. `searchIDATprefixes` returns a named vector of prefixes with
@@ -181,7 +188,6 @@ the extension base and hence switching color channel. More details can be
 found in
 [Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
 ```{r}
-library(sesame)
 ## show case using an example without mask, then add mask with qualityMask
 sdf = qualityMask(sesameDataGet('EPIC.1.SigDF'))
 betas = getBetas(sdf, sum.TypeI = TRUE)
@@ -396,7 +402,7 @@ matrix, with `N` representing the number of probes in the class. The two
 columns of the matrix represent the methylated probe intensity and the 
 unmethylated probe intensity.
 
-# SigDF to/from tsv/csv
+# SigDF to/from Tsv/Csv
 
 `SigDF` can be written as and read from plain text file with the compliant
 column names (i.e., `r colnames(sdf)`).
