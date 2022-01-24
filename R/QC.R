@@ -14,9 +14,9 @@ setMethod("as.data.frame", signature="sesameQC",
 #' @return a list sesameQC objects
 #' @examples
 #' df <- sesameDataGet("MM285.publicQC")
-#' qcs <- sesameQC_asDataFrame(df[1:2,])
+#' qcs <- dataFrame2sesameQC(df[1:2,])
 #' @export
-sesameQC_asDataFrame <- function(df) {
+dataFrame2sesameQC <- function(df) {
     groups <- c(
         .setGroup_detection(),
         .setGroup_numProbes(),
@@ -72,6 +72,29 @@ setMethod("show", "sesameQC", function(object)  {
     }
 })
 
+#' Get stat numbers from an sesameQC object
+#' 
+#' @param qc a sesameQC object
+#' @param stat_names which stat(s) to retrieve, default to all.
+#' @param drop whether to drop to a string when stats_names has
+#' only one element.
+#' @return a list of named stats to be retrieved
+#' @examples 
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' qc <- sesameQC_calcStats(sdf, "detection")
+#' sesameQC_getStats(qc, "frac_dt")
+#' @export
+sesameQC_getStats <- function(qc, stat_names = NULL, drop = TRUE) {
+    if(is.null(stat_names)) {
+        stat_names <- names(qc@stat)
+    }
+    if (length(stat_names) == 1 && drop) {
+        qc@stat[[stat_names]]
+    } else {
+        qc@stat[stat_names]
+    }
+}
+
 #' This function compares the input sample with public data.
 #' Only overlapping metrics will be compared.
 #'
@@ -123,6 +146,10 @@ sesameQC_rankStats <- function(qc, publicQC=NULL, platform="EPIC") {
 #' sesameQC_calcStats(sdf)
 #' sesameQC_calcStats(sdf, "detection")
 #' sesameQC_calcStats(sdf, c("detection", "channel"))
+#' ## retrieve stats as a list
+#' sesameQC_getStats(sesameQC_calcStats(sdf, "detection"))
+#' ## or as data frames
+#' as.data.frame(sesameQC_calcStats(sdf, "detection"))
 #' 
 #' @export
 sesameQC_calcStats <- function(sdf, funs = NULL) {
@@ -154,12 +181,14 @@ sesameQC_calcStats <- function(sdf, funs = NULL) {
         frac_dtna   = "% Probes w/ Missing Raw Intensity   ",
         num_dt      = "N. Probes w/ Detection Success      ",
         frac_dt     = "% Detection Success                 ",
-        num_dt_cg   = "N. Probes w/ Detection Success (CG) ",
-        frac_dt_cg  = "% Detection Success (CG)            ",
-        num_dt_ch   = "N. Probes w/ Detection Success (CH) ",
-        frac_dt_ch  = "% Detection Success (CH)            ",
-        num_dt_rs   = "N. Probes w/ Detection Success (RS) ",
-        frac_dt_rs  = "% Detection Success (RS)            "))
+        num_dt_mk   = "N. Detection Succ. (after masking)  ",
+        frac_dt_mk  = "% Detection Succ. (after masking)   ",
+        num_dt_cg   = "N. Probes w/ Detection Success (cg) ",
+        frac_dt_cg  = "% Detection Success (cg)            ",
+        num_dt_ch   = "N. Probes w/ Detection Success (ch) ",
+        frac_dt_ch  = "% Detection Success (ch)            ",
+        num_dt_rs   = "N. Probes w/ Detection Success (rs) ",
+        frac_dt_rs  = "% Detection Success (rs)            "))
 }
 sesameQC_calcStats_detection <- function(sdf, qc = NULL) {
 
@@ -176,6 +205,9 @@ sesameQC_calcStats_detection <- function(sdf, qc = NULL) {
     s$frac_dtna <- s$num_dtna / length(pvals0)
     s$num_dt <- sum(pvals <= 0.05)
     s$frac_dt <- s$num_dt / length(pvals)
+    idx_mk <- !is.na(pvals0) & !sdf$mask
+    s$num_dt_mk <- sum(pvals0[idx_mk] <= 0.05)
+    s$frac_dt_mk <- s$num_dt_mk / sum(idx_mk)
     for (pt in c('cg','ch','rs')) {
         p1 <- pvals[grep(paste0('^', pt), names(pvals))]
         s[[paste0('num_dt_', pt)]] <- sum(p1 <= 0.05)
@@ -513,7 +545,7 @@ sesameQC_plotBar <- function(qcs, keys = NULL) {
 #' @examples
 #'
 #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-#' sesameQC_plotHeatSNPs(sdfs)
+#' plt <- sesameQC_plotHeatSNPs(sdfs)
 #' @export
 sesameQC_plotHeatSNPs <- function(
     sdfs, cluster = TRUE, filter.nonvariant = TRUE) {

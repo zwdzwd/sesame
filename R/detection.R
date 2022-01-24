@@ -40,20 +40,16 @@ detectionIB <- function(
     addMask(sdf, pvals > pval.threshold)
 }
 
+#' get negative control signal
+#'
+#' @param sdf a SigDF
+#' @return a data frame of negative control signals
 negControls <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
 
-    ## controls from attributes
-    negctls <- controls(sdf)[grep(
-        'negative', tolower(controls(sdf)$type)),]
-    if (!is.null(negctls) && nrow(negctls) > 0) {
-        stopifnot(all(c("G","R","col") %in% colnames(negctls)))
-        negctls <- negctls[negctls$col!=-99, c("G","R")]
-    } else { # controls from normal probes
-        negctls <- as.data.frame(
-            sdf[grep("ctl-Negative", sdf$Probe_ID), c("UG", "UR")])
-        colnames(negctls) <- c("G","R")
-    }
+    df <- controls(sdf)
+    negctls <- df[grep('negative', tolower(df$Type)), c("UG","UR")]
+    colnames(negctls) <- c("G","R")
     
     negctls
 }

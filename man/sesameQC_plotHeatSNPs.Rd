@@ -22,5 +22,5 @@ Plot SNP heatmap
 \examples{
 
 sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-sesameQC_plotHeatSNPs(sdfs)
+plt <- sesameQC_plotHeatSNPs(sdfs)
 }

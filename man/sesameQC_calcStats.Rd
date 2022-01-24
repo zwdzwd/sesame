@@ -30,5 +30,9 @@ sdf <- sesameDataGet('EPIC.1.SigDF')
 sesameQC_calcStats(sdf)
 sesameQC_calcStats(sdf, "detection")
 sesameQC_calcStats(sdf, c("detection", "channel"))
+## retrieve stats as a list
+sesameQC_getStats(sesameQC_calcStats(sdf, "detection"))
+## or as data frames
+as.data.frame(sesameQC_calcStats(sdf, "detection"))
 
 }

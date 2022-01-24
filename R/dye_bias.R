@@ -6,14 +6,7 @@
 #' @param sdf a SigDF
 #' @param average whether to average
 #' @return a data frame of normalization control signals
-#' @examples 
-#' sdf <- readIDATpair(file.path(system.file(
-#'     'extdata','',package='sesameData'), '4207113116_B'))
-#' 
-#' df.ctl <- getNormCtls(sdf)
-#' 
-#' @export
-getNormCtls <- function(sdf, average = FALSE) {
+normControls <- function(sdf, average = FALSE) {
     df <- controls(sdf)
     df <- df[grep('norm(_|\\.)', tolower(df$Type)),]
 
@@ -58,7 +51,7 @@ dyeBiasCorr <- function(sdf, ref=NULL) {
         ref <- meanIntensity(sdf)
     }
     
-    normctl <- getNormCtls(sdf, average=TRUE)
+    normctl <- normControls(sdf, average=TRUE)
     fR <- ref/normctl['R']
     fG <- ref/normctl['G']
 
@@ -88,7 +81,7 @@ dyeBiasCorr <- function(sdf, ref=NULL) {
 #' @export
 dyeBiasCorrMostBalanced <- function(sdfs) {
 
-    normctls <- vapply(sdfs, getNormCtls, numeric(2), average=TRUE)
+    normctls <- vapply(sdfs, normControls, numeric(2), average=TRUE)
     most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
     ref <- mean(normctls[,most.balanced], na.rm=TRUE)
     lapply(sdfs, function(sdf) dyeBiasCorr(sdf, ref))
