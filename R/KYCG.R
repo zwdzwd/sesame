@@ -358,14 +358,16 @@ testEnrichmentSpearman <- function(query, database) {
     )
 }
 
-guess_dbnames <- function(nms) {
+guess_dbnames <- function(nms, allow_multi=FALSE) {
     df <- sesameDataList()
     df <- df[grep("KYCG", df$Title),]
-    vapply(nms, function(nm) {
+    do.call(c, lapply(nms, function(nm) {
         if (nm %in% df$Title) {
             return(nm)
-        } else if (length(grep(nm, df$Title)) == 1) {
-            return(grep(nm, df$Title, value=TRUE))
+        } else if (length(grep(nm, df$Title)) >= 1) {
+            ret <- grep(nm, df$Title, value=TRUE)
+            if (!allow_multi) { ret <- ret[1]; }
+            return(ret)
         } else if (length(grep(nm, df$Title)) == 0) {
             res <- df$Title[apply(do.call(cbind, lapply(
                 strsplit(nm, "\\.")[[1]], function(q1) grepl(q1, df$Title))),
@@ -375,7 +377,7 @@ guess_dbnames <- function(nms) {
             }
         }
         return(nm)
-    }, character(1))
+    }))
 }
 
 #' List database group names
@@ -396,22 +398,31 @@ KYCG_listDBGroups <- function(filter = NULL) {
 #' Get databases by full or partial names of the database group(s)
 #'
 #' @param group_nms database group names
+#' @param db_names name of the database, fetech only the given databases
+#' @param summary return a summary of database instead of db itself
+#' @param allow_multi allow multiple groups to be returned for
+#' @param silent no messages
+#' each query.
 #' @return a list of databases
 #' @examples
 #' dbs <- KYCG_getDBs("MM285.chromHMM")
 #' dbs <- KYCG_getDBs(c("MM285.chromHMM", "MM285.probeType"))
 #' @export
-KYCG_getDBs <- function(group_nms) {
+KYCG_getDBs <- function(group_nms, db_names = NULL,
+    summary = FALSE, allow_multi = FALSE, silent = FALSE) {
+    
     if (!is.character(group_nms)) {
         return(group_nms)
     }
     group_nms <- guess_dbnames(group_nms)
     group_nms_ <- paste(group_nms, sep="\n")
-    message("Selected the following database groups:")
-    invisible(lapply(seq_along(group_nms_), function(i) {
-        message(sprintf("%d. %s", i, group_nms_[i]))
-    }))
-    do.call(c, lapply(unname(group_nms), function(nm) {
+    if (!silent) {
+        message("Selected the following database groups:")
+        invisible(lapply(seq_along(group_nms_), function(i) {
+            message(sprintf("%d. %s", i, group_nms_[i]))
+        }))
+    }
+    res <- do.call(c, lapply(unname(group_nms), function(nm) {
         dbs <- sesameDataGet(nm)
         setNames(lapply(seq_along(dbs), function(ii) {
             db <- dbs[[ii]]
@@ -419,6 +430,14 @@ KYCG_getDBs <- function(group_nms) {
             attr(db, "dbname") <- names(dbs)[ii]
             db
         }), names(dbs))}))
+    if (summary) {
+        do.call(bind_rows, lapply(res, attributes))
+    } else if (is.null(db_names)) {
+        res
+    } else {
+        stopifnot(all(db_names %in% names(res)))
+        res[db_names]
+    }
 }
 
 #' dbStats builds dataset for a given betas matrix 

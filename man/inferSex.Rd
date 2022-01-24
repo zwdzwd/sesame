@@ -30,7 +30,7 @@ This function works on a single sample.
 Infer Sex
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 inferSex(sdf)
 }

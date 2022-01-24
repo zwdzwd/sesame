@@ -16,7 +16,7 @@ a new \code{SigDF} with mask reset to all FALSE
 Reset Masking
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sum(sdf$mask)
 sdf <- addMask(sdf, c("cg14057072", "cg22344912"))

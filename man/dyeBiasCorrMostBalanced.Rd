@@ -21,7 +21,7 @@ does not deviate much. The function returns a list of \code{SigDF}s with
 dye bias corrected.
 }
 \examples{
-sesameDataCache("HM450") # if not done yet
+sesameDataCache() # if not done yet
 sdfs <- sesameDataGet('HM450.10.SigDF')
 sdfs.db <- dyeBiasCorrMostBalanced(sdfs)
 }

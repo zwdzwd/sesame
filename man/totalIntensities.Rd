@@ -20,7 +20,7 @@ intensity of all the in-band measurements by summing methylated and
 unmethylated alleles. This function outputs a single numeric for the mean.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 intensities <- totalIntensities(sdf)
 }

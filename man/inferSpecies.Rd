@@ -45,4 +45,9 @@ for pval < threshold.pos or pval > threshold.neg, respeceively,
 \examples{
 sdf <- sesameDataGet("MM285.1.SigDF")
 sdf <- inferSpecies(sdf)
+
+## all available species
+all_species <- names(sesameDataGet(sprintf(
+  "\%s.addressSpecies", sdfPlatform(sdf)))$species)
+
 }

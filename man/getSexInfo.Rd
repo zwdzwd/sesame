@@ -20,7 +20,7 @@ chrX probes; and fraction of intermediate chrX probes. chrX and chrY
 probes excludes pseudo-autosomal probes.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 getSexInfo(sdf)
 }

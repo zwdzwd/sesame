@@ -25,7 +25,7 @@ currently supporting: detection, intensity, numProbes, channel,
 dyeBias, betas
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sesameQC_calcStats(sdf)
 sesameQC_calcStats(sdf, "detection")

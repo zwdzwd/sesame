@@ -21,7 +21,7 @@ If no CCS probes exist in the \code{SigDF}, then an numeric(0) is
 returned.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 af <- getAFTypeIbySumAlleles(sdf)
 }

@@ -41,7 +41,7 @@ checkLevels <- function(betas, fc) {
 #' @import stats
 #' @import parallel
 #' @examples
-#' sesameDataCache("HM450") # in case not done yet
+#' sesameDataCache() # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #'
@@ -97,7 +97,7 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 #' @param ... extra parameter for print
 #' @return print DMLSummary result on screen
 #' @examples
-#' sesameDataCache("HM450") # in case not done yet
+#' sesameDataCache() # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' smry
@@ -115,7 +115,7 @@ print.DMLSummary <- function(x, ...) {
 #' @param smry DMLSummary from DML command
 #' @return a table of slope and p-value
 #' @examples
-#' sesameDataCache("HM450") # in case not done yet
+#' sesameDataCache() # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' slopes <- summaryExtractTest(smry)
@@ -270,7 +270,7 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' @importFrom SummarizedExperiment colData
 #' @examples
 #'
-#' sesameDataCache("HM450") # in case not done yet
+#' sesameDataCache() # in case not done yet
 #' 
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)

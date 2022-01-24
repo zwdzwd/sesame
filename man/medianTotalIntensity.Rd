@@ -20,7 +20,7 @@ intensity of M+U for each probe. This function outputs a single
 numeric for the median.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 medianTotalIntensity(sdf)
 }

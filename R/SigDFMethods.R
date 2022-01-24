@@ -5,7 +5,7 @@
 #' @param ctl optional control probe data frame
 #' @return a \code{SigDF} object
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' @export
 SigDF <- function(df, platform = "EPIC", ctl=NULL) {
@@ -31,14 +31,17 @@ SigDF <- function(df, platform = "EPIC", ctl=NULL) {
 #' @param sdf a SigDF object
 #' @return the platform string for the SigDF object
 #' @examples
-#' sesameDataCache("EPIC")
+#' sesameDataCache()
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdfPlatform(sdf)
 #' 
 #' @export
 sdfPlatform <- function(sdf) {
-    stopifnot(is(sdf, "SigDF"))
-    attr(sdf, "platform")
+    if ("platform" %in% attributes(sdf)) {
+        attr(sdf, "platform")
+    } else {
+        inferPlatformFromProbeIDs(sdf$Probe_ID)
+    }
 }
 
 #' remove masked probes from SigDF
@@ -47,7 +50,7 @@ sdfPlatform <- function(sdf) {
 #' @return a SigDF object without masked probes
 #' @export
 #' @examples
-#' sesameDataCache("EPIC")
+#' sesameDataCache()
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
 #' sdf <- pOOBAH(sdf)
 #'
@@ -89,13 +92,20 @@ oobR <- function(sdf) {
 #' @param sdf a \code{SigDF}
 #' @return the controls data frame
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' head(controls(sdf))
 #' @export
 controls <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
-    attr(sdf, "controls")
+    df <- sesameDataGet(sprintf("%s.address", sdfPlatform(sdf)))$controls
+    if (is.null(df)) {
+        sdf[grepl("^ctl", sdf$Probe_ID),]
+    } else {
+        cbind(df, sdf[
+            match(paste0("ctl_",df$Address), sdf$Probe_ID),
+            c("MG","MR","UG","UR")])
+    }
 }
 
 #' write SigDF to table file
@@ -104,7 +114,7 @@ controls <- function(sdf) {
 #' @param ... additional argument to write.table
 #' @return write SigDF to table file
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf_write_table(sdf, file=sprintf("%s/sigdf.txt", tempdir()))
 #' @export
@@ -119,7 +129,7 @@ sdf_write_table <- function(sdf, ...) {
 #' @param ... additional argument to read.table
 #' @return read table file to SigDF
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' fname <- sprintf("%s/sigdf.txt", tempdir())
 #' sdf_write_table(sdf, file=fname)

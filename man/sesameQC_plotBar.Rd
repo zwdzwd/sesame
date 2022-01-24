@@ -21,7 +21,7 @@ By default, it plots median_beta_cg, median_beta_ch, RGratio,
 RGdistort, frac_dt
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
 sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats))
 }

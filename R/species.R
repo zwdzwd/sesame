@@ -76,15 +76,18 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 #' @examples 
 #' sdf <- sesameDataGet("MM285.1.SigDF")
 #' sdf <- inferSpecies(sdf)
+#'
+#' ## all available species
+#' all_species <- names(sesameDataGet(sprintf(
+#'   "%s.addressSpecies", sdfPlatform(sdf)))$species)
+#' 
 #' @export
 inferSpecies <- function(sdf, topN = 1000,
     threshold.pos = 0.01, threshold.neg = 0.1,
     return.auc = FALSE, return.species = FALSE,
     threshold.success.rate = 0.8) {
 
-    ## TODO remove use_alternative = TRUE
-    addr <- sesameDataGet(sprintf(
-        "%s.addressSpecies", sdfPlatform(sdf)), use_alternative = TRUE)
+    addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
     df_as <- do.call(cbind, lapply(addr$species, function(x) x$AS))
     rownames(df_as) <- addr$ordering$Probe_ID
     

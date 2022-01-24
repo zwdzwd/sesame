@@ -19,6 +19,6 @@ pre-built mouse strain reference
 Compare Strain SNPs with a reference panel
 }
 \examples{
-sesameDataCache("MM285") # if not done yet
+sesameDataCache() # if not done yet
 compareMouseStrainReference()
 }

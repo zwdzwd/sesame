@@ -34,7 +34,7 @@ This plot is helpful in revealing the extent of signal background
 and dye bias.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sesameQC_plotIntensVsBetas(sdf)
 }

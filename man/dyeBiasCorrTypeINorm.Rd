@@ -22,7 +22,7 @@ The function takes one single \code{SigDF} and returns a \code{SigDF}
 with dye bias corrected.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sdf.db <- dyeBiasCorrTypeINorm(sdf)
 sdf <- sesameDataGet('EPIC.1.SigDF')

@@ -15,7 +15,7 @@ mouseBetaToAF <- function(betas) {
 #' @return a list of best guess, p-value of the best guess
 #' and the probabilities of all strains
 #' @examples
-#' sesameDataCache("MM285") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('MM285.1.SigDF')
 #' inferStrain(sdf, return.strain = TRUE)
 #' sdf.strain <- inferStrain(sdf)
@@ -67,7 +67,7 @@ inferStrain <- function(
 #' @importFrom S4Vectors metadata
 #' @export
 #' @examples
-#' sesameDataCache("MM285") # if not done yet
+#' sesameDataCache() # if not done yet
 #' compareMouseStrainReference()
 #' @export
 compareMouseStrainReference <- function(

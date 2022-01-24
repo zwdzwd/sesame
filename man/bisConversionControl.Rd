@@ -18,7 +18,7 @@ takes a \code{SigSet} as input. The higher the GCT score, the more likely
 the incomplete conversion.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 bisConversionControl(sdf)
 

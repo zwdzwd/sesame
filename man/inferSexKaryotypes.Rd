@@ -19,7 +19,7 @@ are inferred relatively independently. This function gives a more detailed
 look of potential sex chromosome aberrations.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 inferSexKaryotypes(sdf)
 }

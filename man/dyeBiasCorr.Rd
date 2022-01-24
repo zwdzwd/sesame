@@ -21,7 +21,7 @@ is set to the mean intensity of all the in-band signals. The function
 returns a \code{SigDF} with dye bias corrected.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sdf.db <- dyeBiasCorr(sdf)
 }

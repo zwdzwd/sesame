@@ -16,7 +16,7 @@
 #' @return an object of \code{CNSegment}
 #' @examples
 #'
-#' sesameDataCacheAll()
+#' sesameDataCache()
 #'
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
@@ -41,10 +41,8 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
     }
     
     ## retrieve chromosome info and probe coordinates
-    options(sesameData_use_alternative = TRUE) # TODO: REMOVE AFTER EH UPDATE
     seqLength <- sesameDataGet(paste0('genomeInfo.', refversion))$seqLength
     gapInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$gapInfo
-    options(sesameData_use_alternative = FALSE) # TODO: REMOVE AFTER EH UPDATE
     probe.coords <- sesameDataGet(paste0(
         sdfPlatform(sdf), '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
     
@@ -245,7 +243,7 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @return plot graphics
 #' @examples
 #'
-#' sesameDataCache("EPIC") # in case not done yet
+#' sesameDataCache() # in case not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 #' seg <- cnSegmentation(sdf, sdfs.normal)

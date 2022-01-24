@@ -20,6 +20,6 @@ a \code{SigDF} object
 SigDF validation from a plain data frame
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 }

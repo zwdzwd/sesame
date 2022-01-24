@@ -4,31 +4,27 @@
 \alias{qualityMask}
 \title{Mask beta values by design quality}
 \usage{
-qualityMask(
-  sdf,
-  mask.use.manifest = TRUE,
-  manifest = NULL,
-  mask.use.tcga = FALSE
-)
+qualityMask(sdf, mask_groups = "recommended")
 }
 \arguments{
 \item{sdf}{a \code{SigDF} object}
 
-\item{mask.use.manifest}{use manifest to mask probes}
-
-\item{manifest}{the manifest to use, for custom arrays}
-
-\item{mask.use.tcga}{whether to use TCGA masking, only applies to HM450}
+\item{mask_groups}{mask group name, default to "recommended"}
 }
 \value{
 a filtered \code{SigDF}
 }
 \description{
 Currently quality masking only supports three platforms
+see also listAvailableMasks(sdf)
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sum(sdf$mask)
 sum(qualityMask(sdf)$mask)
+
+## list available masks, the mask_name column
+listAvailableMasks(sdf)
+
 }

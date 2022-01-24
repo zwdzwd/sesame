@@ -29,7 +29,7 @@ bin.coords) and bin signals (bin.signals).
 }
 \examples{
 
-sesameDataCacheAll()
+sesameDataCache()
 
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')

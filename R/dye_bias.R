@@ -15,24 +15,22 @@
 #' @export
 getNormCtls <- function(sdf, average = FALSE) {
     df <- controls(sdf)
-    df <- df[grep('norm(_|\\.)', tolower(rownames(df))),]
+    df <- df[grep('norm(_|\\.)', tolower(df$Type)),]
 
     ## stop if no control probes
     if (nrow(df) == 0)
         stop("No normalization control probes found!")
 
     if (sdfPlatform(sdf) == 'HM27') {
-        df$channel <- ifelse(grepl(
-            'norm\\.green', tolower(rownames(df))), 'G', 'R')
+        df$channel <- ifelse(grepl('norm\\.green', tolower(df$Type)), 'G', 'R')
     } else {
-        df$channel <- ifelse(grepl(
-            'norm_(c|g)', tolower(rownames(df))), 'G', 'R')
+        df$channel <- ifelse(grepl('norm_(c|g)', tolower(df$Type)), 'G', 'R')
     }
     
     if (average) {
-        c(
-            G=mean(df[df$channel=='G','G'], na.rm=TRUE), 
-            R=mean(df[df$channel=='R','R'], na.rm=TRUE))
+        ## this is the old fashioned way
+        c(G=mean(df[df$channel=='G','UG'], na.rm=TRUE),
+            R=mean(df[df$channel=='R','UR'], na.rm=TRUE))
     } else {
         df
     }
@@ -49,7 +47,7 @@ getNormCtls <- function(sdf, average = FALSE) {
 #' @param ref reference signal level
 #' @return a normalized \code{SigDF}
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.db <- dyeBiasCorr(sdf)
 #' @export
@@ -84,7 +82,7 @@ dyeBiasCorr <- function(sdf, ref=NULL) {
 #' @param sdfs a list of normalized \code{SigDF}s
 #' @return a list of normalized \code{SigDF}s
 #' @examples
-#' sesameDataCache("HM450") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdfs <- sesameDataGet('HM450.10.SigDF')
 #' sdfs.db <- dyeBiasCorrMostBalanced(sdfs)
 #' @export
@@ -108,7 +106,7 @@ dyeBiasCorrMostBalanced <- function(sdfs) {
 #' @importFrom preprocessCore normalize.quantiles.use.target
 #' @importFrom stats approx
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.db <- dyeBiasCorrTypeINorm(sdf)
 #' @export

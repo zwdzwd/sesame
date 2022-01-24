@@ -16,7 +16,7 @@ a SigDF object without masked probes
 remove masked probes from SigDF
 }
 \examples{
-sesameDataCache("EPIC")
+sesameDataCache()
 sdf <- sesameDataGet("EPIC.1.SigDF")
 sdf <- pOOBAH(sdf)
 

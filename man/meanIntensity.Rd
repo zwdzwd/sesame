@@ -26,7 +26,7 @@ Note: mean in this case is more informative than median because
 methylation level is mostly bimodal.
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 meanIntensity(sdf)
 }

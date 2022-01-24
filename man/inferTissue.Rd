@@ -48,7 +48,7 @@ the branchIDs in the row data of the reference) by reporting independent
 composition through cell type deconvolution.
 }
 \examples{
-sesameDataCache("MM285") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet("MM285.1.SigDF")
 inferTissue(getBetas(dyeBiasNL(noob(sdf))))
 

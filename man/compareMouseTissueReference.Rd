@@ -20,7 +20,7 @@ Compare mouse array data with mouse tissue references
 }
 \examples{
 
-sesameDataCache("MM285") # if not done yet
+sesameDataCache() # if not done yet
 compareMouseTissueReference()
 sesameDataClearCache()
 

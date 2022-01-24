@@ -16,7 +16,7 @@ getIntensityRatioYvsAuto <- function(sdf) {
 #' @return medianY and medianX, fraction of XCI, methylated and unmethylated X
 #' probes, median intensities of auto-chromosomes.
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' getSexInfo(sdf)
 #' @export
@@ -61,7 +61,7 @@ getSexInfo <- function(sdf) {
 #' @param sdf a \code{SigDF}
 #' @return Karyotype string, with XCI
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' inferSexKaryotypes(sdf)
 #' @export
@@ -120,7 +120,7 @@ inferSexKaryotypes <- function(sdf) {
 #' @import sesameData
 #' @import e1071
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' inferSex(sdf)
 #' @export

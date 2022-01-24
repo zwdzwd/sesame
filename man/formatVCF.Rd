@@ -29,7 +29,7 @@ awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k2,2n"}'
 Convert SNP from Infinium array to VCF file
 }
 \examples{
-sesameDataCache("EPIC") # if not done yet
+sesameDataCacheAll() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 
 annoS <- sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")

@@ -23,7 +23,7 @@ require ggplot2, scales
 }
 \examples{
 
-sesameDataCache("EPIC") # in case not done yet
+sesameDataCache() # in case not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 seg <- cnSegmentation(sdf, sdfs.normal)

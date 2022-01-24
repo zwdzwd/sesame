@@ -23,7 +23,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 To begin, we need to retrieve mouse annotation data from ExperimentHub.
 This only needs to be done once per sesame installation.
 ```{r echo=FALSE, message=FALSE}
-sesameDataCache("MM285")
+sesameDataCacheAll()
 ```
 
 SeSAMe provides extensive native support for the Illumina mouse array
@@ -46,75 +46,50 @@ sdf = readIDATpair(pfx)
 
 ## Preprocessing
 
-The default openSesame pipeline works for the default C57BL/6J strain.
-
-```{r eval=FALSE}
-openSesame(idat_dir)
-```
-
-Let's load a pre-built `SigSet` object
-```{r include=FALSE}
-```
-
-Preprocess the sigset to produce beta values.  To work on a different strain,
-one can call inferStrain before the standard `noob`, `dyeBiasNL`, etc. More
-detail about `inferStrain` can be found below.
+The default openSesame pipeline works for the default C57BL/6J strain. The
+function processes the IDATs to produce beta values.
 
 ```{r}
-sdf = sesameDataGet('MM285.1.SigDF')
-sdf_normalized = pOOBAH(noob(dyeBiasNL(inferStrain(sdf))))
+sdf <- sesameDataGet('MM285.1.SigDF')
+head(getBetas(pOOBAH(noob(dyeBiasNL(sdf)))))
 ```
 
-Retrieve beta values using the following commands
+To work on a different strain, one can call the `inferStrain` function before
+calling the standard `noob`, `dyeBiasNL`, etc. More detail about `inferStrain`
+can be found below.
+
 ```{r}
-betas <- getBetas(sdf_normalized)
-head(betas)
+head(getBetas(pOOBAH(noob(dyeBiasNL(inferStrain(sdf))))))
 ```
 
 or to cg prefix only
 
 ```{r}
-betas_prefixOnly <- getBetas(sdf_normalized, collapseToPfx = TRUE)
-head(betas_prefixOnly)
+head(getBetas(pOOBAH(noob(dyeBiasNL(inferStrain(sdf)))), collapseToPfx=TRUE))
 ```
 
 By default the repeat and suboptimally designed probes are masked by `NA`.
-Starting from mouse array, the suboptimally designed probes take a new
-probe ID prefix ("uk") instead of the "cg"/"ch"/"rs" typically seen in
-the human array.
+These suboptimally designed probes may take a new probe ID prefix ("uk") in
+addition to the "cg"/"ch"/"rs" typically seen. These masking is turned on by
+default when IDAT files are read
+
 ```{r}
-sum(is.na(betas))
-head(betas[grep('uk', names(betas))])
+sum(is.na(getBetas(sdf)))
 ```
 
-To use these probes, one skip qualityMask and explicitly perform masking based
-on detection p-values only:
+To override these probes, one can use the `resetMask` function to remove the
+default masking. We recommend using it after preprocessing function so that
+preprocessing only use reliable probes. Note that there are still remaining NAs
+due to detection p-values (from pOOBAH):
+
 ```{r}
-betas = sdf_normalized %>%
-        setMask(pOOBAH(qualityMask(sdf), return.pval=TRUE)>0.05) %>%
-        getBetas
-sum(is.na(betas))
-head(betas[grep('uk', names(betas))])
-```
-Not that we still use qualityMask for calculating p-values. In this example,
-probes are only masked because of insignificant detection p-value
-One can completely turn off all masking by toggling off the `mask` option in
-`getBetas`:
-```{r}
-betas = getBetas(sdf_normalized, mask = FALSE)
-sum(is.na(betas))
-```
-or reset the mask using `resetMask` function
-```{r}
-betas = getBetas(resetMask(sdf_normalized))
-sum(is.na(betas))
+sum(is.na(getBetas(pOOBAH(resetMask(noob(dyeBiasNL(sdf)))))))
 ```
 
 ## Strain/species inference
 
-Let's load a pre-built `SigSet` object from SeSAMeData
 ```{r}
-sdf <- sesameDataGet("MM285.1.SigDF")
+sdf <- sesameDataGet("MM285.1.SigDF") # an example SigDF
 ```
 
 Infer species (obviously this is a mouse, but this is supposed to work on rat,
@@ -179,9 +154,8 @@ betas <- sesameDataGet("MM285.10.tissue")$betas[,1:2]
 ```
 
 Compare mouse array data with mouse tissue references. This will return a grid
-object that contrasts the traget sample with pre-build mouse tissue reference.
+object that contrasts the traget sample with pre-built mouse tissue reference.
 ```{r}
-options(sesameData_use_alternative=TRUE)
 compareMouseTissueReference(betas)
 ```
 
@@ -220,11 +194,7 @@ UNDER CONSTRUCTION
 
 # Horvath Mammal40 Array
 
-SeSAMe supports Mammal 40 array natively.
-
-```{r echo=FALSE, message=FALSE}
-sesameDataCache("Mammal40")
-```
+SeSAMe supports Mammal 40 array the same way:
 
 ```{r}
 res_grn = sesameDataDownload("GSM4411982_Grn.idat.gz")
@@ -235,7 +205,7 @@ sdf = readIDATpair(sprintf("%s/GSM4411982", res_red$dest_dir))
 Preprocess the sigset to produce beta values.
 The standard `noob`, `dyeBiasCorrTypeINorm` works as expected:
 ```{r}
-sdf_normalized = dyeBiasCorrTypeINorm(noob(pOOBAH(qualityMask(sdf))))
+sdf_normalized = dyeBiasCorrTypeINorm(noob(pOOBAH(sdf)))
 ```
 Retrieve beta values using the following commands
 ```{r}

@@ -24,7 +24,7 @@ Only overlapping metrics will be compared.
 }
 \examples{
 
-sesameDataCache("EPIC") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sesameQC_rankStats(sesameQC_calcStats(sdf, "intensity"))
 

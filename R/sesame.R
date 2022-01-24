@@ -33,7 +33,7 @@
 #' @param mask whether to apply mask
 #' @return a data frame of M and U columns
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' head(signalMU(sdf))
 #' @export
@@ -65,7 +65,7 @@ signalMU <- function(sdf, mask = TRUE) {
 #' @param mask whether to mask probes using mask column
 #' @return mean of all intensities
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' meanIntensity(sdf)
 #' @export
@@ -85,7 +85,7 @@ meanIntensity <- function(sdf, mask = TRUE) {
 #' @param mask whether to mask probes using mask column
 #' @return median of all intensities
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' medianTotalIntensity(sdf)
 #' @export
@@ -105,7 +105,7 @@ medianTotalIntensity <- function(sdf, mask = TRUE) {
 #' @param mask whether or not we count the masked probes in SigDF
 #' @return a fraction number as probe success rate
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' probeSuccessRate(sdf)
 #' @export
@@ -126,7 +126,7 @@ probeSuccessRate <- function(sdf, mask = TRUE, max_pval = 0.05) {
 #' @param mask whether to mask probes using mask column
 #' @return a vector of M+U signal for each probe
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' intensities <- totalIntensities(sdf)
 #' @export
@@ -165,7 +165,7 @@ SDFcollapseToPfx <- function(sdf) {
 #' remove the suffix
 #' @return a numeric vector, beta values
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' betas <- getBetas(sdf)
 #' @export
@@ -210,7 +210,7 @@ getBetas <- function(
 #' @param known.ccs.only consider only known CCS probes
 #' @return beta values
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' af <- getAFTypeIbySumAlleles(sdf)
 #' @export
@@ -238,7 +238,7 @@ getAFTypeIbySumAlleles <- function(sdf, known.ccs.only = TRUE) {
 #' @param ... additional options to getBetas
 #' @return allele frequency
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' af <- getAFs(sdf)
 #' @export
@@ -249,7 +249,7 @@ getAFs <- function(sdf, ...) {
 
 ## res is the output of illuminaio::readIDAT
 ## Infer platform from IDATs
-inferPlatform <- function(res) {
+inferPlatformFromTango <- function(res) {
     sig <- sesameDataGet('idatSignature')
     names(which.max(vapply(
         sig, function(x) sum(x %in% rownames(res$Quants)), integer(1))))
@@ -292,7 +292,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
     } else {
         ## this is not always accurate
         ## TODO should identify unique tango IDs.
-        attr(d, 'platform') <- inferPlatform(ida.red)
+        attr(d, 'platform') <- inferPlatformFromTango(ida.red)
     }
     d
 }
@@ -495,7 +495,7 @@ SigSetToSigDF <- function(sset) {
 #' @param sdf a SigDF
 #' @return GCT score (the higher, the more incomplete conversion)
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' bisConversionControl(sdf)
 #'

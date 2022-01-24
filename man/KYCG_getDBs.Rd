@@ -4,10 +4,25 @@
 \alias{KYCG_getDBs}
 \title{Get databases by full or partial names of the database group(s)}
 \usage{
-KYCG_getDBs(group_nms)
+KYCG_getDBs(
+  group_nms,
+  db_names = NULL,
+  summary = FALSE,
+  allow_multi = FALSE,
+  silent = FALSE
+)
 }
 \arguments{
 \item{group_nms}{database group names}
+
+\item{db_names}{name of the database, fetech only the given databases}
+
+\item{summary}{return a summary of database instead of db itself}
+
+\item{allow_multi}{allow multiple groups to be returned for}
+
+\item{silent}{no messages
+each query.}
 }
 \value{
 a list of databases

@@ -26,7 +26,7 @@ deIdentify <- function(
     path, out_path=NULL, snps=NULL, mft=NULL, randomize=FALSE) {
 
     res <- suppressWarnings(illuminaio::readIDAT(path))
-    platform <- inferPlatform(res)
+    platform <- inferPlatformFromTango(res)
 
     if(is.null(out_path)) {
         pfx <- sub('.idat(.gz)?$','', path)
@@ -102,7 +102,7 @@ deIdentify <- function(
 reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
 
     res <- suppressWarnings(illuminaio::readIDAT(path))
-    platform <- inferPlatform(res)
+    platform <- inferPlatformFromTango(res)
 
     if(is.null(out_path)) {
         pfx <- sub('.idat(.gz)?$','', path)

@@ -16,7 +16,7 @@ the platform string for the SigDF object
 Convenience function to output platform attribute of SigDF
 }
 \examples{
-sesameDataCache("EPIC")
+sesameDataCache()
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sdfPlatform(sdf)
 

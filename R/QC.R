@@ -82,7 +82,7 @@ setMethod("show", "sesameQC", function(object)  {
 #' @return a sesameQC
 #' @examples
 #'
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesameQC_rankStats(sesameQC_calcStats(sdf, "intensity"))
 #' 
@@ -118,7 +118,7 @@ sesameQC_rankStats <- function(qc, publicQC=NULL, platform="EPIC") {
 #' "detection" or c("detection", "intensity") to reduce typing
 #' @return a sesameQC object
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesameQC_calcStats(sdf)
 #' sesameQC_calcStats(sdf, "detection")
@@ -371,7 +371,7 @@ sesameQC_calcStats_betas <- function(sdf, qc = NULL) {
 #' @param sdf a \code{SigDF}
 #' @return create a qqplot
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesameQC_plotRedGrnQQ(sdf)
 #' @import graphics
@@ -399,7 +399,7 @@ sesameQC_plotRedGrnQQ <- function(sdf) {
 #' @param ... additional arguments to smoothScatter
 #' @return create a total signal intensity vs beta value plot
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesameQC_plotIntensVsBetas(sdf)
 #' @import graphics
@@ -455,7 +455,7 @@ sesameQC_plotIntensVsBetas <- function(
 #' sesameQC output.
 #' @return a bar plot comparing different QC metrics
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
 #' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats))
 #' @import ggplot2

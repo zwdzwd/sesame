@@ -37,14 +37,12 @@ setMask <- function(sdf, probes) {
     addMask(resetMask(sdf), probes)
 }
 
-## TODO list all the candidate species to be used
-
 #' Reset Masking
 #'
 #' @param sdf a \code{SigDF}
 #' @return a new \code{SigDF} with mask reset to all FALSE
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sum(sdf$mask)
 #' sdf <- addMask(sdf, c("cg14057072", "cg22344912"))
@@ -56,48 +54,68 @@ resetMask <- function(sdf) {
     sdf
 }
 
+#' list existing quality masks for a SigDF
+#'
+#' @param sdf a SigDF object
+#' @return a tibble of masks
+#' @examples
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' listAvailableMasks(sdf)
+#' @export
+listAvailableMasks <- function(sdf) {
+    KYCG_getDBs(sprintf(
+        "%s.mask", sdfPlatform(sdf)), summary=TRUE)
+}
+
 #' Mask beta values by design quality
 #' 
 #' Currently quality masking only supports three platforms
+#' see also listAvailableMasks(sdf)
 #' 
 #' @param sdf a \code{SigDF} object
-#' @param mask.use.manifest use manifest to mask probes
-#' @param manifest the manifest to use, for custom arrays
-#' @param mask.use.tcga whether to use TCGA masking, only applies to HM450
+#' @param mask_groups mask group name, default to "recommended"
 #' @return a filtered \code{SigDF}
 #' @examples
-#' sesameDataCache("EPIC") # if not done yet
+#' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sum(sdf$mask)
 #' sum(qualityMask(sdf)$mask)
+#'
+#' ## list available masks, the mask_name column
+#' listAvailableMasks(sdf)
+#' 
 #' @export 
-qualityMask <- function(
-    sdf, mask.use.manifest = TRUE,
-    manifest = NULL,
-    mask.use.tcga = FALSE) {
+qualityMask <- function(sdf, mask_groups = "recommended") {
 
-    ## mask using manifest
-    if (mask.use.manifest) {
-        if (is.null(manifest)) {
-            manifest <- sesameDataGet(paste0(
-                sdfPlatform(sdf), '.address'))$ordering
-        }
-        if ("mask" %in% colnames(manifest)) {
-            sdf <- addMask(sdf, setNames(manifest$mask, manifest$Probe_ID))
-        }
-    }
+    masks <- do.call(c, KYCG_getDBs(sprintf(
+        "%s.mask", sdfPlatform(sdf)), mask_groups, silent=TRUE))
 
-    ## mask HM450/HM27/EPIC using TCGA masking
-    if (mask.use.tcga) {
-        if(!(sdfPlatform(sdf) %in% c('HM27','HM450','EPIC'))) {
-            message(sprintf(
-                "TCGA masking is not supported for %s.", sdfPlatform(sdf)))
-            return(sdf)
-        }
-        stopifnot(sdfPlatform(sdf) == 'HM450')
-        sdf <- addMask(sdf, sesameDataGet('HM450.probeInfo')$mask.tcga)
-    }
+    addMask(sdf, masks)
 
-    sdf
+    ## mask.use.manifest = TRUE,
+    ## manifest = NULL,
+    ## mask.use.tcga = FALSE) {
+
+    ## ## mask using manifest
+    ## if (mask.use.manifest) {
+    ##     if (is.null(manifest)) {
+    ##         manifest <- sesameDataGet(paste0(
+    ##             sdfPlatform(sdf), '.address'))$ordering
+    ##     }
+    ##     if ("mask" %in% colnames(manifest)) {
+    ##         sdf <- addMask(sdf, setNames(manifest$mask, manifest$Probe_ID))
+    ##     }
+    ## }
+
+    ## ## mask HM450/HM27/EPIC using TCGA masking
+    ## if (mask.use.tcga) {
+    ##     if(!(sdfPlatform(sdf) %in% c('HM27','HM450','EPIC'))) {
+    ##         message(sprintf(
+    ##             "TCGA masking is not supported for %s.", sdfPlatform(sdf)))
+    ##         return(sdf)
+    ##     }
+    ##     stopifnot(sdfPlatform(sdf) == 'HM450')
+    ##     sdf <- addMask(sdf, sesameDataGet('HM450.probeInfo')$mask.tcga)
+    ## }
 }
 

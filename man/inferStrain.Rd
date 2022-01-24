@@ -28,7 +28,7 @@ and the probabilities of all strains
 Infer strain information for mouse array
 }
 \examples{
-sesameDataCache("MM285") # if not done yet
+sesameDataCache() # if not done yet
 sdf <- sesameDataGet('MM285.1.SigDF')
 inferStrain(sdf, return.strain = TRUE)
 sdf.strain <- inferStrain(sdf)
