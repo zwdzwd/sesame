@@ -63,7 +63,8 @@ qc <- sesameQC_calcStats(sdf, c("dyeBias", "detection"))
 qc
 ```
 
-The `sesameQC_calcStats` function returns an S4 `sesameQC` object. One can retrieve the actual stats using the sesameQC_getStats
+The `sesameQC_calcStats` function returns an S4 `sesameQC` object. One can
+retrieve the actual stats using the sesameQC_getStats
 
 ```{r}
 sesameQC_getStats(qc, "frac_dt")
@@ -84,7 +85,7 @@ head(df)
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
-SeSAMe features functions to compare your sample with public data sets. The
+SeSAMe features functions that compare your sample with public data sets. The
 `sesameQC_rankStats()` function rank the input `sesameQC` object with
 `sesameQC` calculated from public datasets. It shows the rank percentage of the
 input sample as well as the number of datasets compared.
