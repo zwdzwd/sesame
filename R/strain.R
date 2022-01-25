@@ -34,6 +34,15 @@ inferStrain <- function(
     ## C57BL_6J is the first strain in the table
     strain_snps <- rd[,which(colnames(rd)=="C57BL_6J"):ncol(rd)]
 
+    ## give up if the success rate is low
+    pvals <- pOOBAH(sdf, return.pval=TRUE)
+    if (sum(pvals[rd$Probe_ID] < 0.05) / nrow(rd) < 0.5) {
+        if (return.strain) { return(NA)
+        } else if (return.probability) { return(rep(NA, ncol(strain_snps)))
+        } else if (return.pval) { return(NA)
+        } else { return(sdf) }
+    }
+
     vafs <- getBetas(dyeBiasNL(noob(sdf)), mask=FALSE)[rd$Probe_ID]
     vafs[is.na(vafs)] <- 0.5 # just in case
     vafs[rd$flipToAF] <- 1 - vafs[rd$flipToAF]
