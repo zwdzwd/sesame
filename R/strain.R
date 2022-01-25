@@ -37,7 +37,7 @@ inferStrain <- function(
     ## give up if the success rate is low
     pvals <- pOOBAH(sdf, return.pval=TRUE)
     if (sum(pvals[rd$Probe_ID] < 0.05) / nrow(rd) < 0.5) {
-        if (return.strain) { return(list(JAX_ID=NA, MGP_ID=NA))
+        if (return.strain) { return(list(NA))
         } else if (return.probability) { return(rep(NA, ncol(strain_snps)))
         } else if (return.pval) { return(NA)
         } else { return(sdf) }
@@ -56,7 +56,7 @@ inferStrain <- function(
     best.index <- which.max(probs)
     strain <- names(best.index)
     if (return.strain) {
-        addr$strain[[strain]][c("JAX_ID","MGP_ID")]
+        strain # addr$strain[[strain]][c("JAX_ID","MGP_ID")]
     } else if (return.probability) {
         probs / sum(probs)
     } else if (return.pval) {
