@@ -8,7 +8,8 @@ inferStrain(
   sdf,
   return.strain = FALSE,
   return.probability = FALSE,
-  return.pval = FALSE
+  return.pval = FALSE,
+  min_frac_dt = 0.2
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ inferStrain(
 \item{return.probability}{return probability vector for all strains}
 
 \item{return.pval}{return p-value}
+
+\item{min_frac_dt}{minimum fraction of detected signal (DEFAULT: 0.2)
+otherwise, NA is returned and we give up strain inference}
 }
 \value{
 a list of best guess, p-value of the best guess
