@@ -9,6 +9,8 @@ mouseBetaToAF <- function(betas) {
 #' Infer strain information for mouse array
 #'
 #' @param sdf SigDF
+#' @param min_frac_dt minimum fraction of detected signal (DEFAULT: 0.2)
+#' otherwise, NA is returned and we give up strain inference
 #' @param return.probability return probability vector for all strains
 #' @param return.pval return p-value
 #' @param return.strain return strain name
@@ -23,7 +25,7 @@ mouseBetaToAF <- function(betas) {
 #' @export
 inferStrain <- function(
     sdf, return.strain = FALSE,
-    return.probability = FALSE, return.pval = FALSE) {
+    return.probability = FALSE, return.pval = FALSE, min_frac_dt = 0.2) {
 
     addr <- sesameDataGet("MM285.addressStrain")
     se <- addr$strain_snps
@@ -36,7 +38,7 @@ inferStrain <- function(
 
     ## give up if the success rate is low
     pvals <- pOOBAH(sdf, return.pval=TRUE)
-    if (sum(pvals[rd$Probe_ID] < 0.05) / nrow(rd) < 0.5) {
+    if (sum(pvals[rd$Probe_ID] < 0.05) / nrow(rd) < min_frac_dt) {
         if (return.strain) { return(NA)
         } else if (return.probability) { return(rep(NA, ncol(strain_snps)))
         } else if (return.pval) { return(NA)
