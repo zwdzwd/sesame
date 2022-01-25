@@ -37,7 +37,7 @@ inferStrain <- function(
     ## give up if the success rate is low
     pvals <- pOOBAH(sdf, return.pval=TRUE)
     if (sum(pvals[rd$Probe_ID] < 0.05) / nrow(rd) < 0.5) {
-        if (return.strain) { return(list(NA))
+        if (return.strain) { return(NA)
         } else if (return.probability) { return(rep(NA, ncol(strain_snps)))
         } else if (return.pval) { return(NA)
         } else { return(sdf) }
