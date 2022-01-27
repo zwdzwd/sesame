@@ -193,3 +193,86 @@ KYCG_plotLollipop <- function(df, n=10) {
         axis.ticks.x = element_blank())
 }
 
+#' Plot meta gene or other meta genomic features
+#'
+#' @param x a SigDF or value (e.g. beta value) one wants to aggregates to
+#' @param platform if not given and x is a SigDF, will be inferred
+#' the meta features
+#' @return a grid plot object
+#' @examples
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' KYCG_plotMeta(sdf)
+#' @export
+KYCG_plotMeta <- function(x, platform = NULL) {
+
+    if (is(x, "SigDF")) {
+        betas <- getBetas(x)
+        if (is.null(platform)) {
+            platform <- sdfPlatform(x)
+        }
+    }
+    stopifnot(!is.null(platform))
+
+    meta <- KYCG_getDBs(sprintf("%s.metagene", platform))
+    mb <- vapply(meta, function(m1) mean(betas[m1], na.rm=TRUE), numeric(1))
+    df <- data.frame(
+        ord=as.integer(names(mb)), mean_betas=mb,
+        reg = vapply(meta, function(x) attr(x, "label"), character(1)))
+    
+    ggplot(df) +
+        annotate("rect", xmin = -1, xmax = 10, ymin = -Inf,
+            ymax = Inf, fill = "grey80", alpha = .5, color = NA) +
+        geom_line(aes_string("ord", "mean_betas")) +
+        scale_x_continuous(breaks=df$ord, labels=df$reg) +
+        ylab("Mean DNA Methylation Level") + xlab("") +
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+}
+
+
+aggregateTestEnrichments <- function(res) {
+    mtx <- do.call(cbind, lapply(res[[1]]$dbname, function(db) {
+        vapply(res, function(x) x$estimate[x$dbname == db], numeric(1))}))
+    colnames(mtx) <- res[[1]]$dbname
+    mtx
+}
+
+#' Plot point range for a list of enrichment testing results
+#' against the same set of databases
+#'
+#' @param result_list a list of testEnrichment resultsx
+#' @return grid plot object
+#' @importFrom reshape2 melt
+#' @importFrom dplyr summarize
+#' @examples
+#'
+#' ## pick some big TFBS-overlapping CpG groups
+#' cg_lists <- KYCG_getDBs("MM285.TFBS")
+#' queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
+
+#' res <- lapply(queries, function(q) testEnrichment(q, "MM285.chromHMM"))
+#' KYCG_plotPointRange(res)
+#' 
+#' @export
+KYCG_plotPointRange <- function(result_list) {
+
+    ord <- mean_betas <- state <- est <- NULL
+    
+    mtx <- aggregateTestEnrichments(result_list)
+    df <- melt(mtx, varnames = c("sample","state"), value.name = "est")
+    df <- summarize(group_by(df, state), 
+        ave = mean(pmax(-4, est),na.rm=TRUE),
+        sd = sd(pmax(-10,est),na.rm=TRUE))
+    
+    df$state <- factor(df$state, levels = df$state[order(df$ave)])
+    
+    ggplot(df) +
+        geom_pointrange(aes(state, ave, ymin=ave-sd, ymax=ave+sd)) +
+        geom_hline(yintercept=0, linetype='dashed') +
+        ylab("Log2 Fold Enrichment") + xlab("") +
+        scale_y_continuous(position="right") +
+        annotate("text", x=0.5, y=0.5,
+            label="Enrichment", angle=-90, hjust=1) +
+        annotate("text", x=0.5, y=-0.5,
+            label="Depletion", angle=90, hjust=0) +
+        coord_flip()
+}

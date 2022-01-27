@@ -22,7 +22,7 @@ inferStrain(
 \item{return.pval}{return p-value}
 
 \item{min_frac_dt}{minimum fraction of detected signal (DEFAULT: 0.2)
-otherwise, NA is returned and we give up strain inference}
+otherwise, we give up strain inference and return NA.}
 }
 \value{
 a list of best guess, p-value of the best guess

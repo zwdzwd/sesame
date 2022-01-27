@@ -188,6 +188,24 @@ and a lollipop plot:
 KYCG_plotLollipop(results)
 ```
 
+If you have a list of cg groups and they were tested against the same set of
+databases, you can make a point range plot to summarize the overall trend:
+
+```{r plot-pointrange, fig.width=3, fig.height=5, fig.align="center"}
+## pick some big TFBS-overlapping CpG groups
+cg_lists <- KYCG_getDBs("MM285.TFBS", silent=TRUE)
+queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
+res <- lapply(queries, function(q) {
+    testEnrichment(q, "MM285.chromHMM", silent=TRUE)})
+
+## note the input of the function is a list of testEnrichment outputs.
+KYCG_plotPointRange(res)
+```
+
+Here we picked some transcription factor binding sites-overlapping CpGs and
+tested against chromHMM states. As expected, most of these CGs are enriched at
+promoters and enhancers but depleted at heterchromatic regions.
+
 # Gene enrichment
 
 Automating the enrichment test process only works when the number of database
@@ -213,6 +231,16 @@ KYCG_plotVolcano(results)
 For example, this given query set is tissue specific hypomethylation of mouse
 brain. Rufy3 is shown to be significantly enriched in this set and it is known
 to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
+
+# Meta gene enrichment
+
+KnowYourCG builds in several metagene/meta-feature coordinates. One can test
+enrichment over meta genes or simply plot the mean over metagenes:
+
+```{r plot-meta1, fig.width=4, fig.height=4}
+sdf <- sesameDataGet("EPIC.1.SigDF")
+KYCG_plotMeta(sdf)
+```
 
 # Continuous data
 

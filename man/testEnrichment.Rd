@@ -5,7 +5,13 @@
 \title{testEnrichment tests for the enrichment of set of probes (query set) in
 a number of features (database sets).}
 \usage{
-testEnrichment(query, databases = NULL, universe = NULL, platform = NULL)
+testEnrichment(
+  query,
+  databases = NULL,
+  universe = NULL,
+  platform = NULL,
+  silent = FALSE
+)
 }
 \arguments{
 \item{query}{Vector of probes of interest (e.g., significant probes)}
@@ -21,6 +27,8 @@ inferred from the provided platform. (Default: NA).}
 \item{platform}{String corresponding to the type of platform to use. Either
 MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 from the query set probeIDs (Default: NA).}
+
+\item{silent}{output message? (Default: FALSE)}
 }
 \value{
 One list containing features corresponding the test estimate,

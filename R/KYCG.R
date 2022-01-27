@@ -66,7 +66,7 @@ inferUniverse <- function(platform) {
 #' @param platform String corresponding to the type of platform to use. Either
 #' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 #' from the query set probeIDs (Default: NA).
-#'
+#' @param silent output message? (Default: FALSE)
 #' @return One list containing features corresponding the test estimate,
 #' p-value, and type of test.
 #' @importFrom dplyr bind_rows
@@ -80,7 +80,8 @@ inferUniverse <- function(platform) {
 #'
 #' @export
 testEnrichment <- function(
-    query, databases = NULL, universe = NULL, platform = NULL) {
+    query, databases = NULL, universe = NULL,
+    platform = NULL, silent = FALSE) {
 
     if (is.null(universe)) {
         if (is.null(platform)) {
@@ -97,13 +98,15 @@ testEnrichment <- function(
             databases <- grep("(chromHMM)|(designGroup|probeType)",
                 KYCG_listDBGroups(platform), value=TRUE)
         }
-        dbs <- KYCG_getDBs(databases)
+        dbs <- KYCG_getDBs(databases, silent = silent)
     } else {
         dbs <- databases
     }
     ## there shouldn't be empty databases, but just in case
     dbs <- dbs[vapply(dbs, length, integer(1)) > 0]
-    message(sprintf("Testing against %d database(s)...", length(dbs)))
+    if (!silent) {
+        message(sprintf("Testing against %d database(s)...", length(dbs)))
+    }
     
     res <- do.call(rbind, lapply(dbs, function(db) {
         testEnrichment1(query = query, database = db, universe = universe)}))

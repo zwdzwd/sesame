@@ -10,7 +10,7 @@ mouseBetaToAF <- function(betas) {
 #'
 #' @param sdf SigDF
 #' @param min_frac_dt minimum fraction of detected signal (DEFAULT: 0.2)
-#' otherwise, NA is returned and we give up strain inference
+#' otherwise, we give up strain inference and return NA.
 #' @param return.probability return probability vector for all strains
 #' @param return.pval return p-value
 #' @param return.strain return strain name
@@ -107,13 +107,12 @@ compareMouseStrainReference <- function(
     g <- WHeatmap(afs, cmp=CMPar(stop.points=stops, dmin=0, dmax=1),
         xticklabels = show_sample_names, xticklabels.n=ncol(afs), name="b1")
     if (!is.null(betas)) {          # query samples
-        afs2 <- do.call(rbind, lapply(
-            seq_along(rd$flipToAF), function(i) {
-                if(xor(rd$flipToAF[i], rd$flipForRefBias[i])) {
-                    1 - betas[rd$Probe_ID[i],]
-                } else {
-                    betas[rd$Probe_ID[i],]
-                }}))
+        afs2 <- do.call(rbind, lapply(seq_along(rd$flipToAF), function(i) {
+            if(xor(rd$flipToAF[i], rd$flipForRefBias[i])) {
+                1 - betas[rd$Probe_ID[i],]
+            } else {
+                betas[rd$Probe_ID[i],]
+            }}))
         g <- g + WHeatmap(afs2, RightOf("b1"),
             cmp=CMPar(stop.points=stops, dmin=0, dmax=1),
             name="b2", xticklabels=TRUE, xticklabels.n=ncol(betas))
