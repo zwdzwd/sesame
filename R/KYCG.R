@@ -208,6 +208,7 @@ KYCG_getGenesByLoc <- function(
 #' for the given results.
 testEnrichmentFisher <- function(query, database, universe) {
     q_and_d <- length(intersect(query, database))
+    q_and_d_probes <- intersect(query,database)
 
     l_d <- length(database)
     l_q <- length(query)
@@ -219,13 +220,15 @@ testEnrichmentFisher <- function(query, database, universe) {
 
     fc <- q_and_d / (q_and_d + q_min_d) / (q_and_d + d_min_q) *
         (q_and_d + q_min_d + d_min_q + min_q_d)
-    data.frame(
+    res <- data.frame(
         estimate = log2(fc),
         p.value = res$p.value,
         test = "Log2FC",
         nQ = length(query),
         nD = length(database),
-        overlap = q_and_d)
+        overlap = q_and_d,
+        CpGs = I(list(q_and_d_probes)))
+
 }
 
 calcES <- function(dCont, dDisc) {
@@ -305,7 +308,8 @@ testEnrichmentGSEA <- function(query, database, precise=FALSE) {
         return(data.frame(
             estimate = 0, p.value = 1, test = test,
             nQ = length(database), nD = length(query),
-            overlap = length(overlap)))
+            overlap = length(overlap),
+            CpGs = I(list(overlap))))
     }
 
     res <- calcES_Significance(query, overlap, precise=precise)
@@ -315,12 +319,14 @@ testEnrichmentGSEA <- function(query, database, precise=FALSE) {
         data.frame(
             estimate = -res$es_large, p.value = res$pv_large, test = test,
             nQ = length(database), nD = length(query),
-            overlap = length(overlap))
+            overlap = length(overlap),
+            CpGs = I(list(overlap)))
     } else {
         data.frame(
             estimate = res$es_small, p.value = res$pv_small, test = test,
             nQ = length(database), nD = length(query),
-            overlap = length(overlap))
+            overlap = length(overlap),
+            CpGs = I(list(overlap)))
     }
 }
     
