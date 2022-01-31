@@ -220,7 +220,7 @@ testEnrichmentFisher <- function(query, database, universe) {
 
     fc <- q_and_d / (q_and_d + q_min_d) / (q_and_d + d_min_q) *
         (q_and_d + q_min_d + d_min_q + min_q_d)
-    res <- data.frame(
+    data.frame(
         estimate = log2(fc),
         p.value = res$p.value,
         test = "Log2FC",
