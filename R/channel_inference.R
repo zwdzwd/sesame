@@ -33,7 +33,8 @@ inferInfiniumIChannel <- function(
 
     ## revert to the original for failed probes if so desire
     if (!switch_failed) {
-        idx = pmax(red_max, grn_max) < bg_max
+        idx <- (is.na(red_max) | is.na(grn_max) |
+                    pmax(red_max, grn_max) < bg_max)
         new_col[idx] = sdf1$col[idx]
     }
     sdf$col[inf1_idx] = factor(new_col, levels=c("G","R","2"))
