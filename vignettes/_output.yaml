@@ -2,7 +2,7 @@ html_document:
   self_contained: true
   number_sections: no
   theme: flatly
-  highlight: tango
+  highlight: zenburn
   mathjax: null
   toc: true
   toc_float:

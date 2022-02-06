@@ -22,7 +22,7 @@ against the same set of databases
 ## pick some big TFBS-overlapping CpG groups
 cg_lists <- KYCG_getDBs("MM285.TFBS")
 queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
-res <- lapply(queries, function(q) testEnrichment(q, "MM285.chromHMM"))
-KYCG_plotPointRange(res)
+result_list <- lapply(queries, testEnrichment, "MM285.chromHMM")
+KYCG_plotPointRange(result_list)
 
 }

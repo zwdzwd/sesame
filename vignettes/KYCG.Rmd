@@ -237,9 +237,9 @@ to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
 KnowYourCG builds in several metagene/meta-feature coordinates. One can test
 enrichment over meta genes or simply plot the mean over metagenes:
 
-```{r plot-meta1, fig.width=4, fig.height=4}
+```{r plot-meta1, fig.width=4, fig.height=4, fig.align="center"}
 sdf <- sesameDataGet("EPIC.1.SigDF")
-KYCG_plotMeta(sdf)
+KYCG_plotMeta(getBetas(sdf))
 ```
 
 # Continuous data

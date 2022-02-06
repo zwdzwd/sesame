@@ -33,14 +33,15 @@ visualizeGene <- function(
     }
     
     pkgTest('GenomicRanges')
-    
-    gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
-    if (!(geneName %in% names(gene2txn))) {
-        stop('Gene ', geneName, ' not found in this reference.');
-    }
-    txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
 
-    target.txns <- txns[gene2txn[[geneName]]]
+    target.txns <- getTranscriptsByGene(geneName, refversion)
+    ## gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
+    ## if (!(geneName %in% names(gene2txn))) {
+    ##     stop('Gene ', geneName, ' not found in this reference.');
+    ## }
+    ## txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
+    ## target.txns <- txns[gene2txn[[geneName]]]
+    
     target.strand <- as.character(GenomicRanges::strand(target.txns[[1]][1]))
     if (target.strand == '+') {
         pad.start <- upstream
@@ -135,13 +136,13 @@ getProbesByGene <- function(
     refversion <- match.arg(refversion)
     
     requireNamespace("GenomicRanges", quietly = TRUE)
-    gene2txn <- sesameDataGet(paste0('genomeInfo.', refversion))$gene2txn
-    if (!(geneName %in% names(gene2txn))) {
-        stop('Gene ', geneName, ' not found in this reference.');
-    }
-    txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
-
-    target.txns <- txns[gene2txn[[geneName]]]
+    target.txns <- getTranscriptsByGene(geneName, refversion)
+    ## gene2txn <- sesameDataGet(paste0('genomeInfo.', refversion))$gene2txn
+    ## if (!(geneName %in% names(gene2txn))) {
+    ##     stop('Gene ', geneName, ' not found in this reference.');
+    ## }
+    ## txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
+    ## target.txns <- txns[gene2txn[[geneName]]]
     ## target.strand <- as.character(
     ## GenomicRanges::strand(target.txns[[1]][1]))
 
@@ -157,6 +158,18 @@ getProbesByGene <- function(
         min(GenomicRanges::start(merged.exons)) - up,
         max(GenomicRanges::end(merged.exons)) + dw,
         platform = platform, refversion = refversion)
+}
+
+getTranscriptsByGene <- function(geneName, refversion) {
+    ## gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
+    txns <- sesameDataGet(paste0("genomeInfo.", refversion))$txns
+    if (!(geneName %in% GenomicRanges::mcols(txns)$gene_name)) {
+        stop('Gene ', geneName, ' not found in this reference.');
+    }
+    ## txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
+
+    ## target.txns <- txns[gene2txn[[geneName]]]
+    txns[GenomicRanges::mcols(txns)$gene_name == geneName]
 }
 
 #' Get Probes by Gene Transcription Start Site (TSS)
@@ -183,14 +196,8 @@ getProbesByTSS <- function(
 
     platform <- match.arg(platform)
     refversion <- match.arg(refversion)
-    
-    gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
-    if (!(geneName %in% names(gene2txn))) {
-        stop('Gene ', geneName, ' not found in this reference.');
-    }
-    txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
 
-    target.txns <- txns[gene2txn[[geneName]]]
+    target.txns <- getTranscriptsByGene(geneName, refversion)
 
     tss <- GenomicRanges::reduce(unlist(GenomicRanges::GRangesList(
         lapply(target.txns, function(txn) {
@@ -217,7 +224,7 @@ getProbesByTSS <- function(
 
 ## helper function to plot transcript
 plotTranscripts <- function(
-    target.txns, target.region, plt.beg, plt.end, txn2gene) {
+    target.txns, target.region, plt.beg, plt.end) {
 
     plt.width <- plt.end - plt.beg
     isoformHeight <- 1/length(target.txns)
@@ -247,7 +254,9 @@ plotTranscripts <- function(
         g <- gList(
             ## plot transcript name
             grid.text(
-                sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
+                sprintf('%s (%s)', txn.name,
+                    GenomicRanges::mcols(target.txns)$gene_name[i]),
+                ## sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
                 x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
                 just=c('center','bottom'), draw=FALSE),
             
@@ -379,7 +388,7 @@ visualizeRegion <- function(
     ## plot transcripts
     if (length(target.txns) > 0) {
         plt.txns <- plotTranscripts(
-            target.txns, target.region, plt.beg, plt.end, txn2gene)
+            target.txns, target.region, plt.beg, plt.end)
         if (is.null(heat.height)) {
             heat.height <- 10 / length(target.txns);
         }

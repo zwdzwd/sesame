@@ -4,10 +4,11 @@
 \alias{KYCG_plotMeta}
 \title{Plot meta gene or other meta genomic features}
 \usage{
-KYCG_plotMeta(x, platform = NULL)
+KYCG_plotMeta(betas, platform = NULL)
 }
 \arguments{
-\item{x}{a SigDF or value (e.g. beta value) one wants to aggregates to}
+\item{betas}{a named numeric vector or a matrix
+(row: probes; column: samples)}
 
 \item{platform}{if not given and x is a SigDF, will be inferred
 the meta features}
@@ -20,5 +21,5 @@ Plot meta gene or other meta genomic features
 }
 \examples{
 sdf <- sesameDataGet("EPIC.1.SigDF")
-KYCG_plotMeta(sdf)
+KYCG_plotMeta(getBetas(sdf))
 }

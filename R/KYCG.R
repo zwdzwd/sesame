@@ -46,8 +46,9 @@ inferPlatformFromQuery <- function(query) {
 }
 
 inferUniverse <- function(platform) {
-    mfts <- c("MM285.address", "EPIC.address",
-        "HM450.address", "HM27.address")
+    mfts <- c(
+        "MM285.address", "EPIC.address",
+        "Mammal40.address", "HM450.address", "HM27.address")
     mft <- mfts[grepl(platform, mfts)]
     stopifnot(length(mft) == 1 && all(mft %in% mfts))
     sesameDataGet(mft)$ordering$Probe_ID
@@ -117,6 +118,35 @@ testEnrichment <- function(
     ## bind meta data
     res <- cbind(res, databases_getMeta(dbs))
     res[order(res$p.value, -abs(res$estimate)), ]
+}
+
+#' Aggregate test enrichment results
+#'
+#' @param result_list a list of results from testEnrichment
+#' @param column the column name to aggregate (Default: estimate)
+#' @param return_df whether to return a merged data frame
+#' @return a matrix for all results
+#' @importFrom reshape2 melt
+#' @examples
+#'
+#' ## pick some big TFBS-overlapping CpG groups
+#' cg_lists <- KYCG_getDBs("MM285.TFBS")
+#' queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
+#' result_list <- lapply(queries, testEnrichment, "MM285.chromHMM")
+#' mtx <- aggregateTestEnrichments(result_list)
+#' 
+#' @export
+aggregateTestEnrichments <- function(
+    result_list, column = "estimate", return_df = FALSE) {
+    mtx <- do.call(cbind, lapply(result_list[[1]]$dbname, function(db) {
+        vapply(result_list,
+            function(x) x$estimate[x$dbname == db], numeric(1))}))
+    colnames(mtx) <- result_list[[1]]$dbname
+    if (return_df) {
+        melt(mtx, value.name = column, varnames = c("query", "db"))
+    } else {
+        mtx
+    }
 }
 
 #' testEnrichmentGene tests for the enrichment of set of probes
