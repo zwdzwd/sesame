@@ -559,3 +559,78 @@ compareDatbaseSetOverlap <- function(
     }
     m
 }
+
+
+#' KYCG_getGeneOntology associates CpG probes (query set) with gene annotations, then tests gene list functional 
+#' enrichment of the set of probes using gprofiler2. 
+#' @param query Vector of CpG probes of interest (e.g., significant probes), or character vector 
+#' of gene names
+#' @param threshold number of base pairs flanking genes on each side -- can adjust for different distances from gene
+#' (Default: 0)
+#' @param platform String corresponding to the type of platform to use. Either
+#' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred from the query set probeIDs (Default: NA).
+#' @param silent output message? (Default: FALSE)
+#' @return One list containing gene ontology results list and gene ontology plot object corresponding the test estimate
+#' @importFrom gprofiler2 gost gostplot
+#' @examples
+#' 
+#' library(SummarizedExperiment)
+#' df <- sesameDataGet("KYCG.HM450.gene.20210923")[c("FOS","JUN","EGR1","ATF3")]
+#' query <- c(df[[1]], df[[2]], df[[3]], df[[4]])
+#' KYCG_getGeneOntology(query)
+#' sesameDataClearCache()
+#'
+#' @export
+
+KYCG_getGeneOntology <- function(query,platform=NULL,threshold=0, ...) {
+    
+    if (!all(grepl("cg", query))) {
+        if (is.character(query)) {
+            if (all(grepl("^[[:upper:]]+$", query))) {
+                return(list(
+                    results=(gost(query, organism = "hsapiens")), 
+                    plot=gostplot(gost(query, organism="hsapiens"))))
+            } else {
+                return(list(
+                    results=(gost(query, organism = "mmusculus")), 
+                    plot=gostplot(gost(query, organism="mmusculus"))))
+            }
+        }
+    }
+
+    if (is.null(platform)) {
+        if (is.numeric(query)) {
+            platform <- sesame:::inferPlatformFromQuery(names(query))
+        } else {
+            platform <- sesame:::inferPlatformFromQuery(query)
+        }
+    }
+    
+    if (platform %in% c("HM450", "EPIC")) {
+        species = "Homo sapiens"
+        species_info = list(organism="hsapiens", platform=platform, genome="genomeInfo.hg38")
+    } else if (platform %in% c("MM285")) {
+        species = "Mus musculus"
+        species_info = list(organism="mmusculus", platform=platform, genome="genomeInfo.mm10")
+    } else {
+        stop("platform not found")
+    }
+
+    gene_GR <- sesameData_toGeneGRanges(sesameData_toTxnGRanges(
+                    sesameDataGet(species_info$genome)$txns)) + threshold
+    gene_query_GR <- gene_GR[findOverlaps(
+                            sesameData_getManifestGRanges(species_info$platform)[query], 
+                            gene_GR, select="all")@to] 
+    query_genes <- gene_query_GR$gene_name
+    gostres <- gost(query = query_genes, organism = species_info$organism)
+
+    list(results=gostres, plot=gostplot(gostres))
+
+}
+
+
+
+
+
+
+
