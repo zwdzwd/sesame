@@ -581,23 +581,7 @@ compareDatbaseSetOverlap <- function(
 #' sesameDataClearCache()
 #'
 #' @export
-
-KYCG_getGeneOntology <- function(query,platform=NULL,threshold=0, ...) {
-    
-    if (!all(grepl("cg", query))) {
-        if (is.character(query)) {
-            if (all(grepl("^[[:upper:]]+$", query))) {
-                return(list(
-                    results=(gost(query, organism = "hsapiens")), 
-                    plot=gostplot(gost(query, organism="hsapiens"))))
-            } else {
-                return(list(
-                    results=(gost(query, organism = "mmusculus")), 
-                    plot=gostplot(gost(query, organism="mmusculus"))))
-            }
-        }
-    }
-
+KYCG_getProximalGenes <- function(query,platform=NULL,threshold=0) {
     if (is.null(platform)) {
         if (is.numeric(query)) {
             platform <- sesame:::inferPlatformFromQuery(names(query))
@@ -605,27 +589,22 @@ KYCG_getGeneOntology <- function(query,platform=NULL,threshold=0, ...) {
             platform <- sesame:::inferPlatformFromQuery(query)
         }
     }
-    
     if (platform %in% c("HM450", "EPIC")) {
         species = "Homo sapiens"
-        species_info = list(organism="hsapiens", platform=platform, genome="genomeInfo.hg38")
+        species_info = list(platform=platform, genome="genomeInfo.hg38")
     } else if (platform %in% c("MM285")) {
         species = "Mus musculus"
-        species_info = list(organism="mmusculus", platform=platform, genome="genomeInfo.mm10")
+        species_info = list(platform=platform, genome="genomeInfo.mm10")
     } else {
         stop("platform not found")
     }
-
     gene_GR <- sesameData_toGeneGRanges(sesameData_toTxnGRanges(
                     sesameDataGet(species_info$genome)$txns)) + threshold
     gene_query_GR <- gene_GR[findOverlaps(
                             sesameData_getManifestGRanges(species_info$platform)[query], 
                             gene_GR, select="all")@to] 
-    query_genes <- gene_query_GR$gene_name
-    gostres <- gost(query = query_genes, organism = species_info$organism)
 
-    list(results=gostres, plot=gostplot(gostres))
-
+    gene_query_GR$gene_name
 }
 
 
