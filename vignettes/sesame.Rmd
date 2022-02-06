@@ -1,5 +1,5 @@
 ---
-title: "SeSAMe Basic Usage"
+title: "Basic Usage"
 date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: BiocStyle::html_document
@@ -17,9 +17,10 @@ library(dplyr)
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
-# Installation
+# Preparation
 
 To install SeSAMe from Bioconductor,
+
 ```{r, eval=FALSE}
 if (!requireNamespace("BiocManager", quietly=TRUE))
     install.packages("BiocManager")
@@ -27,6 +28,7 @@ BiocManager::install("sesame")
 ```
 
 To install the development version directly from github
+
 ```{r, eval=FALSE}
 BiocManager::install('zwdzwd/sesameData')
 BiocManager::install('zwdzwd/sesame')
