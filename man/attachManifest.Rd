@@ -4,14 +4,14 @@
 \alias{attachManifest}
 \title{Annotate a data.frame using manifest}
 \usage{
-attachManifest(df, probe_id = "Probe_ID", pfm = NULL, genome = NULL)
+attachManifest(df, probe_id = "Probe_ID", platform = NULL, genome = NULL)
 }
 \arguments{
 \item{df}{input data frame with Probe_ID as a column}
 
 \item{probe_id}{the Probe_ID column name, default to "Probe_ID" or rownames}
 
-\item{pfm}{which array platform, guess from probe ID if not given}
+\item{platform}{which array platform, guess from probe ID if not given}
 
 \item{genome}{the genome build, use default if not given}
 }

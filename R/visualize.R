@@ -34,7 +34,7 @@ visualizeGene <- function(
     
     pkgTest('GenomicRanges')
 
-    target.txns <- getTranscriptsByGene(geneName, refversion)
+    target.txns <- sesameData_getTranscriptsByGene(geneName, refversion)
     ## gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
     ## if (!(geneName %in% names(gene2txn))) {
     ##     stop('Gene ', geneName, ' not found in this reference.');
@@ -108,118 +108,6 @@ visualizeProbes <- function(
         as.character(GenomicRanges::seqnames(
             target.probes[1])), regBeg, regEnd,
         betas, platform = platform, refversion = refversion, ...)
-}
-
-#' Get Probes by Gene
-#'
-#' Get probes mapped to a gene. All transcripts for the gene are considered.
-#' The function takes a gene name as appears in UCSC RefGene database. The
-#' platform and reference genome build can be changed with `platform` and
-#' `refversion` options. The function returns a vector of probes that falls
-#' into the given gene.
-#'
-#' @param geneName gene name
-#' @param platform EPIC or HM450
-#' @param upstream number of bases to expand upstream of target gene
-#' @param dwstream number of bases to expand downstream of target gene
-#' @param refversion hg38 or hg19
-#' @return probes that fall into the given gene
-#' @examples
-#' probes <- getProbesByGene('CDKN2A', upstream=500, dwstream=500)
-#' @export
-getProbesByGene <- function(
-    geneName, platform = c('EPIC','HM450','MM285'),
-    upstream = 0, dwstream = 0,
-    refversion = c('hg38','hg19','mm10')) {
-
-    platform <- match.arg(platform)
-    refversion <- match.arg(refversion)
-    
-    requireNamespace("GenomicRanges", quietly = TRUE)
-    target.txns <- getTranscriptsByGene(geneName, refversion)
-    ## gene2txn <- sesameDataGet(paste0('genomeInfo.', refversion))$gene2txn
-    ## if (!(geneName %in% names(gene2txn))) {
-    ##     stop('Gene ', geneName, ' not found in this reference.');
-    ## }
-    ## txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
-    ## target.txns <- txns[gene2txn[[geneName]]]
-    ## target.strand <- as.character(
-    ## GenomicRanges::strand(target.txns[[1]][1]))
-
-    merged.exons <- GenomicRanges::reduce(unlist(target.txns))
-    
-    up <- ifelse(as.vector(GenomicRanges::strand(
-        target.txns[[1]][1])) == '-', dwstream, upstream)
-    dw <- ifelse(as.vector(GenomicRanges::strand(
-        target.txns[[1]][1])) == '-', upstream, dwstream)
-    
-    getProbesByRegion(
-        as.character(GenomicRanges::seqnames(merged.exons[1])),
-        min(GenomicRanges::start(merged.exons)) - up,
-        max(GenomicRanges::end(merged.exons)) + dw,
-        platform = platform, refversion = refversion)
-}
-
-getTranscriptsByGene <- function(geneName, refversion) {
-    ## gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
-    txns <- sesameDataGet(paste0("genomeInfo.", refversion))$txns
-    if (!(geneName %in% GenomicRanges::mcols(txns)$gene_name)) {
-        stop('Gene ', geneName, ' not found in this reference.');
-    }
-    ## txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
-
-    ## target.txns <- txns[gene2txn[[geneName]]]
-    txns[GenomicRanges::mcols(txns)$gene_name == geneName]
-}
-
-#' Get Probes by Gene Transcription Start Site (TSS)
-#'
-#' Get probes mapped to a TSS. All transcripts for the gene are considered.
-#' The function takes a gene name as appears in UCSC RefGene database. The
-#' platform and reference genome build can be changed with `platform` and
-#' `refversion` options. The function returns a vector of probes that falls
-#' into the TSS region of the gene.
-#'
-#' @param geneName gene name
-#' @param upstream the number of base pairs to expand upstream the TSS
-#' @param dwstream the number of base pairs to expand dwstream the TSS
-#' @param platform EPIC, HM450, or MM285
-#' @param refversion hg38, hg19 or mm10
-#' @return probes that fall into the given gene
-#' @examples
-#' probes <- getProbesByTSS('CDKN2A')
-#' @export
-getProbesByTSS <- function(
-    geneName, upstream = 1500, dwstream = 1500,
-    platform = c('EPIC','HM450','MM285'),
-    refversion = c('hg38','hg19','mm10')) {
-
-    platform <- match.arg(platform)
-    refversion <- match.arg(refversion)
-
-    target.txns <- getTranscriptsByGene(geneName, refversion)
-
-    tss <- GenomicRanges::reduce(unlist(GenomicRanges::GRangesList(
-        lapply(target.txns, function(txn) {
-            tss1 <- ifelse(
-                as.vector(GenomicRanges::strand(txn))[1] == '-',
-                max(GenomicRanges::end(txn)), min(GenomicRanges::start(txn)))
-            up <- ifelse(as.vector(
-                GenomicRanges::strand(txn))[1] == '-', dwstream, upstream)
-            dw <- ifelse(as.vector(
-                GenomicRanges::strand(txn))[1] == '-', upstream, dwstream)
-            GenomicRanges::GRanges(
-                as.vector(GenomicRanges::seqnames(txn))[1],
-                ranges = IRanges::IRanges(start=tss1-up, end=tss1+dw))
-    }))))
-
-    probes1 <- subsetByOverlaps(sesameDataGet(paste0(
-        platform, '.probeInfo'))[[paste0('mapped.probes.',refversion)]], tss)
-    
-    if (length(probes1)>0) {
-        probes1$gene <- geneName
-    }
-    probes1
 }
 
 ## helper function to plot transcript

@@ -35,6 +35,6 @@ composed of engineered features from the given database sets
 library(SummarizedExperiment)
 se <- sesameDataGet('MM285.20Kx467.SE')
 head(dbStats(assay(se), "MM285.probeType")[,1:3])
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

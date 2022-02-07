@@ -22,6 +22,6 @@ Genome Biology). The function outputs a single numeric of age in years.
 
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 predictAgeHorvath353(betas)
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

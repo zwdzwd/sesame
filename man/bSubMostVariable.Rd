@@ -21,5 +21,5 @@ Get most variable probes
 ## get most variable autosome probes
 betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
 betas.most.variable <- bSubMostVariable(
-    betas[getAutosomeProbes('HM450'),],2000)
+    betas[names(sesameData_getAutosomeProbes('HM450')),],2000)
 }

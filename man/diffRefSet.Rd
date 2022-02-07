@@ -21,6 +21,6 @@ discordant methylation levels among the cell types.
 \examples{
 
 g = diffRefSet(getRefSet(platform='HM450'))
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

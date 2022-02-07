@@ -335,7 +335,7 @@ sesameQC_calcStats_dyeBias <- function(sdf, qc = NULL) {
     s$topR <- median(tail(sort(intens[t1[t1$col == "R", "Probe_ID"]]), n=20))
     s$topG <- median(tail(sort(intens[t1[t1$col == "G", "Probe_ID"]]), n=20))
     s$RGratio <- s$medR / s$medG
-    s$RGdistort <- log(s$topR / s$topG) / log(s$medR / s$medG)
+    s$RGdistort <- (s$topR / s$topG) / (s$medR / s$medG)
 
     new("sesameQC", stat=s, group=g)
 }

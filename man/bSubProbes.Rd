@@ -18,7 +18,7 @@ subsetted beta value matrix
 subset beta value matrix by probes
 }
 \examples{
-probes <- getAutosomeProbes('HM450')
+probes <- names(sesameData_getAutosomeProbes('HM450'))
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 betas <- bSubProbes(betas, probes)
 }

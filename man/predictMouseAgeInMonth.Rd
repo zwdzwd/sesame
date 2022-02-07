@@ -25,6 +25,6 @@ accurate with the sesame preprocessing.
 
 betas <- SummarizedExperiment::assay(sesameDataGet('MM285.10.SE.tissue'))[,1]
 predictMouseAgeInMonth(betas)
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

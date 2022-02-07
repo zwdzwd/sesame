@@ -22,6 +22,6 @@ Compare mouse array data with mouse tissue references
 
 sesameDataCache() # if not done yet
 compareMouseTissueReference()
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

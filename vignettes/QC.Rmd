@@ -147,13 +147,8 @@ One can also output the allele frequencies and output a VCF file with
 genotypes. This requires additional SNP information (ref and alt alleles),
 which can be downloaded using the following code:
 
-```{r message=FALSE, results="hide"}
-annoS <- sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
-annoI <- sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
-```
-
 ```{r}
-head(formatVCF(sdf, annoS=annoS, annoI=annoI))
+head(formatVCF(sdf))
 ```
 
 One can output to actual VCF file with a header by `formatVCF(sdf,

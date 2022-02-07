@@ -247,33 +247,10 @@ getAFs <- function(sdf, ...) {
     c(betas[startsWith(names(betas), "rs")], getAFTypeIbySumAlleles(sdf))
 }
 
-## res is the output of illuminaio::readIDAT
-## Infer platform from IDATs
 inferPlatformFromTango <- function(res) {
     sig <- sesameDataGet('idatSignature')
     names(which.max(vapply(
         sig, function(x) sum(x %in% rownames(res$Quants)), integer(1))))
-}
-
-inferPlatformFromProbeIDs <- function(probeIDs) {
-    sig <- sesameDataGet("probeIDSignature")
-    names(which.max(vapply(
-        sig, function(x) sum(probeIDs %in% x), integer(1))))
-}
-
-defaultAssembly <- function(platform) {
-    platform2build <- c(
-        "HM27"="hg38",
-        "HM450"="hg38",
-        "EPIC"="hg38",
-        "MM285"="mm10",
-        "Mammal40"="hg38"
-    )
-    if (!(platform %in% names(platform2build))) {
-        stop(sprintf(
-            "Platform %s not supported. Try custom manifest?", platform))
-    }
-    platform2build[platform]
 }
 
 ## Import one IDAT file

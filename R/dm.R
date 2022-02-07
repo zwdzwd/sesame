@@ -13,7 +13,7 @@
 #' sum(se_ok) # number of good probes
 #' se1 <- se0[se_ok,]
 #'
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' @export
 checkLevels <- function(betas, fc) {
     stopifnot(is(fc, "factor") || is(fc, "character"))
@@ -45,7 +45,7 @@ checkLevels <- function(betas, fc) {
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #'
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' @export
 DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 
@@ -102,7 +102,7 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' smry
 #'
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' @export
 print.DMLSummary <- function(x, ...) {
     mm <- attr(x, "model.matrix")
@@ -120,7 +120,7 @@ print.DMLSummary <- function(x, ...) {
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' slopes <- summaryExtractTest(smry)
 #'
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' @export
 summaryExtractTest <- function(smry) {
     est <- as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
@@ -236,8 +236,8 @@ dmr_combine_pval <- function(cf, segs) {
     cf
 }
 
-DMGetProbeInfo <- function(platform, refversion) {
-    mft <- sesameDataGet(sprintf("%s.%s.manifest", platform, refversion))
+DMGetProbeInfo <- function(platform, genome) {
+    mft <- sesameDataGet(sprintf("%s.%s.manifest", platform, genome))
     mft <- mft[GenomicRanges::seqnames(mft) != "*"]
     GenomicRanges::mcols(mft) <- NULL
     GenomicRanges::strand(mft) <- "*"
@@ -262,7 +262,7 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' @param seg.per.locus number of segments per locus
 #' higher value leads to more segments
 #' @param platform EPIC, HM450, MM285, ...
-#' @param refversion hg38, hg19, mm10, ...
+#' @param genome hg38, hg19, mm10, ...
 #' @return coefficient table with segment ID and segment P-value
 #' each row is a locus, multiple loci may share a segment ID if
 #' they are merged to the same segment. Records are ordered by Seg_Est.
@@ -278,28 +278,25 @@ DMGetProbeInfo <- function(platform, refversion) {
 #' ## showing on a small set of 100 CGs
 #' merged_segs <- DMR(data$betas[1:100,], smry, "typeTumour")
 #'
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' 
 #' @export
 DMR <- function(betas, smry, contrast,
-    platform=NULL, refversion=NULL,
-    dist.cutoff=NULL, seg.per.locus=0.5) {
+    platform=NULL, genome=NULL, dist.cutoff=NULL, seg.per.locus=0.5) {
 
     stopifnot(is(smry, "DMLSummary"))
     if (is.null(platform)) {
         platform <- inferPlatformFromProbeIDs(rownames(betas))
     }
     
-    if (is.null(refversion)) {
-        refversion <- defaultAssembly(platform)
-    }
+    genome <- sesameData_check_genome(genome, platform)
 
     if(is(betas, "SummarizedExperiment")) {
         betas <- assay(betas)
     }
 
     ## sort by coordinates
-    probe.coords <- DMGetProbeInfo(platform, refversion)
+    probe.coords <- DMGetProbeInfo(platform, genome)
     message("Merging correlated CpGs ... ", appendLF=FALSE)
     segs <- dmr_merge_cpgs(betas, probe.coords, dist.cutoff, seg.per.locus)
     message(sprintf('Generated %d segments.', segs$id[length(segs$id)]))
@@ -322,7 +319,7 @@ DMR <- function(betas, smry, contrast,
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' dmContrasts(smry)
 #'
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' @export
 dmContrasts <- function(smry) {
     stopifnot(is(smry, "DMLSummary"))

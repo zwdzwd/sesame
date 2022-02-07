@@ -32,9 +32,7 @@ Convert SNP from Infinium array to VCF file
 sesameDataCacheAll() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 
-annoS <- sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
-annoI <- sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
 ## output to console
-head(formatVCF(sdf, annoS=annoS, annoI=annoI))
+head(formatVCF(sdf))
 
 }

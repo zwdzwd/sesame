@@ -33,10 +33,8 @@ genotyper <- function(x, model_background=0.1, model_nbeads=40) {
 #' sesameDataCacheAll() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #'
-#' annoS <- sesameDataGetAnno("EPIC/EPIC.hg19.snp_overlap_b151.rds")
-#' annoI <- sesameDataGetAnno("EPIC/EPIC.hg19.typeI_overlap_b151.rds")
 #' ## output to console
-#' head(formatVCF(sdf, annoS=annoS, annoI=annoI))
+#' head(formatVCF(sdf))
 #' 
 #' @export
 formatVCF <- function(
@@ -44,7 +42,7 @@ formatVCF <- function(
 
     platform <- sdfPlatform(sdf)
     if (is.null(annoS)) {
-        annoS <- sesameDataGetAnno(sprintf("%s/%s.%s.snp_overlap_b151.rds",
+        annoS <- sesameData_getAnno(sprintf("%s/%s.%s.snp_overlap_b151.rds",
             platform, platform, refversion))
     }
     betas <- getBetas(sdf)[names(annoS)]
@@ -60,7 +58,7 @@ formatVCF <- function(
         sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
 
     if (is.null(annoI)) {
-        annoI <- sesameDataGetAnno(sprintf("%s/%s.%s.typeI_overlap_b151.rds",
+        annoI <- sesameData_getAnno(sprintf("%s/%s.%s.typeI_overlap_b151.rds",
             platform, platform, refversion))
     }
     af <- getAFTypeIbySumAlleles(sdf, known.ccs.only=FALSE)

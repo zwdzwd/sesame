@@ -52,6 +52,6 @@ sesameDataCache() # if not done yet
 sdf <- sesameDataGet("MM285.1.SigDF")
 inferTissue(getBetas(dyeBiasNL(noob(sdf))))
 
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

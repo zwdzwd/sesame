@@ -30,6 +30,6 @@ seg <- cnSegmentation(sdf, sdfs.normal)
 
 visualizeSegments(seg)
 
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

@@ -22,6 +22,6 @@ Aging, 391 probes). The function outputs a single numeric of age in years.
 
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 predictAgeSkinBlood(betas)
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

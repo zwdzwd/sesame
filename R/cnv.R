@@ -22,7 +22,7 @@
 #' sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 #' seg <- cnSegmentation(sdf, sdfs.normal)
 #'
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' 
 #' @export
 cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
@@ -250,7 +250,7 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' 
 #' visualizeSegments(seg)
 #'
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' 
 #' @export
 visualizeSegments <- function(seg, to.plot=NULL) {

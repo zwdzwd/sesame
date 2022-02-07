@@ -1,7 +1,7 @@
 getIntensityRatioYvsAuto <- function(sdf) {
     intens <- totalIntensities(sdf)
-    prbA <- getAutosomeProbes(sdfPlatform(sdf))
-    prbY <- getProbesByChromosome("chrY", sdfPlatform(sdf))
+    prbA <- names(sesameData_getAutosomeProbes(sdfPlatform(sdf)))
+    prbY <- names(sesameData_getProbesByChromosome("chrY", sdfPlatform(sdf)))
     median(intens[prbY], na.rm=TRUE) / median(intens[prbA], na.rm=TRUE)
 }
 

@@ -9,7 +9,7 @@ DMR(
   smry,
   contrast,
   platform = NULL,
-  refversion = NULL,
+  genome = NULL,
   dist.cutoff = NULL,
   seg.per.locus = 0.5
 )
@@ -24,7 +24,7 @@ check colnames(attr(smry, "model.matrix")) if uncertain}
 
 \item{platform}{EPIC, HM450, MM285, ...}
 
-\item{refversion}{hg38, hg19, mm10, ...}
+\item{genome}{hg38, hg19, mm10, ...}
 
 \item{dist.cutoff}{distance cutoff (default to use dist.cutoff.quantile)}
 
@@ -54,6 +54,6 @@ colnames(attr(smry, "model.matrix")) # pick a contrast from here
 ## showing on a small set of 100 CGs
 merged_segs <- DMR(data$betas[1:100,], smry, "typeTumour")
 
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

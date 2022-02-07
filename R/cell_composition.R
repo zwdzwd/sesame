@@ -26,7 +26,7 @@ cleanRefSet <- function(g, platform = c('EPIC','HM450','HM27')) {
 #' @examples
 #'
 #' g = diffRefSet(getRefSet(platform='HM450'))
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' 
 #' @export
 diffRefSet <- function(g) {
@@ -54,7 +54,7 @@ diffRefSet <- function(g) {
 #' @examples
 #'
 #' betas = getRefSet('CD4T', platform='HM450')
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' 
 #' @export
 getRefSet <- function(cells=NULL, platform = c('EPIC','HM450')) {
@@ -239,7 +239,7 @@ estimateCellComposition <- function(
 #'
 #' betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 #' estimateLeukocyte(betas.tissue)
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' 
 #' @export
 estimateLeukocyte<-function(

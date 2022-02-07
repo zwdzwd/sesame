@@ -19,6 +19,18 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Preparation
 
+**CRITICAL** As sesame and sesameData are under active development. This
+  documentation is specific to the following version of sesame and sesameData:
+
+```{r}
+packageVersion("sesame")
+packageVersion("sesameData")
+packageVersion("ExperimentHub")
+```
+
+We recommend updating your R, ExperimentHub, sesameData and sesame to use this
+documentation consistently.
+
 To install SeSAMe from Bioconductor,
 
 ```{r, eval=FALSE}
@@ -57,12 +69,6 @@ tools::R_user_dir("ExperimentHub", which="cache")
 If you install directly from github, you need to make sure the compatible
 ExperimentHub is installed.
 
-You can verify the version of the installed sesame and ExperimentHub:
-
-```{r}
-packageVersion("sesame")
-packageVersion("ExperimentHub")
-```
 
 # Read IDATs
 

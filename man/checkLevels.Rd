@@ -27,5 +27,5 @@ se_ok <- checkLevels(SummarizedExperiment::assay(se0),
 sum(se_ok) # number of good probes
 se1 <- se0[se_ok,]
 
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 }

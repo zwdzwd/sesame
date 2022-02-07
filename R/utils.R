@@ -68,95 +68,6 @@ Please install before continue.")
     }
 }
 
-#' Get probes by genomic region
-#'
-#' The function takes a genomic coordinate and output the a vector of probes
-#' on the specified platform that falls in the given genomic region.
-#'
-#' @param chrm chromosome
-#' @param beg begin, 1 if omitted
-#' @param end end, chromosome end if omitted
-#' @param platform EPIC or HM450
-#' @param refversion hg38 or hg19
-#' @return probes that fall into the given region
-#' @importMethodsFrom IRanges subsetByOverlaps
-#' @examples
-#' getProbesByRegion('chr5', 135413937, 135419936,
-#'     refversion = 'hg19', platform = 'HM450')
-#' @export
-getProbesByRegion <- function(
-    chrm, beg = 1, end = -1,
-    platform = c('EPIC','HM450'),
-    refversion = c('hg38','hg19')) {
-
-    platform <- match.arg(platform)
-    refversion <- match.arg(refversion)
-
-    stopifnot(end > 0)
-    ## TODO: the following doesnot work with current EH3665
-    ## if (end < 0) {
-    ##     end <- sesameDataGet(paste0(
-    ##         'genomeInfo.', refversion))$seqInfo[chrm]@seqlengths
-    ## }
-
-    probes <- sesameDataGet(paste0(
-        platform, '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
-    
-    if (!(chrm %in% GenomicRanges::seqinfo(probes)@seqnames)) {
-        stop('No probes found in this reference');
-    }
-    message(sprintf('Extracting probes from %s:%d-%d.\n', chrm, beg, end))
-    target.region <- GenomicRanges::GRanges(chrm, IRanges::IRanges(beg, end))
-    subsetByOverlaps(probes, target.region)
-}
-
-#' Get Probes by Chromosome
-#'
-#' @param chrms chromosomes to subset
-#' @param platform EPIC, HM450, Mouse
-#' @param refversion hg19, hg38, or mm10, inference by default
-#' @return a vector of probes on the selected chromosomes
-#' @examples
-#' sex.probes <- getProbesByChromosome(c('chrX','chrY'))
-#' @export
-getProbesByChromosome <- function(
-    chrms, platform = c('EPIC','HM450','MM285'), refversion = NULL) {
-
-    platform <- match.arg(platform)
-    if (is.null(refversion)) {
-        refversion <- defaultAssembly(platform)
-    } else {
-        stopifnot(refversion %in% c('hg19','hg38','mm10'))
-    }
-    
-    mft <- sesameDataGet(sprintf('%s.%s.manifest', platform, refversion))
-    names(mft)[as.character(GenomicRanges::seqnames(mft)) %in% chrms]
-}
-
-#' Get autosome probes
-#'
-#' @param platform 'EPIC', 'HM450' etc.
-#' @param refversion hg19, hg38, or mm10, inference by default
-#' @return a vector of autosome probes
-#' @examples
-#' auto.probes <- getAutosomeProbes('EPIC')
-#' @export
-getAutosomeProbes <- function(
-    platform = c('EPIC','HM450','MM285'), refversion = NULL) {
-
-    platform <- match.arg(platform)
-    if (is.null(refversion)) {
-        refversion <- defaultAssembly(platform)
-    } else {
-        stopifnot(refversion %in% c('hg19','hg38','mm10'))
-    }
-    
-    mft <- sesameDataGet(sprintf(
-        '%s.%s.manifest', platform, refversion))
-    names(mft)[!(as.character(
-        GenomicRanges::seqnames(mft)) %in% c('chrX', 'chrY'))]
-}
-
 #' Get most variable probes
 #'
 #' @param betas beta value matrix (row: cpg; column: sample)
@@ -166,7 +77,7 @@ getAutosomeProbes <- function(
 #' ## get most variable autosome probes
 #' betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
 #' betas.most.variable <- bSubMostVariable(
-#'     betas[getAutosomeProbes('HM450'),],2000)
+#'     betas[names(sesameData_getAutosomeProbes('HM450')),],2000)
 #' @export
 bSubMostVariable <- function(betas, n=2000) {
     std <- apply(betas, 1, sd, na.rm=TRUE)
@@ -179,7 +90,7 @@ bSubMostVariable <- function(betas, n=2000) {
 #' @param probes probe set
 #' @return subsetted beta value matrix
 #' @examples
-#' probes <- getAutosomeProbes('HM450')
+#' probes <- names(sesameData_getAutosomeProbes('HM450'))
 #' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 #' betas <- bSubProbes(betas, probes)
 #' @export
@@ -211,26 +122,23 @@ bSubComplete <- function(betas) {
 #'
 #' @param df input data frame with Probe_ID as a column
 #' @param probe_id the Probe_ID column name, default to "Probe_ID" or rownames
-#' @param pfm which array platform, guess from probe ID if not given
+#' @param platform which array platform, guess from probe ID if not given
 #' @param genome the genome build, use default if not given
 #' @return a new data.frame with manifest attached
 #' @examples
 #' df <- data.frame(Probe_ID = c("cg00101675_BC21", "cg00116289_BC21"))
 #' attachManifest(df)
 #' @export
-attachManifest <- function(df, probe_id="Probe_ID", pfm=NULL, genome=NULL) {
+attachManifest <- function(df, probe_id="Probe_ID", platform=NULL, genome=NULL) {
     stopifnot(is(df, "data.frame"))
     stopifnot(probe_id %in% colnames(df))
 
-    if (is.null(pfm)) {
-        pfm <- inferPlatformFromProbeIDs(df[[probe_id]])
-    }
+    if (is.null(platform)) {
+        platform <- inferPlatformFromProbeIDs(df[[probe_id]]) }
 
-    if (is.null(genome)) {
-        genome <- defaultAssembly(pfm)
-    }
+    genome <- sesameData_check_genome(genome, platform)
 
-    mft <- sesameDataGet(sprintf("%s.%s.manifest", pfm, genome))
+    mft <- sesameDataGet(sprintf("%s.%s.manifest", platform, genome))
     cbind(df, as.data.frame(mft)[match(df[[probe_id]], names(mft)),])
 }
 

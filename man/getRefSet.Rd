@@ -27,6 +27,6 @@ methylation and nonclusive calls are left with NA.
 \examples{
 
 betas = getRefSet('CD4T', platform='HM450')
-sesameDataClearCache()
+sesameDataGet_resetEnv()
 
 }

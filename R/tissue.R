@@ -57,7 +57,7 @@ reference_plot_se <- function(
 #' 
 #' sesameDataCache() # if not done yet
 #' compareMouseTissueReference()
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' 
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
@@ -94,7 +94,7 @@ compareMouseTissueReference <- function(betas=NULL, color="blueYellow") {
 #' sdf <- sesameDataGet("MM285.1.SigDF")
 #' inferTissue(getBetas(dyeBiasNL(noob(sdf))))
 #'
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #'
 #' @export
 inferTissue <- function(betas, reference = NULL, platform = NULL,

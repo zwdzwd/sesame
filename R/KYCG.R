@@ -37,12 +37,16 @@ testEnrichment1 <- function(query, database, universe) {
     res
 }
 
-inferPlatformFromQuery <- function(query) {
-    if (is.numeric(query)) {
-        inferPlatformFromProbeIDs(names(query))
-    } else {
-        inferPlatformFromProbeIDs(query)
+checkPlatform <- function(platform, query = NULL) {
+    if (is.null(platform)) {
+        stopifnot(!is.null(query))
+        if (is.numeric(query)) {
+            inferPlatformFromProbeIDs(names(query))
+        } else {
+            inferPlatformFromProbeIDs(query)
+        }
     }
+    platform
 }
 
 inferUniverse <- function(platform) {
@@ -77,7 +81,7 @@ inferUniverse <- function(platform) {
 #' df <- rowData(sesameDataGet('MM285.tissueSignature'))
 #' query <- df$Probe_ID[df$branch == "B_cell"]
 #' testEnrichment(query, 'KYCG.MM285.designGroup.20210210')
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #'
 #' @export
 testEnrichment <- function(
@@ -85,17 +89,13 @@ testEnrichment <- function(
     platform = NULL, silent = FALSE) {
 
     if (is.null(universe)) {
-        if (is.null(platform)) {
-            platform <- inferPlatformFromQuery(query)
-        }
+        platform <- checkPlatform(platform, query)
         universe <- inferUniverse(platform)
     }
     
     if (is.character(databases)) {
         if (is.null(databases)) { # db not give, load a default set
-            if (is.null(platform)) {
-                platform <- inferPlatformFromQuery(query)
-            }
+            platform <- checkPlatform(platform, query)
             databases <- grep("(chromHMM)|(designGroup|probeType)",
                 KYCG_listDBGroups(platform), value=TRUE)
         }
@@ -177,13 +177,7 @@ testEnrichmentGene <- function(
     query, databases = NULL, platform = NULL) {
 
     if (is.null(databases)) {
-        if (is.null(platform)) {
-            if (is.numeric(query)) {
-                platform <- inferPlatformFromProbeIDs(names(query))
-            } else {
-                platform <- inferPlatformFromProbeIDs(query)
-            }
-        }
+        platform <- checkPlatform(platform, query)
         dbs <- KYCG_getDBs(sprintf("%s.gene", platform))
     } else if (is.character(databases)) {
         dbs <- KYCG_getDBs(databases)
@@ -205,13 +199,7 @@ testEnrichmentGene <- function(
 KYCG_getGenesByLoc <- function(
     query, database_group = NULL, platform = NULL) {
     if (is.null(database_group)) {
-        if (is.null(platform)) {
-            if (is.numeric(query)) {
-                platform <- inferPlatformFromProbeIDs(names(query))
-            } else {
-                platform <- inferPlatformFromProbeIDs(query)
-            }
-        }
+        platform <- checkPlatform(platform, query)
         dbs <- KYCG_getDBs(sprintf("%s.gene", platform))
     } else {
         dbs <- KYCG_getDBs(database_group)
@@ -491,7 +479,7 @@ KYCG_getDBs <- function(group_nms, db_names = NULL,
 #' library(SummarizedExperiment)
 #' se <- sesameDataGet('MM285.20Kx467.SE')
 #' head(dbStats(assay(se), "MM285.probeType")[,1:3])
-#' sesameDataClearCache()
+#' sesameDataGet_resetEnv()
 #' 
 #' @export
 dbStats <- function(
@@ -535,7 +523,7 @@ createDBNetwork <- function(databases) {
     ## databaseNames <- c('KYCG.MM285.seqContextN.20210630')
     ## databases <- do.call(c, lapply(databaseNames, sesameDataGet))
     ## createDatabaseSetNetwork(databases)
-    ## sesameDataClearCache()
+    ## sesameDataGet_resetEnv()
     
     m_melted <- melt(m)
     colnames(m_melted) <- c("gene1", "gene2", "metric")
@@ -567,7 +555,7 @@ compareDatbaseSetOverlap <- function(
     ## databaseNames <- c('KYCG.MM285.seqContextN.20210630')
     ## databases <- do.call(c, lapply(databaseNames, sesameDataGet))
     ## compareDatbaseSetOverlap(databases)
-    ## sesameDataClearCache()
+    ## sesameDataGet_resetEnv()
 
     ndatabases <- length(databases)
     names <- names(databases)
