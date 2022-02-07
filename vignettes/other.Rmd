@@ -27,9 +27,9 @@ sesameDataCacheAll()
 
 Let's take DNA methylation data from the HM450 platform for example.
 ```{r, eval=TRUE}
-dest_dir = tempdir()
-res_grn = sesameDataDownload("3999492009_R01C01_Grn.idat", dest_dir=dest_dir)
-res_red = sesameDataDownload("3999492009_R01C01_Red.idat", dest_dir=dest_dir)
+tmp = tempdir()
+res_grn = sesameData_getAnno("test/3999492009_R01C01_Grn.idat", dest_dir=tmp)
+res_red = sesameData_getAnno("test/3999492009_R01C01_Red.idat", dest_dir=tmp)
 ```
                                                    
 ## De-identify by Masking
@@ -39,11 +39,11 @@ As a consequence, the allele frequency will be 0.5.
 
 ```{r, eval=TRUE}
 
-deIdentify(res_grn$dest_file, sprintf("%s/deidentified_Grn.idat", dest_dir))
-deIdentify(res_red$dest_file, sprintf("%s/deidentified_Red.idat", dest_dir))
+deIdentify(res_grn$dest_file, sprintf("%s/deidentified_Grn.idat", tmp))
+deIdentify(res_red$dest_file, sprintf("%s/deidentified_Red.idat", tmp))
 
-betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
-betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", dest_dir)))
+betas1 = getBetas(readIDATpair(sprintf("%s/test/3999492009_R01C01", tmp)))
+betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", tmp)))
 
 head(betas1[grep('rs',names(betas1))]) 
 head(betas2[grep('rs',names(betas2))])
@@ -64,15 +64,15 @@ my_secret <- 13412084
 set.seed(my_secret)
 
 deIdentify(res_grn$dest_file,
-    sprintf("%s/deidentified_Grn.idat", dest_dir), randomize=TRUE)
+    sprintf("%s/deidentified_Grn.idat", tmp), randomize=TRUE)
 
 my_secret <- 13412084
 set.seed(my_secret)
 deIdentify(res_red$dest_file,
-    sprintf("%s/deidentified_Red.idat", dest_dir), randomize=TRUE)
+    sprintf("%s/deidentified_Red.idat", tmp), randomize=TRUE)
 
-betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
-betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", dest_dir)))
+betas1 = getBetas(readIDATpair(sprintf("%s/test/3999492009_R01C01", tmp)))
+betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", tmp)))
 
 head(betas1[grep('rs',names(betas1))]) 
 head(betas2[grep('rs',names(betas2))]) 
@@ -90,16 +90,16 @@ The reIdentify function can thus restore the scrambled SNP intensities.
 my_secret <- 13412084
 set.seed(my_secret)
 
-reIdentify(sprintf("%s/deidentified_Grn.idat", dest_dir),
-    sprintf("%s/reidentified_Grn.idat", dest_dir))
+reIdentify(sprintf("%s/deidentified_Grn.idat", tmp),
+    sprintf("%s/reidentified_Grn.idat", tmp))
 
 my_secret <- 13412084
 set.seed(my_secret)
-reIdentify(sprintf("%s/deidentified_Red.idat", dest_dir),
-    sprintf("%s/reidentified_Red.idat", dest_dir))
+reIdentify(sprintf("%s/deidentified_Red.idat", tmp),
+    sprintf("%s/reidentified_Red.idat", tmp))
 
-betas1 = getBetas(readIDATpair(sprintf("%s/3999492009_R01C01", dest_dir)))
-betas2 = getBetas(readIDATpair(sprintf("%s/reidentified", dest_dir)))
+betas1 = getBetas(readIDATpair(sprintf("%s/test/3999492009_R01C01", tmp)))
+betas2 = getBetas(readIDATpair(sprintf("%s/reidentified", tmp)))
 
 head(betas1[grep('rs',names(betas1))]) 
 head(betas2[grep('rs',names(betas2))]) 

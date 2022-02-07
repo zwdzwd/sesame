@@ -41,9 +41,9 @@ checkPlatform <- function(platform, query = NULL) {
     if (is.null(platform)) {
         stopifnot(!is.null(query))
         if (is.numeric(query)) {
-            inferPlatformFromProbeIDs(names(query))
+            platform <- inferPlatformFromProbeIDs(names(query))
         } else {
-            inferPlatformFromProbeIDs(query)
+            platform <- inferPlatformFromProbeIDs(query)
         }
     }
     platform

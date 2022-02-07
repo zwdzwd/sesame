@@ -129,7 +129,8 @@ bSubComplete <- function(betas) {
 #' df <- data.frame(Probe_ID = c("cg00101675_BC21", "cg00116289_BC21"))
 #' attachManifest(df)
 #' @export
-attachManifest <- function(df, probe_id="Probe_ID", platform=NULL, genome=NULL) {
+attachManifest <- function(
+    df, probe_id="Probe_ID", platform=NULL, genome=NULL) {
     stopifnot(is(df, "data.frame"))
     stopifnot(probe_id %in% colnames(df))
 

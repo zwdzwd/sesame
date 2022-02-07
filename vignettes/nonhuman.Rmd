@@ -34,9 +34,10 @@ biology. This documents describe the procedure to process the MM285 array.
 
 Let's download an example mouse array IDAT
 ```{r eval=FALSE}
-res_grn = sesameDataDownload("204637490002_R05C01_Grn.idat")
-res_red = sesameDataDownload("204637490002_R05C01_Red.idat")
-pfx = sprintf("%s/204637490002_R05C01", res_red$dest_dir)
+tmp <- tempdir()
+sesameData_getAnno("test/204637490002_R05C01_Grn.idat", dest_dir=tmp)
+sesameData_getAnno("test/204637490002_R05C01_Red.idat", dest_dir=tmp)
+pfx = sprintf("%s/test/204637490002_R05C01", tmp)
 ```
 
 To load IDAT into `SigSet`, one needs the readIDATpair function,
@@ -197,9 +198,10 @@ UNDER CONSTRUCTION
 SeSAMe supports Mammal 40 array the same way:
 
 ```{r}
-res_grn = sesameDataDownload("GSM4411982_Grn.idat.gz")
-res_red = sesameDataDownload("GSM4411982_Red.idat.gz")
-sdf = readIDATpair(sprintf("%s/GSM4411982", res_red$dest_dir))
+tmp = tempdir()
+sesameData_getAnno("test/GSM4411982_Grn.idat.gz", dest_dir=tmp)
+sesameData_getAnno("test/GSM4411982_Red.idat.gz", dest_dir=tmp)
+sdf = readIDATpair(sprintf("%s/test/GSM4411982", tmp))
 ```
 
 Preprocess the sigset to produce beta values.
