@@ -232,6 +232,36 @@ For example, this given query set is tissue specific hypomethylation of mouse
 brain. Rufy3 is shown to be significantly enriched in this set and it is known
 to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
 
+# GO/Pathway enrichment
+
+One can get all the genes associated with a probe set by
+
+```{r}
+df <- rowData(sesameDataGet('MM285.tissueSignature'))
+query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
+genes <- sesameData_getGenesByProbes(query)
+genes
+```
+
+Here we demonstrate the use of
+[g:Profiler2](https://biit.cs.ut.ee/gprofiler/gost) to perform Gene ontology
+enrichment analysis:
+
+```{r eval = FALSE}
+library(gprofiler2)
+
+## use gene name
+gostres <- gost(genes$gene_name, organism = "mmusculus")
+gostres$result[order(gostres$result$p_value),]
+gostplot(gostres)
+
+## use Ensembl gene ID, note we need to remove the version suffix
+gene_ids <- sapply(strsplit(names(genes),"\\."), function(x) x[1])
+gostres <- gost(gene_ids, organism = "mmusculus")
+gostres$result[order(gostres$result$p_value),]
+gostplot(gostres)
+```
+
 # Meta gene enrichment
 
 KnowYourCG builds in several metagene/meta-feature coordinates. One can test
