@@ -19,8 +19,9 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Preparation
 
-**CRITICAL** As sesame and sesameData are under active development. This
-  documentation is specific to the following version of sesame and sesameData:
+**CRITICAL** As sesame and sesameData are under active development, this
+  documentation is specific to the following version of sesame, sesameData and
+  ExperimentHub:
 
 ```{r}
 packageVersion("sesame")
@@ -30,21 +31,6 @@ packageVersion("ExperimentHub")
 
 We recommend updating your R, ExperimentHub, sesameData and sesame to use this
 documentation consistently.
-
-To install SeSAMe from Bioconductor,
-
-```{r, eval=FALSE}
-if (!requireNamespace("BiocManager", quietly=TRUE))
-    install.packages("BiocManager")
-BiocManager::install("sesame")
-```
-
-To install the development version directly from github
-
-```{r, eval=FALSE}
-BiocManager::install('zwdzwd/sesameData')
-BiocManager::install('zwdzwd/sesame')
-```
 
 **CRITICAL:** After a new installation, one needs to cache the associated
 annotation data using the following command.
@@ -56,11 +42,9 @@ sesameDataCache()
 
 This function caches the needed SeSAMe annotation for all the supported
 platforms. SeSAMe annotation data is managed by the
-[sesameData](https://bioconductor.org/packages/release/data/experiment/html/sesameData.html)
-package which is based on the
-[ExperimentHub](https://bioconductor.org/packages/release/bioc/html/ExperimentHub.html) package.
-You can find the location of the cached annotation data on
-your local computer using:
+[sesameData](https://tinyurl.com/58ny3rrt) package which is based on the
+[ExperimentHub](https://tinyurl.com/2p873tez) package.  You can find the
+location of the cached annotation data on your local computer using:
 
 ```{r}
 tools::R_user_dir("ExperimentHub", which="cache")
