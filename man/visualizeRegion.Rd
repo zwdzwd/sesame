@@ -6,58 +6,46 @@
 \usage{
 visualizeRegion(
   chrm,
-  plt.beg,
-  plt.end,
+  beg,
+  end,
   betas,
-  platform = c("EPIC", "HM450", "MM285"),
-  refversion = c("hg38", "hg19", "mm10"),
-  sample.name.fontsize = 10,
-  heat.height = NULL,
+  platform = NULL,
+  genome = NULL,
   draw = TRUE,
-  show.sampleNames = TRUE,
-  show.samples.n = NULL,
-  show.probeNames = TRUE,
   cluster.samples = FALSE,
-  nprobes.max = 1000,
   na.rm = FALSE,
-  dmin = 0,
-  dmax = 1
+  nprobes.max = 1000,
+  txn.types = "protein_coding",
+  txn.font.size = 6,
+  ...
 )
 }
 \arguments{
 \item{chrm}{chromosome}
 
-\item{plt.beg}{begin of the region}
+\item{beg}{begin of the region}
 
-\item{plt.end}{end of the region}
+\item{end}{end of the region}
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 
 \item{platform}{EPIC, HM450, or MM285}
 
-\item{refversion}{hg38, hg19, or mm10}
-
-\item{sample.name.fontsize}{sample name font size}
-
-\item{heat.height}{heatmap height (auto inferred based on rows)}
+\item{genome}{hg38, hg19, or mm10}
 
 \item{draw}{draw figure or return betas}
 
-\item{show.sampleNames}{whether to show sample names}
-
-\item{show.samples.n}{number of samples to show (default: all)}
-
-\item{show.probeNames}{whether to show probe names}
-
 \item{cluster.samples}{whether to cluster samples}
-
-\item{nprobes.max}{maximum number of probes to plot}
 
 \item{na.rm}{remove probes with all NA.}
 
-\item{dmin}{data min}
+\item{nprobes.max}{maximum number of probes to plot}
 
-\item{dmax}{data max}
+\item{txn.types}{default to protein_coding, use NULL for all}
+
+\item{txn.font.size}{transcript name font size}
+
+\item{...}{additional options, see assemble_plots}
 }
 \value{
 graphics or a matrix containing the captured beta values

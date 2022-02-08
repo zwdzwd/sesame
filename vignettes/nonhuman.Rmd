@@ -144,7 +144,7 @@ As expected, the variant configuration is consistent with the NOD strain.
 ## Track View
 ```{r message=FALSE}
 betas = sesameDataGet("MM285.10.tissue")$betas
-visualizeGene("Igf2", betas = betas, platform="MM285", refversion = "mm10")
+visualizeGene("Igf2", betas)
 ```
 
 ## Tissue Type Inference

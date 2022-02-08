@@ -1,88 +1,136 @@
+exonToCDS <- function(exons, cdsStart, cdsEnd) {
+    if (is.na(cdsStart) || is.na(cdsEnd) || cdsEnd <= cdsStart) {
+        return(NULL); } 
+    cds <- exons[(
+        (GenomicRanges::start(exons) < cdsEnd) &
+            (GenomicRanges::end(exons) > cdsStart))]
+    GenomicRanges::start(cds) <- pmax(
+        GenomicRanges::start(cds), cdsStart)
+    GenomicRanges::end(cds) <- pmin(
+        GenomicRanges::end(cds), cdsEnd)
+    cds
+}
+
+plotTranscript1 <- function(txn, reg, i, beg, end,
+    isoformHeight, padHeight, txn.font.size) {
+
+    txn_name <- names(txn)[1]; exons <- txn[[1]]
+    meta <- as.data.frame(GenomicRanges::mcols(txn))
+    plt.width <- end - beg
+    txn.beg <- max(beg, min(GenomicRanges::start(exons))-2000)
+    txn.end <- min(end, max(GenomicRanges::end(exons))+2000)
+    exons <- subsetByOverlaps(exons, reg)
+    txn.strand <- as.character(GenomicRanges::strand(exons[1]))
+    if (txn.strand == '+') { lined <- (c(txn.beg, txn.end)-beg) / plt.width
+    } else { lined <- (c(txn.end, txn.beg)-beg) / plt.width }
+    
+    y.bot <- (i-1) * isoformHeight + padHeight
+    y.bot.exon <- y.bot + padHeight
+    y.hei <- isoformHeight - 2 * padHeight
+
+    ## transcript name
+    g <- gList(grid.text(sprintf('%s (%s)', meta$gene_name, txn_name),
+        x=mean(lined), y=y.bot + y.hei + padHeight * 0.5,
+        just=c('center','bottom'),
+        gp = gpar(fontsize = txn.font.size), draw=FALSE))
+
+    ## plot transcript line
+    g <- gList(g, gList(grid.lines(
+        x=lined, y=y.bot+y.hei/2, arrow=arrow(length=unit(0.06, "inches"),
+            ends=ifelse(txn.strand == "+", "last", "first")), draw=FALSE)))
+
+    g <- gList(g, gList(grid.lines(x=c(0,1), y=y.bot+y.hei/2,
+        gp=gpar(lty='dotted'), draw=FALSE)))
+
+    ## plot exons
+    g <- gList(g, gList(
+        grid.rect((GenomicRanges::start(exons)-beg)/plt.width,
+            y.bot + y.hei/2 - y.hei/3, GenomicRanges::width(exons)/plt.width,
+            y.hei/3*2, gp=gpar(fill='grey10', lwd=0),
+            just=c('left','bottom'), draw=FALSE)))
+
+    ## plot cds
+    cds <- exonToCDS(exons, as.integer(meta$cdsStart), as.integer(meta$cdsEnd))
+    if (length(cds) > 0) {
+        g <- gList(g, gList(
+            grid.rect((GenomicRanges::start(cds)-beg)/plt.width,
+                y.bot + y.hei/2 - y.hei/6, GenomicRanges::width(cds)/plt.width,
+                y.hei/6*2, gp=gpar(fill='red', lwd=0),
+                just=c('left','bottom'), draw=FALSE)))
+    }
+    g
+}
+
 ## helper function to plot transcript
 plotTranscripts <- function(
-    target.txns, target.region, plt.beg, plt.end) {
+    txns, reg, beg, end,
+    txn.types = c("protein_coding"), txn.font.size = 6) {
 
-    if (length(target.txns) == 0) {
+    if (!is.null(txn.types)) {
+        txns <- txns[
+            GenomicRanges::mcols(txns)$transcript_type %in% txn.types] }
+    
+    if (length(txns) == 0) {
         return(gList(
             grid.rect(0,0.1,1,0.8, just = c('left','bottom'), draw=FALSE),
             grid.text('No transcript found', x=0.5, y=0.5, draw=FALSE)))
     }
-
-    plt.width <- plt.end - plt.beg
-    isoformHeight <- 1/length(target.txns)
+    
+    isoformHeight <- 1/length(txns)
     padHeight <- isoformHeight*0.2
 
-    do.call(gList, lapply(seq_along(target.txns), function(i) {
-        txn <- target.txns[[i]]
-        txn.name <- names(target.txns)[i]
-
-        txn.beg <- max(plt.beg, min(GenomicRanges::start(txn))-2000)
-        txn.end <- min(plt.end, max(GenomicRanges::end(txn))+2000)
-
-        txn <- subsetByOverlaps(txn, target.region)
-
-        txn.strand <- as.character(GenomicRanges::strand(txn[1]))
-        if (txn.strand == '+') {
-            line.direc <- c(txn.beg-plt.beg, txn.end-plt.beg) / plt.width
-        } else {
-            line.direc <- c(txn.end-plt.beg, txn.beg-plt.beg) / plt.width
-        }
-        
-        y.bot <- (i-1)*isoformHeight+padHeight
-        y.bot.exon <- y.bot+padHeight
-        y.hei <- isoformHeight-2*padHeight
-        y.hei.exon <- isoformHeight-4*padHeight
-
-        g <- gList(
-            ## plot transcript name
-            grid.text(sprintf('%s (%s)', txn.name,
-                GenomicRanges::mcols(target.txns)$gene_name[i]),
-                x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
-                just=c('center','bottom'), draw=FALSE),
-            
-            ## plot transcript line
-            grid.lines(
-                x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
-
-            grid.lines(
-                x=c(0,1), y=y.bot+y.hei/2,
-                gp=gpar(lty='dotted'), draw=FALSE),
-
-            ## plot exons
-            grid.rect(
-            (GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
-            GenomicRanges::width(txn)/plt.width, y.hei.exon,
-            gp=gpar(fill='red',col='red'),
-            just=c('left','bottom'), draw=FALSE))
-
-        ## plot cds
-        cdsEnd <- as.integer(GenomicRanges::mcols(txn)$cdsEnd[1])
-        cdsStart <- as.integer(GenomicRanges::mcols(txn)$cdsStart[1])
-        txnCds <- txn[(GenomicRanges::start(txn) < cdsEnd) &
-                          (GenomicRanges::end(txn) > cdsStart)]
-        
-        GenomicRanges::start(txnCds) <- pmax(
-            GenomicRanges::start(txnCds), cdsStart)
-        
-        GenomicRanges::end(txnCds) <- pmin(
-            GenomicRanges::end(txnCds), cdsEnd)
-
-        if (cdsEnd > cdsStart && length(txnCds) > 0) {
-            g <- gList(g, gList(grid.rect(
-            (GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
-            GenomicRanges::width(txnCds)/plt.width,
-            y.hei, gp=gpar(fill='grey'),
-            just=c('left','bottom'), draw=FALSE)))
-        }
-        g
+    do.call(gList, lapply(seq_along(txns), function(i) {
+        plotTranscript1(txns[i], reg, i, beg, end,
+            isoformHeight, padHeight, txn.font.size)
     }))
 }
 
-plotMapLines <- function(probes, plt.beg, plt.end) {
+plotMapLines <- function(probes, beg, end) {
     nprobes <- length(probes)
     grid.segments(
-    ((GenomicRanges::start(probes) - plt.beg) / (plt.end - plt.beg)), 1,
+    ((GenomicRanges::start(probes) - beg) / (end - beg)), 1,
     ((seq_len(nprobes) - 0.5)/nprobes), 0, draw=FALSE)
+}
+
+## plot chromosome of genomic ranges and cytobands
+#' @importFrom grDevices gray.colors
+plotCytoBand <- function(
+    chrom, beg, end, genome) {
+
+    cytoBand <- sesameDataGet(paste0('genomeInfo.',genome))$cytoBand
+
+    ## set cytoband color
+    cytoBand2col <- setNames(
+        gray.colors(7, start=0.9,end=0),
+        c('stalk', 'gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100'))
+    cytoBand2col['acen'] <- 'red'
+    cytoBand2col['gvar'] <- cytoBand2col['gpos75']
+
+    ## chromosome range
+    cytoBand.target <- cytoBand[cytoBand$chrom == chrom,]
+    chromEnd <- max(cytoBand.target$chromEnd)
+    chromBeg <- min(cytoBand.target$chromStart)
+    chromWid <- chromEnd - chromBeg
+    bandColor <- cytoBand2col[as.character(cytoBand.target$gieStain)]
+
+    pltx0 <- (c(beg, end)-chromBeg)/chromWid
+    gList(
+        grid.text( # coordinate name
+            sprintf("%s:%d-%d", chrom, beg, end), 0, 0.6,
+            just = c('left','bottom'), draw = FALSE),
+        grid.rect(
+            vapply(cytoBand.target$chromStart,
+                function(x) (x-chromBeg)/chromWid, 1),
+            0.35,
+            (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid,
+            0.2, gp = gpar(fill = bandColor, col = bandColor),
+            just = c('left','bottom'), draw = FALSE),
+        grid.rect(0, 0.35, 1, 0.2, just = c("left", "bottom"), draw = FALSE),
+        grid.segments( # projection lines
+            x0 = pltx0, y0 = 0.3, x1 = c(0,1), y1 = 0.1, draw = FALSE),
+        grid.segments( # sentinel bar
+            x0 = pltx0, y0 = 0.3, x1 = pltx0, y1 = 0.6,
+            gp = gpar(col = "red"), draw = FALSE))
 }
 
 #' assemble plots
@@ -101,7 +149,7 @@ plotMapLines <- function(probes, plt.beg, plt.end) {
 #' @param dmin data min
 #' @param dmax data max
 #' @return a grid object
-plot_assemble <- function(
+assemble_plots <- function(
     betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband,
     heat.height = NULL, 
     show.probeNames = TRUE, show.samples.n = NULL,
@@ -111,7 +159,7 @@ plot_assemble <- function(
     if (is.null(show.samples.n)) { show.samples.n <- ncol(betas); }
     if (is.null(heat.height)) { heat.height <- 10 / length(txns); }
     w <- WGrob(plt.txns, name = 'txn')
-    w <- w + WGrob(plt.mapLines, Beneath(pad=0, height=0.15))
+    w <- w + WGrob(plt.mapLines, Beneath(pad=0, height=0.1))
     w <- w + WHeatmap(
         t(betas), Beneath(height = heat.height),
         name = 'betas',
@@ -122,6 +170,6 @@ plot_assemble <- function(
         yticklabel.fontsize = sample.name.fontsize,
         yticklabels.n = show.samples.n,
         xticklabels.n = length(probes))
-    w <- w + WGrob(plt.cytoband, TopOf('txn', height=0.25))
+    w <- w + WGrob(plt.cytoband, TopOf('txn', height=0.15))
     w
 }

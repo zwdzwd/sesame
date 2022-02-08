@@ -1,3 +1,77 @@
+#' Visualize Region
+#'
+#' The function takes a genomic coordinate (chromosome, start and end) and a
+#' beta value matrix (probes on the row and samples on the column). It plots
+#' the beta values as a heatmap for all probes falling into the genomic region.
+#' If `draw=TRUE` the function returns the plotted grid graphics object.
+#' Otherwise, the selected beta value matrix is returned.
+#' `cluster.samples=TRUE/FALSE` controls whether hierarchical clustering is
+#' applied to the subset beta value matrix.
+#'
+#' @param chrm chromosome
+#' @param beg begin of the region
+#' @param end end of the region
+#' @param betas beta value matrix (row: probes, column: samples)
+#' @param platform EPIC, HM450, or MM285
+#' @param genome hg38, hg19, or mm10
+#' @param draw draw figure or return betas
+#' @param cluster.samples whether to cluster samples
+#' @param na.rm remove probes with all NA.
+#' @param nprobes.max maximum number of probes to plot
+#' @param txn.types default to protein_coding, use NULL for all
+#' @param txn.font.size transcript name font size
+#' @param ... additional options, see assemble_plots
+#' @return graphics or a matrix containing the captured beta values
+#' @import grid
+#' @importMethodsFrom IRanges subsetByOverlaps
+#' @importFrom GenomicRanges GRanges
+#' @examples
+#' betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
+#' visualizeRegion('chr20', 44648623, 44652152, betas, 'HM450')
+#' @export
+visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
+    genome = NULL, draw = TRUE, cluster.samples = FALSE, na.rm = FALSE,
+    nprobes.max = 1000, txn.types = "protein_coding", txn.font.size = 6, ...) {
+
+    if (is.null(dim(betas))) { betas <- as.matrix(betas) }
+    platform <- sesameData_check_platform(platform, rownames(betas))
+    genome <- sesameData_check_genome(genome, platform)
+
+    reg <- GRanges(chrm, IRanges::IRanges(beg, end))
+    
+    pkgTest('GenomicRanges')
+    txns <- sesameDataGet(paste0('genomeInfo.',genome))$txns
+    txns <- subsetByOverlaps(txns, reg)
+
+    probes <- sesameData_getManifestGRanges(platform, genome)
+    probes <- subsetByOverlaps(probes, reg)
+    probes <- probes[names(probes) %in% rownames(betas)]
+    if (na.rm) { probes <- probes[apply(
+        betas[names(probes), ], 1, function(x) !all(is.na(x)))] }
+    
+    if (length(probes) == 0) {
+        stop("No probe overlap region ", sprintf(
+            '%s:%d-%d', chrm, beg, end)) }
+    if (length(probes) > nprobes.max) {
+        stop(sprintf('Too many probes (%d). Shrink region?', length(probes))) }
+
+    ## plot transcripts
+    plt.txns <- plotTranscripts(txns, reg, beg, end,
+        txn.types = txn.types, txn.font.size = txn.font.size)
+    plt.mapLines <- plotMapLines(probes, beg, end)
+    plt.cytoband <- plotCytoBand(chrm, beg, end, genome)
+    
+    ## clustering
+    pkgTest('wheatmap')
+    betas <- betas[names(probes),,drop=FALSE]
+    if (cluster.samples) {
+        betas <- column.cluster(betas[names(probes),,drop=FALSE])$mat }
+
+    if (draw) { assemble_plots(betas, txns, probes,
+        plt.txns, plt.mapLines, plt.cytoband, ...)
+    } else { return(betas); }
+}
+
 #' Visualize Gene
 #'
 #' Visualize the beta value in heatmaps for a given gene. The function takes
@@ -13,17 +87,16 @@
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
 #' @param genome hg19, hg38, or mm10 (default)
-#' @param ... additional options, see visualizeRegion
+#' @param ... additional options, see visualizeRegion, assemble_plots
 #' @import grid
 #' @return None
 #' @examples
 #' betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 #' visualizeGene('ADA', betas, 'HM450')
 #' @export
-visualizeGene <- function(
-    geneName, betas, platform = c('EPIC','HM450','MM285'),
-    upstream = 2000, dwstream = 2000,
-    genome = c('hg38', 'hg19', 'mm10'), ...) {
+visualizeGene <- function(geneName, betas,
+    platform = NULL, genome = NULL,
+    upstream = 2000, dwstream = 2000, ...) {
 
     if (is.null(dim(betas))) { betas <- as.matrix(betas); }
     platform <- sesameData_check_platform(platform, rownames(betas))
@@ -64,7 +137,7 @@ visualizeGene <- function(
 #' @param genome hg19, hg38 or mm10 (default)
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
-#' @param ... additional options, see visualizeRegion
+#' @param ... additional options, see visualizeRegion and assemble_plots
 #' @return None
 #' @import wheatmap
 #' @examples
@@ -73,16 +146,12 @@ visualizeGene <- function(
 #' @export
 visualizeProbes <- function(
     probeNames, betas,
-    platform = c('EPIC', 'HM450', 'MM285'),
-    genome = c('hg38','hg19','mm10'),
+    platform = NULL, genome = NULL,
     upstream = 1000, dwstream = 1000, ...) {
 
     if (is.null(dim(betas))) { betas <- as.matrix(betas); }
     platform <- sesameData_check_platform(platform, rownames(betas))
     genome <- sesameData_check_genome(genome, platform)
-    
-    platform <- match.arg(platform)
-    genome <- match.arg(genome)
     
     pkgTest('GenomicRanges')
     probes <- sesameDataGet(paste0(
@@ -101,123 +170,4 @@ visualizeProbes <- function(
         as.character(GenomicRanges::seqnames(
             target.probes[1])), regBeg, regEnd,
         betas, platform = platform, genome = genome, ...)
-}
-
-#' Visualize Region
-#'
-#' The function takes a genomic coordinate (chromosome, start and end) and a
-#' beta value matrix (probes on the row and samples on the column). It plots
-#' the beta values as a heatmap for all probes falling into the genomic region.
-#' If `draw=TRUE` the function returns the plotted grid graphics object.
-#' Otherwise, the selected beta value matrix is returned.
-#' `cluster.samples=TRUE/FALSE` controls whether hierarchical clustering is
-#' applied to the subset beta value matrix.
-#'
-#' @param chrm chromosome
-#' @param plt.beg begin of the region
-#' @param plt.end end of the region
-#' @param betas beta value matrix (row: probes, column: samples)
-#' @param platform EPIC, HM450, or MM285
-#' @param genome hg38, hg19, or mm10
-#' @param draw draw figure or return betas
-#' @param cluster.samples whether to cluster samples
-#' @param nprobes.max maximum number of probes to plot
-#' @param na.rm remove probes with all NA.
-#' @param ... additional options, see plot_assemble
-#' @return graphics or a matrix containing the captured beta values
-#' @import grid
-#' @importMethodsFrom IRanges subsetByOverlaps
-#' @importMethodsFrom IRanges IRanges
-#' @importFrom GenomicRanges GRanges
-#' @examples
-#' betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
-#' visualizeRegion('chr20', 44648623, 44652152, betas, 'HM450')
-#' @export
-visualizeRegion <- function(
-    chrm, plt.beg, plt.end, betas,
-    platform = NULL, genome = NULL,
-    draw = TRUE, cluster.samples = FALSE,
-    nprobes.max = 1000, na.rm = FALSE, ...) {
-
-    if (is.null(dim(betas))) { betas <- as.matrix(betas) }
-    platform <- sesameData_check_platform(platform, rownames(betas))
-    genome <- sesameData_check_genome(genome, platform)
-
-    reg <- GRanges(chrm, IRanges(plt.beg, plt.end))
-    
-    pkgTest('GenomicRanges')
-    txns <- sesameDataGet(paste0('genomeInfo.',genome))$txns
-    txns <- subsetByOverlaps(txns, reg)
-
-    probes <- sesameData_getManifestGRanges(platform, genome)
-    probes <- subsetByOverlaps(probes, reg)
-    probes <- probes[names(probes) %in% rownames(betas)]
-    if (na.rm) { probes <- probes[apply(
-        betas[names(probes), ], 1, function(x) !all(is.na(x)))] }
-    
-    if (length(probes) == 0) {
-        stop("No probe overlap region ", sprintf(
-            '%s:%d-%d', chrm, plt.beg, plt.end)) }
-    if (length(probes) > nprobes.max) {
-        stop(sprintf('Too many probes (%d). Shrink region?', length(probes))) }
-
-    ## plot transcripts
-    plt.txns <- plotTranscripts(txns, reg, plt.beg, plt.end)
-    plt.mapLines <- plotMapLines(probes, plt.beg, plt.end)
-    plt.cytoband <- plotCytoBand(chrm, plt.beg, plt.end, genome)
-    
-    ## clustering
-    pkgTest('wheatmap')
-    betas <- betas[names(probes),,drop=FALSE]
-    if (cluster.samples) {
-        betas <- column.cluster(betas[names(probes),,drop=FALSE])$mat }
-
-    if (draw) {
-        plot_assemble(
-            betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband, ...)
-    } else {
-        betas
-    }
-}
-
-## plot chromosome of genomic ranges and cytobands
-#' @importFrom grDevices gray.colors
-plotCytoBand <- function(
-    chrom, plt.beg, plt.end, genome) {
-
-    cytoBand <- sesameDataGet(paste0('genomeInfo.',genome))$cytoBand
-
-    ## set cytoband color
-    cytoBand2col <- setNames(
-        gray.colors(7, start=0.9,end=0),
-        c('stalk', 'gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100'))
-    cytoBand2col['acen'] <- 'red'
-    cytoBand2col['gvar'] <- cytoBand2col['gpos75']
-
-    ## chromosome range
-    cytoBand.target <- cytoBand[cytoBand$chrom == chrom,]
-    chromEnd <- max(cytoBand.target$chromEnd)
-    chromBeg <- min(cytoBand.target$chromStart)
-    chromWid <- chromEnd - chromBeg
-    bandColor <- cytoBand2col[as.character(cytoBand.target$gieStain)]
-
-    pltx0 <- (c(plt.beg, plt.end)-chromBeg)/chromWid
-    gList(
-        grid.text(
-            sprintf("%s:%d-%d", chrom, plt.beg, plt.end), 0, 0.9,
-            just = c('left','bottom'), draw = FALSE),
-        grid.rect(
-            vapply(
-                cytoBand.target$chromStart,
-                function(x) (x-chromBeg)/chromWid, 1),
-            0.35,
-            (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid,
-            0.5, gp = gpar(fill = bandColor, col = bandColor),
-            just = c('left','bottom'), draw = FALSE),
-        grid.segments(
-            x0 = pltx0, y0 = 0.3,
-            x1 = c(0,1), y1 = 0.1, draw = FALSE, gp = gpar(lty='dotted')),
-        grid.segments(
-            x0 = pltx0, y0 = 0.3,
-            x1 = pltx0, y1 = 0.85, draw = FALSE))
 }

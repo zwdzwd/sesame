@@ -7,8 +7,8 @@
 visualizeProbes(
   probeNames,
   betas,
-  platform = c("EPIC", "HM450", "MM285"),
-  refversion = c("hg38", "hg19", "mm10"),
+  platform = NULL,
+  genome = NULL,
   upstream = 1000,
   dwstream = 1000,
   ...
@@ -21,13 +21,13 @@ visualizeProbes(
 
 \item{platform}{HM450, EPIC or MM285 (default)}
 
-\item{refversion}{hg19, hg38 or mm10 (default)}
+\item{genome}{hg19, hg38 or mm10 (default)}
 
 \item{upstream}{distance to extend upstream}
 
 \item{dwstream}{distance to extend downstream}
 
-\item{...}{additional options, see visualizeRegion}
+\item{...}{additional options, see visualizeRegion and assemble_plots}
 }
 \value{
 None

@@ -7,10 +7,10 @@
 visualizeGene(
   geneName,
   betas,
-  platform = c("EPIC", "HM450", "MM285"),
+  platform = NULL,
+  genome = NULL,
   upstream = 2000,
   dwstream = 2000,
-  refversion = c("hg38", "hg19", "mm10"),
   ...
 )
 }
@@ -21,13 +21,13 @@ visualizeGene(
 
 \item{platform}{HM450, EPIC, or MM285 (default)}
 
+\item{genome}{hg19, hg38, or mm10 (default)}
+
 \item{upstream}{distance to extend upstream}
 
 \item{dwstream}{distance to extend downstream}
 
-\item{refversion}{hg19, hg38, or mm10 (default)}
-
-\item{...}{additional options, see visualizeRegion}
+\item{...}{additional options, see visualizeRegion, assemble_plots}
 }
 \value{
 None
