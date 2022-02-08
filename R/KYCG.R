@@ -37,7 +37,7 @@ testEnrichment1 <- function(query, database, universe) {
     res
 }
 
-checkPlatform <- function(platform, query = NULL) {
+queryCheckPlatform <- function(platform, query = NULL) {
     if (is.null(platform)) {
         stopifnot(!is.null(query))
         if (is.numeric(query)) {
@@ -89,13 +89,13 @@ testEnrichment <- function(
     platform = NULL, silent = FALSE) {
 
     if (is.null(universe)) {
-        platform <- checkPlatform(platform, query)
+        platform <- queryCheckPlatform(platform, query)
         universe <- inferUniverse(platform)
     }
     
     if (is.character(databases)) {
         if (is.null(databases)) { # db not give, load a default set
-            platform <- checkPlatform(platform, query)
+            platform <- queryCheckPlatform(platform, query)
             databases <- grep("(chromHMM)|(designGroup|probeType)",
                 KYCG_listDBGroups(platform), value=TRUE)
         }
@@ -177,7 +177,7 @@ testEnrichmentGene <- function(
     query, databases = NULL, platform = NULL) {
 
     if (is.null(databases)) {
-        platform <- checkPlatform(platform, query)
+        platform <- queryCheckPlatform(platform, query)
         dbs <- KYCG_getDBs(sprintf("%s.gene", platform))
     } else if (is.character(databases)) {
         dbs <- KYCG_getDBs(databases)
@@ -190,22 +190,6 @@ testEnrichmentGene <- function(
     if (length(dbs) == 0) {return(NULL);}
     
     testEnrichment(query, dbs)
-}
-
-## The following is to be exported once the databases are updated
-## df <- rowData(sesameDataGet('MM285.tissueSignature'))
-## query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
-## genes <- KYCG_getGenesByLoc(query, "KYCG.MM285.gene.GENCODEvM25.20220116")
-KYCG_getGenesByLoc <- function(
-    query, database_group = NULL, platform = NULL) {
-    if (is.null(database_group)) {
-        platform <- checkPlatform(platform, query)
-        dbs <- KYCG_getDBs(sprintf("%s.gene", platform))
-    } else {
-        dbs <- KYCG_getDBs(database_group)
-    }
-    dbs <- dbs[vapply(dbs, function(db) any(db %in% query), logical(1))]
-    databases_getMeta(dbs)
 }
 
 

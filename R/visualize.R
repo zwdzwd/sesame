@@ -12,7 +12,7 @@
 #' @param platform HM450, EPIC, or MM285 (default)
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
-#' @param refversion hg19, hg38, or mm10 (default)
+#' @param genome hg19, hg38, or mm10 (default)
 #' @param ... additional options, see visualizeRegion
 #' @import grid
 #' @return None
@@ -23,25 +23,14 @@
 visualizeGene <- function(
     geneName, betas, platform = c('EPIC','HM450','MM285'),
     upstream = 2000, dwstream = 2000,
-    refversion = c('hg38', 'hg19', 'mm10'), ...) {
+    genome = c('hg38', 'hg19', 'mm10'), ...) {
 
-    platform <- match.arg(platform)
-    refversion <- match.arg(refversion)
-    
-    if (is.null(dim(betas))) {
-        betas <- as.matrix(betas);
-    }
+    if (is.null(dim(betas))) { betas <- as.matrix(betas); }
+    platform <- sesameData_check_platform(platform, rownames(betas))
+    genome <- sesameData_check_genome(genome, platform)
     
     pkgTest('GenomicRanges')
-
-    target.txns <- sesameData_getTranscriptsByGene(geneName, refversion)
-    ## gene2txn <- sesameDataGet(paste0('genomeInfo.',refversion))$gene2txn
-    ## if (!(geneName %in% names(gene2txn))) {
-    ##     stop('Gene ', geneName, ' not found in this reference.');
-    ## }
-    ## txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
-    ## target.txns <- txns[gene2txn[[geneName]]]
-    
+    target.txns <- sesameData_getTranscriptsByGene(geneName, genome)
     target.strand <- as.character(GenomicRanges::strand(target.txns[[1]][1]))
     if (target.strand == '+') {
         pad.start <- upstream
@@ -56,7 +45,7 @@ visualizeGene <- function(
         as.character(GenomicRanges::seqnames(merged.exons[1])),
         min(GenomicRanges::start(merged.exons)) - pad.start,
         max(GenomicRanges::end(merged.exons)) + pad.end,
-        betas, platform = platform, refversion = refversion, ...)
+        betas, platform = platform, genome = genome, ...)
 }
 
 #' Visualize Region that Contains the Specified Probes
@@ -72,7 +61,7 @@ visualizeGene <- function(
 #' @param probeNames probe names
 #' @param betas beta value matrix (row: probes, column: samples)
 #' @param platform HM450, EPIC or MM285 (default)
-#' @param refversion hg19, hg38 or mm10 (default)
+#' @param genome hg19, hg38 or mm10 (default)
 #' @param upstream distance to extend upstream
 #' @param dwstream distance to extend downstream
 #' @param ... additional options, see visualizeRegion
@@ -85,15 +74,19 @@ visualizeGene <- function(
 visualizeProbes <- function(
     probeNames, betas,
     platform = c('EPIC', 'HM450', 'MM285'),
-    refversion = c('hg38','hg19','mm10'),
+    genome = c('hg38','hg19','mm10'),
     upstream = 1000, dwstream = 1000, ...) {
 
+    if (is.null(dim(betas))) { betas <- as.matrix(betas); }
+    platform <- sesameData_check_platform(platform, rownames(betas))
+    genome <- sesameData_check_genome(genome, platform)
+    
     platform <- match.arg(platform)
-    refversion <- match.arg(refversion)
+    genome <- match.arg(genome)
     
     pkgTest('GenomicRanges')
     probes <- sesameDataGet(paste0(
-        platform, '.probeInfo'))[[paste0('mapped.probes.',refversion)]]
+        platform, '.probeInfo'))[[paste0('mapped.probes.',genome)]]
     probeNames <- probeNames[probeNames %in% names(probes)]
 
     if (length(probeNames)==0)
@@ -107,84 +100,7 @@ visualizeProbes <- function(
     visualizeRegion(
         as.character(GenomicRanges::seqnames(
             target.probes[1])), regBeg, regEnd,
-        betas, platform = platform, refversion = refversion, ...)
-}
-
-## helper function to plot transcript
-plotTranscripts <- function(
-    target.txns, target.region, plt.beg, plt.end) {
-
-    plt.width <- plt.end - plt.beg
-    isoformHeight <- 1/length(target.txns)
-    padHeight <- isoformHeight*0.2
-
-    do.call(gList, lapply(seq_along(target.txns), function(i) {
-        txn <- target.txns[[i]]
-        txn.name <- names(target.txns)[i]
-
-        txn.beg <- max(plt.beg, min(GenomicRanges::start(txn))-2000)
-        txn.end <- min(plt.end, max(GenomicRanges::end(txn))+2000)
-
-        txn <- subsetByOverlaps(txn, target.region)
-
-        txn.strand <- as.character(GenomicRanges::strand(txn[1]))
-        if (txn.strand == '+') {
-            line.direc <- c(txn.beg-plt.beg, txn.end-plt.beg) / plt.width
-        } else {
-            line.direc <- c(txn.end-plt.beg, txn.beg-plt.beg) / plt.width
-        }
-        
-        y.bot <- (i-1)*isoformHeight+padHeight
-        y.bot.exon <- y.bot+padHeight
-        y.hei <- isoformHeight-2*padHeight
-        y.hei.exon <- isoformHeight-4*padHeight
-
-        g <- gList(
-            ## plot transcript name
-            grid.text(
-                sprintf('%s (%s)', txn.name,
-                    GenomicRanges::mcols(target.txns)$gene_name[i]),
-                ## sprintf('%s (%s)', txn.name, txn2gene[[txn.name]][1]),
-                x=mean(line.direc), y=y.bot+y.hei+padHeight*0.5,
-                just=c('center','bottom'), draw=FALSE),
-            
-            ## plot transcript line
-            grid.lines(
-                x=line.direc, y=y.bot+y.hei/2, arrow=arrow(), draw=FALSE),
-
-            grid.lines(
-                x=c(0,1), y=y.bot+y.hei/2,
-                gp=gpar(lty='dotted'), draw=FALSE),
-
-            ## plot exons
-            grid.rect(
-            (GenomicRanges::start(txn)-plt.beg)/plt.width, y.bot.exon, 
-            GenomicRanges::width(txn)/plt.width, y.hei.exon,
-            gp=gpar(fill='red',col='red'),
-            just=c('left','bottom'), draw=FALSE))
-
-        ## plot cds
-        cdsEnd <- as.integer(GenomicRanges::mcols(txn)$cdsEnd[1])
-        cdsStart <- as.integer(GenomicRanges::mcols(txn)$cdsStart[1])
-        txnCds <- txn[(
-            GenomicRanges::start(txn) < cdsEnd) &
-                (GenomicRanges::end(txn) > cdsStart)]
-        
-        GenomicRanges::start(txnCds) <- pmax(
-            GenomicRanges::start(txnCds), cdsStart)
-        
-        GenomicRanges::end(txnCds) <- pmin(
-            GenomicRanges::end(txnCds), cdsEnd)
-
-        if (cdsEnd > cdsStart && length(txnCds) > 0) {
-            g <- gList(g, gList(grid.rect(
-            (GenomicRanges::start(txnCds)-plt.beg)/plt.width, y.bot,
-            GenomicRanges::width(txnCds)/plt.width,
-            y.hei, gp=gpar(fill='grey'),
-            just=c('left','bottom'), draw=FALSE)))
-        }
-        g
-    }))
+        betas, platform = platform, genome = genome, ...)
 }
 
 #' Visualize Region
@@ -202,121 +118,63 @@ plotTranscripts <- function(
 #' @param plt.end end of the region
 #' @param betas beta value matrix (row: probes, column: samples)
 #' @param platform EPIC, HM450, or MM285
-#' @param refversion hg38, hg19, or mm10
+#' @param genome hg38, hg19, or mm10
 #' @param draw draw figure or return betas
-#' @param heat.height heatmap height (auto inferred based on rows)
-#' @param show.sampleNames whether to show sample names
-#' @param show.probeNames whether to show probe names
-#' @param show.samples.n number of samples to show (default: all)
 #' @param cluster.samples whether to cluster samples
-#' @param sample.name.fontsize sample name font size
-#' @param dmin data min
-#' @param dmax data max
 #' @param nprobes.max maximum number of probes to plot
 #' @param na.rm remove probes with all NA.
+#' @param ... additional options, see plot_assemble
 #' @return graphics or a matrix containing the captured beta values
 #' @import grid
 #' @importMethodsFrom IRanges subsetByOverlaps
+#' @importMethodsFrom IRanges IRanges
+#' @importFrom GenomicRanges GRanges
 #' @examples
 #' betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 #' visualizeRegion('chr20', 44648623, 44652152, betas, 'HM450')
 #' @export
 visualizeRegion <- function(
     chrm, plt.beg, plt.end, betas,
-    platform = c('EPIC','HM450','MM285'),
-    refversion = c('hg38','hg19','mm10'),
-    sample.name.fontsize = 10,
-    heat.height = NULL, draw = TRUE,
-    show.sampleNames = TRUE, show.samples.n = NULL, show.probeNames = TRUE,
-    cluster.samples = FALSE,
-    nprobes.max = 1000,
-    na.rm = FALSE, dmin = 0, dmax = 1) {
+    platform = NULL, genome = NULL,
+    draw = TRUE, cluster.samples = FALSE,
+    nprobes.max = 1000, na.rm = FALSE, ...) {
 
-    platform <- match.arg(platform)
-    refversion <- match.arg(refversion)
+    if (is.null(dim(betas))) { betas <- as.matrix(betas) }
+    platform <- sesameData_check_platform(platform, rownames(betas))
+    genome <- sesameData_check_genome(genome, platform)
 
+    reg <- GRanges(chrm, IRanges(plt.beg, plt.end))
+    
     pkgTest('GenomicRanges')
+    txns <- sesameDataGet(paste0('genomeInfo.',genome))$txns
+    txns <- subsetByOverlaps(txns, reg)
 
-    if (is.null(dim(betas))) {
-        betas <- as.matrix(betas);
-    }
-
-    txns <- sesameDataGet(paste0('genomeInfo.',refversion))$txns
-    txn2gene <- sesameDataGet(paste0('genomeInfo.',refversion))$txn2gene
-    probes <- sesameDataGet(paste0(
-        platform, '.probeInfo'))[[paste0('mapped.probes.',refversion)]]
-
-    if (is.null(probes)) {
-        stop("Probe info unfound. Wrong platform and refversion?")
-    }
-    
-    target.region <- GenomicRanges::GRanges(
-        chrm, IRanges::IRanges(plt.beg, plt.end))
-    target.txns <- subsetByOverlaps(txns, target.region)
-
-    plt.width <- plt.end-plt.beg
-    probes <- subsetByOverlaps(probes, target.region)
+    probes <- sesameData_getManifestGRanges(platform, genome)
+    probes <- subsetByOverlaps(probes, reg)
     probes <- probes[names(probes) %in% rownames(betas)]
-    if (na.rm)
-        probes <- probes[apply(
-            betas[names(probes), ], 1, function(x) !all(is.na(x)))]
-    nprobes <- length(probes)
-
-    if (is.null(show.samples.n))
-        show.samples.n <- dim(betas)[2]
+    if (na.rm) { probes <- probes[apply(
+        betas[names(probes), ], 1, function(x) !all(is.na(x)))] }
     
-    if (nprobes == 0)
+    if (length(probes) == 0) {
         stop("No probe overlap region ", sprintf(
-            '%s:%d-%d', chrm, plt.beg, plt.end))
-
-    if (nprobes > nprobes.max) {
-        stop(sprintf('Too many probes (%d). Consider smaller region?', nprobes))
-    }
+            '%s:%d-%d', chrm, plt.beg, plt.end)) }
+    if (length(probes) > nprobes.max) {
+        stop(sprintf('Too many probes (%d). Shrink region?', length(probes))) }
 
     ## plot transcripts
-    if (length(target.txns) > 0) {
-        plt.txns <- plotTranscripts(
-            target.txns, target.region, plt.beg, plt.end)
-        if (is.null(heat.height)) {
-            heat.height <- 10 / length(target.txns);
-        }
-    } else {
-        plt.txns <- gList(
-            grid.rect(0,0.1,1,0.8, just = c('left','bottom'), draw=FALSE),
-            grid.text('No transcript found', x=0.5, y=0.5, draw=FALSE))
-    }
-
-    plt.chromLine <- grid.lines(x=c(0, 1), y=c(1,1), draw=FALSE)
-    plt.mapLines <- grid.segments(
-        (GenomicRanges::start(probes)-plt.beg) / plt.width, 1,
-        ((seq_len(nprobes)-0.5)/nprobes), 0, draw=FALSE)
-
+    plt.txns <- plotTranscripts(txns, reg, plt.beg, plt.end)
+    plt.mapLines <- plotMapLines(probes, plt.beg, plt.end)
+    plt.cytoband <- plotCytoBand(chrm, plt.beg, plt.end, genome)
+    
     ## clustering
     pkgTest('wheatmap')
     betas <- betas[names(probes),,drop=FALSE]
     if (cluster.samples) {
-        betas <- column.cluster(betas[names(probes),,drop=FALSE])$mat
-    }
+        betas <- column.cluster(betas[names(probes),,drop=FALSE])$mat }
 
     if (draw) {
-        w <- WGrob(plt.txns, name='txn') +
-            WGrob(plt.mapLines, Beneath(pad=0, height=0.15)) +
-                WHeatmap(
-                    t(betas),
-                    Beneath(height=heat.height),
-                    name='betas',
-                    cmp=CMPar(dmin=dmin, dmax=dmax),
-                    xticklabels=show.probeNames,
-                    xticklabel.rotat=45,
-                    yticklabels=show.sampleNames,
-                    yticklabel.fontsize=sample.name.fontsize,
-                    yticklabels.n=show.samples.n,
-                    xticklabels.n=nprobes)
-        
-        w <- w + WGrob(
-            plotCytoBand(chrm, plt.beg, plt.end, refversion=refversion),
-            TopOf('txn', height=0.25))
-        w
+        plot_assemble(
+            betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband, ...)
     } else {
         betas
     }
@@ -325,12 +183,10 @@ visualizeRegion <- function(
 ## plot chromosome of genomic ranges and cytobands
 #' @importFrom grDevices gray.colors
 plotCytoBand <- function(
-    chrom, plt.beg, plt.end,
-    refversion = c('hg38', 'hg19','mm10')) {
+    chrom, plt.beg, plt.end, genome) {
 
-    refversion <- match.arg(refversion)
-    cytoBand <- sesameDataGet(paste0('genomeInfo.',refversion))$cytoBand
-    
+    cytoBand <- sesameDataGet(paste0('genomeInfo.',genome))$cytoBand
+
     ## set cytoband color
     cytoBand2col <- setNames(
         gray.colors(7, start=0.9,end=0),
