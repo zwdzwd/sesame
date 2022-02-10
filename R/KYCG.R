@@ -26,13 +26,15 @@ testEnrichment1 <- function(query, database, universe) {
         } else {
             res <- testEnrichmentGSEA(query = query, database = database)
         }
-    } else { # categorical query
+    } else if (is.character(query)) { # categorical query
         if(is.numeric(database)) { # numeric db
             res <- testEnrichmentGSEA(query = database, database = query)
         } else { # categorical db
             res <- testEnrichmentFisher(query = query, database = database,
                 universe = universe)
         }
+    } else {
+        stop("Query is neither numerical or categorical.")
     }
     res
 }
@@ -109,15 +111,16 @@ testEnrichment <- function(
         message(sprintf("Testing against %d database(s)...", length(dbs)))
     }
     
-    res <- do.call(rbind, lapply(dbs, function(db) {
+    res <- do.call(bind_rows, lapply(dbs, function(db) {
         testEnrichment1(query = query, database = db, universe = universe)}))
 
+    ## adjust p.value after merging
     res$FDR <- p.adjust(res$p.value, method='fdr')
     rownames(res) <- NULL
 
     ## bind meta data
     res <- cbind(res, databases_getMeta(dbs))
-    res[order(res$p.value, -abs(res$estimate)), ]
+    res[order(res$log10.p.value, -abs(res$estimate)), ]
 }
 
 #' Aggregate test enrichment results
@@ -149,17 +152,50 @@ aggregateTestEnrichments <- function(
     }
 }
 
+#' build gene-probe association database
+#'
+#' @param query the query probe list. If NULL, use all the probes
+#' on the platform
+#' @param platform HM450, EPIC, MM285, Mammal40, will infer from
+#' query if not given
+#' @param max_distance probe-gene distance for association
+buildGeneDBs <- function(
+    query = NULL, platform = NULL, max_distance = 10000) {
+    
+    platform <- queryCheckPlatform(platform, query)
+    genes <- sesameData_txnToGeneGRanges(
+        sesameData_getTxnGRanges(
+            sesameData_check_genome(NULL, platform)))
+    all_probes <- sesameData_getManifestGRanges(platform)
+    if (!is.null(query)) {
+        probes <- all_probes[names(all_probes) %in% query] }
+
+    ## skip non-overlapping genes
+    genes <- subsetByOverlaps(genes, probes + max_distance)
+    hits <- findOverlaps(genes, all_probes + max_distance)
+    dbs <- split(names(all_probes)[subjectHits(hits)],
+        names(genes)[queryHits(hits)])
+    gene_names <- genes[names(dbs)]$gene_name
+    res <- lapply(seq_along(dbs), function(i) {
+        d1 <- dbs[[i]];
+        attr(d1, "group") <- sprintf("KYCG.%s.gene.00000000", platform);
+        attr(d1, "dbname") <- names(dbs)[i];
+        attr(d1, "gene_name") <- gene_names[i];
+        d1;})
+    names(res) <- names(dbs)
+    res
+}
+
 #' testEnrichmentGene tests for the enrichment of set of probes
 #' (query) in gene regions.
 #'
 #' @param query Vector of probes of interest (e.g., probes belonging to a
 #' given platform)
-#' @param databases List of vectors corresponding to the database sets of
-#' interest with associated meta data as an attribute to each element. Optional.
-#' (Default: NA)
 #' @param platform String corresponding to the type of platform to use. Either
 #' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 #' from the query set query (Default: NA)
+#' @param ... additional options of building the gene database. See
+#' function buildGeneDBs for detail.
 #' 
 #' @return One list containing features corresponding the test estimate,
 #' p-value, and type of test.
@@ -174,21 +210,16 @@ aggregateTestEnrichments <- function(
 #'
 #' @export
 testEnrichmentGene <- function(
-    query, databases = NULL, platform = NULL) {
-
+    query, platform = NULL, ...) {
+    
     if (is.null(databases)) {
         platform <- queryCheckPlatform(platform, query)
-        dbs <- KYCG_getDBs(sprintf("%s.gene", platform))
-    } else if (is.character(databases)) {
-        dbs <- KYCG_getDBs(databases)
+        dbs <- buildGeneDBs(query, platform, ...)
     } else {
         dbs <- databases
     }
-
-    ## skip non-overlapping genes
-    dbs <- dbs[vapply(dbs, function(db) any(db %in% query), logical(1))]
-    if (length(dbs) == 0) {return(NULL);}
     
+    if (length(dbs) == 0) { return(NULL); }
     testEnrichment(query, dbs)
 }
 
@@ -216,17 +247,21 @@ testEnrichmentFisher <- function(query, database, universe) {
     d_min_q <- l_d - q_and_d
     q_min_d <- l_q - q_and_d
     min_q_d <- length(universe) - l_q - l_d + q_and_d
-    res <- fisher.test(matrix(c(
-        q_and_d, d_min_q, q_min_d, min_q_d), nrow = 2))
+
+    ## fisher.test(matrix(c(
+    ##     q_and_d, d_min_q, q_min_d, min_q_d), nrow = 2),
+    ##     alternative="greater")$p.value
+    log10.p.value <- phyper(
+        q_and_d-1, q_and_d + q_min_d,
+        min_q_d + d_min_q, d_min_q + q_and_d,
+        lower.tail = FALSE, log.p = TRUE) / log(10)
 
     fc <- q_and_d / (q_and_d + q_min_d) / (q_and_d + d_min_q) *
         (q_and_d + q_min_d + d_min_q + min_q_d)
     data.frame(
-        estimate = log2(fc),
-        p.value = res$p.value,
-        test = "Log2FC",
-        nQ = length(query),
-        nD = length(database),
+        estimate = log2(fc), p.value = 10**(log10.p.value),
+        log10.p.value = log10.p.value, test = "Log2FC",
+        nQ = length(query), nD = length(database),
         overlap = q_and_d)
 }
 
@@ -305,7 +340,8 @@ testEnrichmentGSEA <- function(query, database, precise=FALSE) {
     
     if (length(overlap) == 0 || length(overlap) == length(query)) {
         return(data.frame(
-            estimate = 0, p.value = 1, test = test,
+            estimate = 0, p.value = 1,
+            log10.p.value = 0, test = test,
             nQ = length(database), nD = length(query),
             overlap = length(overlap)))
     }
@@ -315,12 +351,14 @@ testEnrichmentGSEA <- function(query, database, precise=FALSE) {
     if (res$es_large > res$es_small) {
         ## negative sign represent enrichment for the large end
         data.frame(
-            estimate = -res$es_large, p.value = res$pv_large, test = test,
+            estimate = -res$es_large, p.value = res$pv_large,
+            log10.p.value = log10(res$pv_large), test = test,
             nQ = length(database), nD = length(query),
             overlap = length(overlap))
     } else {
         data.frame(
-            estimate = res$es_small, p.value = res$pv_small, test = test,
+            estimate = res$es_small, p.value = res$pv_small,
+            log10.p.value = log10(res$pv_small), test = test,
             nQ = length(database), nD = length(query),
             overlap = length(overlap))
     }
@@ -343,24 +381,20 @@ testEnrichmentSpearman <- function(query, database) {
     test <- "Spearman's rho"
     if (length(intersect(names(query), names(database))) == 0) {
         return(data.frame(
-            estimate = 0,
-            p.value = 1,
-            test = test,
-            nQ = length(query),
-            nD = length(database),
-            overlap = 0
-        ))
+            estimate = 0, p.value = 1,
+            log10.p.value = 0, test = test,
+            nQ = length(query), nD = length(database),
+            overlap = 0))
     }
     
     database <- database[match(names(query), names(database))]
     
     res <- cor.test(query, database, method = "spearman")
     data.frame(
-        estimate = res$estimate[[1]],
-        p.value = res$p.value,
-        test = test,
-        overlap = length(query)
-    )
+        estimate = res$estimate[[1]], p.value = res$p.value,
+        log10.p.value = log10(res$estimate[[1]]), test = test,
+        nQ = length(query), nD = length(database),
+        overlap = length(query))
 }
 
 guess_dbnames <- function(nms, allow_multi=FALSE) {
@@ -388,14 +422,24 @@ guess_dbnames <- function(nms, allow_multi=FALSE) {
 #' List database group names
 #'
 #' @param filter keywords for filtering
+#' @param type categorical, numerical (default: all)
 #' @return a list of db group names
 #' @examples
 #' head(KYCG_listDBGroups("chromHMM"))
 #' @export
-KYCG_listDBGroups <- function(filter = NULL) {
-    gps <- sesameDataList("KYCG")$Title
+KYCG_listDBGroups <- function(
+    filter = NULL, type = NULL) {
+    
+    gps <- sesameDataList("KYCG", full=TRUE)[,c("Title","Description")]
+    gps$type <- vapply(strsplit(
+        gps$Description, " "), function(x) x[2], character(1))
+    gps$Description <- str_replace(
+        gps$Description, "KYCG categorical database holding ", "")
     if (!is.null(filter)) {
-        gps <- grep(filter, gps, value=TRUE)
+        gps <- gps[grepl(filter, gps$Title),]
+    }
+    if (!is.null(type)) {
+        gps <- gps[gps$type %in% type,]
     }
     gps
 }

@@ -5,19 +5,18 @@
 \title{testEnrichmentGene tests for the enrichment of set of probes
 (query) in gene regions.}
 \usage{
-testEnrichmentGene(query, databases = NULL, platform = NULL)
+testEnrichmentGene(query, platform = NULL, ...)
 }
 \arguments{
 \item{query}{Vector of probes of interest (e.g., probes belonging to a
 given platform)}
 
-\item{databases}{List of vectors corresponding to the database sets of
-interest with associated meta data as an attribute to each element. Optional.
-(Default: NA)}
-
 \item{platform}{String corresponding to the type of platform to use. Either
 MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 from the query set query (Default: NA)}
+
+\item{...}{additional options of building the gene database. See
+function buildGeneDBs for detail.}
 }
 \value{
 One list containing features corresponding the test estimate,

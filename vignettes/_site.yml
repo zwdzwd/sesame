@@ -17,9 +17,9 @@ navbar:
     - text: "Inference"
       icon: fa-book
       href: inferences.html
-    - text: "Others"
-      icon: fa-barcode
-      href: other.html
     - text: "KnowYourCG"
       icon: fa-barcode
       href: KYCG.html
+    - text: "Others"
+      icon: fa-barcode
+      href: other.html

@@ -108,7 +108,8 @@ print.DMLSummary <- function(x, ...) {
     mm <- attr(x, "model.matrix")
     message(sprintf("DMLSummary Object with %d Loci, %d samples.\n",
         length(x), nrow(mm)))
-    message("Contrasts: ", names(attr(mm, "contrasts")), "\n")
+    contrast_names <- paste0(names(attr(mm, "contrasts")), collapse=", ")
+    message("Contrasts: ", contrast_names, "\n")
 }
 
 #' Extract slope information from DMLSummary
@@ -125,6 +126,7 @@ print.DMLSummary <- function(x, ...) {
 summaryExtractTest <- function(smry) {
     est <- as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
         x$coefficients[,'Estimate']; }))))
+    est$Probe_ID <- names(smry)
     rownames(est) <- names(smry)
     colnames(est) <- paste0("Est_", colnames(est))
     pvals <- as.data.frame(t(do.call(cbind, lapply(smry, function(x) {

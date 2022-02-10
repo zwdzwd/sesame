@@ -7,7 +7,7 @@ fig_width: 6
 fig_height: 6
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{"6. knowYourCG"}
+  %\VignetteIndexEntry{"5. knowYourCG"}
   %\VignetteEncoding{UTF-8}
 ---
 
