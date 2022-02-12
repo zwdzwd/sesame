@@ -210,6 +210,7 @@ testEnrichmentGene <- function(
 #' for the given results.
 testEnrichmentFisher <- function(query, database, universe) {
     q_and_d <- length(intersect(query, database))
+    q_and_d_probes <- intersect(query,database)
 
     l_d <- length(database)
     l_q <- length(query)
@@ -227,7 +228,9 @@ testEnrichmentFisher <- function(query, database, universe) {
         test = "Log2FC",
         nQ = length(query),
         nD = length(database),
-        overlap = q_and_d)
+        overlap = q_and_d,
+        CpGs = I(list(q_and_d_probes)))
+
 }
 
 calcES <- function(dCont, dDisc) {
@@ -307,7 +310,8 @@ testEnrichmentGSEA <- function(query, database, precise=FALSE) {
         return(data.frame(
             estimate = 0, p.value = 1, test = test,
             nQ = length(database), nD = length(query),
-            overlap = length(overlap)))
+            overlap = length(overlap),
+            CpGs = I(list(overlap))))
     }
 
     res <- calcES_Significance(query, overlap, precise=precise)
@@ -317,12 +321,14 @@ testEnrichmentGSEA <- function(query, database, precise=FALSE) {
         data.frame(
             estimate = -res$es_large, p.value = res$pv_large, test = test,
             nQ = length(database), nD = length(query),
-            overlap = length(overlap))
+            overlap = length(overlap),
+            CpGs = I(list(overlap)))
     } else {
         data.frame(
             estimate = res$es_small, p.value = res$pv_small, test = test,
             nQ = length(database), nD = length(query),
-            overlap = length(overlap))
+            overlap = length(overlap),
+            CpGs = I(list(overlap)))
     }
 }
     
@@ -555,3 +561,57 @@ compareDatbaseSetOverlap <- function(
     }
     m
 }
+
+
+#' KYCG_getGeneOntology associates CpG probes (query set) with gene annotations, then tests gene list functional 
+#' enrichment of the set of probes using gprofiler2. 
+#' @param query Vector of CpG probes of interest (e.g., significant probes), or character vector 
+#' of gene names
+#' @param threshold number of base pairs flanking genes on each side -- can adjust for different distances from gene
+#' (Default: 0)
+#' @param platform String corresponding to the type of platform to use. Either
+#' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred from the query set probeIDs (Default: NA).
+#' @param silent output message? (Default: FALSE)
+#' @return One list containing gene ontology results list and gene ontology plot object corresponding the test estimate
+#' @importFrom gprofiler2 gost gostplot
+#' @examples
+#' 
+#' library(SummarizedExperiment)
+#' df <- sesameDataGet("KYCG.HM450.gene.20210923")[c("FOS","JUN","EGR1","ATF3")]
+#' query <- c(df[[1]], df[[2]], df[[3]], df[[4]])
+#' KYCG_getGeneOntology(query)
+#' sesameDataClearCache()
+#'
+#' @export
+KYCG_getProximalGenes <- function(query,platform=NULL,threshold=0) {
+    if (is.null(platform)) {
+        if (is.numeric(query)) {
+            platform <- sesame:::inferPlatformFromQuery(names(query))
+        } else {
+            platform <- sesame:::inferPlatformFromQuery(query)
+        }
+    }
+    if (platform %in% c("HM450", "EPIC")) {
+        species = "Homo sapiens"
+        species_info = list(platform=platform, genome="genomeInfo.hg38")
+    } else if (platform %in% c("MM285")) {
+        species = "Mus musculus"
+        species_info = list(platform=platform, genome="genomeInfo.mm10")
+    } else {
+        stop("platform not found")
+    }
+    gene_GR <- sesameData_toGeneGRanges(sesameData_toTxnGRanges(
+                    sesameDataGet(species_info$genome)$txns)) + threshold
+    gene_query_GR <- gene_GR[findOverlaps(
+                            sesameData_getManifestGRanges(species_info$platform)[query], 
+                            gene_GR, select="all")@to] 
+
+    gene_query_GR$gene_name
+}
+
+
+
+
+
+
+
