@@ -9,6 +9,7 @@ testEnrichment(
   query,
   databases = NULL,
   universe = NULL,
+  alternative = "greater",
   platform = NULL,
   silent = FALSE
 )
@@ -23,6 +24,8 @@ interest with associated meta data as an attribute to each element. Optional.
 \item{universe}{Vector of probes in the universe set containing all of
 the probes to be considered in the test. If it is not provided, it will be
 inferred from the provided platform. (Default: NA).}
+
+\item{alternative}{"two.sided", "greater", or "less"}
 
 \item{platform}{String corresponding to the type of platform to use. Either
 MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
@@ -43,7 +46,7 @@ a number of features (database sets).
 library(SummarizedExperiment)
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 query <- df$Probe_ID[df$branch == "B_cell"]
-testEnrichment(query, 'KYCG.MM285.designGroup.20210210')
+res <- testEnrichment(query, "chromHMM")
 sesameDataGet_resetEnv()
 
 }

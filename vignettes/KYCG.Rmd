@@ -14,7 +14,7 @@ vignette: >
 An automated discovery tool for discovering hidden biological and technical
 links
 
-# Introduction
+# Quick start
 
 knowYourCG is a tool for evaluating CpG feature enrichment using Illumina probe
 IDs. Tthis tool automates the hypothesis testing by asking whether a set of
@@ -41,49 +41,83 @@ The following commands prepares the use of KnowYourCG:
 
 ```{r load-depenencies, results="hide", message=FALSE, warning=FALSE}
 library(sesame)
-sesameDataCacheAll()
+sesameDataCache()
 ```
 
-# Input data
+Our example uses a specific mouse design group as input (PGCMeth, methylated in
+primoridal germ cells). First get the CG list using the following code:
+
+```{r message=FALSE}
+query <- KYCG_getDBs("MM285.designGroup")[["PGCMeth"]]
+head(query)
+```
+
+Now test the enrichment over database groups. By default, KYCG will select all
+the categorical groups and overlapping genes (CpGs associated with a gene).
+
+```{r fig.width=8, fig.height=5, fig.align="center", message=FALSE}
+results_pgc <- testEnrichment(query)
+head(results_pgc)
+```
+
+We can visualize the result of this test using the `KYCG_plotEnrichAll`
+function:
+
+```{r}
+KYCG_plotEnrichAll(results_pgc)
+```
+
+This plot groups different database sets along the x-axis and plot -log10(FDR)
+on the y-axis. As expected, the PGCMeth group itself appear on the top of the
+list. But one can also find histone H3K9me3, chromHMM `Het` and transcription
+factor `Trim28` binding enriched in this CG group.
+
+# Test enrichment
 
 ## Databases
 
-We have organized our database sets into different groups. Each group contains
-one or multiple databases. Here is how to find the names of these database
-groups:
+The success of enrichment testing depends critically on the availability of
+biologically-relevant databases. To reflect the biological meaning of databases
+and facilitate selective testing, we have organized our database sets into
+different groups. Each group contains one or multiple databases. Here is how to
+find the names of pre-built database groups:
 
 ``` {r list-data, eval=TRUE, echo=TRUE}
 KYCG_listDBGroups("MM285")
 ```
 
-The `KYCG_listDBGroups()` function returns a vector containing these
-accessions.  With the accessions, one can use the ```KYCG_getDBs()``` function
-to get a list of databases. When this function is ran for the first time, none
-of the databases have been cached. Caching on the local machine is important on
-two fronts: firstly it limits the number of requests sent to the Bioconductor
-server, and secondly it limits the amount of time the user needs to wait when
-re-downloading database sets. For this reason, one should run
-```sesameDataCacheAll()``` before loading in any database sets. This will take
-some time to download all of the database sets from a given release.  During
-the analysis the database sets can be identified using these accessions. Sesame
-also support some degree of guessing when a unique substring is given.
-
-For example, the following retrieves the "KYCG.MM285.designGroup.20210210"
-database.
+The `KYCG_listDBGroups()` function returns a data frame containing information
+of these databases. The Title column is the accession key one needs for the
+`testEnrichment` function.  With the accessions, one can either directly use
+them in the `testEnrichment` function or explicitly call the
+```KYCG_getDBs()``` function to retrieve databases themselves. Caching these
+databases on the local machine is important, for two reasons: it limits the
+number of requests sent to the Bioconductor server, and secondly it limits the
+amount of time the user needs to wait when re-downloading database sets. For
+this reason, one should run ```sesameDataCache()``` before loading in any
+database sets. This will take some time to download all of the database sets
+but this only needs to be done once per installation.  During the analysis the
+database sets can be identified using these accessions. Sesame also does some
+guessing when a unique substring is given. For example, the following
+"MM285.designGroup" retrieves the "KYCG.MM285.designGroup.20210210"
+database. Let's look at the database group which we had used as the query
+(query and database are reciprocal) in our first example:
 
 ``` {r cache-data, eval=TRUE, warning=FALSE}
 dbs <- KYCG_getDBs("MM285.design")
 ```
 
-In total, 32 datasets have been loaded for this group. We will show the first
-two for brevity.
+In total, 32 datasets have been loaded for this group. We can get the "PGCMeth"
+as a list element:
 
 ``` {r view-data1, eval=TRUE, warning=FALSE}
-str(dbs[1:2])
+str(dbs["PGCMeth"])
 ```
 
-On subsequent runs of the ```KYCG_getDBs()``` function, loading specific
-database sets from the same release will be much faster.
+On subsequent runs of the ```KYCG_getDBs()``` function, the database loading
+can be faster thanks to the sesameData [in-memory
+caching](https://tinyurl.com/2wh9tyzk), if the corresponding database has been
+loaded.
 
 ## The query set
 
@@ -91,13 +125,13 @@ A query set represents probes of interest. It may either be in the form of a
 character vector where the values correspond to probe IDs or a named numeric
 vector where the names correspond to probe IDs. The query and database
 definition is rather arbitrary. One can regard a database as a query and turn a
-query into a database.
+query into a database, like in our first example. In real world scenario, query
+can come from differential methylation testing, unsupervised clustering,
+correlation with a phenotypic trait, and many others. For example, we could
+consider CpGs that show tissue-specific methylation as the query. We are
+getting the B-cell-specific hypomethylation.
 
-Here we will demonstrate by considering CpGs that show tissue-specific
-methylation as the query. We are getting the B-cell-specific hypomethylation
-and using that for the following analysis.
-
-```{r cache-data2, eval=TRUE, echo=TRUE, message=FALSE}
+```{r message=FALSE}
 library(SummarizedExperiment)
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 query <- df$Probe_ID[df$branch == "B_cell"]
@@ -107,13 +141,11 @@ head(query)
 This query set represents hypomethylated probes in Mouse B-cells from the MM285
 platform. This specific query set has 168 probes.
 
-# Test enrichment
+# Four testing scenario
 
-The main work horse function for test enrichment of the query in the databases
-is `testEnrichment` (no surprise). This function calculates the extent of
-overlap and apply different statistics for enrichment testing. There are four
-testing scenarios depending on the type format of the query set and database
-sets. They are shown with the respective testing scenario in the table below.
+There are four testing scenarios depending on the type format of the query set
+and database sets. They are shown with the respective testing scenario in the
+table below.
 
 ```{r echo = FALSE, results="asis"}
 library(knitr)
@@ -124,26 +156,31 @@ rownames(df) = c("Continuous Query", "Discrete Query")
 kable(df, caption="Four KnowYourCG Testing Scenarios")
 ```
 
-The ```testEnrichment()``` will automatically perform statistical tests and
-report metrics about each of the the loaded database sets. Another critical set
-is the universe set. This is the set of all probes for a given platform. It can
-either be passed in as an argument called ```universeSet``` or the platform
-name can be passed with argument ```platform```. If neither of these are
-supplied, the universe set will be implied from the probes. In all subsequent
-runs of ```testEnrichment()``` in this vignette, the platform will be
-specified.
+# The testEnrichment function
+
+The main work horse function for test enrichment of the query in the databases
+is **testEnrichment** (surprise). This function calculates the extent of
+overlap and apply different statistics for enrichment testing. 
+
+The ```testEnrichment()``` will perform Fisher's exact test and report metrics
+about each of the the loaded database sets.
+
+**Choice of universal set:** Universal set is the set of all probes for a given
+platform. It can either be passed in as an argument called ```universeSet``` or
+the platform name can be passed with argument ```platform```. If neither of
+these are supplied, the universe set will be implied from the probes.
 
 ```{r run-test-single, echo=TRUE, eval=TRUE}
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 
 query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
-results <- testEnrichment(query, "MM285.TFBS")
+results <- testEnrichment(query, "TFBS")
 results %>% dplyr::filter(overlap>10) %>% head
 
 query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
-results <- testEnrichment(query, "MM285.TFBS")
+results <- testEnrichment(query, "TFBS")
 results %>% dplyr::filter(overlap>10) %>%
-    dplyr::select(dbname, Target, estimate, test, FDR) %>% head
+    dplyr::select(dbname, estimate, test, FDR) %>% head
 ```
 
 The output of each test contains at least four variables: the estimate (fold
@@ -176,16 +213,19 @@ or a bar plot:
 KYCG_plotBar(results, n_max=15)
 ```
  
-or a volcano plot:
+or a volcano plot. Here we need a two-tailed test to show both enrichment and
+depletion (the default is one-tailed):
 
 ```{r fig.width=7, fig.height=6, warning=FALSE, fig.align="center"}
-KYCG_plotVolcano(results)
+query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
+results_2tailed <- testEnrichment(query, "TFBS", alternative = "two.sided")
+KYCG_plotVolcano(results_2tailed)
 ```
 
-and a lollipop plot:
+and a Waterfall plot:
 
 ```{r plot-lollipop, fig.width=7, fig.height=6, fig.align="center"}
-KYCG_plotLollipop(results)
+KYCG_plotWaterfall(results)
 ```
 
 If you have a list of cg groups and they were tested against the same set of
@@ -213,24 +253,21 @@ sets is small. This is important when targeting all genes as there are tens of
 thousands of genes on each platform. By testing only those genes that overlap
 with the query set, we can greatly reduce the number of tests. For this reason,
 the gene enrichment analysis is a special case of these enrichment tests. We
-can perform this analysis using the ```testEnrichmentGene()``` function.
+can perform this analysis using the ```KYCG_buildGeneDBs()``` function.
 
 ```{r fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
-df <- rowData(sesameDataGet('MM285.tissueSignature'))
-query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
-results <- testEnrichmentGene(query)
-results[,c("dbname","estimate","test","FDR", "nQ", "nD", "overlap")]
+query <- names(sesameData_getProbesByGene("Dnmt3a", "MM285"))
+results <- testEnrichment(query, KYCG_buildGeneDBs(query, max_distance=100000))
+results[,c("dbname","estimate","gene_name","FDR", "nQ", "nD", "overlap")]
 ```
 
 Using these sample results, we can plot a volcano plot and lollipop plot.
 
 ```{r plot-volcano-gene, fig.width=7, fig.height=6, echo=TRUE}
-KYCG_plotVolcano(results)
+KYCG_plotLollipop(results, label="gene_name")
 ```
 
-For example, this given query set is tissue specific hypomethylation of mouse
-brain. Rufy3 is shown to be significantly enriched in this set and it is known
-to be enriched in neurons (https://www.ncbi.nlm.nih.gov/gene/22902).
+As expected, we recover our targeted gene (Dnmt3a).
 
 # GO/Pathway enrichment
 

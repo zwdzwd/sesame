@@ -118,22 +118,25 @@ They correspond to the beta value of the reference level (in this case a Female
 Colon sample).
 
 * **Pval_**
-: The p-value of t-testing the slope (statistical
+: The **unadjusted** p-values of t-testing the slope (statistical
 significance of the difference). For example, `Pval_tissueFat` tests whether
 `Fat` is significantly different from `Colon` (the reference level) in DNA
 methylation. The ``Pval_`(Intercept)` `` tests whether the reference level is
 significantly different from zero.
 
 * **FPval_**
-: The p-value of the F-test contrasting the full model against a
+: The **unadjusted** p-value of the F-test contrasting the full model against a
 reduced model with the labeled contrasting held out. Note that "Pval_" and
-"FPval_" are equivalent when the contrast variable is a 2-level factor, i.e.,
-a pairwise comparison.
+"FPval_" are equivalent when the contrast variable is a 2-level factor, i.e., a
+pairwise comparison.
 
 * **Eff_**
 : The effect size of each normial contrast variable. This is
 equivalent to the maximum slope subtracted by the minimum level including the
 reference level (0).
+
+Multiple-testing adjustment can be done afterwards using R's p.adjust
+function. It is also integrated to the `DMR` function by default (see below).
 
 ## Goodness of fit
 

@@ -70,6 +70,7 @@ inferUniverse <- function(platform) {
 #' @param universe Vector of probes in the universe set containing all of
 #' the probes to be considered in the test. If it is not provided, it will be
 #' inferred from the provided platform. (Default: NA).
+#' @param alternative "two.sided", "greater", or "less"
 #' @param platform String corresponding to the type of platform to use. Either
 #' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 #' from the query set probeIDs (Default: NA).
@@ -82,26 +83,24 @@ inferUniverse <- function(platform) {
 #' library(SummarizedExperiment)
 #' df <- rowData(sesameDataGet('MM285.tissueSignature'))
 #' query <- df$Probe_ID[df$branch == "B_cell"]
-#' testEnrichment(query, 'KYCG.MM285.designGroup.20210210')
+#' res <- testEnrichment(query, "chromHMM")
 #' sesameDataGet_resetEnv()
 #'
 #' @export
 testEnrichment <- function(
-    query, databases = NULL, universe = NULL,
+    query, databases = NULL, universe = NULL, alternative = "greater",
     platform = NULL, silent = FALSE) {
 
+    platform <- queryCheckPlatform(platform, query)
     if (is.null(universe)) {
-        platform <- queryCheckPlatform(platform, query)
-        universe <- inferUniverse(platform)
-    }
+        universe <- inferUniverse(platform) }
     
-    if (is.character(databases)) {
-        if (is.null(databases)) { # db not give, load a default set
-            platform <- queryCheckPlatform(platform, query)
-            databases <- grep("(chromHMM)|(designGroup|probeType)",
-                KYCG_listDBGroups(platform), value=TRUE)
-        }
-        dbs <- KYCG_getDBs(databases, silent = silent)
+    if (is.null(databases)) {
+        dbs <- c(KYCG_getDBs(KYCG_listDBGroups( # by default, all dbs + gene
+            platform, type="categorical")$Title, silent = silent),
+            KYCG_buildGeneDBs(query, platform, silent = silent))
+    } else if (is.character(databases)) {
+        dbs <- KYCG_getDBs(databases, platform = platform, silent = silent)
     } else {
         dbs <- databases
     }
@@ -112,7 +111,8 @@ testEnrichment <- function(
     }
     
     res <- do.call(bind_rows, lapply(dbs, function(db) {
-        testEnrichment1(query = query, database = db, universe = universe)}))
+        testEnrichmentFisher(query = query, database = db,
+            universe = universe, alternative = alternative)}))
 
     ## adjust p.value after merging
     res$FDR <- p.adjust(res$p.value, method='fdr')
@@ -159,8 +159,16 @@ aggregateTestEnrichments <- function(
 #' @param platform HM450, EPIC, MM285, Mammal40, will infer from
 #' query if not given
 #' @param max_distance probe-gene distance for association
-buildGeneDBs <- function(
-    query = NULL, platform = NULL, max_distance = 10000) {
+#' @importFrom GenomicRanges findOverlaps
+#' @importFrom S4Vectors subjectHits
+#' @importFrom S4Vectors queryHits
+#' @examples
+#' query <- c("cg04707299", "cg13380562", "cg00480749")
+#' dbs <- KYCG_buildGeneDBs(query)
+#' testEnrichment(query, dbs)
+#' @export
+KYCG_buildGeneDBs <- function(
+    query = NULL, platform = NULL, max_distance = 10000, silent = FALSE) {
     
     platform <- queryCheckPlatform(platform, query)
     genes <- sesameData_txnToGeneGRanges(
@@ -170,9 +178,11 @@ buildGeneDBs <- function(
     if (!is.null(query)) {
         probes <- all_probes[names(all_probes) %in% query] }
 
-    ## skip non-overlapping genes
-    genes <- subsetByOverlaps(genes, probes + max_distance)
-    hits <- findOverlaps(genes, all_probes + max_distance)
+    ## skip non-overlapping genes, strand always ignored
+    genes <- subsetByOverlaps(
+        genes, probes + max_distance, ignore.strand = TRUE)
+    hits <- findOverlaps(
+        genes, all_probes + max_distance, ignore.strand = TRUE)
     dbs <- split(names(all_probes)[subjectHits(hits)],
         names(genes)[queryHits(hits)])
     gene_names <- genes[names(dbs)]$gene_name
@@ -183,86 +193,95 @@ buildGeneDBs <- function(
         attr(d1, "gene_name") <- gene_names[i];
         d1;})
     names(res) <- names(dbs)
+    message(sprintf("Building %d gene DBs for %s...", length(res), platform))
     res
 }
 
-#' testEnrichmentGene tests for the enrichment of set of probes
-#' (query) in gene regions.
-#'
-#' @param query Vector of probes of interest (e.g., probes belonging to a
-#' given platform)
-#' @param platform String corresponding to the type of platform to use. Either
-#' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
-#' from the query set query (Default: NA)
-#' @param ... additional options of building the gene database. See
-#' function buildGeneDBs for detail.
-#' 
-#' @return One list containing features corresponding the test estimate,
-#' p-value, and type of test.
-#'
-#' @examples
-#' 
-#' library(SummarizedExperiment)
-#' MM285.tissueSignature <- sesameDataGet('MM285.tissueSignature')
-#' df <- rowData(MM285.tissueSignature)
-#' query <- df$Probe_ID[df$branch == "B_cell"]
-#' testEnrichmentGene(query, platform="MM285")
-#'
-#' @export
-testEnrichmentGene <- function(
-    query, platform = NULL, ...) {
+
+fisher.pval <- function (k1, n1, k2, n2,
+    alternative=c("two.sided", "less", "greater"), log.p=FALSE) {
+    alternative <- match.arg(alternative)
     
-    if (is.null(databases)) {
-        platform <- queryCheckPlatform(platform, query)
-        dbs <- buildGeneDBs(query, platform, ...)
-    } else {
-        dbs <- databases
+    if (any(k1 < 0) || any(k1 > n1) || any(n1 <= 0)) {
+        stop("k1 and n1 must be integers with 0 <= k1 <= n1") }
+    if (any(k2 < 0) || any(k2 > n2) || any(n2 <= 0)) {
+        stop("k2 and n2 must be integers with 0 <= k2 <= n2") }
+    if (any(k1 + k2 <= 0)) stop("either k1 or k2 must be non-zero")
+
+    ## ensure that all vectors have the same length
+    l <- max(length(k1), length(n1), length(k2), length(n2))
+    if (length(k1) < l) k1 <- rep(k1, length.out=l)
+    if (length(n1) < l) n1 <- rep(n1, length.out=l)
+    if (length(k2) < l) k2 <- rep(k2, length.out=l)
+    if (length(n2) < l) n2 <- rep(n2, length.out=l)
+
+    k <- k1 + k2
+
+    if (alternative == "two.sided") {
+        if (log.p) {
+            pval <- pmin(phyper(k1 - 1, n1, n2, k, lower.tail=FALSE, log.p=TRUE), phyper(k1, n1, n2, k, lower.tail=TRUE, log.p=TRUE)) + log(2)
+            pval <- pmin(pval, 0) # clamp p-value to range [0,1] (may be > 1 in two-sided approximation)
+        } else {
+            pval <- 2 * pmin(phyper(k1 - 1, n1, n2, k, lower.tail=FALSE), phyper(k1, n1, n2, k, lower.tail=TRUE))
+            pval <- pmax(0, pmin(1, pval)) # clamp p-value to range [0,1] (may be > 1 in two-sided approximation)
+        }
+    } else if (alternative == "greater") {
+        pval <- phyper(k1 - 1, n1, n2, k, lower.tail=FALSE, log.p=log.p)
+    } else if (alternative == "less") {
+        pval <- phyper(k1, n1, n2, k, lower.tail=TRUE, log.p=log.p)
     }
-    
-    if (length(dbs) == 0) { return(NULL); }
-    testEnrichment(query, dbs)
+    pval
 }
+
 
 
 #' testEnrichmentFisher uses Fisher's exact test to estimate the association
 #' between two categorical variables.
 #'
-#' Estimates log2 fold change of enrichment over background.
+#' Estimates log2 Odds ratio
 #'
 #' @param query Vector of probes of interest (e.g., significant probes)
 #' @param database Vectors corresponding to the database set of
 #' interest with associated meta data as an attribute to each element.
 #' @param universe Vector of probes in the universe set containing all of
+#' @param alternative greater or two.sided (default: greater)
 #' the probes to be considered in the test. (Default: NULL)
 #' 
 #' @import stats
 #' 
 #' @return A DataFrame with the estimate/statistic, p-value, and name of test
 #' for the given results.
-testEnrichmentFisher <- function(query, database, universe) {
-    q_and_d <- length(intersect(query, database))
+testEnrichmentFisher <- function(query, database, universe,
+    alternative = "greater") {
 
     l_d <- length(database)
     l_q <- length(query)
-    d_min_q <- l_d - q_and_d
-    q_min_d <- l_q - q_and_d
-    min_q_d <- length(universe) - l_q - l_d + q_and_d
+    qd <- length(intersect(query, database))
+    dnq <- l_d - qd
+    qnd <- l_q - qd
+    nqd <- length(universe) - l_q - l_d + qd
 
-    ## fisher.test(matrix(c(
-    ##     q_and_d, d_min_q, q_min_d, min_q_d), nrow = 2),
-    ##     alternative="greater")$p.value
-    log10.p.value <- phyper(
-        q_and_d-1, q_and_d + q_min_d,
-        min_q_d + d_min_q, d_min_q + q_and_d,
-        lower.tail = FALSE, log.p = TRUE) / log(10)
-
-    fc <- q_and_d / (q_and_d + q_min_d) / (q_and_d + d_min_q) *
-        (q_and_d + q_min_d + d_min_q + min_q_d)
+    if (alternative == "two.sided") {
+        pval_g <- phyper(qd-1, qd + qnd, nqd + dnq, dnq + qd,
+            lower.tail = FALSE, log.p = TRUE) / log(10)
+        pval_l <- phyper(qd, qd + qnd, nqd + dnq, dnq + qd,
+            lower.tail = TRUE, log.p = TRUE) / log(10)
+        log10.p.value <- pmin(pmin(pval_g, pval_l) + log(2), 0) / log(10)
+        ## log10.p.value <- log10(fisher.test(matrix(c(
+        ##     qd, dnq, qnd, nqd), nrow = 2))$p.value)
+    } else if (alternative == "greater") {
+        log10.p.value <- phyper(qd-1, qd + qnd, nqd + dnq, dnq + qd,
+            lower.tail = FALSE, log.p = TRUE) / log(10)
+    } else if (alternative == "less") {
+        log10.p.value <- phyper(qd, qd + qnd, nqd + dnq, dnq + qd,
+            lower.tail = TRUE, log.p = TRUE) / log(10)
+    } else { stop("alternative must be either greater, less or two-sided.") }
+    
+    odds_ratio <- qd / qnd / dnq * nqd # can be NaN if 0
     data.frame(
-        estimate = log2(fc), p.value = 10**(log10.p.value),
-        log10.p.value = log10.p.value, test = "Log2FC",
-        nQ = length(query), nD = length(database),
-        overlap = q_and_d)
+        estimate = log2(odds_ratio), p.value = 10**(log10.p.value),
+        log10.p.value = log10.p.value, test = "Log2(OR)",
+        nQ = length(query), nD = length(database), overlap = qd)
 }
 
 calcES <- function(dCont, dDisc) {
@@ -448,6 +467,8 @@ KYCG_listDBGroups <- function(
 #'
 #' @param group_nms database group names
 #' @param db_names name of the database, fetech only the given databases
+#' @param platform EPIC, HM450, MM285, ... If given, will restrict to
+#' that platform.
 #' @param summary return a summary of database instead of db itself
 #' @param allow_multi allow multiple groups to be returned for
 #' @param silent no messages
@@ -457,20 +478,21 @@ KYCG_listDBGroups <- function(
 #' dbs <- KYCG_getDBs("MM285.chromHMM")
 #' dbs <- KYCG_getDBs(c("MM285.chromHMM", "MM285.probeType"))
 #' @export
-KYCG_getDBs <- function(group_nms, db_names = NULL,
+KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
     summary = FALSE, allow_multi = FALSE, silent = FALSE) {
     
     if (!is.character(group_nms)) {
         return(group_nms)
     }
-    group_nms <- guess_dbnames(group_nms)
+    group_nms <- guess_dbnames(group_nms, allow_multi = TRUE)
+    if (!is.null(platform)) {
+        group_nms <- grep(platform, group_nms, value = TRUE) }
     group_nms_ <- paste(group_nms, sep="\n")
     if (!silent) {
         message("Selected the following database groups:")
         invisible(lapply(seq_along(group_nms_), function(i) {
             message(sprintf("%d. %s", i, group_nms_[i]))
-        }))
-    }
+        }))}
     res <- do.call(c, lapply(unname(group_nms), function(nm) {
         dbs <- sesameDataGet(nm)
         setNames(lapply(seq_along(dbs), function(ii) {
@@ -479,6 +501,7 @@ KYCG_getDBs <- function(group_nms, db_names = NULL,
             attr(db, "dbname") <- names(dbs)[ii]
             db
         }), names(dbs))}))
+
     if (summary) {
         do.call(bind_rows, lapply(res, attributes))
     } else if (is.null(db_names)) {

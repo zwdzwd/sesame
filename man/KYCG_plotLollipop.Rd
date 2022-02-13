@@ -5,11 +5,13 @@
 \title{creates a lollipop plot of log(estimate) given data with
 fields estimate.}
 \usage{
-KYCG_plotLollipop(df, n = 10)
+KYCG_plotLollipop(df, label_column = "dbname", n = 20)
 }
 \arguments{
-\item{df}{DataFrame where each field is a database name with its
+\item{df}{DataFrame where each row is a database name with its
 estimate.}
+
+\item{label_column}{column in df to be used as the label (default: dbname)}
 
 \item{n}{Integer representing the number of top enrichments to report.
 Optional. (Default: 10)}

@@ -1,3 +1,62 @@
+#' plot enrichment test result
+#'
+#' @param df test enrichment result data frame
+#' @return grid object
+#' @importFrom stringr str_replace
+#' @importFrom tibble rownames_to_column
+#' @import ggplot2
+#' @examples
+#' query <- KYCG_getDBs("MM285.designGroup")[["PGCMeth"]]
+#' res <- testEnrichment(query)
+#' KYCG_plotEnrichAll(res)
+#' 
+#' @export
+KYCG_plotEnrichAll <- function(df, fdr_max = 25) {
+
+    gp_size <- sort(table(df$group))
+    gp_width <- log(2+gp_size)
+    e1 <- df[order(factor(df$group, levels=names(gp_size)), df$dbname),]
+    e1$inc <- (gp_width / gp_size)[e1$group]
+    e1$inc1 <- c(0,ifelse(e1$group[-1] != e1$group[-nrow(e1)], 1, 0))
+    e1$inc2 <- cumsum(e1$inc + e1$inc1)
+
+    e1$group <- str_replace(e1$group,"KYCG.","")
+    e1$group <- vapply(strsplit(e1$group, "\\."),
+        function(x) paste0(x[2:(length(x)-1)], collapse="."), character(1))
+    if ("gene_name" %in% colnames(e1)) {
+        e1$dbname[e1$group == "gene"] <- e1$gene_name[e1$group == "gene"] }
+
+    e2 <- e1[e1$estimate > 1 & e1$FDR < 0.01 ,]
+    e2$FDR[e2$FDR < 10**-fdr_max] <- 10**-(fdr_max*1.1)
+
+    e3 <- rownames_to_column(as.data.frame(do.call(rbind, lapply(
+        split(e1$inc2, e1$group), function(x)
+            c(beg=min(x), mid=mean(x), end=max(x))))), "group")
+
+    ggplot(e2, aes(inc2, -log10(FDR))) +
+        geom_point(aes(size=estimate, color=group), alpha=0.5) +
+        geom_text_repel(data = e2[order(e2$FDR)[1:15],],
+            aes(label=dbname, color=group), size = 3,
+            ## box.padding = unit(0.35, "lines"),
+            ## point.padding = unit(0.3, "lines"),
+            direction="y", nudge_y=0.2, max.overlaps=100) +
+        annotate("text", -1, fdr_max*0.96,
+            label="Values above this line are capped.",
+            hjust=0, vjust=1, color="grey60") +
+        geom_hline(yintercept = fdr_max, linetype="dotted", color="grey60") +
+        geom_segment(aes(x = beg, y = 0, xend = end, yend = 0, color=group),
+            size=3, data=e3) +
+        geom_text(data=e3,aes(mid, -1, label=group, color=group),
+            vjust=1, hjust=1, angle=30) + scale_color_discrete(guide="none") +
+        ylim(-6, fdr_max*1.2) + xlab("") +
+        scale_size_continuous(guide=guide_legend(title="log2(OR)")) +
+        coord_cartesian(clip="off") + theme_minimal() +
+        theme(axis.title.x = element_blank(),
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank(),
+            panel.grid.minor.x = element_blank())
+}
+
 preparePlotDF <- function(df, n_min, n_max, max_fdr) {
     df <- df[df$nD >0,]
     df$FDR[df$FDR==0] <- .Machine$double.xmin
@@ -11,11 +70,12 @@ preparePlotDF <- function(df, n_min, n_max, max_fdr) {
     }
     
     gp <- vapply(str_split(df1$group, "\\."), function(x) x[3], character(1))
-    if ("Target" %in% colnames(df1)) {
-        df1$db1 <- sprintf("%s: %s (%s)", gp, df1$Target, df1$dbname)
-    } else {
-        df1$db1 <- sprintf("%s: %s", gp, df1$dbname)
-    }
+    ## if ("Target" %in% colnames(df1)) {
+    ##     df1$db1 <- sprintf("%s: %s (%s)", gp, df1$Target, df1$dbname)
+    ## } else if ("gene_name" %in% colnames(df1) {
+    ##     df1$db1 <- sprintf(
+    ## } else {
+    df1$db1 <- sprintf("%s: %s", gp, df1$dbname)
     df1$db1 <- factor(df1$db1, levels=rev(df1$db1))
     df1
 }
@@ -95,6 +155,7 @@ KYCG_plotDot <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 #'
 #' @param data DataFrame where each field is a database name with two fields
 #' for the estimate and p.value.
+#' @param label_column column in df to be used as the label (default: dbname)
 #' @param alpha Float representing the cut-off alpha value for the plot. 
 #' Optional. (Default: 0.05)
 #' @return ggplot volcano plot
@@ -107,53 +168,39 @@ KYCG_plotDot <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 #'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #'
 #' @export
-KYCG_plotVolcano <- function(data, alpha=0.05) {
+KYCG_plotVolcano <- function(data, label_column="dbname", alpha=0.05) {
     ## suppress R CMD CHECK no visible binding warning
     estimate <- FDR <- label <- NULL
-    
-    if ("Target" %in% colnames(data)) {
-        data$label <- data$Target
-    } else {
-        data$label <- data$dbname
-    }
 
+    data$label <- data[[label_column]]
     data <- data[data$estimate > -Inf,]
     ## TODO: replace with column specifying sig vs non sig
-    if (any(data$FDR <= alpha)) {
-        g <- ggplot(data=data, aes(x=estimate, y=-log10(FDR),
-            color = cut(FDR, c(-Inf, alpha))))
-    } else {
-        g <- ggplot(data=data, aes(x=estimate, y=FDR))
-    }
-    g <- g + geom_point() + xlab("log2 Fold Change")
-    
-    g <- g + 
-        ylab("-log10 q-value") +
+    g <- ggplot(data=data, aes(x=estimate, y=-log10(FDR)))
+    g <- g + geom_point() + xlab("log2(OR)")
+    g <- g + ylab("-log10 FDR") +
         scale_colour_discrete(
             name = sprintf("Significance (q < %s)", alpha),
             labels=c("Significant", "Not Significant"))
-
-    options(ggrepel.max.overlaps = 10)
-    g + geom_text_repel(
-        data = subset(data, FDR < 0.0005 & estimate > 0),
+    g <- g + geom_text_repel(
+        data = subset(data, FDR < alpha & estimate > 0),
         aes(label = label), size = 5,
         box.padding = unit(0.35, "lines"),
         point.padding = unit(0.3, "lines"),
         show.legend = FALSE)
+    g
 }
 
 
 #' creates a lollipop plot of log(estimate) given data with
 #' fields estimate.
 #'
-#' @param df DataFrame where each field is a database name with its
+#' @param df DataFrame where each row is a database name with its
 #' estimate.
+#' @param label_column column in df to be used as the label (default: dbname)
 #' @param n Integer representing the number of top enrichments to report.
 #' Optional. (Default: 10)
 #' @return ggplot lollipop plot
-#'
 #' @import ggplot2
-#'
 #' @examples
 #' 
 #' KYCG_plotLollipop(data.frame(
@@ -162,35 +209,68 @@ KYCG_plotVolcano <- function(data, alpha=0.05) {
 #'   dbname=as.character(seq_len(10))))
 #' 
 #' @export
-KYCG_plotLollipop <- function(df, n=10) {
+KYCG_plotLollipop <- function(df, label_column="dbname", n=20) {
     ## suppress R CMD CHECK no visible binding warning
     estimate <- label <- NULL
-    
-    if ("Target" %in% colnames(df))
-        df$label <- df$Target
-    else
-        df$label <- df$dbname
-    
+
+    df$label <- df[[label_column]]
     df <- head(df[order(df$estimate, decreasing=TRUE), ], n=n)
+
+    allest <- df$estimate[!is.infinite(df$estimate)]
+    cap <- max(allest) * 1.4
+    cap_line <- max(allest) * 1.2
+    df$estimate[df$estimate == Inf] <- cap
     
-    ggplot(df, aes(x = label, 
-        y = estimate, label = sprintf('%.2f', estimate))
-    ) + geom_hline(yintercept = 0
-    ) + geom_segment(aes(y = 0, 
-        x = reorder(label, -estimate), 
-        yend = estimate, xend=label), color='black'
-    ) + geom_point(aes(fill=pmax(-2, 2)),
-        stat='identity', size=10, alpha=0.95, shape=21
-    ) + scale_fill_gradientn(name='Fold Change',
-        colours=c('#2166ac','#333333','#b2182b')
-    ) + geom_text(color='white', size=3
-    ) + geom_label(aes(x = label,
-        y = ifelse(estimate > 0, estimate + 0.8, estimate - 0.5),
-        label = label), alpha=0.8
-    ) + ylab("Log2 Enrichment"
-    ) + theme(axis.title.x = element_blank(),
-        axis.text.x = element_blank(),
-        axis.ticks.x = element_blank())
+    ggplot(df, aes(x = label, y = estimate, label = label)) +
+        geom_hline(yintercept = 0) +
+        geom_segment(aes(y = 0, x = reorder(label, -estimate), 
+            yend = estimate, xend=label), color='black') +
+        geom_point(fill="black", stat='identity', size=15,
+            alpha=0.95, shape=21) +
+        scale_fill_gradientn(name='Log2(OR)',
+            colours=c('#2166ac','#333333','#b2182b')) +
+        geom_text(color='white', size=3) +
+        ylab("Log2(OR)") +
+        geom_hline(yintercept = cap_line, linetype = "dashed") +
+        ylim(min(min(allest)*1.3,0), max(max(allest)*1.5,0)) +
+        theme_minimal() +
+        theme(axis.title.x = element_blank(),
+            axis.text.x = element_blank(),
+            axis.ticks.x = element_blank())
+}
+
+#' create a waterfall plot of log(estimate) given test enrichment
+#'
+#' @param df data frame where each row is a database with test
+#' enrichment result
+#' @param label_column column in df to be used as the label (default: dbname)
+#' @return grid
+#' @import ggplot2
+#' @examples
+#'
+#' library(SummarizedExperiment)
+#' df <- rowData(sesameDataGet('MM285.tissueSignature'))
+#' query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
+#' results <- testEnrichment(query, "TFBS")
+#' KYCG_plotWaterfall(results)
+#' 
+#' @export
+KYCG_plotWaterfall <- function(df, label_column="dbname") {
+
+    index <- estimate <- p.value <- label <- NULL
+    df$label <- df[[label_column]]
+    
+    df <- df[order(df$estimate),]
+    df$index <- seq_len(nrow(df))
+
+    ggplot(df, aes(index, estimate)) +
+        geom_point(aes(size=p.value), alpha=0.6) +
+        scale_size(trans="reverse") +
+        geom_hline(yintercept=0, linetype="dashed", color="grey60") +
+        theme_minimal() + ylab("Log2(OR)") + xlab("Databases") +
+        geom_text_repel(
+            data=df[order(df$log10.p.value)[1:min(10, nrow(df)*0.5)],],
+            aes(label=label), nudge_x=-nrow(df)/10)
 }
 
 #' Plot meta gene or other meta genomic features
@@ -310,55 +390,3 @@ KYCG_plotPointRange <- function(result_list) {
         coord_flip()
 }
 
-#' plot enrichment test result
-#'
-#' @param df test enrichment result data frame
-#' @return grid object
-#' @importFrom stringr str_replace
-#' @importFrom tibble rownames_to_column
-#' @import ggplot2
-#' 
-#' @export
-KYCG_plotEnrichAll <- function(df, fdr_max = 25) {
-
-    gp_size <- sort(table(df$group))
-    gp_width <- log(gp_size)
-    e1 <- df[order(factor(df$group, levels=names(gp_size)), df$dbname),]
-    e1$inc <- (gp_width / gp_size)[e1$group]
-    e1$inc1 <- c(0,ifelse(e1$group[-1] != e1$group[-nrow(e1)], 1, 0))
-    e1$inc2 <- cumsum(e1$inc + e1$inc1)
-
-    e1$group <- str_replace(e1$group,"KYCG.","")
-    e1$group <- vapply(strsplit(e1$group, "\\."),
-        function(x) paste0(x[2:(length(x)-1)], collapse="."), character(1))
-
-    e2 <- e1[e1$estimate > 1 & e1$FDR < 0.01 ,]
-    e2$FDR[e2$FDR < 10**-fdr_max] <- 10**-(fdr_max*1.1)
-
-    e3 <- rownames_to_column(as.data.frame(do.call(rbind, lapply(
-        split(e1$inc2, e1$group), function(x)
-            c(beg=min(x), mid=mean(x), end=max(x))))), "group")
-
-    ggplot(e2, aes(inc2, -log10(FDR))) +
-        geom_point(aes(size=estimate, color=group), alpha=0.5) +
-        geom_text_repel(data = e2[order(e2$FDR)[1:15],],
-            aes(label=dbname, color=group), size = 3,
-            ## box.padding = unit(0.35, "lines"),
-            ## point.padding = unit(0.3, "lines"),
-            direction="y", nudge_y=0.2, max.overlaps=100) +
-        annotate("text", 0, fdr_max*0.96,
-            label="Values above this line are capped.",
-            hjust=0, vjust=1, color="grey60") +
-        geom_hline(yintercept = fdr_max, linetype="dotted", color="grey60") +
-        geom_segment(aes(x = beg, y = 0, xend = end, yend = 0, color=group),
-            size=3, data=e3) +
-        geom_text(data=e3,aes(mid, -1, label=group, color=group),
-            vjust=1, hjust=1, angle=30) + scale_color_discrete(guide="none") +
-        ylim(-6, max(-log10(e2$FDR))*1.1) + xlab("") +
-        scale_size_continuous(guide=guide_legend(title="log2(FC)")) +
-        coord_cartesian(clip="off") + theme_minimal() +
-        theme(axis.title.x = element_blank(),
-            axis.text.x = element_blank(),
-            axis.ticks.x = element_blank(),
-            panel.grid.minor.x = element_blank())
-}

@@ -7,6 +7,7 @@
 KYCG_getDBs(
   group_nms,
   db_names = NULL,
+  platform = NULL,
   summary = FALSE,
   allow_multi = FALSE,
   silent = FALSE
@@ -16,6 +17,9 @@ KYCG_getDBs(
 \item{group_nms}{database group names}
 
 \item{db_names}{name of the database, fetech only the given databases}
+
+\item{platform}{EPIC, HM450, MM285, ... If given, will restrict to
+that platform.}
 
 \item{summary}{return a summary of database instead of db itself}
 

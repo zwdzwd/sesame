@@ -15,3 +15,9 @@ grid object
 \description{
 plot enrichment test result
 }
+\examples{
+query <- KYCG_getDBs("MM285.designGroup")[["PGCMeth"]]
+res <- testEnrichment(query)
+KYCG_plotEnrichAll(res)
+
+}
