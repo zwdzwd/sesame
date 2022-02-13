@@ -4,7 +4,7 @@
 \alias{cnSegmentation}
 \title{Perform copy number segmentation}
 \usage{
-cnSegmentation(sdf, sdfs.normal = NULL, refversion = c("hg19", "hg38"))
+cnSegmentation(sdf, sdfs.normal = NULL, genome = c("hg19", "hg38"))
 }
 \arguments{
 \item{sdf}{\code{SigDF}}
@@ -13,7 +13,7 @@ cnSegmentation(sdf, sdfs.normal = NULL, refversion = c("hg19", "hg38"))
 use the stored normal data from sesameData. However, we do recommend using
 a matched copy number normal dataset for normalization.}
 
-\item{refversion}{hg19 or hg38}
+\item{genome}{hg19 or hg38}
 }
 \value{
 an object of \code{CNSegment}

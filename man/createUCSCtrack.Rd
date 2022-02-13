@@ -4,7 +4,7 @@
 \alias{createUCSCtrack}
 \title{Turn beta values into a UCSC browser track}
 \usage{
-createUCSCtrack(betas, output = NULL, platform = "HM450", refversion = "hg38")
+createUCSCtrack(betas, output = NULL, platform = "HM450", genome = "hg38")
 }
 \arguments{
 \item{betas}{a named numeric vector}
@@ -13,7 +13,7 @@ createUCSCtrack(betas, output = NULL, platform = "HM450", refversion = "hg38")
 
 \item{platform}{HM450, EPIC etc.}
 
-\item{refversion}{hg38, hg19 etc.}
+\item{genome}{hg38, hg19 etc.}
 }
 \value{
 when output is null, return a data.frame, otherwise NULL

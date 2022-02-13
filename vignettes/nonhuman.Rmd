@@ -4,7 +4,7 @@ date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: BiocStyle::html_document
 fig_width: 6
-fig_height: 6
+fig_height: 5
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{2. Non-human Array}

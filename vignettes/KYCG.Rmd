@@ -4,7 +4,7 @@ shorttitle: "KYCG"
 package: knowYourCG
 output: rmarkdown::html_vignette
 fig_width: 6
-fig_height: 6
+fig_height: 5
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{"5. knowYourCG"}

@@ -4,14 +4,14 @@
 \alias{formatVCF}
 \title{Convert SNP from Infinium array to VCF file}
 \usage{
-formatVCF(sdf, vcf = NULL, refversion = "hg19", annoS = NULL, annoI = NULL)
+formatVCF(sdf, vcf = NULL, genome = "hg19", annoS = NULL, annoI = NULL)
 }
 \arguments{
 \item{sdf}{SigDF}
 
 \item{vcf}{output VCF file path, if NULL output to console}
 
-\item{refversion}{reference version, currently only support}
+\item{genome}{genome}
 
 \item{annoS}{SNP variant annotation, download if not given}
 

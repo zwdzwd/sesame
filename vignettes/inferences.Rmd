@@ -4,7 +4,7 @@ date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: rmarkdown::html_vignette
 fig_width: 6
-fig_height: 6
+fig_height: 5
 vignette: >
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteIndexEntry{"4. Data Inference"}
