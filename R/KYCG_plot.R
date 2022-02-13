@@ -1,6 +1,8 @@
 #' plot enrichment test result
 #'
 #' @param df test enrichment result data frame
+#' @param fdr_max maximum fdr for capping
+#' @param n_label number of database to label
 #' @return grid object
 #' @importFrom stringr str_replace
 #' @importFrom tibble rownames_to_column
@@ -11,7 +13,7 @@
 #' KYCG_plotEnrichAll(res)
 #' 
 #' @export
-KYCG_plotEnrichAll <- function(df, fdr_max = 25) {
+KYCG_plotEnrichAll <- function(df, fdr_max = 25, n_label = 15) {
 
     gp_size <- sort(table(df$group))
     gp_width <- log(2+gp_size)
@@ -31,11 +33,12 @@ KYCG_plotEnrichAll <- function(df, fdr_max = 25) {
 
     e3 <- rownames_to_column(as.data.frame(do.call(rbind, lapply(
         split(e1$inc2, e1$group), function(x)
-            c(beg=min(x), mid=mean(x), end=max(x))))), "group")
+            c(beg=min(x), middle=mean(x), end=max(x))))), "group")
 
+    inc2 <- FDR <- estimate <- group <- dbname <- beg <- middle <- NULL
     ggplot(e2, aes(inc2, -log10(FDR))) +
         geom_point(aes(size=estimate, color=group), alpha=0.5) +
-        geom_text_repel(data = e2[order(e2$FDR)[1:15],],
+        geom_text_repel(data = e2[head(order(e2$FDR), n = n_label),],
             aes(label=dbname, color=group), size = 3,
             ## box.padding = unit(0.35, "lines"),
             ## point.padding = unit(0.3, "lines"),
@@ -46,7 +49,7 @@ KYCG_plotEnrichAll <- function(df, fdr_max = 25) {
         geom_hline(yintercept = fdr_max, linetype="dotted", color="grey60") +
         geom_segment(aes(x = beg, y = 0, xend = end, yend = 0, color=group),
             size=3, data=e3) +
-        geom_text(data=e3,aes(mid, -1, label=group, color=group),
+        geom_text(data=e3,aes(middle, -1, label=group, color=group),
             vjust=1, hjust=1, angle=30) + scale_color_discrete(guide="none") +
         ylim(-6, fdr_max*1.2) + xlab("") +
         scale_size_continuous(guide=guide_legend(title="log2(OR)")) +
@@ -270,7 +273,8 @@ KYCG_plotWaterfall <- function(df, label_column="dbname") {
         geom_hline(yintercept=0, linetype="dashed", color="grey60") +
         theme_minimal() + ylab("Log2(OR)") + xlab("Databases") +
         geom_text_repel(
-            data=df[order(df$log10.p.value)[1:min(10, nrow(df)*0.5)],],
+            data = df[head(order(df$log10.p.value),
+                n = min(10, nrow(df)*0.5)),],
             aes(label=label), nudge_x=-nrow(df)/10)
 }
 

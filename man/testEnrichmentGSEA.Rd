@@ -17,15 +17,15 @@ testEnrichmentGSEA(
 \item{query}{query, if numerical, expect categorical database, if
 categorical expect numerical database}
 
+\item{databases}{database, numerical or categorical, but needs to be
+different from query}
+
 \item{platform}{EPIC, MM285, ..., infer if not given}
 
 \item{silent}{suppress message (default: FALSE)}
 
 \item{precise}{whether to compute precise p-value (up to numerical limit)
 of interest.}
-
-\item{database}{database, numerical or categorical, but needs to be
-different from query}
 }
 \value{
 A DataFrame with the estimate/statistic, p-value, and name of test

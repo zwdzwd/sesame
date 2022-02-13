@@ -4,10 +4,14 @@
 \alias{KYCG_plotEnrichAll}
 \title{plot enrichment test result}
 \usage{
-KYCG_plotEnrichAll(df, fdr_max = 25)
+KYCG_plotEnrichAll(df, fdr_max = 25, n_label = 15)
 }
 \arguments{
 \item{df}{test enrichment result data frame}
+
+\item{fdr_max}{maximum fdr for capping}
+
+\item{n_label}{number of database to label}
 }
 \value{
 grid object

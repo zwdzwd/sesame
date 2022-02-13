@@ -19,6 +19,11 @@ on the platform}
 query if not given}
 
 \item{max_distance}{probe-gene distance for association}
+
+\item{silent}{suppress messages}
+}
+\value{
+gene databases
 }
 \description{
 build gene-probe association database

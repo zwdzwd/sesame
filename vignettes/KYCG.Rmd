@@ -204,20 +204,20 @@ overlap between the two sets, so that metric is reported as well in the
 
 We can visualize the results in a dot plot:
 
-```{r fig.width=5, fig.height=4}
+```{r fig.width=5, fig.height=3.5}
 KYCG_plotDot(results, n_max=20)
 ```
 
 or a bar plot:
 
-```{r fig.width=8, fig.height=5, message=FALSE}
+```{r fig.width=6.5, fig.height=4, message=FALSE}
 KYCG_plotBar(results, n_max=15)
 ```
  
 or a volcano plot. Here we need a two-tailed test to show both enrichment and
 depletion (the default is one-tailed):
 
-```{r fig.width=5, fig.height=4, warning=FALSE}
+```{r fig.width=6, fig.height=4, warning=FALSE}
 query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
 results_2tailed <- testEnrichment(query, "TFBS", alternative = "two.sided")
 KYCG_plotVolcano(results_2tailed)
@@ -225,14 +225,14 @@ KYCG_plotVolcano(results_2tailed)
 
 and a Waterfall plot:
 
-```{r fig.width=5, fig.height=5}
+```{r fig.width=6, fig.height=4.5}
 KYCG_plotWaterfall(results)
 ```
 
 If you have a list of cg groups and they were tested against the same set of
 databases, you can make a point range plot to summarize the overall trend:
 
-```{r fig.width=3, fig.height=5}
+```{r fig.width=3.5, fig.height=4}
 ## pick some big TFBS-overlapping CpG groups
 cg_lists <- KYCG_getDBs("MM285.TFBS", silent=TRUE)
 queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
@@ -305,12 +305,12 @@ gostplot(gostres)
 KnowYourCG builds in several metagene/meta-feature coordinates. One can test
 enrichment over meta genes or simply plot the mean over metagenes:
 
-```{r plot-meta1, fig.width=4, fig.height=4}
+```{r plot-meta1, fig.width=5, fig.height=4}
 sdf <- sesameDataGet("EPIC.1.SigDF")
 KYCG_plotMeta(getBetas(sdf))
 ```
 
-# Continuous data
+# GSEA
 
 The query may be a named continuous vector. In that case, either a gene
 enrichment score will be calculated (if the database is discrete) or a Spearman
