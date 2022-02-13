@@ -166,10 +166,11 @@ testing. The ```testEnrichment()``` will perform Fisher's exact test
 (one-tailed by default, but two-tailed optionally) and report metrics about
 each of the the loaded database sets.
 
-**Choice of universal set:** Universal set is the set of all probes for a given
-platform. It can either be passed in as an argument called ```universeSet``` or
-the platform name can be passed with argument ```platform```. If neither of
-these are supplied, the universe set will be implied from the probes.
+> **Choice of universal set:** Universal set is the set of all probes for a
+given platform. It can either be passed in as an argument called
+```universeSet``` or the platform name can be passed with argument
+```platform```. If neither of these are supplied, the universe set will be
+implied from the probes.
 
 ```{r run-test-single, echo=TRUE, eval=TRUE}
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
@@ -331,11 +332,13 @@ res <- testEnrichmentGSEA(query, "MM285.seqContextN")
 res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
 ```
 
-The estimate here is enrichment score. **Negative enrichment score suggests
-enrichment of the categorical database with the higher values (in the numerical
-database). Positive enrichment score represent enrichment with the smaller
-values**. As expected, the designed TSS CpGs are significantly enriched in
-smaller TSS distance and higher CpG density.
+The estimate here is enrichment score.
+
+> **NOTE:** Negative enrichment score suggests enrichment of the categorical
+database with the higher values (in the numerical database). Positive
+enrichment score represent enrichment with the smaller values. As expected, the
+designed TSS CpGs are significantly enriched in smaller TSS distance and higher
+CpG density.
 
 Alternatively one can test the enrichment of a continuous query with discrete
 databases. Here we will use the methylation level from a sample as the query
@@ -347,9 +350,9 @@ res <- testEnrichmentGSEA(beta_values, "MM285.chromHMM")
 res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
 ```
 
-As expected, chromatin states "Tss", "Enh" has negative enrichment score,
+As expected, chromatin states `Tss`, `Enh` has negative enrichment score,
 meaning these databases are associated with small values of the query (DNA
-methylation level). On the contrary, "Quies" states are associated with high
+methylation level). On the contrary, `Quies` states are associated with high
 methylation level.
 
 # Feature engineering

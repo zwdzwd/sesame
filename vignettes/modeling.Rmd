@@ -37,6 +37,7 @@ from different tissues and individuals of different ages and sexes.
 The dataset is stored
 in a `SummarizedExperiment` object, which contains a data matrix combined
 with column-wise metadata accessible with `colData`:
+
 ```{r message=FALSE}
 se = sesameDataGet("MM285.10.tissues")[1:1000,] # use a random 1000 probes
 colData(se)
@@ -51,6 +52,7 @@ This can be done using the `checkLevels` function.
 
 In the following, we will test for both sex and
 tissue as co-variates using the `checkLevels` function:
+
 ```{r}
 se_ok = (checkLevels(assay(se), colData(se)$sex) &
     checkLevels(assay(se), colData(se)$tissue))
@@ -67,6 +69,7 @@ for-categorical-variables/)).
 
 For example, to use `Colon` as the
 reference tissue and `Female` as the reference sex, one can do the following
+
 ```{r}
 colData(se)$tissue <- relevel(factor(colData(se)$tissue), "Colon")
 colData(se)$sex <- relevel(factor(colData(se)$sex), "Female")
@@ -79,11 +82,13 @@ function and specify the R formula
 model and perform the
 corresponding slope test and goodness-of-fit test (F-test holding out each
 contrast variable). All these results are returned in an
-object of class `DMLSummary`;
+object of class `DMLSummary`:
+
 ```{r}
 smry = DML(se, ~tissue + sex)
 smry
 ```
+
 You can use `mc.cores` argument to parallelize the computing.
 
 ## Test Interpretation
@@ -93,6 +98,7 @@ linear model (as would be returned by `summary(lm())`. The
 `summaryExtractTest` function abstracts a `DMLSummary` object
 into a data frame with rows corresponding to CpGs/loci and columns containing
 the slopes and p-values of each variable.
+
 ```{r}
 test_result = summaryExtractTest(smry)
 colnames(test_result) # the column names, show four groups of statistics
@@ -155,6 +161,7 @@ specific to sex,
 test_result %>% dplyr::filter(FPval_sex < 0.05, Eff_sex > 0.1) %>%
     select(FPval_sex, Eff_sex)
 ```
+
 Here we used 0.1 as the effect size threshold. This means DNA methylation
 difference under 0.1 (10%) is not considered a biologically meaningful
 difference. This is a valid assumption for homogenous cell composition as
@@ -162,6 +169,7 @@ most cells would be either biallelically methylated, unmethylated or
 monoallelically methylated.
 
 We can define CpG methylation as sex-specific, tissue-specific or both
+
 ```{r}
 test_result %>%
     mutate(sex_specific =
@@ -197,12 +205,14 @@ ggplot(test_result) + geom_point(aes(Est_tissueFat, -log10(Pval_tissueFat)))
 The variable tested in the `DML` function can be continuous.
 Suppose we are interested in `age` besides `sex`. We will call the
 same function but with the following formula:
+
 ```{r}
 smry2 = DML(se, ~ age + sex)
 test_result2 = summaryExtractTest(smry2) %>% arrange(Est_age)
 ```
 
 Let's verify the CpGs positively associated with age.
+
 ```{r}
 test_result2 %>% dplyr::select(Est_age, Pval_age) %>% tail # positive assoc.
 df = data.frame(Age = colData(se)$age,
@@ -225,21 +235,25 @@ merged = DMR(se, smry, "sexMale")       # merge CpGs to regions / segments
 
 # Track View
 
-SeSAMe provide utilities to view methylation reading in a track view.
-Next, we will demonstrate how to create track view with transcript
-position marked focusing on a genomic region, a gene and specific probes.
-Let's first load example HM450 data
+SeSAMe provide utilities to view methylation reading in a track view.  Next, we
+will demonstrate how to create track view with transcript position marked
+focusing on a genomic region, a gene and specific probes.  Let's first load
+example HM450 data
+
 ```{r}
 betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
 ```
 
 ## By Genomic Region
+
 To visualize probes from arbitrary region, we will call `visualizeRegion`:
+
 ```{r, message=FALSE, fig.width=6, fig.height=5}
 visualizeRegion(
     'chr19',10260000,10380000, betas, platform='HM450',
     show.probeNames = FALSE)
 ```
+
 Zero to full methylation are displayed using the jet color scheme with blue
 representing no methylation and red full methylation.
 
@@ -250,8 +264,10 @@ visualizeGene('DNMT1', betas, platform='HM450')
 ```
 
 ## By Probe ID
+
 To visualize genome neighborhood using probe names, we will call
 `visualizeProbes`:
+
 ```{r, message=FALSE, fig.width=6}
 visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 ```

@@ -120,7 +120,7 @@ sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats))
 Dye bias is shown by an off-diagonal q-q plot of the red (x-axis) and green
 signal (y-axis).
 
-```{r fig.height=5, fig.width=5, fig.align="center"}
+```{r fig.height=5, fig.width=5}
 sesameQC_plotRedGrnQQ(sdf)
 ```
 
@@ -130,7 +130,7 @@ Beta value is more influenced by signal background for probes with low signal
 intensities. The following plot shows this dependency and the extent of probes
 with low signal intensity.
 
-```{r fig.height=5, fig.width=5, fig.align="center"}
+```{r fig.height=5, fig.width=5}
 sesameQC_plotIntensVsBetas(sdf)
 ```
 
@@ -139,7 +139,7 @@ sesameQC_plotIntensVsBetas(sdf)
 SeSAMe can extract explicit and Infinium-I-derived SNPs to identify potential
 sample swaps.
 
-```{r fig.height=5, fig.width=5, fig.align="center", message=FALSE}
+```{r fig.height=5, fig.width=5, message=FALSE}
 sesameQC_plotHeatSNPs(sdfs)
 ```
 
