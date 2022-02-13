@@ -18,26 +18,26 @@ databases_getMeta <- function(dbs) {
     meta[,colnames(meta)!="hasMeta"]
 }
 
-testEnrichment1 <- function(query, database, universe) {
+## testEnrichment1 <- function(query, database, universe) {
     
-    if (is.numeric(query)) { # a named vector of continuous value
-        if(is.numeric(database)) { # numeric db
-            res <- testEnrichmentSpearman(query=query, database=database)
-        } else {
-            res <- testEnrichmentGSEA(query = query, database = database)
-        }
-    } else if (is.character(query)) { # categorical query
-        if(is.numeric(database)) { # numeric db
-            res <- testEnrichmentGSEA(query = database, database = query)
-        } else { # categorical db
-            res <- testEnrichmentFisher(query = query, database = database,
-                universe = universe)
-        }
-    } else {
-        stop("Query is neither numerical or categorical.")
-    }
-    res
-}
+##     if (is.numeric(query)) { # a named vector of continuous value
+##         if(is.numeric(database)) { # numeric db
+##             res <- testEnrichmentSpearman(query=query, database=database)
+##         } else {
+##             res <- testEnrichmentGSEA(query = query, database = database)
+##         }
+##     } else if (is.character(query)) { # categorical query
+##         if(is.numeric(database)) { # numeric db
+##             res <- testEnrichmentGSEA(query = database, database = query)
+##         } else { # categorical db
+##             res <- testEnrichmentFisher(query = query, database = database,
+##                 universe = universe)
+##         }
+##     } else {
+##         stop("Query is neither numerical or categorical.")
+##     }
+##     res
+## }
 
 queryCheckPlatform <- function(platform, query = NULL) {
     if (is.null(platform)) {
@@ -333,20 +333,7 @@ calcES_Significance <- function(dCont, dDisc, permut=100, precise=FALSE) {
     res
 }
 
-#' testEnrichmentGSEA uses the GSEA test to estimate the association of a
-#' categorical variable against a continuous variable.
-#'
-#' estimate represent enrichment score and negative estimate indicate a
-#' test for depletion
-#'
-#' @param query Vector of probes of interest (e.g., significant probes)
-#' @param database Vector of probes corresponding to a single database set
-#' @param precise whether to compute precise p-value (up to numerical limit)
-#' of interest.
-#'
-#' @return A DataFrame with the estimate/statistic, p-value, and name of test
-#' for the given results.
-testEnrichmentGSEA <- function(query, database, precise=FALSE) {
+testEnrichmentGSEA1 <- function(query, database, precise=FALSE) {
     test <- "GSEA Enrichment Score"
     overlap <- intersect(names(query), database)
 
@@ -362,8 +349,7 @@ testEnrichmentGSEA <- function(query, database, precise=FALSE) {
             estimate = 0, p.value = 1,
             log10.p.value = 0, test = test,
             nQ = length(database), nD = length(query),
-            overlap = length(overlap)))
-    }
+            overlap = length(overlap))) }
 
     res <- calcES_Significance(query, overlap, precise=precise)
 
@@ -383,7 +369,67 @@ testEnrichmentGSEA <- function(query, database, precise=FALSE) {
     }
 }
     
+#' testEnrichmentGSEA uses the GSEA test to estimate the association of a
+#' categorical variable against a continuous variable.
+#'
+#' estimate represent enrichment score and negative estimate indicate a
+#' test for depletion
+#'
+#' @param query query, if numerical, expect categorical database, if
+#' categorical expect numerical database
+#' @param database database, numerical or categorical, but needs to be
+#' different from query
+#' @param platform EPIC, MM285, ..., infer if not given
+#' @param silent suppress message (default: FALSE)
+#' @param precise whether to compute precise p-value (up to numerical limit)
+#' of interest.
+#' @return A DataFrame with the estimate/statistic, p-value, and name of test
+#' for the given results.
+#' @examples
+#' query <- KYCG_getDBs("KYCG.MM285.designGroup")[["TSS"]]
+#' res <- testEnrichmentGSEA(query, "MM285.seqContextN")
+#' @export
+testEnrichmentGSEA <- function(query, databases = NULL,
+    platform = NULL, silent = FALSE, precise = FALSE) {
 
+    platform <- queryCheckPlatform(platform, query)
+    if (is.null(databases)) {
+        if (is.character(query)) {
+            dbs <- KYCG_getDBs(KYCG_listDBGroups( # by default, all dbs
+                platform, type="numerical")$Title, silent = silent)
+        } else if (is.numeric(query)) {
+            dbs <- KYCG_getDBs(KYCG_listDBGroups( # all dbs, could be slow
+                platform, type="categorical")$Title, silent = silent)
+        }
+    } else if (is.character(databases)) {
+        dbs <- KYCG_getDBs(databases, platform = platform, silent = silent)
+    } else {
+        dbs <- databases
+    }
+    ## there shouldn't be empty databases, but just in case
+    dbs <- dbs[vapply(dbs, length, integer(1)) > 0]
+    if (!silent) {
+        message(sprintf("Testing against %d database(s)...", length(dbs))) }
+
+    if (is.character(query) && all(vapply(dbs, is.numeric, logical(1)))) {
+        res <- do.call(bind_rows, lapply(dbs, function(db) {
+            testEnrichmentGSEA1(
+                query = db, database = query, precise = precise)}))
+    } else if (
+        is.numeric(query) && all(vapply(dbs, is.character, logical(1)))) {
+        res <- do.call(bind_rows, lapply(dbs, function(db) {
+            testEnrichmentGSEA1(
+                query = query, database = db, precise = precise)}))
+    } else { stopifnot("query must be numerical or categorical"); }
+    
+    ## adjust p.value after merging
+    res$FDR <- p.adjust(res$p.value, method='fdr')
+    rownames(res) <- NULL
+
+    ## bind meta data
+    res <- cbind(res, databases_getMeta(dbs))
+    res[order(res$p.value, -abs(res$estimate)), ]
+}
 
 #' testEnrichmentSpearman uses the Spearman statistical test to estimate
 #' the association between two continuous variables.

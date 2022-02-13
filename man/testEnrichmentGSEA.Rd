@@ -5,15 +5,27 @@
 \title{testEnrichmentGSEA uses the GSEA test to estimate the association of a
 categorical variable against a continuous variable.}
 \usage{
-testEnrichmentGSEA(query, database, precise = FALSE)
+testEnrichmentGSEA(
+  query,
+  databases = NULL,
+  platform = NULL,
+  silent = FALSE,
+  precise = FALSE
+)
 }
 \arguments{
-\item{query}{Vector of probes of interest (e.g., significant probes)}
+\item{query}{query, if numerical, expect categorical database, if
+categorical expect numerical database}
 
-\item{database}{Vector of probes corresponding to a single database set}
+\item{platform}{EPIC, MM285, ..., infer if not given}
+
+\item{silent}{suppress message (default: FALSE)}
 
 \item{precise}{whether to compute precise p-value (up to numerical limit)
 of interest.}
+
+\item{database}{database, numerical or categorical, but needs to be
+different from query}
 }
 \value{
 A DataFrame with the estimate/statistic, p-value, and name of test
@@ -22,4 +34,8 @@ for the given results.
 \description{
 estimate represent enrichment score and negative estimate indicate a
 test for depletion
+}
+\examples{
+query <- KYCG_getDBs("KYCG.MM285.designGroup")[["TSS"]]
+res <- testEnrichmentGSEA(query, "MM285.seqContextN")
 }

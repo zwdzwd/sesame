@@ -55,7 +55,7 @@ head(query)
 Now test the enrichment over database groups. By default, KYCG will select all
 the categorical groups and overlapping genes (CpGs associated with a gene).
 
-```{r fig.width=8, fig.height=5, fig.align="center", message=FALSE}
+```{r fig.width=8, fig.height=5, message=FALSE}
 results_pgc <- testEnrichment(query)
 head(results_pgc)
 ```
@@ -204,20 +204,20 @@ overlap between the two sets, so that metric is reported as well in the
 
 We can visualize the results in a dot plot:
 
-```{r fig.width=5, fig.height=4, fig.align="center"}
+```{r fig.width=5, fig.height=4}
 KYCG_plotDot(results, n_max=20)
 ```
 
 or a bar plot:
 
-```{r fig.width=8, fig.height=5, message=FALSE, fig.align="center"}
+```{r fig.width=8, fig.height=5, message=FALSE}
 KYCG_plotBar(results, n_max=15)
 ```
  
 or a volcano plot. Here we need a two-tailed test to show both enrichment and
 depletion (the default is one-tailed):
 
-```{r fig.width=5, fig.height=4, warning=FALSE, fig.align="center"}
+```{r fig.width=5, fig.height=4, warning=FALSE}
 query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
 results_2tailed <- testEnrichment(query, "TFBS", alternative = "two.sided")
 KYCG_plotVolcano(results_2tailed)
@@ -225,14 +225,14 @@ KYCG_plotVolcano(results_2tailed)
 
 and a Waterfall plot:
 
-```{r fig.width=5, fig.height=5, fig.align="center"}
+```{r fig.width=5, fig.height=5}
 KYCG_plotWaterfall(results)
 ```
 
 If you have a list of cg groups and they were tested against the same set of
 databases, you can make a point range plot to summarize the overall trend:
 
-```{r fig.width=3, fig.height=5, fig.align="center"}
+```{r fig.width=3, fig.height=5}
 ## pick some big TFBS-overlapping CpG groups
 cg_lists <- KYCG_getDBs("MM285.TFBS", silent=TRUE)
 queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
@@ -305,7 +305,7 @@ gostplot(gostres)
 KnowYourCG builds in several metagene/meta-feature coordinates. One can test
 enrichment over meta genes or simply plot the mean over metagenes:
 
-```{r plot-meta1, fig.width=4, fig.height=4, fig.align="center"}
+```{r plot-meta1, fig.width=4, fig.height=4}
 sdf <- sesameDataGet("EPIC.1.SigDF")
 KYCG_plotMeta(getBetas(sdf))
 ```
@@ -327,14 +327,15 @@ query <- KYCG_getDBs("KYCG.MM285.designGroup")[["TSS"]]
 ```
 
 ```{r echo=TRUE, eval=TRUE, message=FALSE}
-res <- testEnrichment(query, "MM285.seqContextN")
+res <- testEnrichmentGSEA(query, "MM285.seqContextN")
 res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
 ```
 
-The estimate here is enrichment score. **Negative enrichment score suggest
-enrichment with the higher values of the database and positive enrichment score
-represent enrichment with the smaller values**. As expected, the designed TSS
-CpGs are significantly enriched in smaller TSS distance and higher CpG density.
+The estimate here is enrichment score. **Negative enrichment score suggests
+enrichment of the categorical database with the higher values (in the numerical
+database). Positive enrichment score represent enrichment with the smaller
+values**. As expected, the designed TSS CpGs are significantly enriched in
+smaller TSS distance and higher CpG density.
 
 Alternatively one can test the enrichment of a continuous query with discrete
 databases. Here we will use the methylation level from a sample as the query
@@ -342,7 +343,7 @@ and test it against the chromHMM chromatin states.
 
 ```{r warning=FALSE}
 beta_values <- getBetas(sesameDataGet("MM285.1.SigDF"))
-res <- testEnrichment(beta_values, "MM285.chromHMM")
+res <- testEnrichmentGSEA(beta_values, "MM285.chromHMM")
 res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
 ```
 
@@ -381,7 +382,7 @@ head(stats[, 1:5])
 Just from the few database set means above, we can see that TSS are
 consistently hypomethylated, which is consistent with known biology.
 
-```{r fig.width=6, fig.height=6, fig.align="center"}
+```{r fig.width=6, fig.height=6}
 library(wheatmap)
 WHeatmap(both.cluster(stats)$mat, xticklabels=TRUE,
     cmp=CMPar(stop.points=c("blue","yellow")))
