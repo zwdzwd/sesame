@@ -12,7 +12,7 @@
 #' @param sdfs.normal a list of \code{SigDF}s for normalization, if not given,
 #' use the stored normal data from sesameData. However, we do recommend using
 #' a matched copy number normal dataset for normalization.
-#' @param refversion hg19 or hg38
+#' @param genome hg19 or hg38
 #' @return an object of \code{CNSegment}
 #' @examples
 #'
@@ -25,11 +25,11 @@
 #' sesameDataGet_resetEnv()
 #' 
 #' @export
-cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
+cnSegmentation <- function(sdf, sdfs.normal=NULL, genome=c('hg19','hg38')) {
 
     stopifnot(is(sdf, "SigDF"))
     pkgTest('GenomicRanges')
-    refversion <- match.arg(refversion)
+    genome <- match.arg(genome)
 
     if (is.null(sdfs.normal)) {
         if (sdfPlatform(sdf) == "EPIC") {
@@ -41,10 +41,10 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, refversion=c('hg19','hg38')) {
     }
     
     ## retrieve chromosome info and probe coordinates
-    seqLength <- sesameDataGet(paste0('genomeInfo.', refversion))$seqLength
-    gapInfo <- sesameDataGet(paste0('genomeInfo.', refversion))$gapInfo
+    seqLength <- sesameDataGet(paste0('genomeInfo.', genome))$seqLength
+    gapInfo <- sesameDataGet(paste0('genomeInfo.', genome))$gapInfo
     probe.coords <- sesameDataGet(paste0(
-        sdfPlatform(sdf), '.probeInfo'))[[paste0('mapped.probes.', refversion)]]
+        sdfPlatform(sdf), '.probeInfo'))[[paste0('mapped.probes.', genome)]]
     
     ## extract intensities
     target.intens <- totalIntensities(sdf)

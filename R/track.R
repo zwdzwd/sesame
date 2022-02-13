@@ -4,7 +4,7 @@
 #' @param betas a named numeric vector
 #' @param output output file name
 #' @param platform HM450, EPIC etc.
-#' @param refversion hg38, hg19 etc.
+#' @param genome hg38, hg19 etc.
 #' @return when output is null, return a data.frame, otherwise NULL
 #' @examples
 #'
@@ -17,12 +17,9 @@
 #' ## bedToBigBed output_sorted.bed hg38.chrom output.bb
 #' @export
 createUCSCtrack <- function(
-    betas, output=NULL, platform='HM450', refversion='hg38') {
+    betas, output=NULL, platform='HM450', genome='hg38') {
     
-    probeInfo <- sesameDataGet(paste0(
-        platform, '.', refversion, '.manifest'))
-
-    probeInfo <- probeInfo[GenomicRanges::seqnames(probeInfo) != "*"]
+    probeInfo <- sesameData_getManifestGRanges(platform, genome)
 
     betas <- betas[names(probeInfo)]
     df <- data.frame(

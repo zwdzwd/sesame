@@ -18,7 +18,7 @@ genotyper <- function(x, model_background=0.1, model_nbeads=40) {
 #'
 #' @param sdf SigDF
 #' @param vcf output VCF file path, if NULL output to console
-#' @param refversion reference version, currently only support
+#' @param genome genome
 #' @param annoS SNP variant annotation, download if not given
 #' @param annoI Infinium-I variant annotation, download if not given
 #' hg19 and hg38 in human
@@ -38,12 +38,12 @@ genotyper <- function(x, model_background=0.1, model_nbeads=40) {
 #' 
 #' @export
 formatVCF <- function(
-    sdf, vcf=NULL, refversion="hg19", annoS=NULL, annoI=NULL) {
+    sdf, vcf=NULL, genome="hg19", annoS=NULL, annoI=NULL) {
 
     platform <- sdfPlatform(sdf)
     if (is.null(annoS)) {
         annoS <- sesameData_getAnno(sprintf("%s/%s.%s.snp_overlap_b151.rds",
-            platform, platform, refversion))
+            platform, platform, genome))
     }
     betas <- getBetas(sdf)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
@@ -59,7 +59,7 @@ formatVCF <- function(
 
     if (is.null(annoI)) {
         annoI <- sesameData_getAnno(sprintf("%s/%s.%s.typeI_overlap_b151.rds",
-            platform, platform, refversion))
+            platform, platform, genome))
     }
     af <- getAFTypeIbySumAlleles(sdf, known.ccs.only=FALSE)
     af <- af[names(annoI)]
@@ -77,7 +77,7 @@ formatVCF <- function(
     header <- c(
         '##fileformat=VCFv4.0',
         sprintf('##fileDate=%s',format(Sys.time(),"%Y%m%d")),
-        sprintf('##reference=%s', refversion),
+        sprintf('##reference=%s', genome),
         paste0(
             '##INFO=<ID=PVF,Number=1,Type=Float,',
             'Description="Pseudo Variant Frequency">'),
