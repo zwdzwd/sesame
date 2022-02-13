@@ -111,7 +111,7 @@ KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
             label=sprintf("%d CGs", overlap)),
             data = df1[df1$FDR < 0.05,], alpha=0.6, hjust=0.5)
     p2 <- ggplot(df1, aes(db1, estimate)) + geom_bar(stat="identity") +
-        coord_flip() + ylab("Enrichment Score") + xlab("") +
+        coord_flip() + ylab("Log2(OR)") + xlab("") +
         theme(axis.text.y = element_blank())
     WGG(p1) + WGG(p2, RightOf(width=0.5, pad=0))
 }
@@ -175,12 +175,13 @@ KYCG_plotVolcano <- function(data, label_column="dbname", alpha=0.05) {
     data$label <- data[[label_column]]
     data <- data[data$estimate > -Inf,]
     ## TODO: replace with column specifying sig vs non sig
-    g <- ggplot(data=data, aes(x=estimate, y=-log10(FDR)))
+    g <- ggplot(data=data, aes(x = estimate, y = -log10(FDR),
+        color = ifelse(FDR < alpha, "Significant", "Not significant")))
     g <- g + geom_point() + xlab("log2(OR)")
     g <- g + ylab("-log10 FDR") +
-        scale_colour_discrete(
+        scale_colour_manual(
             name = sprintf("Significance (q < %s)", alpha),
-            labels=c("Significant", "Not Significant"))
+            values = c("Significant" = "red", "Not significant" = "black"))
     g <- g + geom_text_repel(
         data = subset(data, FDR < alpha & estimate > 0),
         aes(label = label), size = 5,

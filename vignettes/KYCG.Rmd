@@ -145,7 +145,8 @@ platform. This specific query set has 168 probes.
 
 There are four testing scenarios depending on the type format of the query set
 and database sets. They are shown with the respective testing scenario in the
-table below.
+table below. `testEnrichment`, `testEnrichmentGSEA` are for Fisher's exact test
+and GSEA respectively.
 
 ```{r echo = FALSE, results="asis"}
 library(knitr)
@@ -158,12 +159,12 @@ kable(df, caption="Four KnowYourCG Testing Scenarios")
 
 # The testEnrichment function
 
-The main work horse function for test enrichment of the query in the databases
-is **testEnrichment** (surprise). This function calculates the extent of
-overlap and apply different statistics for enrichment testing. 
-
-The ```testEnrichment()``` will perform Fisher's exact test and report metrics
-about each of the the loaded database sets.
+The main work horse function for test enrichment of a categorical query against
+categorical databases is **testEnrichment** (surprise). This function
+calculates the extent of overlap and apply different statistics for enrichment
+testing. The ```testEnrichment()``` will perform Fisher's exact test
+(one-tailed by default, but two-tailed optionally) and report metrics about
+each of the the loaded database sets.
 
 **Choice of universal set:** Universal set is the set of all probes for a given
 platform. It can either be passed in as an argument called ```universeSet``` or
@@ -203,7 +204,7 @@ overlap between the two sets, so that metric is reported as well in the
 
 We can visualize the results in a dot plot:
 
-```{r fig.width=5, fig.height=5, fig.align="center"}
+```{r fig.width=5, fig.height=4, fig.align="center"}
 KYCG_plotDot(results, n_max=20)
 ```
 
@@ -216,7 +217,7 @@ KYCG_plotBar(results, n_max=15)
 or a volcano plot. Here we need a two-tailed test to show both enrichment and
 depletion (the default is one-tailed):
 
-```{r fig.width=7, fig.height=6, warning=FALSE, fig.align="center"}
+```{r fig.width=5, fig.height=4, warning=FALSE, fig.align="center"}
 query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
 results_2tailed <- testEnrichment(query, "TFBS", alternative = "two.sided")
 KYCG_plotVolcano(results_2tailed)
@@ -224,14 +225,14 @@ KYCG_plotVolcano(results_2tailed)
 
 and a Waterfall plot:
 
-```{r plot-lollipop, fig.width=7, fig.height=6, fig.align="center"}
+```{r fig.width=5, fig.height=5, fig.align="center"}
 KYCG_plotWaterfall(results)
 ```
 
 If you have a list of cg groups and they were tested against the same set of
 databases, you can make a point range plot to summarize the overall trend:
 
-```{r plot-pointrange, fig.width=3, fig.height=5, fig.align="center"}
+```{r fig.width=3, fig.height=5, fig.align="center"}
 ## pick some big TFBS-overlapping CpG groups
 cg_lists <- KYCG_getDBs("MM285.TFBS", silent=TRUE)
 queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
@@ -263,7 +264,7 @@ results[,c("dbname","estimate","gene_name","FDR", "nQ", "nD", "overlap")]
 
 Using these sample results, we can plot a volcano plot and lollipop plot.
 
-```{r plot-volcano-gene, fig.width=7, fig.height=6, echo=TRUE}
+```{r fig.width=5, fig.height=4, echo=TRUE}
 KYCG_plotLollipop(results, label="gene_name")
 ```
 
