@@ -4,7 +4,7 @@
 \alias{parseGEOsignalMU}
 \title{Convert signal M and U to SigDF}
 \usage{
-parseGEOsignalMU(sigM, sigU, Probe_IDs, oob = 500)
+parseGEOsignalMU(sigM, sigU, Probe_IDs, oob.mean = 500, oob.sd = 300)
 }
 \arguments{
 \item{sigM}{methylated signal, a numeric vector}
@@ -13,14 +13,17 @@ parseGEOsignalMU(sigM, sigU, Probe_IDs, oob = 500)
 
 \item{Probe_IDs}{probe ID vector}
 
-\item{oob}{assumed value for out-of-band signals}
+\item{oob.mean}{assumed mean for out-of-band signals}
+
+\item{oob.sd}{assumed standard deviation for out-of-band signals}
 }
 \value{
 SigDF
 }
 \description{
 This overcomes the issue of missing IDAT files. However,
-out-of-band signals will be missing or faked.
+out-of-band signals will be missing or faked (sampled from a
+normal distribution).
 }
 \examples{
 sigM <- c(11436, 6068, 2864)
