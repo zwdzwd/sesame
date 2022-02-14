@@ -11,7 +11,8 @@ inferSpecies(
   threshold.neg = 0.1,
   return.auc = FALSE,
   return.species = FALSE,
-  threshold.success.rate = 0.8
+  threshold.success.rate = 0.95,
+  max_refauc = 0.8
 )
 }
 \arguments{
@@ -31,7 +32,10 @@ increase this number can sometimes improve accuracy (DEFAULT: 1000)}
 \item{return.species}{return a string to represent species}
 
 \item{threshold.success.rate}{threshold of success rate to determine
-mouse species.}
+reference species.}
+
+\item{max_refauc}{maximum auc to determine reference species
+increase this number to relax reference inference.}
 }
 \value{
 a new SigDF with updated color channel specification and

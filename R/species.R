@@ -69,7 +69,9 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 #' @param return.auc return AUC calculated, override return.species
 #' @param return.species return a string to represent species
 #' @param threshold.success.rate threshold of success rate to determine
-#' mouse species.
+#' reference species.
+#' @param max_refauc maximum auc to determine reference species
+#' increase this number to relax reference inference.
 #' @return a new SigDF with updated color channel specification and
 #' masking unless return.auc or return.species is set to TRUE
 #'
@@ -85,7 +87,7 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 inferSpecies <- function(sdf, topN = 1000,
     threshold.pos = 0.01, threshold.neg = 0.1,
     return.auc = FALSE, return.species = FALSE,
-    threshold.success.rate = 0.8) {
+    threshold.success.rate = 0.95, max_refauc = 0.8) {
 
     addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
     df_as <- do.call(cbind, lapply(addr$species, function(x) x$AS))
@@ -129,9 +131,8 @@ inferSpecies <- function(sdf, topN = 1000,
         U1 <- R1 - n1 * (n1 + 1)/2
         U1/(n1 * n2)}, numeric(1))
 
-    ## if success rate is high but max(AUC) is low it can be because the target
-    ## species has issue with alignemnt score calibration
-    if (success.rate >= threshold.success.rate && max(auc) < 0.6) {
+    ## if success rate is high but max(AUC) is low, use reference.
+    if (success.rate >= threshold.success.rate && max(auc) < max_refauc) {
         message("Lack of negative probes. Use reference.")
         species <- addr$reference
         if (return.auc){ return(auc);
