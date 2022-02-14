@@ -1,61 +1,34 @@
-## TODO need to export this function
-parseGEOSignalABFile <- function(
-    path, platform='HM450', drop=TRUE, parallel=TRUE,
-    id_column=TRUE, format="signalMU") {
 
-    df <- read.table(gzfile(path), header=TRUE, check.names = FALSE)
-    samples <- colnames(df)
-    if (id_column) {
-        samples <- samples[2:length(samples)]
-    }
-    if (format == "signalAB") {
-        s1 <- ".Signal_A"
-        s2 <- ".Signal_B"
-    } else if (format == "signalMU") {
-        s1 <- "meth"
-        s2 <- "nometh"
-        samples <- sub("_pval","",samples)
-    }
-    samples <- sub(s1, "", samples)
-    samples <- sub(s2, "", samples)
-    samples <- unique(samples)
-
-    # make sure each sample has both Signal_A and Signal_B
-    stopifnot(all(vapply(samples, function(s) exists(
-        paste0(s,'.Signal_A'), df), logical(1))))
-    stopifnot(all(vapply(samples, function(s) exists(
-        paste0(s,'.Signal_B'), df), logical(1))))
-    
-    ord0 <- sesameDataGet(paste0(platform, '.address'))$ordering
-    sdfs <- lapply(samples, function(sample) {
-        ## sample <- "C_318"
-        auxM <- df[[paste0(sample,"_",s1)]][match(ord0$Probe_ID, df[[1]])]
-        auxU <- df[[paste0(sample,"_",s2)]][match(ord0$Probe_ID, df[[1]])]
-        ord0$MG <- NA
-        ord0$MR <- NA
-        ord0$UG <- NA
-        ord0$UR <- NA
-        idx <- ord0$DESIGN == "I" & ord0$col == "G"
-        ord0$MG[idx] <- auxM[idx]
-        ord0$UG[idx] <- auxU[idx]
-
-        idx <- ord0$DESIGN == "I" & ord0$col == "R"
-        ord0$MR[idx] <- auxM[idx]
-        ord0$MU[idx] <- auxU[idx]
-
-        idx <- ord0$DESIGN == "II"
-        ord0$UG[idx] <- auxM[idx]
-        ord0$UR[idx] <- auxU[idx]
-
-        sdf <- SigDF(ord0, platform)
-        auxP <- df[[paste0(sample,"_pval")]][match(ord0$Probe_ID, df[[1]])]
-        sdf$mask[auxP >= 0.05] <- TRUE
-        sdf
-    })
-    names(sdfs) <- samples
-    sdfs
+#' Convert signal M and U to SigDF
+#'
+#' This overcomes the issue of missing IDAT files. However,
+#' out-of-band signals will be missing or faked.
+#' 
+#' @param sigM methylated signal, a numeric vector
+#' @param sigU unmethylated signal, a numirc vector
+#' @param Probe_IDs probe ID vector
+#' @param oob assumed value for out-of-band signals
+#' @return SigDF
+#' @examples
+#' sigM <- c(11436, 6068, 2864)
+#' sigU <- c(1476, 804, 393)
+#' probes <- c("cg07881041", "cg23229610", "cg03513874")
+#' sdf <- parseGEOsignalMU(sigM, sigU, probes)
+#' @export
+parseGEOsignalMU <- function(sigM, sigU, Probe_IDs, oob=500) {
+    platform <- inferPlatformFromProbeIDs(Probe_IDs)
+    addr <- sesameDataGet(paste0(platform, ".address"))$ordering
+    M <- sigM[match(addr$Probe_ID, Probe_IDs)]
+    U <- sigU[match(addr$Probe_ID, Probe_IDs)]
+    col <- ifelse(is.na(addr$col), "2", as.character(addr$col))
+    MG <- ifelse(col == "2", NA, ifelse(col == "G", M, oob))
+    MR <- ifelse(col == "2", NA, ifelse(col == "R", M, oob))
+    UG <- ifelse(col == "2", M, ifelse(col == "G", U, oob))
+    UR <- ifelse(col == "2", U, ifelse(col == "R", U, oob))
+    sdf <- data.frame(Probe_ID = addr$Probe_ID,
+        MG = MG, MR = MR, UG = UG, UR = UR,
+        col = factor(col, levels=c("G","R","2")), mask = addr$mask)
+    class(sdf) <- c("SigDF", class(sdf))
+    sdf
 }
-
-## path <- "~/Downloads/GSE57362_signal_intensities.txt.gz"
-## saveRDS(sdfs, file="~/Dropbox/tmp/GSE57362_SigDFs.rds")
 
