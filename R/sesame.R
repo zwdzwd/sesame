@@ -38,7 +38,7 @@
 #' head(signalMU(sdf))
 #' @export
 signalMU <- function(sdf, mask = TRUE) {
-    stopifnot(is(sdf, "SigDF"))
+    stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
     dG <- InfIG(sdf); dR <- InfIR(sdf); d2 <- InfII(sdf)
     sdf2 <- rbind(
         data.frame(M = dG$MG, U = dG$UG, Probe_ID = dG$Probe_ID),
@@ -70,7 +70,7 @@ signalMU <- function(sdf, mask = TRUE) {
 #' meanIntensity(sdf)
 #' @export
 meanIntensity <- function(sdf, mask = TRUE) {
-    stopifnot(is(sdf, "SigDF"))
+    stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
     s <- signalMU(sdf, mask = mask)
     mean(c(s$M,s$U), na.rm=TRUE)
 }
@@ -90,7 +90,7 @@ meanIntensity <- function(sdf, mask = TRUE) {
 #' medianTotalIntensity(sdf)
 #' @export
 medianTotalIntensity <- function(sdf, mask = TRUE) {
-    stopifnot(is(sdf, "SigDF"))
+    stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
     s <- signalMU(sdf, mask = mask)
     median(c(s$M + s$U), na.rm=TRUE)
 }
@@ -131,7 +131,7 @@ probeSuccessRate <- function(sdf, mask = TRUE, max_pval = 0.05) {
 #' intensities <- totalIntensities(sdf)
 #' @export
 totalIntensities <- function(sdf, mask = FALSE) {
-    stopifnot(is(sdf, "SigDF"))
+    stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
     s <- signalMU(sdf, mask = mask)
     setNames(s$M+s$U, s$Probe_ID)
 }
@@ -173,7 +173,7 @@ getBetas <- function(
     sdf, mask=TRUE, sum.TypeI = FALSE, collapseToPfx = FALSE) {
     ## TODO: document collapseToPfx = T feature
 
-    stopifnot(is(sdf, "SigDF"))
+    stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
 
     if (collapseToPfx) { sdf <- SDFcollapseToPfx(sdf); }
 
@@ -216,7 +216,7 @@ getBetas <- function(
 #' @export
 getAFTypeIbySumAlleles <- function(sdf, known.ccs.only = TRUE) {
 
-    stopifnot(is(sdf, "SigDF"))
+    stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
 
     dG <- InfIG(sdf); dR <- InfIR(sdf)
     af <- c(setNames(

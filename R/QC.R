@@ -420,6 +420,31 @@ sesameQC_plotRedGrnQQ <- function(sdf) {
     abline(0,1,lty = 'dashed')
 }
 
+
+#' Plot betas distinguishing different Infinium chemistries
+#'
+#' @param sdf SigDF
+#' @return create a density plot
+#' @examples
+#' sdf <- sesameDataGet("EPIC.1.SigDF")
+#' sesameQC_plotBetaByDesign(sdf)
+#' @export
+sesameQC_plotBetaByDesign <- function(sdf, legend_pos="top") {
+
+    dA <- density(na.omit(getBetas(sdf)))
+    dR <- density(na.omit(getBetas(InfIR(sdf))))
+    dG <- density(na.omit(getBetas(InfIG(sdf))))
+    d2 <- density(na.omit(getBetas(InfII(sdf))))
+    
+    plot(dA, main="", ylim=c(0, max(dA$y, dR$y, dG$y, d2$y)))
+    lines(dR, col='red')
+    lines(dG, col='green')
+    lines(d2, col='blue')
+    legend("top", legend=c(
+        "All","Infinium-I Red","Infinium-I Grn","Infinium-II"),
+        col=c("black","red","green","blue"), lty="solid")
+}
+
 #' Plot Total Signal Intensities vs Beta Values
 #' This plot is helpful in revealing the extent of signal background
 #' and dye bias.

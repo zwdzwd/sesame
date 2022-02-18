@@ -87,6 +87,11 @@ dyeBiasCorrMostBalanced <- function(sdfs) {
     lapply(sdfs, function(sdf) dyeBiasCorr(sdf, ref))
 }
 
+maskIG <- function(sdf) {
+    sdf$mask[sdf$col=="G"] <- TRUE
+    sdf
+}
+
 #' Dye bias correction by matching green and red to mid point
 #'
 #' This function compares the Type-I Red probes and Type-I Grn probes and
@@ -107,10 +112,13 @@ dyeBiasCorrTypeINorm <- function(sdf) {
 
     stopifnot(is(sdf, "SigDF"))
 
+    ## mask IG if the grn channel failed completely
+    if (sesameQC_calcStats(sdf, "dyeBias")@stat$RGdistort >10) {
+        return(maskIG(sdf)); }
+    
     ## we use all Inf-I probes so we capture the entire support range
     dG <- InfIG(noMasked(sdf)); dR <- InfIR(noMasked(sdf))
-    IG0 <- c(dG$MG, dG$UG)
-    IR0 <- c(dR$MR, dR$UR)
+    IG0 <- c(dG$MG, dG$UG); IR0 <- c(dR$MR, dR$UR)
     
     maxIG <- max(IG0, na.rm = TRUE); minIG <- min(IG0, na.rm = TRUE)
     maxIR <- max(IR0, na.rm = TRUE); minIR <- min(IR0, na.rm = TRUE)

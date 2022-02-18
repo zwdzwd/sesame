@@ -116,7 +116,7 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE,
 
     stopifnot(is(sdf, "SigDF"))
 
-    dG <- InfIG(sdf); dR <- InfIR(sdf)
+    dG <- noMasked(InfIG(sdf)); dR <- noMasked(InfIR(sdf))
     bgG <- c(dR$MG, dR$UG)
     bgR <- c(dG$MR, dG$UR)
     if (combine.neg) {
@@ -124,6 +124,13 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE,
         bgG <- c(bgG, neg$G)
         bgR <- c(bgR, neg$R)
     }
+
+    ## based on experience
+    if (sum(!is.na(bgG)) <= 100) {
+        bgG <- seq_len(1000) }
+    if (sum(!is.na(bgR)) <= 100) {
+        bgR <- seq_len(1000) }
+
     funcG <- ecdf(bgG)
     funcR <- ecdf(bgR)
 

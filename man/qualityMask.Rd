@@ -4,12 +4,15 @@
 \alias{qualityMask}
 \title{Mask beta values by design quality}
 \usage{
-qualityMask(sdf, mask_groups = "recommended")
+qualityMask(sdf, mask_names = "recommended", prefixes = NULL)
 }
 \arguments{
 \item{sdf}{a \code{SigDF} object}
 
-\item{mask_groups}{mask group name, default to "recommended"}
+\item{mask_names}{mask names, default to "recommended", can be a vector
+of multiple masks, e.g., c("design_issue", "multi"), NULL to skip}
+
+\item{prefixes}{mask by probe ID prefixes, e.g., cg,}
 }
 \value{
 a filtered \code{SigDF}
@@ -23,6 +26,7 @@ sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 sum(sdf$mask)
 sum(qualityMask(sdf)$mask)
+sum(qualityMask(sdf, mask_names = NULL, prefixes = "rs")$mask)
 
 ## list available masks, the mask_name column
 listAvailableMasks(sdf)

@@ -73,21 +73,34 @@ listAvailableMasks <- function(sdf) {
 #' see also listAvailableMasks(sdf)
 #' 
 #' @param sdf a \code{SigDF} object
-#' @param mask_groups mask group name, default to "recommended"
+#' @param mask_names mask names, default to "recommended", can be a vector
+#' of multiple masks, e.g., c("design_issue", "multi"), NULL to skip
+#' @param prefixes mask by probe ID prefixes, e.g., cg, 
 #' @return a filtered \code{SigDF}
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sum(sdf$mask)
 #' sum(qualityMask(sdf)$mask)
+#' sum(qualityMask(sdf, mask_names = NULL, prefixes = "rs")$mask)
 #'
 #' ## list available masks, the mask_name column
 #' listAvailableMasks(sdf)
 #' 
 #' @export 
-qualityMask <- function(sdf, mask_groups = "recommended") {
-    masks <- do.call(c, KYCG_getDBs(sprintf(
-        "%s.mask", sdfPlatform(sdf)), "recommended", silent=TRUE))
+qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL) {
+
+    masks <- character(0)
+    if (!is.null(prefixes)) {
+        masks <- c(masks, do.call(c, lapply(prefixes, function(pfx) {
+            grep(sprintf("^%s", pfx), sdf$Probe_ID, value=TRUE) })))
+    }
+
+    if (!is.null(mask_names)) {
+        masks <- c(masks, 
+            do.call(c, KYCG_getDBs(sprintf(
+                "%s.mask", sdfPlatform(sdf)), mask_names, silent=TRUE)))
+    }
     
     addMask(sdf, masks)
 }

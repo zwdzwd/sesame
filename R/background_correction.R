@@ -80,27 +80,32 @@ noob <- function(sdf, offset=15) {
     if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
 
     ## background
-    oobG <- oobG(noMasked(sdf))
-    oobR <- oobR(noMasked(sdf))
+    nmk <- noMasked(sdf)
+    ooG <- oobG(nmk)
+    ooR <- oobR(nmk)
+
     ## if not enough out-of-band signal
-    if (sum(oobG > 0, na.rm=TRUE) < 100 ||
-            sum(oobR > 0, na.rm=TRUE) < 100) { return(sdf) }
-    oobR[oobR == 0] <- 1
-    oobG[oobG == 0] <- 1
+    if (sum(ooG > 0, na.rm=TRUE) < 100 ||
+            sum(ooR > 0, na.rm=TRUE) < 100) { return(sdf) }
+    ooR[ooR == 0] <- 1
+    ooG[ooG == 0] <- 1
+    ## cap at 10xIQR, this is to proof against multi-mapping probes
+    ooR <- ooR[ooR < median(ooR, na.rm=TRUE) + 10*IQR(ooR, na.rm=TRUE)]
+    ooG <- ooG[ooG < median(ooG, na.rm=TRUE) + 10*IQR(ooG, na.rm=TRUE)]
 
     ## foreground
-    ibG <- c(InfIG(sdf)$MG, InfIG(sdf)$UG, InfII(sdf)$UG)
-    ibR <- c(InfIR(sdf)$MR, InfIR(sdf)$UR, InfII(sdf)$UR)
+    ibG <- c(InfIG(nmk)$MG, InfIG(nmk)$UG, InfII(nmk)$UG)
+    ibR <- c(InfIR(nmk)$MR, InfIR(nmk)$UR, InfII(nmk)$UR)
     ibG[ibG == 0] <- 1 # set signal to 1 if 0
     ibR[ibR == 0] <- 1 # set signal to 1 if 0
 
     ## grn channel
-    fitG <- backgroundCorrectionNoobFit(ibG, oobG)
+    fitG <- backgroundCorrectionNoobFit(ibG, ooG)
     sdf$MG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + 15
     sdf$UG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + 15
 
     ## red channel
-    fitR <- backgroundCorrectionNoobFit(ibR, oobR)
+    fitR <- backgroundCorrectionNoobFit(ibR, ooR)
     sdf$MR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + 15
     sdf$UR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + 15
     

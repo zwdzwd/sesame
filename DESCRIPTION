@@ -74,6 +74,7 @@ Collate:
     'strain.R'
     'tissue.R'
     'track.R'
+    'match_design.R'
     'utils.R'
     'vcf.R'
     'visualize.R'

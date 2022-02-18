@@ -11,7 +11,7 @@ inferSpecies(
   threshold.neg = 0.1,
   return.auc = FALSE,
   return.species = FALSE,
-  threshold.success.rate = 0.95,
+  threshold.success.rate = 0.8,
   max_refauc = 0.8
 )
 }

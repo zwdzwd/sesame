@@ -5,6 +5,8 @@ speciesInfo <- function(addr, species) {
 
 #' Set color and mask using strain/species-specific manifest
 #'
+#' also sets attr(,"species")
+#'
 #' @param sdf a \code{SigDF}
 #' @param species the species the sample is considered to be
 #' @param strain the strain the sample is considered to be
@@ -50,6 +52,7 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
     sdf$mask <- TRUE
     nm <- addrS$mask[m[m_idx]]
     sdf$mask[!nm] <- FALSE
+    attr(sdf, "species") <- species
     sdf
 }
 
@@ -87,7 +90,7 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 inferSpecies <- function(sdf, topN = 1000,
     threshold.pos = 0.01, threshold.neg = 0.1,
     return.auc = FALSE, return.species = FALSE,
-    threshold.success.rate = 0.95, max_refauc = 0.8) {
+    threshold.success.rate = 0.8, max_refauc = 0.8) {
 
     addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
     df_as <- do.call(cbind, lapply(addr$species, function(x) x$AS))

@@ -19,7 +19,7 @@ updateSigDF(sdf, species = NULL, strain = NULL, addr = NULL)
 a \code{SigDF} with updated color channel and mask
 }
 \description{
-Set color and mask using strain/species-specific manifest
+also sets attr(,"species")
 }
 \examples{
 sdf <- sesameDataGet('Mammal40.1.SigDF')
