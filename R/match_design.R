@@ -10,18 +10,17 @@ calcMode <- function(x) {
 }
 
 match1To2_1state <- function(sdf) {
-    dR <- InfIR(sdf)
-    dR$betas <- getBetas(dR, mask=F)
-    dG <- InfIG(sdf)
-    dG$betas <- getBetas(dG, mask=F)
-    d2 <- InfII(sdf)
-    d2$betas <- getBetas(d2, mask=F)
+    dR <- noMasked(InfIR(sdf))
+    bR <- getBetas(dR)
+    dG <- noMasked(InfIG(sdf))
+    bG <- getBetas(dG)
+    d2 <- noMasked(InfII(sdf))
+    b2 <- getBetas(d2)
 
-    b2 <- normalize.quantiles.use.target(matrix(dG$betas), d2$betas)
-    dG$MG <- dG$UG * b2 / (1 - b2)
-    b2 <- normalize.quantiles.use.target(matrix(dR$betas), d2$betas)
-    dR$MR <- dR$UR * b2 / (1 - b2)
+    dG$MG <- normalizeSetM(bG, b2, dG$UG)
+    dR$MR <- normalizeSetM(bR, b2, dR$UR)
     sdf2 <- rbind(dR, dG, d2)
+    sdf2 <- rbind(sdf2, sdf[!(sdf$Probe_ID %in% sdf2$Probe_ID),])
     sdf2[order(sdf2$Probe_ID),]
 }
 
@@ -45,11 +44,11 @@ match1To2_1state <- function(sdf) {
 #'
 #' @export
 matchDesign <- function(sdf, min_dbeta = 0.3) {
-    dR <- InfIR(sdf)
-    dG <- InfIG(sdf)
-    d2 <- InfII(sdf)
+    dR <- noMasked(InfIR(sdf))
+    dG <- noMasked(InfIG(sdf))
+    d2 <- noMasked(InfII(sdf))
 
-    b2 <- getBetas(d2, mask = FALSE)
+    b2 <- getBetas(d2)
     m2 <- as.integer(betaMix2States(b2))
 
     if (sum(m2==1, na.rm=TRUE) < 10 || 
@@ -67,6 +66,7 @@ matchDesign <- function(sdf, min_dbeta = 0.3) {
     dG$MG[mG==1] <- normalizeSetM(bG[mG==1], b2[m2==1], dG$UG[mG==1])
     dG$MG[mG==2] <- normalizeSetM(bG[mG==2], b2[m2==2], dG$UG[mG==2])
     sdf2 <- rbind(dR, dG, d2)
+    sdf2 <- rbind(sdf2, sdf[!(sdf$Probe_ID %in% sdf2$Probe_ID),])
     sdf2[order(sdf2$Probe_ID),]
 }
 

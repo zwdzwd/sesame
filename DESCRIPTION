@@ -10,13 +10,13 @@ Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"), email = "zhouwandi
              person("Timothy", "Triche", role = "ctb"),
              person("Hui", "Shen", role = c("aut"), email = "Hui.Shen@vai.org"))
 Depends: R (>= 4.1),
-          sesameData,
-          methods
+          sesameData
 License: MIT + file LICENSE
 RoxygenNote: 7.1.2
 Imports: BiocParallel,
          grDevices,
          utils,
+         methods,
          stringr,
          tibble,
          illuminaio,
@@ -41,6 +41,7 @@ Imports: BiocParallel,
          reshape2
 Suggests: scales,
           knitr,
+          RRPM,
           rmarkdown,
           testthat,
           tidyr,

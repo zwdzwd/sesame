@@ -69,7 +69,6 @@ negControls <- function(sdf) {
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
 #' sum(sdf$mask)
 #' sum(detectionPnegEcdf(sdf)$mask)
-#' @import methods
 #' @export
 detectionPnegEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 

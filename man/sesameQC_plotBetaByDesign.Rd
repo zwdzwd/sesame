@@ -4,10 +4,12 @@
 \alias{sesameQC_plotBetaByDesign}
 \title{Plot betas distinguishing different Infinium chemistries}
 \usage{
-sesameQC_plotBetaByDesign(sdf, legend_pos = "top")
+sesameQC_plotBetaByDesign(sdf, legend_pos = "top", main = "", ...)
 }
 \arguments{
 \item{sdf}{SigDF}
+
+\item{...}{additional options to plot}
 }
 \value{
 create a density plot

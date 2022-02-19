@@ -50,7 +50,7 @@ dyeBiasCorr <- function(sdf, ref=NULL) {
     if (is.null(ref)) {
         ref <- meanIntensity(sdf)
     }
-    
+
     normctl <- normControls(sdf, average=TRUE)
     fR <- ref/normctl['R']
     fG <- ref/normctl['G']

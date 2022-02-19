@@ -83,7 +83,7 @@ noob <- function(sdf, offset=15) {
     nmk <- noMasked(sdf)
     ooG <- oobG(nmk)
     ooR <- oobR(nmk)
-
+    
     ## if not enough out-of-band signal
     if (sum(ooG > 0, na.rm=TRUE) < 100 ||
             sum(ooR > 0, na.rm=TRUE) < 100) { return(sdf) }

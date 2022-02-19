@@ -7,6 +7,7 @@
 openSesame(
   x,
   platform = "",
+  preprocess = "QCDPB",
   manifest = NULL,
   func = getBetas,
   BPPARAM = SerialParam(),
@@ -17,6 +18,8 @@ openSesame(
 \item{x}{SigDF(s), IDAT prefix(es)}
 
 \item{platform}{optional platform string}
+
+\item{preprocess}{preprocessing spell, see preprocessSesame()}
 
 \item{manifest}{optional dynamic manifest}
 

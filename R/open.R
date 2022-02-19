@@ -1,3 +1,31 @@
+
+#' Apply a chain of sesame preprocessing functions in an arbitrary order
+#' 
+#' @param sdf SigDF
+#' @param spell code that indicates preprocessing functions and their
+#' execution order (functions on the left is executed first).
+#' @return SigDF
+#' @examples
+#' sdf <- sesameDataGet("MM285.1.SigDF")
+#' sdf1 <- prepSesame(sdf, "QCDPB")
+#' @export
+prepSesame <- function(sdf, spell = "QCDPB") {
+    sp2fun <- list(
+        Q = qualityMask,
+        C = inferInfiniumIChannel,
+        D = dyeBiasNL,
+        P = pOOBAH,
+        B = noob,
+        M = matchDesign)
+    
+    spells <- str_split(spell,"")[[1]]
+    stopifnot(all(spells %in% names(sp2fun)))
+    x <- sdf
+    for(sp1 in spells) {
+        x <- sp2fun[[sp1]](x) }
+    x
+}
+
 #' The openSesame pipeline
 #'
 #' This function is a simple wrapper of noob + nonlinear dye bias 
@@ -16,6 +44,7 @@
 #' 
 #' @param x SigDF(s), IDAT prefix(es)
 #' @param platform optional platform string
+#' @param preprocess preprocessing spell, see preprocessSesame()
 #' @param manifest optional dynamic manifest
 #' @param func either getBetas or getAFs
 #' @param ... parameters to getBetas
@@ -29,23 +58,20 @@
 #' betas <- openSesame(IDATprefixes)
 #' @export
 openSesame <- function(
-    x, platform = '', manifest = NULL, func = getBetas,
-    BPPARAM=SerialParam(), ...) {
+    x, platform = '', preprocess = "QCDPB", manifest = NULL,
+    func = getBetas, BPPARAM=SerialParam(), ...) {
 
     ## expand if a directory
     if (length(x) == 1 && is(x, 'character') && dir.exists(x)) {
         x <- searchIDATprefixes(x)
     }
 
-    ## TODO add inferInfiniumIChannel
     if (is(x, "SigDF")) {
-        func(noob(pOOBAH(dyeBiasNL(inferInfiniumIChannel(qualityMask(x))))),
-            ...)
+        func(prepSesame(x), ...)
     } else if (is(x, 'character')) {
         if (length(x) == 1) {
-            func(noob(pOOBAH(dyeBiasNL(inferInfiniumIChannel(qualityMask(
-                readIDATpair(x, platform = platform, manifest = manifest)
-            ))))), ...)
+            func(prepSesame(readIDATpair(
+                x, platform = platform, manifest = manifest)), ...)
         } else { # multiple IDAT prefixes / SigDFs
             do.call(
                 cbind, bplapply(x, openSesame,

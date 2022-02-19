@@ -424,25 +424,26 @@ sesameQC_plotRedGrnQQ <- function(sdf) {
 #' Plot betas distinguishing different Infinium chemistries
 #'
 #' @param sdf SigDF
+#' @param ... additional options to plot
 #' @return create a density plot
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
 #' sesameQC_plotBetaByDesign(sdf)
 #' @export
-sesameQC_plotBetaByDesign <- function(sdf, legend_pos="top") {
+sesameQC_plotBetaByDesign <- function(sdf, legend_pos="top", main="", ...) {
 
     dA <- density(na.omit(getBetas(sdf)))
     dR <- density(na.omit(getBetas(InfIR(sdf))))
     dG <- density(na.omit(getBetas(InfIG(sdf))))
     d2 <- density(na.omit(getBetas(InfII(sdf))))
     
-    plot(dA, main="", ylim=c(0, max(dA$y, dR$y, dG$y, d2$y)))
+    plot(dA, main=main, ylim=c(0, max(dA$y, dR$y, dG$y, d2$y)), ...)
     lines(dR, col='red')
-    lines(dG, col='green')
+    lines(dG, col='darkgreen')
     lines(d2, col='blue')
-    legend("top", legend=c(
+    legend(legend_pos, legend=c(
         "All","Infinium-I Red","Infinium-I Grn","Infinium-II"),
-        col=c("black","red","green","blue"), lty="solid")
+        col=c("black","red","darkgreen","blue"), lty="solid")
 }
 
 #' Plot Total Signal Intensities vs Beta Values
