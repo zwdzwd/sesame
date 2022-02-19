@@ -16,6 +16,8 @@ prepSesame <- function(sdf, spell = "QCDPB") {
         D = dyeBiasNL,
         P = pOOBAH,
         B = noob,
+        S = inferSpecies,
+        T = inferStrain,
         M = matchDesign)
     
     spells <- str_split(spell,"")[[1]]
