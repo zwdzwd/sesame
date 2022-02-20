@@ -7,7 +7,7 @@
 openSesame(
   x,
   platform = "",
-  preprocess = "QCDPB",
+  prep = "QCDPB",
   manifest = NULL,
   func = getBetas,
   BPPARAM = SerialParam(),
@@ -19,7 +19,7 @@ openSesame(
 
 \item{platform}{optional platform string}
 
-\item{preprocess}{preprocessing spell, see preprocessSesame()}
+\item{prep}{preprocessing code, see ?prepSesame}
 
 \item{manifest}{optional dynamic manifest}
 
@@ -39,14 +39,6 @@ correction + pOOBAH masking.
 \details{
 If the input is an IDAT prefix or a \code{SigDF}, the output is
 the beta value numerics.
-
-Notes on the order of operation:
-1. qualityMask and inferSpecies should go before noob and pOOBAH,
-otherwise the background is too high because of Multi,
-uk and other probes
-2. dyeBias correction needs to happen early
-3. channel inference before dyebias
-4. noob should happen last, pOOBAH before noob because noob modifies oob
 }
 \examples{
 sdf <- sesameDataGet('HM450.1.TCGA.PAAD')$sdf

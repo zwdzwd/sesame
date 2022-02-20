@@ -2,7 +2,8 @@
 % Please edit documentation in R/open.R
 \name{prepSesame}
 \alias{prepSesame}
-\title{Apply a chain of sesame preprocessing functions in an arbitrary order}
+\title{Apply a chain of sesame preprocessing functions in an arbitrary order
+Notes on the order of operation:}
 \usage{
 prepSesame(sdf, code = "QCDPB")
 }
@@ -16,7 +17,12 @@ execution order (functions on the left is executed first).}
 SigDF
 }
 \description{
-Apply a chain of sesame preprocessing functions in an arbitrary order
+1. qualityMask and inferSpecies should go before noob and pOOBAH,
+otherwise the background is too high because of Multi,
+uk and other probes
+2. dyeBias correction needs to happen early
+3. channel inference before dyebias
+4. noob should happen last, pOOBAH before noob because noob modifies oob
 }
 \examples{
 sdf <- sesameDataGet("MM285.1.SigDF")
