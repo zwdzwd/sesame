@@ -16,6 +16,8 @@ SigDF
 Mask SigDF by probe ID prefix
 }
 \examples{
-sdf <- sesameDataGet("MM285.1.SigDF")
+sdf <- resetMask(sesameDataGet("MM285.1.SigDF"))
 sum(prefixMask(sdf, c("ctl","rs"))$mask)
+sum(prefixMask(sdf, c("ctl"))$mask)
+sum(prefixMask(sdf, c("ctl","rs","ch"))$mask)
 }

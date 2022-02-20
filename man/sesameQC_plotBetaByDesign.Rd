@@ -4,10 +4,12 @@
 \alias{sesameQC_plotBetaByDesign}
 \title{Plot betas distinguishing different Infinium chemistries}
 \usage{
-sesameQC_plotBetaByDesign(sdf, legend_pos = "top", main = "", ...)
+sesameQC_plotBetaByDesign(sdf, prep = NULL, legend_pos = "top", main = "", ...)
 }
 \arguments{
 \item{sdf}{SigDF}
+
+\item{prep}{prep codes to step through}
 
 \item{...}{additional options to plot}
 }
@@ -19,5 +21,5 @@ Plot betas distinguishing different Infinium chemistries
 }
 \examples{
 sdf <- sesameDataGet("EPIC.1.SigDF")
-sesameQC_plotBetaByDesign(sdf)
+sesameQC_plotBetaByDesign(sdf, prep="DB")
 }

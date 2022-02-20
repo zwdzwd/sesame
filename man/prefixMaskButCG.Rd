@@ -16,5 +16,6 @@ SigDF
 Mask all but CG probes in SigDF
 }
 \examples{
-sdf <- prefixMaskButCG(sesameDataGet("MM285.1.SigDF"))
+sdf <- resetMask(sesameDataGet("MM285.1.SigDF"))
+sum(prefixMaskButCG(sdf)$mask)
 }

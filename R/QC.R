@@ -424,18 +424,28 @@ sesameQC_plotRedGrnQQ <- function(sdf) {
     abline(0,1,lty = 'dashed')
 }
 
-
 #' Plot betas distinguishing different Infinium chemistries
 #'
 #' @param sdf SigDF
+#' @param prep prep codes to step through
 #' @param ... additional options to plot
 #' @return create a density plot
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
-#' sesameQC_plotBetaByDesign(sdf)
+#' sesameQC_plotBetaByDesign(sdf, prep="DB")
 #' @export
-sesameQC_plotBetaByDesign <- function(sdf, legend_pos="top", main="", ...) {
+sesameQC_plotBetaByDesign <- function(
+    sdf, prep=NULL, legend_pos="top", main="", ...) {
 
+    if (!is.null(prep)) {
+        par(mfrow=c(nchar(prep)+1,1), mar=c(3,3,3,1))
+        for (n in c(0,seq_len(nchar(prep)))) {
+            sesameQC_plotBetaByDesign(
+                prepSesame(sdf, substr(prep,1,n)),
+                prep = NULL, legend_pos = legend_pos,
+                main=sprintf("%s %s", main, substr(prep,1,n)), ...) }
+        return(invisible(NULL)) }
+    
     dA <- density(na.omit(getBetas(sdf)))
     dR <- density(na.omit(getBetas(InfIR(sdf))))
     dG <- density(na.omit(getBetas(InfIG(sdf))))

@@ -110,11 +110,13 @@ qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL) {
 #' @param sdf SigDF
 #' @return SigDF
 #' @examples
-#' sdf <- sesameDataGet("MM285.1.SigDF")
+#' sdf <- resetMask(sesameDataGet("MM285.1.SigDF"))
 #' sum(prefixMask(sdf, c("ctl","rs"))$mask)
+#' sum(prefixMask(sdf, c("ctl"))$mask)
+#' sum(prefixMask(sdf, c("ctl","rs","ch"))$mask)
 #' @export
 prefixMask <- function(sdf, prefixes = NULL, invert = FALSE) {
-    idx <- do.call("|", lapply(prefixes, function(pfx) {
+    idx <- Reduce("|", lapply(prefixes, function(pfx) {
         grepl(sprintf("^%s", pfx), sdf$Probe_ID) }))
     
     if (invert) {
@@ -130,7 +132,8 @@ prefixMask <- function(sdf, prefixes = NULL, invert = FALSE) {
 #' @param sdf SigDF
 #' @return SigDF
 #' @examples
-#' sdf <- prefixMaskButC(sesameDataGet("MM285.1.SigDF"))
+#' sdf <- resetMask(sesameDataGet("MM285.1.SigDF"))
+#' sum(prefixMaskButC(sdf)$mask)
 #' @export
 prefixMaskButC <- function(sdf) {
     prefixMask(sdf, c("cg", "ch"), invert = TRUE)
@@ -141,7 +144,8 @@ prefixMaskButC <- function(sdf) {
 #' @param sdf SigDF
 #' @return SigDF
 #' @examples
-#' sdf <- prefixMaskButCG(sesameDataGet("MM285.1.SigDF"))
+#' sdf <- resetMask(sesameDataGet("MM285.1.SigDF"))
+#' sum(prefixMaskButCG(sdf)$mask)
 #' @export
 prefixMaskButCG <- function(sdf) {
     prefixMask(sdf, "cg", invert = TRUE)

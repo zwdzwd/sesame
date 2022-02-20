@@ -7,8 +7,8 @@
 prepSesameList <- function() {
     x <- data.frame(rbind(
         c("Q", "qualityMask", "Mask probes of poor design"),
-        c("U", "prefixMaskButC", "Mask all but cg- and ch-probes"),
         c("G", "prefixMaskButCG", "Mask all but cg- probes"),
+        c("H", "prefixMaskButC", "Mask all but cg- and ch-probes"),
         c("C", "inferInfiniumIChannel", "Infer channel for Infinium-I probes"),
         c("D", "dyeBiasNL", "Dye bias correction (non-linear)"),
         c("P", "pOOBAH", "Detection p-value masking using oob"),
