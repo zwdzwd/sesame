@@ -7,9 +7,9 @@
 #' @return SigDF
 #' @examples
 #' sdf <- sesameDataGet("MM285.1.SigDF")
-#' sdf1 <- prepSesame(sdf, "UCDPB")
+#' sdf1 <- prepSesame(sdf, "QCDPB")
 #' @export
-prepSesame <- function(sdf, code = "UCDPB") {
+prepSesame <- function(sdf, code = "QCDPB") {
     cfuns <- list(
         Q = qualityMask,
         U = prefixMaskCtlUK,

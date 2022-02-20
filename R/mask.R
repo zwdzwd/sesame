@@ -73,7 +73,7 @@ listAvailableMasks <- function(sdf) {
 #' see also listAvailableMasks(sdf)
 #' 
 #' @param sdf a \code{SigDF} object
-#' @param mask_names mask names, default to "basic", can be a vector
+#' @param mask_names mask names, default to "recommended", can be a vector
 #' of multiple masks, e.g., c("design_issue", "multi"), NULL to skip
 #' @param prefixes mask by probe ID prefixes, e.g., cg, 
 #' @return a filtered \code{SigDF}
@@ -88,7 +88,7 @@ listAvailableMasks <- function(sdf) {
 #' listAvailableMasks(sdf)
 #' 
 #' @export 
-qualityMask <- function(sdf, mask_names = "basic", prefixes = NULL) {
+qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL) {
 
     masks <- character(0)
     if (!is.null(prefixes)) {
@@ -127,5 +127,5 @@ prefixMask <- function(sdf, prefixes = NULL) {
 #' sdf <- prefixMaskCtlUK(sesameDataGet("MM285.1.SigDF"))
 #' @export
 prefixMaskCtlUK <- function(sdf) {
-    maskByPrefix(sdf, c("ctl", "uk"))
+    prefixMask(sdf, c("ctl", "uk"))
 }

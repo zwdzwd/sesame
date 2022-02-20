@@ -4,7 +4,7 @@
 \alias{prepSesame}
 \title{Apply a chain of sesame preprocessing functions in an arbitrary order}
 \usage{
-prepSesame(sdf, code = "UCDPB")
+prepSesame(sdf, code = "QCDPB")
 }
 \arguments{
 \item{sdf}{SigDF}
@@ -20,5 +20,5 @@ Apply a chain of sesame preprocessing functions in an arbitrary order
 }
 \examples{
 sdf <- sesameDataGet("MM285.1.SigDF")
-sdf1 <- prepSesame(sdf, "UCDPB")
+sdf1 <- prepSesame(sdf, "QCDPB")
 }
