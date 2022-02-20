@@ -2,16 +2,17 @@
 #' Apply a chain of sesame preprocessing functions in an arbitrary order
 #' 
 #' @param sdf SigDF
-#' @param spell code that indicates preprocessing functions and their
+#' @param code code that indicates preprocessing functions and their
 #' execution order (functions on the left is executed first).
 #' @return SigDF
 #' @examples
 #' sdf <- sesameDataGet("MM285.1.SigDF")
-#' sdf1 <- prepSesame(sdf, "QCDPB")
+#' sdf1 <- prepSesame(sdf, "UCDPB")
 #' @export
-prepSesame <- function(sdf, spell = "QCDPB") {
-    sp2fun <- list(
+prepSesame <- function(sdf, code = "UCDPB") {
+    cfuns <- list(
         Q = qualityMask,
+        U = prefixMaskCtlUK,
         C = inferInfiniumIChannel,
         D = dyeBiasNL,
         P = pOOBAH,
@@ -20,11 +21,11 @@ prepSesame <- function(sdf, spell = "QCDPB") {
         T = inferStrain,
         M = matchDesign)
     
-    spells <- str_split(spell,"")[[1]]
-    stopifnot(all(spells %in% names(sp2fun)))
+    codes <- str_split(code,"")[[1]]
+    stopifnot(all(codes %in% names(cfuns)))
     x <- sdf
-    for(sp1 in spells) {
-        x <- sp2fun[[sp1]](x) }
+    for(code1 in codes) {
+        x <- cfuns[[code1]](x) }
     x
 }
 
@@ -69,11 +70,11 @@ openSesame <- function(
     }
 
     if (is(x, "SigDF")) {
-        func(prepSesame(x), ...)
+        func(prepSesame(x, preprocess), ...)
     } else if (is(x, 'character')) {
         if (length(x) == 1) {
             func(prepSesame(readIDATpair(
-                x, platform = platform, manifest = manifest)), ...)
+                x, platform = platform, manifest = manifest), preprocess), ...)
         } else { # multiple IDAT prefixes / SigDFs
             do.call(
                 cbind, bplapply(x, openSesame,

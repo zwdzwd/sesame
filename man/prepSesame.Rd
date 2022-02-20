@@ -4,12 +4,12 @@
 \alias{prepSesame}
 \title{Apply a chain of sesame preprocessing functions in an arbitrary order}
 \usage{
-prepSesame(sdf, spell = "QCDPB")
+prepSesame(sdf, code = "UCDPB")
 }
 \arguments{
 \item{sdf}{SigDF}
 
-\item{spell}{code that indicates preprocessing functions and their
+\item{code}{code that indicates preprocessing functions and their
 execution order (functions on the left is executed first).}
 }
 \value{
@@ -20,5 +20,5 @@ Apply a chain of sesame preprocessing functions in an arbitrary order
 }
 \examples{
 sdf <- sesameDataGet("MM285.1.SigDF")
-sdf1 <- prepSesame(sdf, "QCDPB")
+sdf1 <- prepSesame(sdf, "UCDPB")
 }

@@ -415,6 +415,7 @@ searchIDATprefixes <- function(dir.name,
 #' @return a SigDF, indexed by probe ID address
 chipAddressToSignal <- function(dm, mft) {
 
+    ## Infinium-I
     mft1 <- mft[!is.na(mft$col),]
     tmpM <- dm[match(mft1$M, rownames(dm)),]
     tmpU <- dm[match(mft1$U, rownames(dm)),]
@@ -422,15 +423,16 @@ chipAddressToSignal <- function(dm, mft) {
         Probe_ID=mft1$Probe_ID,
         MG=tmpM[,"G"], MR=tmpM[,"R"], UG=tmpU[,"G"], UR=tmpU[,"R"],
         col=mft1$col, mask=FALSE)
-    if ("mask" %in% colnames(mft1)) { sdf$mask <- mft1$mask; }
+    ## if ("mask" %in% colnames(mft1)) { sdf$mask <- mft1$mask; }
 
+    ## Infinium-II
     mft2 <- mft[is.na(mft$col),]
     if (nrow(mft2) > 0) {
         tmp <- dm[match(mft2$U, rownames(dm)),]
         s2 <- data.frame(
             Probe_ID=mft2$Probe_ID,
             MG=NA, MR=NA, UG=tmp[,"G"], UR=tmp[,"R"], col="2", mask=FALSE)
-        if ("mask" %in% colnames(mft2)) { s2$mask <- mft2$mask; }
+        ## if ("mask" %in% colnames(mft2)) { s2$mask <- mft2$mask; }
         sdf <- rbind(sdf, s2)
     }
     sdf$col <- factor(sdf$col, levels=c("G","R","2"))

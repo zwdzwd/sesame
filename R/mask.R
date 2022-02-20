@@ -73,7 +73,7 @@ listAvailableMasks <- function(sdf) {
 #' see also listAvailableMasks(sdf)
 #' 
 #' @param sdf a \code{SigDF} object
-#' @param mask_names mask names, default to "recommended", can be a vector
+#' @param mask_names mask names, default to "basic", can be a vector
 #' of multiple masks, e.g., c("design_issue", "multi"), NULL to skip
 #' @param prefixes mask by probe ID prefixes, e.g., cg, 
 #' @return a filtered \code{SigDF}
@@ -88,7 +88,7 @@ listAvailableMasks <- function(sdf) {
 #' listAvailableMasks(sdf)
 #' 
 #' @export 
-qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL) {
+qualityMask <- function(sdf, mask_names = "basic", prefixes = NULL) {
 
     masks <- character(0)
     if (!is.null(prefixes)) {
@@ -105,3 +105,27 @@ qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL) {
     addMask(sdf, masks)
 }
 
+#' Mask SigDF by probe ID prefix
+#'
+#' @param sdf SigDF
+#' @return SigDF
+#' @examples
+#' sdf <- prefixMask(sesameDataGet("MM285.1.SigDF"), c("ctl","rs"))
+#' @export
+prefixMask <- function(sdf, prefixes = NULL) {
+    for (pfx in prefixes) {
+        sdf[grepl(sprintf("^%s", pfx), sdf$Probe_ID),"mask"] <- TRUE
+    }
+    sdf
+}
+
+#' Mask control and uk probes in SigDF
+#'
+#' @param sdf SigDF
+#' @return SigDF
+#' @examples
+#' sdf <- prefixMaskCtlUK(sesameDataGet("MM285.1.SigDF"))
+#' @export
+prefixMaskCtlUK <- function(sdf) {
+    maskByPrefix(sdf, c("ctl", "uk"))
+}
