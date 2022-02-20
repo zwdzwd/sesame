@@ -110,22 +110,39 @@ qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL) {
 #' @param sdf SigDF
 #' @return SigDF
 #' @examples
-#' sdf <- prefixMask(sesameDataGet("MM285.1.SigDF"), c("ctl","rs"))
+#' sdf <- sesameDataGet("MM285.1.SigDF")
+#' sum(prefixMask(sdf, c("ctl","rs"))$mask)
 #' @export
-prefixMask <- function(sdf, prefixes = NULL) {
-    for (pfx in prefixes) {
-        sdf[grepl(sprintf("^%s", pfx), sdf$Probe_ID),"mask"] <- TRUE
+prefixMask <- function(sdf, prefixes = NULL, invert = FALSE) {
+    idx <- do.call("|", lapply(prefixes, function(pfx) {
+        grepl(sprintf("^%s", pfx), sdf$Probe_ID) }))
+    
+    if (invert) {
+        sdf[!idx, "mask"] <- TRUE
+    } else {
+        sdf[idx, "mask"] <- TRUE
     }
     sdf
 }
 
-#' Mask control and uk probes in SigDF
+#' Mask all but C probes in SigDF
 #'
 #' @param sdf SigDF
 #' @return SigDF
 #' @examples
-#' sdf <- prefixMaskCtlUK(sesameDataGet("MM285.1.SigDF"))
+#' sdf <- prefixMaskButC(sesameDataGet("MM285.1.SigDF"))
 #' @export
-prefixMaskCtlUK <- function(sdf) {
-    prefixMask(sdf, c("ctl", "uk"))
+prefixMaskButC <- function(sdf) {
+    prefixMask(sdf, c("cg", "ch"), invert = TRUE)
+}
+
+#' Mask all but CG probes in SigDF
+#'
+#' @param sdf SigDF
+#' @return SigDF
+#' @examples
+#' sdf <- prefixMaskButCG(sesameDataGet("MM285.1.SigDF"))
+#' @export
+prefixMaskButCG <- function(sdf) {
+    prefixMask(sdf, "cg", invert = TRUE)
 }

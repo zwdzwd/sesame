@@ -7,7 +7,8 @@
 prepSesameList <- function() {
     x <- data.frame(rbind(
         c("Q", "qualityMask", "Mask probes of poor design"),
-        c("U", "prefixMaskAllButCs", "Mask all but cg- and ch-probes"),
+        c("U", "prefixMaskButC", "Mask all but cg- and ch-probes"),
+        c("G", "prefixMaskButCG", "Mask all but cg- probes"),
         c("C", "inferInfiniumIChannel", "Infer channel for Infinium-I probes"),
         c("D", "dyeBiasNL", "Dye bias correction (non-linear)"),
         c("P", "pOOBAH", "Detection p-value masking using oob"),
@@ -20,8 +21,8 @@ prepSesameList <- function() {
 }
 
 #' Apply a chain of sesame preprocessing functions in an arbitrary order
+#' 
 #' Notes on the order of operation:
-#'
 #' 1. qualityMask and inferSpecies should go before noob and pOOBAH,
 #' otherwise the background is too high because of Multi,
 #' uk and other probes

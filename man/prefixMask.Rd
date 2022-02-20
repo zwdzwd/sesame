@@ -4,7 +4,7 @@
 \alias{prefixMask}
 \title{Mask SigDF by probe ID prefix}
 \usage{
-prefixMask(sdf, prefixes = NULL)
+prefixMask(sdf, prefixes = NULL, invert = FALSE)
 }
 \arguments{
 \item{sdf}{SigDF}
@@ -16,5 +16,6 @@ SigDF
 Mask SigDF by probe ID prefix
 }
 \examples{
-sdf <- prefixMask(sesameDataGet("MM285.1.SigDF"), c("ctl","rs"))
+sdf <- sesameDataGet("MM285.1.SigDF")
+sum(prefixMask(sdf, c("ctl","rs"))$mask)
 }

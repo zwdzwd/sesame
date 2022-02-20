@@ -2,8 +2,7 @@
 % Please edit documentation in R/open.R
 \name{prepSesame}
 \alias{prepSesame}
-\title{Apply a chain of sesame preprocessing functions in an arbitrary order
-Notes on the order of operation:}
+\title{Apply a chain of sesame preprocessing functions in an arbitrary order}
 \usage{
 prepSesame(sdf, code = "QCDPB")
 }
@@ -17,6 +16,7 @@ execution order (functions on the left is executed first).}
 SigDF
 }
 \description{
+Notes on the order of operation:
 1. qualityMask and inferSpecies should go before noob and pOOBAH,
 otherwise the background is too high because of Multi,
 uk and other probes

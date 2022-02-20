@@ -182,6 +182,7 @@ getBinCoordinates <- function(seqLength, gapInfo, probe.coords) {
 #' @param probe.signals probe signals
 #' @param bin.coords bin coordinates
 #' @param probe.coords probe coordinates
+#' @importFrom methods .hasSlot
 #' @return bin signals
 binSignals <- function(probe.signals, bin.coords, probe.coords) {
     pkgTest('GenomicRanges')

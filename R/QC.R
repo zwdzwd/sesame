@@ -12,6 +12,7 @@ setMethod("as.data.frame", signature="sesameQC",
 #' 
 #' @param df a publicQC data frame
 #' @return a list sesameQC objects
+#' @importFrom methods new
 #' @examples
 #' df <- sesameDataGet("MM285.publicQC")
 #' qcs <- dataFrame2sesameQC(df[1:2,])
@@ -103,6 +104,7 @@ sesameQC_getStats <- function(qc, stat_names = NULL, drop = TRUE) {
 #' MM285.publicQC and Mammal40.publicQC
 #' @param platform EPIC, MM285 or Mammal40, used when publicQC is not given
 #' @return a sesameQC
+#' @importFrom methods new
 #' @examples
 #'
 #' sesameDataCache() # if not done yet
@@ -140,6 +142,8 @@ sesameQC_rankStats <- function(qc, publicQC=NULL, platform="EPIC") {
 #' default to all functions. One can also use a string such as
 #' "detection" or c("detection", "intensity") to reduce typing
 #' @return a sesameQC object
+#' @importFrom methods new
+#' @importFrom methods is
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
@@ -517,6 +521,7 @@ sesameQC_plotIntensVsBetas <- function(
 #' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
 #' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats))
 #' @import ggplot2
+#' @importFrom methods is
 #' @importFrom wheatmap WGG
 #' @export
 sesameQC_plotBar <- function(qcs, keys = NULL) {

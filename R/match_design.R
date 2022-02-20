@@ -81,9 +81,10 @@ betaMix2States <- function(x, n_samples = 10000, th_init = 0.5) {
     m[x1 <= th_init, 1] <- 1
     m[x1 > th_init, 2] <- 1
     
-    fitres <- blc(matrix(x1), m, maxiter = 5, tol = 0.001, verbose = FALSE)
+    fitres <- RPMM::blc(
+        matrix(x1), m, maxiter = 5, tol = 0.001, verbose = FALSE)
     m1 <- apply(fitres$w, 1, which.max)
-    th = mean(max(x1[m1 == 1]), min(x1[m1 == 2]))
+    th <- mean(max(x1[m1 == 1]), min(x1[m1 == 2]))
     m2 <- cut(x, breaks=c(0, th, 1), include.lowest = TRUE)
     names(m2) <- names(x)
     m2
