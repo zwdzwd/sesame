@@ -32,17 +32,17 @@ prepSesameList <- function() {
 #' 4. noob should happen last, pOOBAH before noob because noob modifies oob
 #' 
 #' @param sdf SigDF
-#' @param code code that indicates preprocessing functions and their
+#' @param prep code that indicates preprocessing functions and their
 #' execution order (functions on the left is executed first).
 #' @return SigDF
 #' @examples
 #' sdf <- sesameDataGet("MM285.1.SigDF")
 #' sdf1 <- prepSesame(sdf, "QCDPB")
 #' @export
-prepSesame <- function(sdf, code = "QCDPB") {
+prepSesame <- function(sdf, prep = "QCDPB") {
     cfuns <- prepSesameList()
     
-    codes <- str_split(code,"")[[1]]
+    codes <- str_split(prep,"")[[1]]
     stopifnot(all(codes %in% cfuns$code))
     x <- sdf
     for(c1 in codes) {
@@ -89,16 +89,14 @@ openSesame <- function(
             func(prepSesame(readIDATpair(
                 x, platform = platform, manifest = manifest), prep), ...)
         } else { # multiple IDAT prefixes / SigDFs
-            do.call(
-                cbind, bplapply(x, openSesame,
-                    platform = platform, fun = func,
-                    manifest = manifest, BPPARAM=BPPARAM, ...))
+            do.call(cbind, bplapply(x, openSesame,
+                platform = platform, prep = prep, fun = func,
+                manifest = manifest, BPPARAM=BPPARAM, ...))
         }
     } else if (is(x, "list") && is(x[[1]], "SigDF")) {
-        do.call(
-            cbind, bplapply(x, openSesame,
-                platform = platform, fun = func,
-                manifest = manifest, BPPARAM=BPPARAM, ...))
+        do.call(cbind, bplapply(x, openSesame,
+            platform = platform, prep = prep, fun = func,
+            manifest = manifest, BPPARAM=BPPARAM, ...))
     } else {
         stop("Unsupported input")
     }

@@ -4,12 +4,12 @@
 \alias{prepSesame}
 \title{Apply a chain of sesame preprocessing functions in an arbitrary order}
 \usage{
-prepSesame(sdf, code = "QCDPB")
+prepSesame(sdf, prep = "QCDPB")
 }
 \arguments{
 \item{sdf}{SigDF}
 
-\item{code}{code that indicates preprocessing functions and their
+\item{prep}{code that indicates preprocessing functions and their
 execution order (functions on the left is executed first).}
 }
 \value{
