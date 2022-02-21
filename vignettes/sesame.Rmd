@@ -1,5 +1,5 @@
 ---
-title: "Basic Usage"
+title: "Basic Usage & Preprocessing"
 date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: BiocStyle::html_document
@@ -42,8 +42,8 @@ sesameDataCache()
 
 This function caches the needed SeSAMe annotation for all the supported
 platforms. SeSAMe annotation data is managed by the
-[sesameData](https://tinyurl.com/58ny3rrt) package which is based on the
-[ExperimentHub](https://tinyurl.com/2p873tez) package.  You can find the
+[sesameData](https://tinyurl.com/58ny3rrt) package which uses the
+[ExperimentHub](https://tinyurl.com/2p873tez) infrastructure.  You can find the
 location of the cached annotation data on your local computer using:
 
 ```{r}
@@ -53,6 +53,46 @@ tools::R_user_dir("ExperimentHub", which="cache")
 If you install directly from github, you need to make sure the compatible
 ExperimentHub is installed.
 
+# The openSesame pipeline
+
+The `openSesame` function provides end-to-end processing that converts IDATs to
+DNA methylation level (beta value) matrices in R. The function can take a
+directory where the IDAT files live. It also supports processing a specific
+path of IDAT file pairs. The following code uses a directory that contains
+built-in two HM27 IDAT pairs to demonstrates the use of the function:
+
+
+```{r}
+idat_dir = system.file("extdata/", package = "sesameData")
+betas = openSesame(idat_dir, BPPARAM = BiocParallel::MulticoreParam(2))
+head(betas)
+```
+
+Under the hood, the function performs the following tasks including searching
+IDAT files from the directory (the `searchIDATprefixes` function), reading them
+in as `SigDF` objects (the `readIDATpair` function), preprocessing the signals
+(the `prepSesame` function), and finally converting them to DNA methylation
+levels ($\beta$ values, the `getBetas` function). Here is what the `openSesame`
+function call above is equivalent to:
+
+```{r}
+idat_dir = system.file("extdata/", package = "sesameData")
+betas = do.call(cbind, BiocParallel::bplapply(
+    searchIDATprefixes(idat_dir), function(pfx) {
+        getBetas(prepSesame(readIDATpair(pfx), "QCDPB"))
+}, BPPARAM = BiocParallel::MulticoreParam(2)))
+```
+
+The `openSesame` function is highly customizable. The `prep=` argument allows a
+different preprocessing strategy (see the `prepSesame` function below for how
+to use a different preprocessing procedure). The `func=` option specifies the
+signal extraction function which can be either `getBetas` (DNA methylation) or
+`getAFs` (allele frequencies of SNP probes). The `manifest=` option allows the
+processing of a custom array that is not natively supported by providing the
+array manifest. Finally, the `BPPARAM=` argument is the same argument taken by
+`BiocParallel::bplapply` to allow parallel processing.
+
+The following sections details different components of `openSesame`.
 
 # Read IDATs
 
@@ -70,11 +110,12 @@ For example, in addition to the example above, SeSAMe also recognizes
 `GSM2178224_Red.idat.gz` and `GSM2178224_Grn.idat.gz`.
 
 The function `readIDATpair` function reads in the signal intensity data from
-the IDAT pairs. The function takes the **common prefix** as input and outputs a
+the IDAT pairs. The function takes the common prefix as input and outputs a
 `SigDF` object. The `SigDF` object is simply an R data.frame with rows
-representing probes and columns different signal intensity and probe
-annotations. The `SigDF` class will be discussed more below. Using the two
-examples above, one would run the following commands.
+representing probes and columns representing different signal intensity and
+probe annotations. The `SigDF` class will be discussed more in a separate
+section below. Using the two examples above, one would run the following
+commands.
 
 ```{r eval=FALSE}
 sdf = readIDAT("idat_folder/204529320035_R06C01")  # Example 1
@@ -82,7 +123,8 @@ sdf = readIDAT("idat_folder/GSM2178224")           # Example 2
 ```
 
 Note that SeSAMe automatically detects and matches up the green and red signal
-files for the same sample. `SigDF` can be treated as a regular data.frame:
+files for the same sample. `SigDF` is and can be regarded and treated as a
+regular `data.frame`:
 
 ```{r}
 sdf = sesameDataGet('EPIC.1.SigDF') # an example SigDF
@@ -90,19 +132,17 @@ head(sdf) # peek into the internals
 ```
 
 One can summarize resulting `SigDF` using the 'sesameQC_calcStats'
-function. More QC can be found in the [quality control vignette](QC.html).
+function (more QC can be found in the [quality control vignette](QC.html)).
 
 ```{r}
 sesameQC_calcStats(sdf, "numProbes")
 ```
 
-We will get back to the structure of `SigDF` in detail below.
-
-# Custom Arrays
+## Custom Arrays
 
 If you are dealing with a custom-made array instead of the standard array
 (MM285, EPIC, HM450 etc) supported natively by SeSAMe, you would need to
-provide a manifest that describe the probe information. You should be able to
+provide a manifest that describes the probe information. You should be able to
 obtain the probe information manifest from the Illumina support website.  The
 manifest should be formated as a data frame with four columns minimally:
 `Probe_ID`, `M`, `U` and `col`. A optional `mask` column may also be included
@@ -127,124 +167,107 @@ head(mft[!is.na(mft$col),])
 
 The last column `mask` is a logical vector that defines the default masking
 behavior of SeSAMe for the platform (see below for discussion of
-NA-masking). With the manifest, your data can be processed using
+NA-masking). With the manifest, your data can be processed using the
+`manifest=` option in `openSesame` or `readIDATpair` (one sample).
 
 ```{r eval = FALSE}
-sdf = readIDATpair("your_sample_prefix", manifest = mft)
+betas = openSesame("IDAT_dir", manifest = mft)
+sdf = readIDATpair("your_sample_prefix", manifest = mft) # or one sample
 ```
 
-# Search IDAT Prefixes
+## Search IDAT Prefixes
 
-Most often we will be working with a folder that contains many IDATs. Here is
-where the `searchIDATprefixes` function comes in useful. It lets us search all
-the IDATs in a folder and its subfolders recursively. Combine this with the
-R looping functions lets you process many IDATs without having to specify
-all IDAT names. `searchIDATprefixes` returns a named vector of prefixes with
-associated `Red` and `Grn` files, for `readIDATpair`:
+In most cases, we would be working with a folder that contains many IDATs. Here
+is where the `searchIDATprefixes` function comes in useful. It lets us search
+all the IDATs in a folder and its subfolders recursively. Combine this with the
+R looping functions lets you process many IDATs without having to specify all
+IDAT names. `searchIDATprefixes` returns a named vector of prefixes with
+associated `Red` and `Grn` files, which can be given to `readIDATpair`:
 
 ```{r}
 sdfs = lapply(searchIDATprefixes(system.file(
     "extdata/", package = "sesameData")), readIDATpair)
 ```
 
-which returns a list of "SigDF"s.
+which returns a list of "SigDF"s. This is how the `openSesame` pipeline is
+handling your data internally.
 
-# $\beta$ Value Extraction
+# $\beta$-value Extraction
 
 DNA methylation level (aka the $\beta$ values) are defined as
-$$\beta = M / (M+U)$$
+$$\beta = M/(M+U)$$
 
 $M$ represents the signal from methylated allele and $U$ represents the
-unmethylated allele.  It can be retrieved calling the `getBetas` function on
-the `SigDF`.  The output is a named vector with probe ID as names.  For
-example, the following commands read in one sample and convert it to $\beta$
-values.
+unmethylated allele.  It can be retrieved calling the `getBetas` function with
+the `SigDF` as input.  The output is a named vector with probe ID as names.
+For example, the following commands read in one sample and convert it to
+$\beta$ values.
 
 ```{r}
 betas = getBetas(sdf) # retrieve beta values
 head(betas)
 ```
 
-**CRITICAL:** `getBetas` takes a single `SigDF`
-object as input instead of a list of them. A common mistake is to `c`-merge
-multiple `SigDF`s. To combine multiple `SigDF`s, one can use `list()` instead.
-To have it process many `SigDF`s, we
-should combine that with looping functions `lapply` or `mclapply`s, or using
-the `openSesame` pipeline (see below).
-
-# Sum Two Channels
+**CRITICAL:** `getBetas` takes a single `SigDF` object as input instead of a
+list of `SigDF`s. A common mistake is to `c`-merge multiple `SigDF`s. To
+combine multiple `SigDF`s, one can use `list()` instead.  To process many
+`SigDF`s, we should combine that with looping functions `lapply` or
+`mclapply`s, or using the `openSesame` pipeline (see below).
 
 $\beta$ values for Infinium-I probes can also be obtained by summing up the two
-in-band channel and out-of-band channel. This rescues probes with SNP hitting
-the extension base and hence switching color channel. More details can be
-found in
-[Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
-```{r}
-## show case using an example without mask, then add mask with qualityMask
-sdf = qualityMask(sesameDataGet('EPIC.1.SigDF'))
-betas = getBetas(sdf, sum.TypeI = TRUE)
-```
+in-band channel and out-of-band channels. This rescues probes with SNP hitting
+the extension base and hence switching color channel. More details can be found
+in [Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
 
-Extra SNP allele frequencies can be obtained by summing up methylated and
-umethylated alleles of color-channel-switching probes. These allele frequencies
-can be combined with explicit SNP probes:
+# Preprocessing
+
+Sesame preprocessing can be done using the **prepSesame** function which takes
+a `SigDF` and returns a processed `SigDF`. The `prepSesame` function also takes
+a string that encodes the preprocessing functions and the order of their
+execution. For example,
 
 ```{r}
-head(getAFs(sdf)) # combined
-head(getAFTypeIbySumAlleles(sdf)) # AFs from only color-channel-switching
+sdf = sesameDataGet('EPIC.1.SigDF')
+sdf_preped = prepSesame(sdf, "DB")
 ```
 
-# Masking
-
-If you call getBetas as is, you may have noticed that some of the beta values
-show up having NA values. This NA-masking is controlled internally using the
-`mask` column in `SigDF`. To check probes to be NA-masked in a `SigDF`, one can
-use the `mask` function
+performs dye bias correction (D) followed by background subtraction
+(B). `prepSesame(sdf, "DB")` is equivalent to `noob(dyeBiasNL(sdf))`. The
+following table lists all the available codes and the associated preprocessing
+functions.
 
 ```{r}
-head(sdf$mask)
-sum(sdf$mask)   # number of probes to be NA-masked
-sum(is.na(betas)) # should be the same as above
+prepSesameList()
 ```
 
-Please note that `mask` in `SigDF` does not actually remove the probe reading
-but only specify how SeSAMe currently views the measurement (as
-unreliable). One can add more probes to the mask with the `addMask`
-function. Other functions such as the detection p-value calculation, also
-modifies `mask`. NA-masking influences other normalization and preprocessing
-functions. Therefore one should have them set for the preprocessing methods
-mentioned below. If one does not do any explicit masking, one simply gets the
-masking specified in the `mask` column of the manifest. This defines the
-default masking behavior of SeSAMe. For more details of masking, one can refer
-to [Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
-One can override this masking by the `resetMask` function
+All the preprocessing functions take a SigDF as input and output the updated
+SigDF. Therefore they can be chained together (see the `Preprocessing
+functions` section for a more detailed discussion of these functions). The
+optimal strategy of preprocessing depends on 1) the array platform; and 2) the
+expected sample input. For example, certain array platforms (such as the
+Mammal40) do not contain enough Infinium-I probes for normalization, therefore
+background subtraction might not work most optimally. Certain platform (e.g.,
+Mammal40 and MM285) are designed for multiple species and strains. Therefore
+`inferSpecies` and `inferStrain` would be of help. The following table lists
+the recommended preprocessing strategy based on our experience. The order of
+different preprocessing also matters.
 
-```{r}
-sum(sdf$mask)  # before resetting
-sum(resetMask(sdf)$mask)  # after resetting, expect 0
+```{r echo=FALSE, result="asis"}
+library(knitr)
+df <- data.frame(rbind(
+   c("EPIC/HM450", "human", "QCDPB"),
+   c("EPIC/HM450", "non-human organism", "SQCDPB"),
+   c("MM285", "mouse", "TQCDPB"),
+   c("MM285", "non-mouse organism", "SQCDPB"),
+   c("Mammal40", "human", "HCDPB"),
+   c("Mammal40", "non-human organism", "SHCDPM")))
+colnames(df) <- c("Platform", "Sample Organism", "Prep Code")
+kable(df, caption="Recommended Preprocessing")
 ```
 
-The `getBetas` function can also ignore NA-masking while extracting beta
-values:
+# Preprocessing Functions
 
-```{r}
-sum(is.na(getBetas(sdf, mask=FALSE)))  # expect 0
-```
-
-We recommend two types of probe masking:
-
-1) **Experiment-dependent Probe Masking** based on signal detection p-value
-([Zhou et al. 2018](https://www.ncbi.nlm.nih.gov/pubmed/30085201)). Probes with
-p-value higher than a threshold (default: 0.05) are masked (see following for
-detection p-value calculation using the `pOOBAH` method).
-
-2) **Experiment-independent Probe Masking** due to design issues. This is
-typically designated in the `mask` column of the manifest (see 
-[Zhou et al. 2017](https://www.ncbi.nlm.nih.gov/pubmed/27924034)): This masking
-supports EPIC, MM285, HM450 and HM27 and is turned on by default and can also be
-explicitly added by the function `qualityMask`.
-
-# Detection P-value
+## Detection P-value
 
 As mentioned above, experiment-dependent masking based on signal detection
 p-values is effective in excluding artifactual methylation level reading
@@ -268,55 +291,41 @@ pvals = pOOBAH(sdf, return.pval=TRUE)
 sdf2 = addMask(sdf, pvals > 0.05) # default, recommend between 0.05 and 0.2
 ```
 
-# Background Subtraction
+## Background Subtraction
 
-SeSAMe implements the
-background subtraction based on normal-exponential deconvolution using
-out-of-band probes `noob`
+SeSAMe implements the background subtraction based on normal-exponential
+deconvolution using out-of-band probes `noob`
 ([Triche et al. 2013](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3627582/))
-and optionally with extra bleed-through subtraction. Signal bleed-through
-happens when measurement from one channel affects the measurement in the other
-channel. SeSAMe's `noob` further removes residual background by regressing
-out the green-to-red and red-to-green relationship using Type-I probes.
-```{r}
-sdf.nb = noob(sdf)          # noob background subtraction
-sdf.sb = scrub(sdf)         # more aggressive background subtraction
+and optionally with more aggressive subtraction (`scrub`). One can use
+following $\beta$ value distribution plot to see the effect of background
+subtraction. For example, the two (M and U) modes are further polarized.
+
+```{r fig.width=5, fig.height=5, fig.keep="last"}
+par(mfrow=c(2,1), mar=c(3,3,2,1))
+sesameQC_plotBetaByDesign(sdf, main="Before", xlab="\beta")
+sesameQC_plotBetaByDesign(noob(sdf), main="After", xlab="\beta")
 ```
 
-One can use following beta to total signal intensity to check the effect of
-background subtraction.
-```{r fig.width=5}
-sesameQC_plotIntensVsBetas(sdf)
-sesameQC_plotIntensVsBetas(sdf.nb) # with noob
-```
-
-# Dye Bias Correction
+## Dye Bias Correction
 
 Dye bias refers to the difference in signal intensity between the two color
 channel. SeSAMe offers two flavors of dye bias correction: linear scaling
 (`dyeBiasCorr`) and nonlinear scaling (`dyeBiasCorrTypeINorm`). Linear scaling
 equalize the mean of all probes from the two color channel.
-```{r fig.width=5}
-library(sesame)
-sdf.dbLinear = dyeBiasCorr(sdf)
-sesameQC_plotRedGrnQQ(sdf.dbLinear)
+
+```{r fig.width=7, fig.height=4, fig.keep="last", message=FALSE}
+par(mfrow=c(1,2))
+sesameQC_plotRedGrnQQ(dyeBiasCorr(sdf), main="Before") # linear correction
+sesameQC_plotRedGrnQQ(dyeBiasNL(sdf), main="After")   # nonlinear correction
 ```
 
 Residual dye bias can be corrected using nonlinear quantile interpolation with
-Type-I probes.
-```{r}
-sdf.dbNonlinear = dyeBiasNL(sdf)
-```
-Under this correction, Infinium-I Red probes and
-Infinium-I Grn probes have the same distribution of signal.
-```{r fig.width=5}
-sesameQC_plotRedGrnQQ(sdf.dbNonlinear)
-```
+Type-I probes. Under this correction, Infinium-I Red probes and Infinium-I Grn
+probes have the same distribution of signal. Note that linear scaling does not
+shift beta values of Type-I probes while nonlinear scaling does shift beta
+values of Type-I probes.
 
-Note that linear scaling does not shift beta values of Type-I probes while
-nonlinear scaling does shift beta values of Type-I probes.
-
-# Channel Inference
+## Channel Inference
 
 Sometimes Infinium-I channel spec is inaccurate in the manifest. We can
 infer the channel from data.
@@ -328,76 +337,116 @@ sdf.InfICorrected = inferInfiniumIChannel(sdf, verbose=TRUE)
 As one can see, most probes remain with the designated channel. A small
 fraction of the probes is considered "channel-switching".
 
-# The openSesame Pipeline
+## Match Infinium-I/II
 
-Put together, the noob, nonlinear dye bias correction and pOOBAH can be chained
-as follows into a pipeline and called in parallel (showing 2 cores below):
+As we may've noticed, even with proper dye bias correction, there is still
+remaining differences in $\beta$ value distribution between Infinium-I and
+Infinium-II probes due to the signal tail inflation. One solution is to perform
+ad-hoc quantile normalization. We provide a function similar to the BMIQ
+algorithm with modifications (one-, two- and three-state mixture and Infinium-I
+to II matching since Infinium-I is more often influenced by signal inflation
+based on our experience) to match Infinium-I and Infinium-II beta value
+distribution. We **do not** recommend the use of this (or any such methods) for
+all data unless your data is known to be relatively well-behaving in
+methylation distribution, for protection of real biological signal. This
+function assumes Infinium-I/II probes are similar in $beta$ value distribution
+in the unmethylated and methylated mode.
 
-```{r eval = FALSE}
-idat_dir = system.file("extdata/", package = "sesameData")
-betas = do.call(cbind, mclapply(searchIDATprefixes(idat_dir), function(pfx) {
-    getBetas(dyeBiasNL(noob(pOOBAH(readIDATpair(pfx)))))
-}), mc.cores=2)
-```
-
-Equivalently, sesame provides the **openSesame** pipeline
-
-```{r eval = FALSE}
-idat_dir = system.file("extdata/", package = "sesameData")
-betas = openSesame(idat_dir)
-```
-
-as a quickstart alias. Here `idat_dir` is the directory containing all the IDAT
-files. Multi-core processing can be specified using the BiocParallel package:
-
-```{r eval = FALSE}
-betas = openSesame(idat_dir, BPPARAM=BiocParallel::MulticoreParam(2))
-```
-
-Like readIDATpair, `openSesame` also works with custom-made array with a
-manifest file (see above):
-
-```{r eval = FALSE}
-betas = openSesame(idat_dir, manifest = manifest)
+```{r fig.width=5, fig.height=5, fig.keep="last", message=FALSE}
+par(mfrow=c(2,1), mar=c(3,3,2,1))
+sesameQC_plotBetaByDesign(sdf, main="Before", xlab="\beta")
+sesameQC_plotBetaByDesign(matchDesign(sdf), main="After", xlab="\beta")
 ```
 
 # The SigDF Class
 
-SeSAMe design includes alight-weight full exposure of internal signal
-intensities (essential information for users of Illumina methylation array data,
-as demonstrated in Zhou et al 2018), which permits sensitive and specific joint
-inference on copy number and DNA methylation.
+SeSAMe design includes a light-weight fullly-exposed infrastructure of the
+internal signal intensities. Central to this infrastructure is the `SigDF` data
+structure, which is a `data.frame` subclass. One can treat it like a regulator
+`data.frame` with 7 specific columns, i.e., Probe_ID, MG, MR, UG, UR, col and
+mask. The `col` column specifies the color channel and takes `G`, `R` and `2`.
+The Infinium-I probes carry `G` and `R` in col to indicate the designed
+color. This infrastructure is nimble to allow change of color channel, and mask
+(the scope of usable probes) depending on the use of the array on different
+species, strain, population etc. For example, the following data.frame
+operation let you easily peek into the signal intensities.
 
-Central to the SeSAMe platform is the `SigDF` data structure,
-a `data.frame` subclass with the following column names
-
-```{r}
-colnames(sdf)
-```
-
-The `col` column specifies the color channel and takes `G`, `R` and `2`.
-The Infinium-I probes carry `G` and `R`
 ```{r}
 head(sdf[sdf$col != "2",])      # Infinium-I probes
 head(sdf[sdf$col == "2",])      # Infinium-II probes
 ```
 
-The `controls` attributes may contain the control probe information. The
-control probe annotation can be found using the following function:
+Sometimes, particularly with older arrays, there might exist a `controls`
+attributes to contain the control probe information. In the new manifest, the
+control probes will be parsed and included as regulator probes (except with a
+`ctl` prefix in the probe ID). The control probe annotation can be found using
+the following function:
 
 ```{r}
 head(controls(sdf))
 ```
 
-For control probes, signal intensities are stored as an `Nx2` numeric
-matrix, with `N` representing the number of probes in the class. The two
-columns of the matrix represent the methylated probe intensity and the 
-unmethylated probe intensity.
+## Masking
 
-# SigDF to/from Tsv/Csv
+If you call getBetas as is, you should have noticed that some of the beta
+values show up having NA values. This NA-masking is controlled internally using
+the `mask` column in `SigDF`. To check probes to be NA-masked in a `SigDF`, one
+can use the `mask` function
 
-`SigDF` can be written as and read from plain text file with the compliant
-column names (i.e., `r colnames(sdf)`).
+```{r}
+sum(sdf$mask)   # number of probes to be NA-masked
+sum(is.na(getBetas(sdf))) # should be the same as above
+```
+
+Please note that `mask` in `SigDF` does not actually remove the probe reading
+but only specify how SeSAMe currently views the measurement (as
+unreliable). One can add more probes to the mask with the `addMask`
+function. Other functions such as the detection p-value calculation (e.g.,
+`pOOBAH`), also modifies `mask`. NA-masking influences other normalization and
+preprocessing functions. Therefore one should have them set for the
+preprocessing methods mentioned below. No mask is set by default unless done
+through preprocessing functions. The `qualityMask` function does some
+recommended experiment-independent masking. For example, probes with cross
+hybridization or are influenced by common polymorphisms are masked using this
+function. For more details of some of the maskings in `qualityMask` and
+`listAvailableMasks(sdf)`, one can refer to [Zhou et
+al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
+
+```{r, message=FALSE}
+sdf = qualityMask(sesameDataGet('EPIC.1.SigDF'))
+```
+
+One can clear existing masking by the `resetMask` function.
+
+```{r}
+sum(sdf$mask)  # before resetting
+sum(resetMask(sdf)$mask)  # after resetting, expect 0
+```
+
+The `getBetas` function can also ignore NA-masking when extracting beta
+values by taking a `mask=FALSE` option:
+
+```{r}
+sum(is.na(getBetas(sdf, mask=FALSE)))  # expect 0
+```
+
+In all, most of the masking comes from two major sources:
+
+1) **Experiment-dependent Probe Masking** based on signal detection p-value
+([Zhou et al. 2018](https://www.ncbi.nlm.nih.gov/pubmed/30085201)). Probes with
+p-value higher than a threshold (default: 0.05) are masked (see following for
+detection p-value calculation using the `pOOBAH` method).
+
+2) **Experiment-independent Probe Masking** due to design issues. This is
+typically designated in the `mask` column of the manifest (see 
+[Zhou et al. 2017](https://www.ncbi.nlm.nih.gov/pubmed/27924034)): This masking
+supports EPIC, MM285, HM450 and HM27 and is turned on by default and can also be
+explicitly added by the function `qualityMask`:
+
+## Save as Plain Texts
+
+`SigDF` can be written as and read from plain text file (e.g, tab-delimited
+files and comma-delimited files) with the compliant column names (see above).
 
 ```{r}
 tsv_file_path = sprintf("%s/sigdf.tsv", tempdir())
@@ -409,7 +458,7 @@ sdf_write_table(sdf, file=csv_file_path, sep=",") # save as csv
 sdf2 = sdf_read_table(csv_file_path, sep=",")     # read back
 ```
 
-# External Interactions
+# Interaction with Other Tools
 
 Previously, the signal was implemented an S4 implementation in `SigSet`
 complies with Bioconductor guidelines, and for backwards compatibility,

@@ -405,6 +405,8 @@ sesameQC_calcStats_betas <- function(sdf, qc = NULL) {
 #' Plot red-green QQ-Plot using Infinium-I Probes
 #'
 #' @param sdf a \code{SigDF}
+#' @param main plot title
+#' @param ... additional options to qqplot
 #' @return create a qqplot
 #' @examples
 #' sesameDataCache() # if not done yet
@@ -412,15 +414,15 @@ sesameQC_calcStats_betas <- function(sdf, qc = NULL) {
 #' sesameQC_plotRedGrnQQ(sdf)
 #' @import graphics
 #' @export
-sesameQC_plotRedGrnQQ <- function(sdf) {
+sesameQC_plotRedGrnQQ <- function(sdf, main="R-G QQ Plot", ...) {
     dG <- InfIG(noMasked(sdf)); dR <- InfIR(noMasked(sdf))
     m <- max(c(dR$MR,dR$UR,dG$MG,dG$UG), na.rm=TRUE)
     
     qqplot(
         c(dR$MR, dR$UR), c(dG$MG, dG$UG),
         xlab = 'Infinium-I Red Signal', ylab = 'Infinium-I Grn Signal',
-        main = 'Red-Green QQ-Plot', cex = 0.5,
-        xlim = c(0,m), ylim = c(0,m))
+        main = main, cex = 0.5,
+        xlim = c(0,m), ylim = c(0,m), ...)
     abline(0,1,lty = 'dashed')
 }
 
@@ -428,6 +430,7 @@ sesameQC_plotRedGrnQQ <- function(sdf) {
 #'
 #' @param sdf SigDF
 #' @param prep prep codes to step through
+#' @param mar margin of layout when showing steps of prep
 #' @param ... additional options to plot
 #' @return create a density plot
 #' @examples
@@ -435,10 +438,10 @@ sesameQC_plotRedGrnQQ <- function(sdf) {
 #' sesameQC_plotBetaByDesign(sdf, prep="DB")
 #' @export
 sesameQC_plotBetaByDesign <- function(
-    sdf, prep=NULL, legend_pos="top", main="", ...) {
+    sdf, prep=NULL, legend_pos="top", mar=c(3,3,1,1), main="", ...) {
 
     if (!is.null(prep)) {
-        par(mfrow=c(nchar(prep)+1,1), mar=c(3,3,3,1))
+        par(mfrow=c(nchar(prep)+1,1), mar=mar)
         for (n in c(0,seq_len(nchar(prep)))) {
             sesameQC_plotBetaByDesign(
                 prepSesame(sdf, substr(prep,1,n)),

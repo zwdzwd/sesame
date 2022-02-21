@@ -136,6 +136,15 @@ sesameQC_plotIntensVsBetas(sdf)
 
 # Genotype validation
 
+Extra SNP allele frequencies can be obtained by summing up methylated and
+umethylated alleles of color-channel-switching probes. These allele frequencies
+can be combined with explicit SNP probes:
+
+```{r}
+head(getAFs(sdf)) # combined
+head(getAFTypeIbySumAlleles(sdf)) # AFs from only color-channel-switching
+```
+
 SeSAMe can extract explicit and Infinium-I-derived SNPs to identify potential
 sample swaps.
 

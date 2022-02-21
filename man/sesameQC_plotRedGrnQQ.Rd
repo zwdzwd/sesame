@@ -4,10 +4,14 @@
 \alias{sesameQC_plotRedGrnQQ}
 \title{Plot red-green QQ-Plot using Infinium-I Probes}
 \usage{
-sesameQC_plotRedGrnQQ(sdf)
+sesameQC_plotRedGrnQQ(sdf, main = "R-G QQ Plot", ...)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
+
+\item{main}{plot title}
+
+\item{...}{additional options to qqplot}
 }
 \value{
 create a qqplot

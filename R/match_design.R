@@ -24,6 +24,29 @@ match1To2_1state <- function(sdf) {
     sdf2[order(sdf2$Probe_ID),]
 }
 
+match1To2_3states <- function(sdf) {
+    dR <- noMasked(InfIR(sdf))
+    bR <- getBetas(dR)
+    dG <- noMasked(InfIG(sdf))
+    bG <- getBetas(dG)
+    d2 <- noMasked(InfII(sdf))
+    b2 <- getBetas(d2)
+
+    mR <- as.integer(betaMix3States(bR))
+    mG <- as.integer(betaMix3States(bG))
+    m2 <- as.integer(betaMix3States(b2))
+    
+    dR$MR[mR==1] <- normalizeSetM(bR[mR==1], b2[m2==1], dR$UR[mR==1])
+    dR$MR[mR==2] <- normalizeSetM(bR[mR==2], b2[m2==2], dR$UR[mR==2])
+    dR$MR[mR==3] <- normalizeSetM(bR[mR==3], b2[m2==3], dR$UR[mR==3])
+    dG$MG[mG==1] <- normalizeSetM(bG[mG==1], b2[m2==1], dG$UG[mG==1])
+    dG$MG[mG==2] <- normalizeSetM(bG[mG==2], b2[m2==2], dG$UG[mG==2])
+    dG$MG[mG==3] <- normalizeSetM(bG[mG==3], b2[m2==3], dG$UG[mG==3])
+    sdf2 <- rbind(dR, dG, d2)
+    sdf2 <- rbind(sdf2, sdf[!(sdf$Probe_ID %in% sdf2$Probe_ID),])
+    sdf2[order(sdf2$Probe_ID),]
+}
+
 #' normalize Infinium I probe betas to Infinium II
 #'
 #' This is designed to counter tail inflation in Infinium I probes.
@@ -56,6 +79,9 @@ matchDesign <- function(sdf, min_dbeta = 0.3) {
             abs(calcMode(b2[m2 == 1]) - calcMode(b2[m2 == 2])) < min_dbeta) {
         return(match1To2_1state(sdf)) }
 
+    if (abs(calcMode(b2[m2 == 1]) - calcMode(b2[m2 == 2])) > 0.7) {
+        return(match1To2_3states(sdf)) }
+
     bR <- getBetas(dR, mask = FALSE)
     mR <- as.integer(betaMix2States(bR))
     bG <- getBetas(dG, mask = FALSE)
@@ -86,6 +112,30 @@ betaMix2States <- function(x, n_samples = 10000, th_init = 0.5) {
     m1 <- apply(fitres$w, 1, which.max)
     th <- mean(max(x1[m1 == 1]), min(x1[m1 == 2]))
     m2 <- cut(x, breaks=c(0, th, 1), include.lowest = TRUE)
+    names(m2) <- names(x)
+    m2
+}
+
+betaMix3States <- function(
+    x, n_samples = 10000, th_init1 = 0.2, th_init2 = 0.7) {
+    
+    pkgTest("RPMM")
+    if (sum(!is.na(x)) > n_samples) {
+        x1 <- sample(na.omit(x), n_samples)
+    } else {
+        x1 <- na.omit(x)
+    }
+    m <- matrix(0, nrow = length(x1), ncol = 3) # membership matrix
+    m[x1 <= th_init1, 1] <- 1
+    m[x1 > th_init1 & x1 <= th_init2, 2] <- 1
+    m[x1 > th_init2, 3] <- 1
+    
+    fitres <- RPMM::blc(
+        matrix(x1), m, maxiter = 5, tol = 0.001, verbose = FALSE)
+    m1 <- apply(fitres$w, 1, which.max)
+    th1 <- mean(max(x1[m1 == 1]), min(x1[m1 == 2]))
+    th2 <- mean(max(x1[m1 == 2]), min(x1[m1 == 3]))
+    m2 <- cut(x, breaks=c(0, th1, th2, 1), include.lowest = TRUE)
     names(m2) <- names(x)
     m2
 }

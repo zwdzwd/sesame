@@ -46,14 +46,6 @@ betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 predictAgeHorvath353(betas)
 ```
 
-# Mean intensity
-
-The mean intensity of all the probes characterize the quantity of input DNA
-and efficiency of probe hybridization.
-```{r}
-meanIntensity(sdf)
-```
-
 # Copy Number
 
 SeSAMe performs copy number variation in three steps: 1) normalizes the signal

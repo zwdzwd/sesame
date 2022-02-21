@@ -6,6 +6,7 @@
 #' @export
 prepSesameList <- function() {
     x <- data.frame(rbind(
+        c("0", "resetMask", "Reset mask to all FALSE"),
         c("Q", "qualityMask", "Mask probes of poor design"),
         c("G", "prefixMaskButCG", "Mask all but cg- probes"),
         c("H", "prefixMaskButC", "Mask all but cg- and ch-probes"),
@@ -14,7 +15,7 @@ prepSesameList <- function() {
         c("P", "pOOBAH", "Detection p-value masking using oob"),
         c("B", "noob", "Background subtraction using oob"),
         c("S", "inferSpecies", "Set species-specific mask"),
-        c("T", "inferStrain", "Set strain-specific mask"),
+        c("T", "inferStrain", "Set strain-specific mask (mouse)"),
         c("M", "matchDesign", "Match Inf-I/II in beta distribution")))
     colnames(x) <- c("code", "func", "description")
     x

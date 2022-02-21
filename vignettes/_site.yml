@@ -6,7 +6,7 @@ navbar:
       icon: fa-home
       href: sesame.html
     - text: "QC"
-      icon: fa-copy
+      icon: fa-check-circle
       href: QC.html
     - text: "Non-human Array"
       icon: fa-paw
@@ -18,8 +18,8 @@ navbar:
       icon: fa-book
       href: inferences.html
     - text: "KnowYourCG"
-      icon: fa-barcode
+      icon: fa-binoculars
       href: KYCG.html
     - text: "Others"
-      icon: fa-barcode
+      icon: fa-cogs
       href: other.html

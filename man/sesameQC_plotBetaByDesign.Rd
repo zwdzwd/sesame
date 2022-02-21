@@ -4,12 +4,21 @@
 \alias{sesameQC_plotBetaByDesign}
 \title{Plot betas distinguishing different Infinium chemistries}
 \usage{
-sesameQC_plotBetaByDesign(sdf, prep = NULL, legend_pos = "top", main = "", ...)
+sesameQC_plotBetaByDesign(
+  sdf,
+  prep = NULL,
+  legend_pos = "top",
+  mar = c(3, 3, 1, 1),
+  main = "",
+  ...
+)
 }
 \arguments{
 \item{sdf}{SigDF}
 
 \item{prep}{prep codes to step through}
+
+\item{mar}{margin of layout when showing steps of prep}
 
 \item{...}{additional options to plot}
 }

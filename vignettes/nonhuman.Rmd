@@ -12,116 +12,124 @@ vignette: >
 ---
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-library(sesame)
 library(wheatmap)
 library(dplyr)
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
-# Mouse MM285 Array
+SeSAMe provides extensive native support for the Illumina mouse array (referred
+to as the MM285 array) and the Horvath Mammal40 array (refered to as Mammal40
+array). The MM285 array contains ~285,000 probes covering over 20 design
+categories including gene promoters, enhancers, CpGs in synteny to human EPIC
+array as well as other biology. This documents describe the procedure to
+process the MM285 and the Mammal40 array. To begin, let's retrieve mouse
+annotation data from ExperimentHub.  This only needs to be done once per sesame
+installation.
 
-To begin, we need to retrieve mouse annotation data from ExperimentHub.
-This only needs to be done once per sesame installation.
 ```{r echo=FALSE, message=FALSE}
-sesameDataCacheAll()
+library(sesame)
+sesameDataCache()
 ```
 
-SeSAMe provides extensive native support for the Illumina mouse array
-(referred to as the MM285 array).
-The MM285 contains ~285,000 probes covering over 20 design categories including
-gene promoters, enhancers, CpGs in synteny to human EPIC array as well as other
-biology. This documents describe the procedure to process the MM285 array.
+# The openSesame pipeline
 
-Let's download an example mouse array IDAT
-```{r eval=FALSE}
-tmp <- tempdir()
+The `openSesame` pipeline fully supports the MM285 and the Mammal40 arrays.
+Let's download an example mouse array IDAT and call `openSesame` function.
+
+```{r message=FALSE}
+tmp = tempdir()
 sesameData_getAnno("test/204637490002_R05C01_Grn.idat", dest_dir=tmp)
 sesameData_getAnno("test/204637490002_R05C01_Red.idat", dest_dir=tmp)
-pfx = sprintf("%s/test/204637490002_R05C01", tmp)
+head(openSesame(sprintf("%s/test/204637490002_R05C01", tmp), prep="TQCDPB"))
 ```
 
-To load IDAT into `SigSet`, one needs the readIDATpair function,
-```{r eval=FALSE}
-sdf = readIDATpair(pfx)
+Here is an example of `openSesame` processing on a Mammal40 array.
+
+```{r message=FALSE}
+tmp = tempdir()
+sesameData_getAnno("test/GSM4411982_Grn.idat.gz", dest_dir=tmp)
+sesameData_getAnno("test/GSM4411982_Red.idat.gz", dest_dir=tmp)
+head(openSesame(sprintf("%s/test/GSM4411982", tmp), prep="HSCDPM"))
 ```
 
-## Preprocessing
+The following sections provide a more detailed discussion of subsequent
+inference you can do with these array data.
 
-The default openSesame pipeline works for the default C57BL/6J strain. The
-function processes the IDATs to produce beta values.
+# MM285 array
 
-```{r}
-sdf <- sesameDataGet('MM285.1.SigDF')
-head(getBetas(pOOBAH(noob(dyeBiasNL(sdf)))))
+## Replicate Probes
+
+As you notice the probe ID has the suffix which distinguishes replicate
+probes. These replicate probes can be collapsed to the cg prefix by adding the
+`collapseToPfx=TRUE` option in `openSesame` and `getBetas` function (if that
+function is used explicitly).
+
+```{r message=TRUE}
+sdf = sesameDataGet('MM285.1.SigDF')
+head(openSesame(sdf, prep="TQCDPB", collapseToPfx=TRUE))
 ```
 
-To work on a different strain, one can call the `inferStrain` function before
-calling the standard `noob`, `dyeBiasNL`, etc. More detail about `inferStrain`
-can be found below.
+## Quality Mask
 
-```{r}
-head(getBetas(pOOBAH(noob(dyeBiasNL(inferStrain(sdf))))))
-```
+For the default C57BL/6J strain, one can use the `qualityMask` (Q) function
+without performing species or strain inference.
 
-or to cg prefix only
-
-```{r}
-head(getBetas(pOOBAH(noob(dyeBiasNL(inferStrain(sdf)))), collapseToPfx=TRUE))
+```{r message=TRUE}
+sdf = sesameDataGet('MM285.1.SigDF')
+head(openSesame(sdf, prep="QCDPB"))
 ```
 
 By default the repeat and suboptimally designed probes are masked by `NA`.
 These suboptimally designed probes may take a new probe ID prefix ("uk") in
-addition to the "cg"/"ch"/"rs" typically seen. These masking is turned on by
-default when IDAT files are read
+addition to the "cg"/"ch"/"rs" typically seen. These masking is done by the
+`qualityMask` function (or `Q` in prep codes).
 
 ```{r}
 sum(is.na(getBetas(sdf)))
 ```
 
-To override these probes, one can use the `resetMask` function to remove the
-default masking. We recommend using it after preprocessing function so that
-preprocessing only use reliable probes. Note that there are still remaining NAs
-due to detection p-values (from pOOBAH):
+To override these probes, one can use the `resetMask` function (the `0` code in
+`openSesame`) to remove the default masking. We recommend using it after
+preprocessing function so that preprocessing can only use reliable probes. Note
+that there are still remaining NAs due to detection p-values (from pOOBAH):
 
-```{r}
-sum(is.na(getBetas(pOOBAH(resetMask(noob(dyeBiasNL(sdf)))))))
+```{r message=TRUE}
+sum(is.na(openSesame(sdf, prep="TQCD0PB")))
 ```
 
-## Strain/species inference
+## Strain Analysis
+
+one need to call the `inferStrain` function
+before calling the standard `noob`, `dyeBiasNL`, etc. This can be done by
+simply adding "T" before "CDPB" when calling `openSesame`.
 
 ```{r}
-sdf <- sesameDataGet("MM285.1.SigDF") # an example SigDF
+head(openSesame(sdf, prep="TQCDPB"))
 ```
 
-Infer species (obviously this is a mouse, but this is supposed to work on rat,
-human etc). Currently this feature supports both the mouse array and the mammal
-array.
-```{r}
-inferSpecies(sdf, return.species = TRUE)
-```
-
-Infer strain information for mouse array. This will return a new SigDF with col
-and mask updated to reflect the change of strain. Optionally, one can also
-specify `return.strain=TRUE`, `return.pval=TRUE` or return.probability = TRUE`
-to return the inferred strain, the p-value or the probabilities of all 37
-strain candidates.  Internally, the function converts the beta values to
-variant allele frequencies. It should be noted that since variant allele
-frequency is not always measured by the M-allele of the probe. SeSAMe flips the
-beta values for some probes to calculate variant allele frequency.
+The `inferStrain` function is what was used under the hood. This function will
+return a new SigDF with col and mask updated to reflect the change of
+strain. Optionally, one can also specify `return.strain=TRUE`,
+`return.pval=TRUE` or `return.probability = TRUE` to return the inferred strain,
+the p-value or the probabilities of all 37 strain candidates.  Internally, the
+function converts the beta values to variant allele frequencies. It should be
+noted that since variant allele frequency is not always measured by the
+M-allele of the probe. SeSAMe flips the beta values for some probes to
+calculate variant allele frequency.
 
 ```{r}
 inferStrain(sdf, return.strain = TRUE) # return strain as a string
-sdf1 <- inferStrain(sdf)
+sdf1 = inferStrain(sdf)
 sum(sdf$mask) # before strain inference
 sum(sdf1$mask) # after strain inference
 ```
 
-Let's visualize the probabilities of other strains.
+Let's visualize the probabilities of all candidate strains.
 
 ```{r fig.width=6, fig.height=4}
 library(ggplot2)
-p <- inferStrain(sdf, return.probability = TRUE)
-df <- data.frame(strain=names(p), probs=p)
+p = inferStrain(sdf, return.probability = TRUE)
+df = data.frame(strain=names(p), probs=p)
 ggplot(data = df,  aes(x = strain, y = probs)) +
   geom_bar(stat = "identity", color="gray") +
   ggtitle("Strain Probabilities") +
@@ -141,17 +149,25 @@ compareMouseStrainReference(getBetas(sdf))
 
 As expected, the variant configuration is consistent with the NOD strain.
 
-## Track View
-```{r message=FALSE}
-betas = sesameDataGet("MM285.10.tissue")$betas
-visualizeGene("Igf2", betas)
+## Non-mouse Species
+
+```{r}
+sdf = sesameDataGet("MM285.1.SigDF") # an example SigDF
 ```
 
-## Tissue Type Inference
+Infer species (obviously this is a mouse, but this is supposed to work on rat,
+human etc). Currently this feature supports the human arrays, the mouse array
+and the mammal array.
+
+```{r message=FALSE}
+inferSpecies(sdf, return.species = TRUE)
+```
+
+## Tissue Type
 
 Let's load beta values from SeSAMeData
 ```{r}
-betas <- sesameDataGet("MM285.10.tissue")$betas[,1:2]
+betas = sesameDataGet("MM285.10.tissue")$betas[,1:2]
 ```
 
 Compare mouse array data with mouse tissue references. This will return a grid
@@ -160,30 +176,32 @@ object that contrasts the traget sample with pre-built mouse tissue reference.
 compareMouseTissueReference(betas)
 ```
 
-## Sex Inference
+## Sex Analysis
 
 Let's load beta values from sesameData
 ```{r}
 sdf = sesameDataGet("MM285.1.SigDF")
 ```
 
-Sex inference can take both the raw signal in SigDF or beta value vector
-```{r}
+Sex inference can take either a `SigDF` or a $\beta$ value vector.
+
+```{r message=FALSE}
 inferSex(sdf)
 ```
 
-## Age Inference
+## Epigenetic Clock
 
 Let's load beta values from SeSAMeData
 ```{r}
-betas <- sesameDataGet('MM285.10.tissue')$betas
+betas = sesameDataGet('MM285.10.tissue')$betas
 ```
 
 The age of the mouse can be predicted using the `predictMouseAgeInMonth`
 function. This looks for overlapping probes and estimates age using an aging
-model built from 347 MM285 probes. The function returns a numeric output of
-age in months. The model is most accurate with SeSAMe preprocessing.
-Here's an example.
+model built from 347 MM285 probes. The function returns a numeric output of age
+in months. The model is most accurate with SeSAMe preprocessing.  Here's an
+example.
+
 ```{r}
 predictMouseAgeInMonth(betas[,1])
 ```
@@ -193,26 +211,19 @@ This indicates thaat this mouse is approximately 1.41 months old.
 
 UNDER CONSTRUCTION
 
-# Horvath Mammal40 Array
-
-SeSAMe supports Mammal 40 array the same way:
+# Horvath Mammal40 array
 
 ```{r}
-tmp = tempdir()
-sesameData_getAnno("test/GSM4411982_Grn.idat.gz", dest_dir=tmp)
-sesameData_getAnno("test/GSM4411982_Red.idat.gz", dest_dir=tmp)
-sdf = readIDATpair(sprintf("%s/test/GSM4411982", tmp))
+inferSpecies(sesameDataGet("Mammal40.1.SigDF"), return.species = TRUE)
 ```
 
-Preprocess the sigset to produce beta values.
-The standard `noob`, `dyeBiasCorrTypeINorm` works as expected:
-```{r}
-sdf_normalized = dyeBiasCorrTypeINorm(noob(pOOBAH(sdf)))
-```
-Retrieve beta values using the following commands
-```{r}
-betas = getBetas(sdf_normalized)
-head(betas)
+# Visualize $\beta$ Values
+
+The track visualization is supported for these arrays.
+
+```{r message=FALSE}
+betas = sesameDataGet("MM285.10.tissue")$betas
+visualizeGene("Igf2", betas)
 ```
 
 # Session Info
