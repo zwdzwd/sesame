@@ -41,7 +41,7 @@ Imports: BiocParallel,
          reshape2
 Suggests: scales,
           knitr,
-          RRPM,
+          RPMM,
           rmarkdown,
           testthat,
           tidyr,
