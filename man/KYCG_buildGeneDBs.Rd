@@ -30,6 +30,6 @@ build gene-probe association database
 }
 \examples{
 query <- c("cg04707299", "cg13380562", "cg00480749")
-dbs <- KYCG_buildGeneDBs(query)
-testEnrichment(query, dbs)
+dbs <- KYCG_buildGeneDBs(query, platform = "EPIC")
+testEnrichment(query, dbs, platform = "EPIC")
 }

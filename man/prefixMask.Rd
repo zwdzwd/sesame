@@ -8,6 +8,10 @@ prefixMask(sdf, prefixes = NULL, invert = FALSE)
 }
 \arguments{
 \item{sdf}{SigDF}
+
+\item{prefixes}{prefix characters}
+
+\item{invert}{use the complement set}
 }
 \value{
 SigDF

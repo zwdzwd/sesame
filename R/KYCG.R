@@ -166,8 +166,8 @@ aggregateTestEnrichments <- function(
 #' @importFrom S4Vectors queryHits
 #' @examples
 #' query <- c("cg04707299", "cg13380562", "cg00480749")
-#' dbs <- KYCG_buildGeneDBs(query)
-#' testEnrichment(query, dbs)
+#' dbs <- KYCG_buildGeneDBs(query, platform = "EPIC")
+#' testEnrichment(query, dbs, platform = "EPIC")
 #' @export
 KYCG_buildGeneDBs <- function(
     query = NULL, platform = NULL, max_distance = 10000, silent = FALSE) {

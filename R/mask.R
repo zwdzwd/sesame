@@ -108,6 +108,8 @@ qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL) {
 #' Mask SigDF by probe ID prefix
 #'
 #' @param sdf SigDF
+#' @param prefixes prefix characters
+#' @param invert use the complement set
 #' @return SigDF
 #' @examples
 #' sdf <- resetMask(sesameDataGet("MM285.1.SigDF"))

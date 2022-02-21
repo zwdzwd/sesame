@@ -18,7 +18,11 @@ sesameQC_plotBetaByDesign(
 
 \item{prep}{prep codes to step through}
 
+\item{legend_pos}{legend position (default: top)}
+
 \item{mar}{margin of layout when showing steps of prep}
+
+\item{main}{main title in plots}
 
 \item{...}{additional options to plot}
 }

@@ -10,17 +10,19 @@
 #' @param Probe_IDs probe ID vector
 #' @param oob.mean assumed mean for out-of-band signals
 #' @param oob.sd assumed standard deviation for out-of-band signals
+#' @param platform platform code, will infer if not given
 #' @return SigDF
 #' @examples
 #' sigM <- c(11436, 6068, 2864)
 #' sigU <- c(1476, 804, 393)
 #' probes <- c("cg07881041", "cg23229610", "cg03513874")
-#' sdf <- parseGEOsignalMU(sigM, sigU, probes)
+#' sdf <- parseGEOsignalMU(sigM, sigU, probes, platform = "EPIC")
 #' @export
 parseGEOsignalMU <- function(
-    sigM, sigU, Probe_IDs, oob.mean = 500, oob.sd = 300) {
-    
-    platform <- inferPlatformFromProbeIDs(Probe_IDs)
+    sigM, sigU, Probe_IDs, oob.mean = 500, oob.sd = 300, platform = NULL) {
+
+    if (is.null(platform)) {
+        platform <- inferPlatformFromProbeIDs(Probe_IDs) }
     addr <- sesameDataGet(paste0(platform, ".address"))$ordering
     M <- sigM[match(addr$Probe_ID, Probe_IDs)]
     U <- sigU[match(addr$Probe_ID, Probe_IDs)]

@@ -430,7 +430,9 @@ sesameQC_plotRedGrnQQ <- function(sdf, main="R-G QQ Plot", ...) {
 #'
 #' @param sdf SigDF
 #' @param prep prep codes to step through
+#' @param legend_pos legend position (default: top)
 #' @param mar margin of layout when showing steps of prep
+#' @param main main title in plots
 #' @param ... additional options to plot
 #' @return create a density plot
 #' @examples
