@@ -222,35 +222,24 @@ in [Zhou et al 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
 # Preprocessing
 
 Sesame preprocessing can be done using the **prepSesame** function which takes
-a `SigDF` and returns a processed `SigDF`. The `prepSesame` function also takes
-a string that encodes the preprocessing functions and the order of their
-execution. For example,
+a `SigDF` and returns a processed `SigDF`. The 2nd argument of `prepSesame`
+function is a string that encodes the preprocessing functions and the order of
+their execution. For example,
 
 ```{r}
 sdf = sesameDataGet('EPIC.1.SigDF')
 sdf_preped = prepSesame(sdf, "DB")
 ```
 
-performs dye bias correction (D) followed by background subtraction
-(B). `prepSesame(sdf, "DB")` is equivalent to `noob(dyeBiasNL(sdf))`. The
-following table lists all the available codes and the associated preprocessing
-functions.
-
-```{r}
-prepSesameList()
-```
-
-All the preprocessing functions take a SigDF as input and output the updated
-SigDF. Therefore they can be chained together (see the `Preprocessing
-functions` section for a more detailed discussion of these functions). The
-optimal strategy of preprocessing depends on 1) the array platform; and 2) the
-expected sample input. For example, certain array platforms (such as the
-Mammal40) do not contain enough Infinium-I probes for normalization, therefore
-background subtraction might not work most optimally. Certain platform (e.g.,
-Mammal40 and MM285) are designed for multiple species and strains. Therefore
-`inferSpecies` and `inferStrain` would be of help. The following table lists
-the recommended preprocessing strategy based on our experience. The order of
-different preprocessing also matters.
+performs dye bias correction (`D`) followed by background subtraction (`B`). In
+other words, `prepSesame(sdf, "DB")` is equivalent to
+`noob(dyeBiasNL(sdf))`. All the preprocessing functions take a `SigDF` as input
+and return the updated `SigDF`. Therefore they can be chained together. The
+choice of function and the order in which one chains these preprocessing
+functions is important (see below and the [Preprocessing
+Functions](#Preprocessing_Functions) section below for a more detailed
+discussion of these functions). The following table lists the best
+preprocessing strategy based on our experience.
 
 ```{r echo=FALSE, result="asis"}
 library(knitr)
@@ -264,6 +253,44 @@ df <- data.frame(rbind(
 colnames(df) <- c("Platform", "Sample Organism", "Prep Code")
 kable(df, caption="Recommended Preprocessing")
 ```
+
+The optimal strategy of preprocessing depends on:
+
+1) **The array platform**. For example, certain array platforms (e.g., the
+Mammal40) do not have enough Infinium-I probes for normalization, therefore
+background subtraction (where the out-of-band signals are from) might not work
+most optimally;
+
+2) **The expected sample property**. For example, some samples have the
+signature bimodal distribution of methylation while others may undergo global
+loss of methylation (germ cells, tumors etc). Other important factors include
+high-input vs low-input, tumor vs normal, somatic vs germ cells, human vs model
+organisms, mouse strains etc. Some platforms (e.g., Mammal40 and MM285) are
+designed for multiple species and strains. Therefore `S` and `T` would be
+important when those arrays are used on non-reference organisms.
+
+The `prepSesameList` function lists all the available codes and the associated
+preprocessing functions.
+
+```{r}
+prepSesameList()
+```
+
+Here are some consideration of determining the preprocessing order. Species
+`(S)` and strain `(T)` inference sets the entire mask and color
+channels. Therefore when they are used, they need to be placed first. `Q` masks
+non-uniquely mapped probes which may inflate the out-of-band signal for
+background estimation. Therefore `Q` should be used before detection p-value
+calculation `P` and background subtraction `B` when necessary. Channel
+inference (`C`) and dye bias correction (`D`) should take place early since dye
+bias effect is global. `C` should be placed before `D` because dye bias
+correction uses in-band signal and relies on correct channel
+designation. Detection p-value (`P`) should happen before background
+subtraction (`B`) since background subtraction modifies signal and may affect
+out-of-band signal assumption used in `P`. Lastly, functions that explicitly
+normalizes $\beta$ value distribution (e.g., `matchDesign (M)`) should happen
+last if they even need to be used.
+
 
 # Preprocessing Functions
 
