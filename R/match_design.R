@@ -9,6 +9,18 @@ calcMode <- function(x) {
     dd$x[which.max(dd$y)]
 }
 
+valleyDescent <- function(x1, x2) {
+
+    m1 <- calcMode(x1)
+    m2 <- calcMode(x2)
+    dd <- density(na.omit(c(x1, x2)))
+    dfunc <- approxfun(dd$x, dd$y)
+    lo <- min(m1, m2)
+    hi <- max(m1, m2)
+    va <- min(dfunc(c(x1[x1 >= lo & x1 <= hi], x2[x2 >= lo & x2 <= hi])))
+    va / min(dfunc(c(lo, hi)))
+}
+
 match1To2_1state <- function(sdf) {
     dR <- noMasked(InfIR(sdf))
     bR <- getBetas(dR)
@@ -74,13 +86,16 @@ matchDesign <- function(sdf, min_dbeta = 0.3) {
     b2 <- getBetas(d2)
     m2 <- as.integer(betaMix2States(b2))
 
-    if (sum(m2==1, na.rm=TRUE) < 10 || 
-            sum(m2==2, na.rm=TRUE) < 10 || 
-            abs(calcMode(b2[m2 == 1]) - calcMode(b2[m2 == 2])) < min_dbeta) {
-        return(match1To2_1state(sdf)) }
-
+    ## message(calcMode(b2[m2 == 1]), " ", calcMode(b2[m2 == 2]))
+    ## message(valleyDescent(b2[m2 == 1], b2[m2 == 2]))
     if (abs(calcMode(b2[m2 == 1]) - calcMode(b2[m2 == 2])) > 0.7) {
         return(match1To2_3states(sdf)) }
+    
+    if (sum(m2==1, na.rm=TRUE) < 10 || 
+            sum(m2==2, na.rm=TRUE) < 10 ||
+            valleyDescent(b2[m2==1], b2[m2==2]) >= 0.8 ||
+            abs(calcMode(b2[m2 == 1]) - calcMode(b2[m2 == 2])) < min_dbeta) {
+        return(match1To2_1state(sdf)) }
 
     bR <- getBetas(dR, mask = FALSE)
     mR <- as.integer(betaMix2States(bR))

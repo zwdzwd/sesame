@@ -42,9 +42,9 @@ normControls <- function(sdf, average = FALSE) {
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdf.db <- dyeBiasCorr(sdf)
+#' sdf.db <- dyeBiasL(sdf)
 #' @export
-dyeBiasCorr <- function(sdf, ref=NULL) {
+dyeBiasL <- function(sdf, ref=NULL) {
 
     stopifnot(is(sdf, "SigDF"))
     if (is.null(ref)) {
@@ -84,7 +84,7 @@ dyeBiasCorrMostBalanced <- function(sdfs) {
     normctls <- vapply(sdfs, normControls, numeric(2), average=TRUE)
     most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
     ref <- mean(normctls[,most.balanced], na.rm=TRUE)
-    lapply(sdfs, function(sdf) dyeBiasCorr(sdf, ref))
+    lapply(sdfs, function(sdf) dyeBiasL(sdf, ref))
 }
 
 maskIG <- function(sdf) {

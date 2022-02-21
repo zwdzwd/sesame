@@ -12,6 +12,7 @@ prepSesameList <- function() {
         c("H", "prefixMaskButC", "Mask all but cg- and ch-probes"),
         c("C", "inferInfiniumIChannel", "Infer channel for Infinium-I probes"),
         c("D", "dyeBiasNL", "Dye bias correction (non-linear)"),
+        c("E", "dyeBiasL", "Dye bias correction (linear)"),
         c("P", "pOOBAH", "Detection p-value masking using oob"),
         c("B", "noob", "Background subtraction using oob"),
         c("S", "inferSpecies", "Set species-specific mask"),
