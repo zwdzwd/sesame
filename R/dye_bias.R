@@ -42,9 +42,9 @@ normControls <- function(sdf, average = FALSE) {
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdf.db <- dyeBiasL(sdf)
+#' sdf.db <- dyeBiasCorr(sdf)
 #' @export
-dyeBiasL <- function(sdf, ref=NULL) {
+dyeBiasCorr <- function(sdf, ref=NULL) {
 
     stopifnot(is(sdf, "SigDF"))
     if (is.null(ref)) {
@@ -84,7 +84,7 @@ dyeBiasCorrMostBalanced <- function(sdfs) {
     normctls <- vapply(sdfs, normControls, numeric(2), average=TRUE)
     most.balanced <- which.min(abs(normctls['G',] / normctls['R',] - 1))
     ref <- mean(normctls[,most.balanced], na.rm=TRUE)
-    lapply(sdfs, function(sdf) dyeBiasL(sdf, ref))
+    lapply(sdfs, function(sdf) dyeBiasCorr(sdf, ref))
 }
 
 maskIG <- function(sdf) {
@@ -173,7 +173,41 @@ dyeBiasCorrTypeINorm <- function(sdf) {
 #' sdf <- dyeBiasNL(sdf)
 dyeBiasNL <- dyeBiasCorrTypeINorm
 
+#' Correct dye bias in by linear scaling.
+#'
+#' The function takes a \code{SigDF} as input and scale both the Grn and Red
+#' signal to a reference (ref) level. If the reference level is not given, it
+#' is set to the mean intensity of all the in-band signals. The function
+#' returns a \code{SigDF} with dye bias corrected.
+#' 
+#' @param sdf a \code{SigDF}
+#' @param ref reference signal level
+#' @return a normalized \code{SigDF}
+#' @examples
+#' sesameDataCache() # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' sdf.db <- dyeBiasL(sdf)
+#' @export
+dyeBiasL <- function(sdf, ref=NULL) {
+
+    stopifnot(is(sdf, "SigDF"))
+    if (is.null(ref)) {
+        ref <- meanIntensity(sdf)
+    }
+
+    muR <- signalMU(InfIR(sdf))
+    fR <- ref / median(muR$M, muR$U, na.rm = TRUE)
+    muG <- signalMU(InfIG(sdf))
+    fG <- ref / median(muG$M, muG$U, na.rm = TRUE)
+    
+    sdf$MG <- sdf$MG * fG
+    sdf$UG <- sdf$UG * fG
+    sdf$MR <- sdf$MR * fR
+    sdf$UR <- sdf$UR * fR
+
+    sdf
+}
+
 ## the following three functions are retired since 1.9.1
 ## dyeBiasCorrTypeINormMpU, dyeBiasCorrTypeINormG2R, dyeBiasCorrTypeINormR2G
-
 

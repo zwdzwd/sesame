@@ -88,7 +88,9 @@ matchDesign <- function(sdf, min_dbeta = 0.3) {
 
     ## message(calcMode(b2[m2 == 1]), " ", calcMode(b2[m2 == 2]))
     ## message(valleyDescent(b2[m2 == 1], b2[m2 == 2]))
-    if (abs(calcMode(b2[m2 == 1]) - calcMode(b2[m2 == 2])) > 0.7) {
+    if (sum(m2==1, na.rm=TRUE) > 100 &&
+            sum(m2==2, na.rm=TRUE) > 100 &&
+            abs(calcMode(b2[m2 == 1]) - calcMode(b2[m2 == 2])) > 0.7) {
         return(match1To2_3states(sdf)) }
     
     if (sum(m2==1, na.rm=TRUE) < 10 || 
