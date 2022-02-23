@@ -137,8 +137,8 @@ inferSpecies <- function(sdf, topN = 1000,
         U1/(n1 * n2)}, numeric(1))
 
     ## if success rate is high but max(AUC) is low, use reference.
-    if (success.rate >= ref_detection_rate || (
-        max(auc) < ref_max_auc && auc[addr$reference] > quantile(auc, 0.75))) {
+    if (auc[addr$reference] > quantile(auc, 0.75) && (
+        success.rate >= ref_detection_rate || max(auc) < ref_max_auc)) {
         message("Lack of negative probes. Use reference.")
         species <- addr$reference
         if (return.auc){ return(auc);
