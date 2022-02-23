@@ -71,10 +71,12 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 #' (default: 0.2).
 #' @param return.auc return AUC calculated, override return.species
 #' @param return.species return a string to represent species
-#' @param threshold.success.rate threshold of success rate to determine
-#' reference species.
-#' @param max_refauc maximum auc to determine reference species
-#' increase this number to relax reference inference.
+#' @param ref_detection_rate if detection rate passes this fraction, the
+#' algorithm will return reference species. Usually this should be set
+#' high since conserved array like Mammal40 tends to have high detection
+#' rate even on non-reference species.
+#' @param ref_max_auc if maximum all-species auc is lower than this value
+#' the algorithm will return reference species.
 #' @return a new SigDF with updated color channel specification and
 #' masking unless return.auc or return.species is set to TRUE
 #'
@@ -90,7 +92,7 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 inferSpecies <- function(sdf, topN = 1000,
     threshold.pos = 0.01, threshold.neg = 0.1,
     return.auc = FALSE, return.species = FALSE,
-    threshold.success.rate = 0.8, max_refauc = 0.8) {
+    ref_detection_rate = 0.9, ref_max_auc = 0.5) {
 
     addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
     df_as <- do.call(cbind, lapply(addr$species, function(x) x$AS))
@@ -135,7 +137,7 @@ inferSpecies <- function(sdf, topN = 1000,
         U1/(n1 * n2)}, numeric(1))
 
     ## if success rate is high but max(AUC) is low, use reference.
-    if (success.rate >= threshold.success.rate && max(auc) < max_refauc) {
+    if (success.rate >= ref_detection_rate || max(auc) < ref_max_auc) {
         message("Lack of negative probes. Use reference.")
         species <- addr$reference
         if (return.auc){ return(auc);
