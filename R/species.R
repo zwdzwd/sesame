@@ -92,7 +92,7 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 inferSpecies <- function(sdf, topN = 1000,
     threshold.pos = 0.01, threshold.neg = 0.1,
     return.auc = FALSE, return.species = FALSE,
-    ref_detection_rate = 0.9, ref_max_auc = 0.5) {
+    ref_detection_rate = 0.9, ref_max_auc = 0.4) {
 
     addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
     df_as <- do.call(cbind, lapply(addr$species, function(x) x$AS))
@@ -137,7 +137,8 @@ inferSpecies <- function(sdf, topN = 1000,
         U1/(n1 * n2)}, numeric(1))
 
     ## if success rate is high but max(AUC) is low, use reference.
-    if (success.rate >= ref_detection_rate || max(auc) < ref_max_auc) {
+    if (success.rate >= ref_detection_rate || (
+        max(auc) < ref_max_auc && auc[addr$reference] > quantile(auc, 0.75))) {
         message("Lack of negative probes. Use reference.")
         species <- addr$reference
         if (return.auc){ return(auc);

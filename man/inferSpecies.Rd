@@ -12,7 +12,7 @@ inferSpecies(
   return.auc = FALSE,
   return.species = FALSE,
   ref_detection_rate = 0.9,
-  ref_max_auc = 0.5
+  ref_max_auc = 0.4
 )
 }
 \arguments{
