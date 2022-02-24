@@ -140,8 +140,7 @@ inferSpecies <- function(sdf, topN = 1000,
     ## if ((success.rate >= ref_detection_rate && max(auc) < 0.8) || (
     ##     success.rate >= ref_detection_rate * 0.9 && max(auc) < 0.8*0.9)) {
     if (success.rate >= 0.95 || 
-            (success.rate >= 0.9 && max(auc) < 0.8) ||
-            (success.rate >= 0.85 && max(auc) < 0.7)) {            
+            (success.rate >= 0.80 && max(auc) < 0.50)) {            
         ## success.rate >= ref_detection_rate * 0.9 &&
         ##     auc[addr$reference] > quantile(auc, 0.75) &&
         ##     max(auc) < ref_max_auc)) {
