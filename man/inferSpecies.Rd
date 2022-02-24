@@ -10,9 +10,7 @@ inferSpecies(
   threshold.pos = 0.01,
   threshold.neg = 0.1,
   return.auc = FALSE,
-  return.species = FALSE,
-  ref_detection_rate = 0.9,
-  ref_max_auc = 0.4
+  return.species = FALSE
 )
 }
 \arguments{
@@ -30,18 +28,6 @@ increase this number can sometimes improve accuracy (DEFAULT: 1000)}
 \item{return.auc}{return AUC calculated, override return.species}
 
 \item{return.species}{return a string to represent species}
-
-\item{ref_detection_rate}{if detection rate passes this fraction, the
-algorithm will return reference species. Usually this should be set
-high since conserved array like Mammal40 tends to have high detection
-rate even on non-reference species.}
-
-\item{ref_max_auc}{if maximum all-species auc is lower than this value
-the algorithm will return reference species.}
-}
-\value{
-a new SigDF with updated color channel specification and
-masking unless return.auc or return.species is set to TRUE
 }
 \description{
 We infer species based on probes pvalues and alignment score.
