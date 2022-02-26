@@ -18,9 +18,9 @@
 #'
 #' sesameDataCache()
 #'
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
-#' seg <- cnSegmentation(sdf, sdfs.normal)
+#' ## sdf <- sesameDataGet('EPIC.1.SigDF')
+#' ## sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
+#' ## seg <- cnSegmentation(sdf, sdfs.normal)
 #'
 #' sesameDataGet_resetEnv()
 #' 
@@ -244,11 +244,10 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @examples
 #'
 #' sesameDataCache() # in case not done yet
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
-#' seg <- cnSegmentation(sdf, sdfs.normal)
-#' 
-#' visualizeSegments(seg)
+#' ## sdf <- sesameDataGet('EPIC.1.SigDF')
+#' ## sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
+#' ## seg <- cnSegmentation(sdf, sdfs.normal)
+#' ## visualizeSegments(seg)
 #'
 #' sesameDataGet_resetEnv()
 #' 

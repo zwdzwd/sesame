@@ -76,7 +76,7 @@ dyeBiasCorr <- function(sdf, ref=NULL) {
 #' @return a list of normalized \code{SigDF}s
 #' @examples
 #' sesameDataCache() # if not done yet
-#' sdfs <- sesameDataGet('HM450.10.SigDF')
+#' sdfs <- sesameDataGet('HM450.10.SigDF')[1:2]
 #' sdfs.db <- dyeBiasCorrMostBalanced(sdfs)
 #' @export
 dyeBiasCorrMostBalanced <- function(sdfs) {

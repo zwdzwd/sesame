@@ -533,8 +533,8 @@ sesameQC_plotIntensVsBetas <- function(
 #' @return a bar plot comparing different QC metrics
 #' @examples
 #' sesameDataCache() # if not done yet
-#' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-#' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats))
+#' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")[1:2]
+#' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, "detection"))
 #' @import ggplot2
 #' @importFrom methods is
 #' @importFrom wheatmap WGG
@@ -590,13 +590,13 @@ sesameQC_plotBar <- function(qcs, keys = NULL) {
 #' @return a grid graphics object
 #' @examples
 #'
-#' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-#' plt <- sesameQC_plotHeatSNPs(sdfs)
+#' sdfs <- sesameDataGet("EPIC.5.SigDF.normal")[1:2]
+#' plt <- sesameQC_plotHeatSNPs(sdfs, filter.nonvariant = FALSE)
 #' @export
 sesameQC_plotHeatSNPs <- function(
     sdfs, cluster = TRUE, filter.nonvariant = TRUE) {
     
-    afs <- openSesame(sdfs, func = getAFs)
+    afs <- openSesame(sdfs, func = getAFs, mask = FALSE)
     if (cluster) {
         afs <- both.cluster(afs)$mat
     }
@@ -605,6 +605,7 @@ sesameQC_plotHeatSNPs <- function(
             max(x, na.rm=TRUE) - min(x, na.rm=TRUE)})
         afs <- afs[rg > 0.3,]
     }
+    stopifnot(nrow(afs) > 0)
     pkgTest("wheatmap")
     WHeatmap(afs, xticklabels = TRUE,
         cmp=CMPar(stop.points=c("white", "yellow", "red"), dmin=0, dmax=1)) +

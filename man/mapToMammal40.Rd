@@ -18,6 +18,6 @@ Map the SDF (from overlap array platforms)
 Replicates are merged by picking the best detection
 }
 \examples{
-sdf <- sesameDataGet("MM285.1.SigDF")
-betas <- mapToMammal40(sdf)
+sdf <- sesameDataGet("Mammal40.1.SigDF")
+betas <- mapToMammal40(sdf[1:10,])
 }

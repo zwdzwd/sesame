@@ -22,6 +22,6 @@ RGdistort, frac_dt
 }
 \examples{
 sesameDataCache() # if not done yet
-sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
-sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats))
+sdfs <- sesameDataGet("EPIC.5.SigDF.normal")[1:2]
+sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, "detection"))
 }

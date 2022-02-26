@@ -83,14 +83,16 @@ betas = do.call(cbind, BiocParallel::bplapply(
 }, BPPARAM = BiocParallel::MulticoreParam(2)))
 ```
 
-The `openSesame` function is highly customizable. The `prep=` argument allows a
-different preprocessing strategy (see the `prepSesame` function below for how
-to use a different preprocessing procedure). The `func=` option specifies the
-signal extraction function which can be either `getBetas` (DNA methylation) or
-`getAFs` (allele frequencies of SNP probes). The `manifest=` option allows the
-processing of a custom array that is not natively supported by providing the
-array manifest. Finally, the `BPPARAM=` argument is the same argument taken by
-`BiocParallel::bplapply` to allow parallel processing.
+The `openSesame` function is highly customizable. The `prep=` argument takes
+the same argument of the `prepSesame` function (see
+[Preprocessing](#Preprocessing) for detail) which `openSesame` calls
+internally. The argument uniquely specifies a preprocessing procedure. The
+`func=` option specifies the signal extraction function which can be either
+`getBetas` (DNA methylation) or `getAFs` (allele frequencies of SNP
+probes). The `manifest=` option allows the processing of a custom array that is
+not natively supported by providing the array manifest. Finally, the `BPPARAM=`
+argument is the same argument taken by `BiocParallel::bplapply` to allow
+parallel processing.
 
 The following sections details different components of `openSesame`.
 

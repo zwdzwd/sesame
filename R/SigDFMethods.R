@@ -29,6 +29,7 @@ SigDF <- function(df, platform = "EPIC", ctl=NULL) {
 #' Convenience function to output platform attribute of SigDF
 #'
 #' @param sdf a SigDF object
+#' @param silent whether to print message
 #' @return the platform string for the SigDF object
 #' @examples
 #' sesameDataCache()
@@ -36,11 +37,11 @@ SigDF <- function(df, platform = "EPIC", ctl=NULL) {
 #' sdfPlatform(sdf)
 #' 
 #' @export
-sdfPlatform <- function(sdf) {
+sdfPlatform <- function(sdf, silent = FALSE) {
     if ("platform" %in% attributes(sdf)) {
         attr(sdf, "platform")
     } else {
-        inferPlatformFromProbeIDs(sdf$Probe_ID)
+        inferPlatformFromProbeIDs(sdf$Probe_ID, silent = silent)
     }
 }
 
@@ -98,7 +99,8 @@ oobR <- function(sdf) {
 #' @export
 controls <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
-    df <- sesameDataGet(sprintf("%s.address", sdfPlatform(sdf)))$controls
+    df <- sesameDataGet(sprintf(
+        "%s.address", sdfPlatform(sdf, silent = FALSE)))$controls
     if (is.null(df)) {
         sdf[grepl("^ctl", sdf$Probe_ID),]
     } else {

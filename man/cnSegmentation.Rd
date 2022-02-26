@@ -31,9 +31,9 @@ bin.coords) and bin signals (bin.signals).
 
 sesameDataCache()
 
-sdf <- sesameDataGet('EPIC.1.SigDF')
-sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
-seg <- cnSegmentation(sdf, sdfs.normal)
+## sdf <- sesameDataGet('EPIC.1.SigDF')
+## sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
+## seg <- cnSegmentation(sdf, sdfs.normal)
 
 sesameDataGet_resetEnv()
 

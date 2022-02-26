@@ -152,8 +152,8 @@ inferSpecies <- function(sdf, topN = 1000,
 #' @param sdf a \code{SigDF} object
 #' @return a named numeric vector for beta values
 #' @examples
-#' sdf <- sesameDataGet("MM285.1.SigDF")
-#' betas <- mapToMammal40(sdf)
+#' sdf <- sesameDataGet("Mammal40.1.SigDF")
+#' betas <- mapToMammal40(sdf[1:10,])
 #' @export
 mapToMammal40 <- function(sdf) {
     addr <- sesameDataGet("Mammal40.address")
