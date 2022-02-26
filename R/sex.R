@@ -136,7 +136,6 @@ inferSex <- function(x, pfm = NULL) {
     
     stopifnot(pfm %in% c('EPIC','HM450','MM285'))
     if (pfm == 'MM285'){
-        pkgTest("e1071")
         inf <- sesameDataGet("MM285.inferences")$sex
         if (is(x, "SigDF")) { # if possible use signal intensity
             intensYvsAuto <- getIntensityRatioYvsAuto(x)
