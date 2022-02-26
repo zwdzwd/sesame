@@ -573,9 +573,9 @@ sesameQC_plotBar <- function(qcs, keys = NULL) {
         }
                 
         if (is.null(plt)) {
-            plt <- WGG(p)
+            plt <- wheatmap::WGG(p)
         } else {
-            plt <- plt + WGG(p, Beneath(pad=0))
+            plt <- plt + wheatmap::WGG(p, Beneath(pad=0))
         }
     }
     plt
@@ -606,8 +606,7 @@ sesameQC_plotHeatSNPs <- function(
         afs <- afs[rg > 0.3,]
     }
     stopifnot(nrow(afs) > 0)
-    pkgTest("wheatmap")
-    WHeatmap(afs, xticklabels = TRUE,
+    wheatmap::WHeatmap(afs, xticklabels = TRUE,
         cmp=CMPar(stop.points=c("white", "yellow", "red"), dmin=0, dmax=1)) +
         WCustomize(mar.bottom=0.15)
 }

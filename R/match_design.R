@@ -114,7 +114,6 @@ matchDesign <- function(sdf, min_dbeta = 0.3) {
 }
 
 betaMix2States <- function(x, n_samples = 10000, th_init = 0.5) {
-    pkgTest("RPMM")
     if (sum(!is.na(x)) > n_samples) {
         x1 <- sample(na.omit(x), n_samples)
     } else {
@@ -124,6 +123,7 @@ betaMix2States <- function(x, n_samples = 10000, th_init = 0.5) {
     m[x1 <= th_init, 1] <- 1
     m[x1 > th_init, 2] <- 1
     
+    pkgTest("RPMM")
     fitres <- RPMM::blc(
         matrix(x1), m, maxiter = 5, tol = 0.001, verbose = FALSE)
     m1 <- apply(fitres$w, 1, which.max)
@@ -136,7 +136,6 @@ betaMix2States <- function(x, n_samples = 10000, th_init = 0.5) {
 betaMix3States <- function(
     x, n_samples = 10000, th_init1 = 0.2, th_init2 = 0.7) {
     
-    pkgTest("RPMM")
     if (sum(!is.na(x)) > n_samples) {
         x1 <- sample(na.omit(x), n_samples)
     } else {
@@ -146,7 +145,8 @@ betaMix3States <- function(
     m[x1 <= th_init1, 1] <- 1
     m[x1 > th_init1 & x1 <= th_init2, 2] <- 1
     m[x1 > th_init2, 3] <- 1
-    
+
+    pkgTest("RPMM")
     fitres <- RPMM::blc(
         matrix(x1), m, maxiter = 5, tol = 0.001, verbose = FALSE)
     m1 <- apply(fitres$w, 1, which.max)

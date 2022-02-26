@@ -71,7 +71,7 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 #' (default: 0.2).
 #' @param return.auc return AUC calculated, override return.species
 #' @param return.species return a string to represent species
-#'
+#' @return a SigDF
 #' @examples 
 #' sdf <- sesameDataGet("MM285.1.SigDF")
 #' sdf <- inferSpecies(sdf)

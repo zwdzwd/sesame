@@ -29,6 +29,9 @@ increase this number can sometimes improve accuracy (DEFAULT: 1000)}
 
 \item{return.species}{return a string to represent species}
 }
+\value{
+a SigDF
+}
 \description{
 We infer species based on probes pvalues and alignment score.
 AUC was calculated for each specie, y_true is 1 or 0 
