@@ -75,6 +75,7 @@ inferStrain <- function(
 #' @return grid object that contrast the target sample with
 #' pre-built mouse strain reference
 #' @import wheatmap
+#' @importFrom wheatmap CMPar
 #' @importFrom S4Vectors metadata
 #' @export
 #' @examples

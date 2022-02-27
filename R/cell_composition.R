@@ -2,10 +2,9 @@
 cleanRefSet <- function(g, platform = c('EPIC','HM450','HM27')) {
 
     platform <- match.arg(platform)
-    pkgTest('GenomicRanges')
     mapinfo <- sesameDataGet(paste0(
         platform, '.probeInfo'))[[paste0('mapped.probes.hg19')]]
-    g <- g[intersect(rownames(g), names(mapinfo)),,drop=FALSE]
+    g <- g[GenomicRanges::intersect(rownames(g), names(mapinfo)),,drop=FALSE]
     g.clean <- g[apply(g, 1, function(x) !any(is.na(x))),,drop=FALSE]
     g.clean <- g.clean[rownames(g.clean) %in% names(mapinfo),,drop=FALSE]
     g.clean <- g.clean[!(as.vector(GenomicRanges::seqnames(

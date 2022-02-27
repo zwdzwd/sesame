@@ -123,7 +123,6 @@ betaMix2States <- function(x, n_samples = 10000, th_init = 0.5) {
     m[x1 <= th_init, 1] <- 1
     m[x1 > th_init, 2] <- 1
     
-    pkgTest("RPMM")
     fitres <- RPMM::blc(
         matrix(x1), m, maxiter = 5, tol = 0.001, verbose = FALSE)
     m1 <- apply(fitres$w, 1, which.max)
@@ -146,7 +145,6 @@ betaMix3States <- function(
     m[x1 > th_init1 & x1 <= th_init2, 2] <- 1
     m[x1 > th_init2, 3] <- 1
 
-    pkgTest("RPMM")
     fitres <- RPMM::blc(
         matrix(x1), m, maxiter = 5, tol = 0.001, verbose = FALSE)
     m1 <- apply(fitres$w, 1, which.max)

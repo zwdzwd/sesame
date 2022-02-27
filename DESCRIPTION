@@ -10,7 +10,8 @@ Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"), email = "zhouwandi
              person("Timothy", "Triche", role = "ctb"),
              person("Hui", "Shen", role = c("aut"), email = "Hui.Shen@vai.org"))
 Depends: R (>= 4.1),
-          sesameData
+          sesameData,
+          wheatmap
 License: MIT + file LICENSE
 RoxygenNote: 7.1.2
 Imports: BiocParallel,
@@ -27,7 +28,6 @@ Imports: BiocParallel,
          preprocessCore,
          S4Vectors,
          randomForest,
-         wheatmap,
          ggplot2,
          graphics,
          parallel,

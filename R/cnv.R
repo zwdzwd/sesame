@@ -28,7 +28,7 @@
 cnSegmentation <- function(sdf, sdfs.normal=NULL, genome=c('hg19','hg38')) {
 
     stopifnot(is(sdf, "SigDF"))
-    pkgTest('GenomicRanges')
+    ## pkgTest('GenomicRanges')
     genome <- match.arg(genome)
 
     if (is.null(sdfs.normal)) {
@@ -138,9 +138,6 @@ leftRightMerge1 <- function(chrom.windows, min.probes.per.bin=20) {
 #' @return bin.coords
 getBinCoordinates <- function(seqLength, gapInfo, probe.coords) {
 
-    pkgTest('GenomicRanges')
-    pkgTest('IRanges')
-
     tiles <- sort(GenomicRanges::tileGenome(
         seqLength, tilewidth=50000, cut.last.tile.in.chrom = TRUE))
     
@@ -185,7 +182,6 @@ getBinCoordinates <- function(seqLength, gapInfo, probe.coords) {
 #' @importFrom methods .hasSlot
 #' @return bin signals
 binSignals <- function(probe.signals, bin.coords, probe.coords) {
-    pkgTest('GenomicRanges')
     ov <- GenomicRanges::findOverlaps(probe.coords, bin.coords)
     if (.hasSlot(ov, 'queryHits')) {
         .bins <- names(bin.coords)[ov@subjectHits]
@@ -207,7 +203,6 @@ binSignals <- function(probe.signals, bin.coords, probe.coords) {
 #' @return segment signal data frame
 segmentBins <- function(bin.signals, bin.coords) {
 
-    pkgTest('DNAcopy')
     bin.coords <- bin.coords[names(bin.signals)]
     
     ## make input data frame
@@ -255,9 +250,9 @@ segmentBins <- function(bin.signals, bin.coords) {
 visualizeSegments <- function(seg, to.plot=NULL) {
 
     stopifnot(is(seg, "CNSegment"))
-    pkgTest('ggplot2')
-    pkgTest('scales')
-    pkgTest('GenomicRanges')
+    ## pkgTest('ggplot2')
+    ## pkgTest('scales')
+    ## pkgTest('GenomicRanges')
     
     bin.coords <- seg$bin.coords
     bin.seqinfo <- GenomicRanges::seqinfo(bin.coords)
