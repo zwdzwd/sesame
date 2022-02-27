@@ -39,7 +39,6 @@ visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
 
     reg <- GRanges(chrm, IRanges::IRanges(beg, end))
     
-    pkgTest('GenomicRanges')
     txns <- sesameDataGet(paste0('genomeInfo.',genome))$txns
     txns <- subsetByOverlaps(txns, reg)
 
@@ -62,7 +61,6 @@ visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
     plt.cytoband <- plotCytoBand(chrm, beg, end, genome)
     
     ## clustering
-    pkgTest('wheatmap')
     betas <- betas[names(probes),,drop=FALSE]
     if (cluster.samples) {
         betas <- column.cluster(betas[names(probes),,drop=FALSE])$mat }
@@ -102,7 +100,6 @@ visualizeGene <- function(geneName, betas,
     platform <- sesameData_check_platform(platform, rownames(betas))
     genome <- sesameData_check_genome(genome, platform)
     
-    pkgTest('GenomicRanges')
     target.txns <- sesameData_getTranscriptsByGene(geneName, genome)
     target.strand <- as.character(GenomicRanges::strand(target.txns[[1]][1]))
     if (target.strand == '+') {
@@ -139,7 +136,6 @@ visualizeGene <- function(geneName, betas,
 #' @param dwstream distance to extend downstream
 #' @param ... additional options, see visualizeRegion and assemble_plots
 #' @return None
-#' @import wheatmap
 #' @examples
 #' betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 #' visualizeProbes(c('cg22316575', 'cg16084772', 'cg20622019'), betas, 'HM450')
@@ -153,7 +149,6 @@ visualizeProbes <- function(
     platform <- sesameData_check_platform(platform, rownames(betas))
     genome <- sesameData_check_genome(genome, platform)
     
-    pkgTest('GenomicRanges')
     probes <- sesameDataGet(paste0(
         platform, '.probeInfo'))[[paste0('mapped.probes.',genome)]]
     probeNames <- probeNames[probeNames %in% names(probes)]

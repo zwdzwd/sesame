@@ -28,7 +28,6 @@
 cnSegmentation <- function(sdf, sdfs.normal=NULL, genome=c('hg19','hg38')) {
 
     stopifnot(is(sdf, "SigDF"))
-    ## pkgTest('GenomicRanges')
     genome <- match.arg(genome)
 
     if (is.null(sdfs.normal)) {
@@ -250,9 +249,6 @@ segmentBins <- function(bin.signals, bin.coords) {
 visualizeSegments <- function(seg, to.plot=NULL) {
 
     stopifnot(is(seg, "CNSegment"))
-    ## pkgTest('ggplot2')
-    ## pkgTest('scales')
-    ## pkgTest('GenomicRanges')
     
     bin.coords <- seg$bin.coords
     bin.seqinfo <- GenomicRanges::seqinfo(bin.coords)

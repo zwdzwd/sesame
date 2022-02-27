@@ -537,7 +537,6 @@ sesameQC_plotIntensVsBetas <- function(
 #' sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, "detection"))
 #' @import ggplot2
 #' @importFrom methods is
-#' @importFrom wheatmap WGG
 #' @export
 sesameQC_plotBar <- function(qcs, keys = NULL) {
     if (is(qcs, "sesameQC")) { qcs <- list(qcs); }
@@ -586,7 +585,6 @@ sesameQC_plotBar <- function(qcs, keys = NULL) {
 #' @param sdfs beta value matrix, row: probes; column: samples
 #' @param cluster show clustered heatmap
 #' @param filter.nonvariant whether to filter nonvariant (range < 0.3)
-#' @import wheatmap
 #' @return a grid graphics object
 #' @examples
 #'

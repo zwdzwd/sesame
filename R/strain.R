@@ -74,9 +74,8 @@ inferStrain <- function(
 #' @param show_sample_names whether to show sample name
 #' @return grid object that contrast the target sample with
 #' pre-built mouse strain reference
-#' @import wheatmap
-#' @importFrom wheatmap CMPar
 #' @importFrom S4Vectors metadata
+#' @import wheatmap
 #' @export
 #' @examples
 #' sesameDataCache() # if not done yet
@@ -87,8 +86,7 @@ compareMouseStrainReference <- function(
 
     ## betas = NULL; show_sample_names = FALSE;
     se <- sesameDataGet("MM285.addressStrain")$strain_snps
-    pkgTest("wheatmap")
-
+    
     cd <- as_tibble(SummarizedExperiment::colData(se))
     rd <- as_tibble(SummarizedExperiment::rowData(se))
     md <- metadata(se)

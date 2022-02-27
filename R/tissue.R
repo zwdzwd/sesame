@@ -8,7 +8,6 @@ reference_plot_se <- function(
     ##     x$Probe_ID[order(x$delta_beta)][seq_len(min(nrow(x), 200))] }))
     ## se <- se[rd$Probe_ID %in% topN,]
     
-    pkgTest("wheatmap")
     color <- match.arg(color)
     if (color == "blueYellow") {
         stop.points <- c("blue","yellow")
@@ -51,7 +50,6 @@ reference_plot_se <- function(
 #' @param color either blueYellow or fullJet
 #' @return grid object that contrast the target sample with
 #' pre-built mouse tissue reference
-#' @import wheatmap
 #' @export
 #' @examples
 #' 
