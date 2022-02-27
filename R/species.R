@@ -81,35 +81,27 @@ updateSigDF <- function(sdf, species = NULL, strain = NULL, addr = NULL) {
 #'   "%s.addressSpecies", sdfPlatform(sdf)))$species)
 #' 
 #' @export
-inferSpecies <- function(sdf, topN = 1000,
-    threshold.pos = 0.01, threshold.neg = 0.1,
-    return.auc = FALSE, return.species = FALSE) {
+inferSpecies <- function(sdf, topN = 1000, threshold.pos = 0.01,
+    threshold.neg = 0.1, return.auc = FALSE, return.species = FALSE) {
 
     addr <- sesameDataGet(sprintf("%s.addressSpecies", sdfPlatform(sdf)))
     df_as <- do.call(cbind, lapply(addr$species, function(x) x$AS))
     rownames(df_as) <- addr$ordering$Probe_ID
-    
     pvalue <- pOOBAH(sdf, return.pval=TRUE)
-    ## shared probes
-    pvalue <- pvalue[intersect(names(pvalue),rownames(df_as))]
-    ## get positive probes (pvalue <= 0.01) and sort ascendingly
-    pos_probes <- sort(pvalue[pvalue <= threshold.pos],decreasing=FALSE)
-    ## get negative probes (pvalue >= 0.1) and sort descendingly
-    neg_probes <- sort(pvalue[pvalue >= threshold.neg],decreasing=TRUE)
+    pvalue <- pvalue[intersect(names(pvalue),rownames(df_as))] # shared probes
+    pos_probes <- sort(pvalue[pvalue <= threshold.pos],decreasing = FALSE)
+    neg_probes <- sort(pvalue[pvalue >= threshold.neg],decreasing = TRUE)
     success.rate <- length(pvalue[pvalue<=0.05]) / length(pvalue)
     
     ## keep the same number of positive and negative probes.
     topN1 <- min(length(neg_probes),length(pos_probes), topN)
-    pos_probes <- pos_probes[seq_len(topN1)]
-    neg_probes <- neg_probes[seq_len(topN1)]
+    pos <- pos_probes[seq_len(topN1)]
+    neg <- neg_probes[seq_len(topN1)]
     
-    ## for positive probes (pvalue <= 0.01), y_true = 1
-    ## for negative probes (pvalue > 0.1), y_true = 0
-    y_true <- structure(c(
-        rep(TRUE,length(pos_probes)),rep(FALSE,length(neg_probes))),
-        names = c(names(pos_probes), names(neg_probes)))
+    y_true <- structure(c( # y_true = 1 for pos and y_true = 0 for neg
+        rep(TRUE,length(pos)),rep(FALSE,length(neg))),
+        names = c(names(pos), names(neg)))
     
-    ## No useful signal, use reference
     if (length(y_true) == 0){
         warning("Lack of useful signal. Use reference.")
         species <- addr$reference
@@ -117,33 +109,25 @@ inferSpecies <- function(sdf, topN = 1000,
         } else if (return.species) { return(speciesInfo(addr, species));
         } else { return(updateSigDF(sdf, species=species, addr=addr)); }}
     
-    ## calculate AUC based on y_true and y_pred
     n1 <- as.numeric(sum(y_true))
     n2 <- as.numeric(sum(!y_true))
     df_as <- df_as[names(y_true),,drop = FALSE]
     ## df_as[df_as < 35] <- 35 # all under 35 is qualitatively the same
     auc <- vapply(colnames(df_as),function(s) {
-        R1 <- sum(rank(df_as[,s])[seq_along(pos_probes)])
+        R1 <- sum(rank(df_as[,s])[seq_along(pos)])
         U1 <- R1 - n1 * (n1 + 1)/2
         U1/(n1 * n2)}, numeric(1))
 
     ## the following is a empirical ladder where one is going to call
     ## reference for lack of negative probes
-    if (success.rate >= 0.95 || 
-            (success.rate >= 0.80 && max(auc) < 0.50)) {            
+    if (success.rate >= 0.95 || (success.rate >= 0.80 && max(auc) < 0.50)) {
         message("Lack of negative probes. Use reference.")
         species <- addr$reference
-        if (return.auc){ return(auc);
-        } else if (return.species) { return(speciesInfo(addr, species));
-        } else { return(updateSigDF(sdf, species=species, addr=addr)); }}
-
-    species <- names(which.max(auc))
-    if (return.auc) {
-        auc
-    } else if (return.species) {
-        speciesInfo(addr, species)
-    } else {
-        updateSigDF(sdf, species=species, addr=addr)}
+    } else { species <- names(which.max(auc)) }
+    
+    if (return.auc) { return(auc);
+    } else if (return.species) { return(speciesInfo(addr, species));
+    } else { return(updateSigDF(sdf, species=species, addr=addr)); }
 }
 
 #' Map the SDF (from overlap array platforms)

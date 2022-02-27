@@ -111,7 +111,6 @@ maskIG <- function(sdf) {
 dyeBiasCorrTypeINorm <- function(sdf) {
 
     stopifnot(is(sdf, "SigDF"))
-
     ## mask IG if the grn channel failed completely
     if (sesameQC_calcStats(sdf, "dyeBias")@stat$RGdistort >10) {
         return(maskIG(sdf)); }
@@ -124,14 +123,11 @@ dyeBiasCorrTypeINorm <- function(sdf) {
     maxIR <- max(IR0, na.rm = TRUE); minIR <- min(IR0, na.rm = TRUE)
 
     if (maxIG <= 0 || maxIR <= 0) { return(sdf); }
-
     IR1 <- sort(as.numeric(IR0))
     IR2 <- sort(as.vector(normalize.quantiles.use.target(
         matrix(IR1), as.vector(IG0))))
-    
     IRmid <- (IR1 + IR2) / 2.0
     maxIRmid <- max(IRmid); minIRmid <- min(IRmid)
-
     fitfunRed <- function(data) {
         insupp    <- data <= maxIR & data >= minIR & (!is.na(data))
         oversupp  <- data > maxIR & (!is.na(data))
@@ -145,10 +141,8 @@ dyeBiasCorrTypeINorm <- function(sdf) {
     IG1 <- sort(as.numeric(IG0))
     IG2 <- sort(as.vector(normalize.quantiles.use.target(
         matrix(IG1), as.vector(IR0))))
-    
     IGmid <- (IG1 + IG2) / 2.0
     maxIGmid <- max(IGmid); minIGmid <- min(IGmid)
-
     fitfunGrn <- function(data) {
         insupp    <- data <= maxIG & data >= minIG & (!is.na(data))
         oversupp  <- data > maxIG & (!is.na(data))
@@ -159,10 +153,8 @@ dyeBiasCorrTypeINorm <- function(sdf) {
         data
     }
 
-    sdf$MR <- fitfunRed(sdf$MR)
-    sdf$UR <- fitfunRed(sdf$UR)
-    sdf$MG <- fitfunGrn(sdf$MG)
-    sdf$UG <- fitfunGrn(sdf$UG)
+    sdf$MR <- fitfunRed(sdf$MR); sdf$UR <- fitfunRed(sdf$UR)
+    sdf$MG <- fitfunGrn(sdf$MG); sdf$UG <- fitfunGrn(sdf$UG)
     sdf
 }
 

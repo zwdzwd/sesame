@@ -107,42 +107,28 @@ getg0 <- function(f, g, q) {
     delta=0.0001, step.max=1.0, verbose=FALSE) {
 
     M <- ncol(g) # number of reference
-    if (is.null(frac0)) {
-        frac <- c(1, rep(0, M))
-    } else { # use given fraction estimate
-        frac <- frac0
-    }
+    if (is.null(frac0)) { frac <- c(1, rep(0, M))
+    } else { frac <- frac0 } # use given fraction estimate
     
     ## initialize
-    errcurrent <- errFunc(frac, g, q)
-    errmin <- errcurrent
-    frac.min <- frac
-    niter <- 1
-
-    ## initialize
+    errcurrent <- errFunc(frac, g, q); errmin <- errcurrent
+    frac.min <- frac; niter <- 1
     repeat {
         nu <- sample(seq_len(M+1), 2)
         step.size <- runif(1) * step.max
         frac.test <- double.transform.f(frac, nu[1], nu[2], step.size);
         if (!is.null(frac.test)) {
-
             if (verbose) {
-                message(
-                    'errcurrent=', errcurrent, 'frac=',
-                    paste(lapply(
-                        frac,
-                        function(x) sprintf('%1.2f', x)), collapse='-'),
+                message('errcurrent=', errcurrent, 'frac=',
+                    paste(lapply(frac, function(x) sprintf('%1.2f', x)),
+                        collapse='-'),
                     ';stepsize=', step.size, ';temp=', temp, ';best=',
-                    paste(lapply(
-                        frac.min,
+                    paste(lapply(frac.min,
                         function(x) sprintf('%1.2f', x)), collapse='-'),
-                    ';err=', errmin)
-            }
+                    ';err=', errmin) }
 
             errtest <- errFunc(frac.test, g, q)
-            
-            ## update best
-            if (errtest < errmin) {
+            if (errtest < errmin) { # update best
                 errmin <- errtest
                 frac.min <- frac.test
                 if ((errmin-errtest) > errmin*delta)
@@ -151,16 +137,13 @@ getg0 <- function(f, g, q) {
                 niter <- niter + 1
                 if (niter > maxIter) {
                     break;
-                }
-            }
+                }}
             
             ## rejection sampling
             if (runif(1) < exp(-(errtest-errcurrent)/temp)) {
                 errcurrent <- errtest
                 frac <- frac.test
-            }
-        }
-    }
+            }}}
 
     list(frac.min=frac.min, errmin=errmin)
 }
@@ -241,76 +224,52 @@ estimateCellComposition <- function(
 #' sesameDataGet_resetEnv()
 #' 
 #' @export
-estimateLeukocyte<-function(
-    betas.tissue, betas.leuko = NULL,
-    betas.tumor = NULL,
-    platform = c('EPIC','HM450','HM27')){
+estimateLeukocyte<-function(betas.tissue, betas.leuko = NULL,
+    betas.tumor = NULL, platform = c('EPIC','HM450','HM27')){
     
     platform <- match.arg(platform)
-
-    if (!is.matrix(betas.tissue))
-        betas.tissue <- as.matrix(betas.tissue)
-
+    if (!is.matrix(betas.tissue)) { betas.tissue <- as.matrix(betas.tissue) }
     if (is.null(betas.leuko)) {
-        betas.leuko <- sesameDataGet('leukocyte.betas')[[platform]]
-    }
-
-    if (!is.matrix(betas.leuko))
-        betas.leuko <- as.matrix(betas.leuko)
+        betas.leuko <- sesameDataGet('leukocyte.betas')[[platform]] }
+    if (!is.matrix(betas.leuko)) { betas.leuko <- as.matrix(betas.leuko) }
 
     ## choose the probes to work with
     ave.leuko <- rowMeans(betas.leuko, na.rm=TRUE)
     ave.tissue <- rowMeans(betas.tissue, na.rm=TRUE)
-
     probes <- intersect(names(ave.leuko), names(ave.tissue))
-    ave.leuko <- ave.leuko[probes]
-    ave.tissue <- ave.tissue[probes]
+    ave.leuko <- ave.leuko[probes]; ave.tissue <- ave.tissue[probes]
 
-    if (toupper(platform) %in% c("HM450", "EPIC"))
-        nprobes <- 1000
-    else if (toupper(platform) == "HM27")
-        nprobes <- 100
-    else
-        stop("Platform not supported.")
+    if (toupper(platform) %in% c("HM450", "EPIC")) { nprobes <- 1000
+    } else if (toupper(platform) == "HM27") { nprobes <- 100; }
     
     tt <- sort(ave.leuko - ave.tissue)
-    ## leukocyte-specific hypo-methylation
-    probes.leuko.low <- names(head(tt, n=nprobes))
-    ## leukocyte-specific hyper-methylation
-    probes.leuko.high <- names(tail(tt, n=nprobes))
+    probes.leuko.lo <- names(head(tt, n=nprobes)) # leuk-specific hypo
+    probes.leuko.hi <- names(tail(tt, n=nprobes)) # leuk-specific hyper
 
-    ## test tumor if specified
-    if (!is.null(betas.tumor)) {
+    if (!is.null(betas.tumor)) { # test tumor if specified
         if (!is.matrix(betas.tumor))
             betas.tumor <- as.matrix(betas.tumor)
-        betas.tissue <- betas.tumor
-    }
+        betas.tissue <- betas.tumor }
         
     ## more refined range if dataset is big
-    if (dim(betas.tissue)[2] >= 10) {
-        ## the old code doesn't exclude NAs, this should be better
-        t.high <- apply(betas.tissue[probes.leuko.high,],1,min, na.rm=TRUE)
-        t.low <- apply(betas.tissue[probes.leuko.low,],1,max, na.rm=TRUE)
+    if (dim(betas.tissue)[2] >= 10) { # exclude NAs
+        t.hi <- apply(betas.tissue[probes.leuko.hi,],1,min, na.rm=TRUE)
+        t.lo <- apply(betas.tissue[probes.leuko.lo,],1,max, na.rm=TRUE)
     } else {
-        t.high <- rep(0.0, length(probes.leuko.high))
-        t.low <- rep(1.0, length(probes.leuko.low))
-    }
-    l.high <- as.numeric(as.matrix(ave.leuko[probes.leuko.high]))
-    l.low <- as.numeric(as.matrix(ave.leuko[probes.leuko.low]))
+        t.hi <- rep(0.0, length(probes.leuko.hi))
+        t.lo <- rep(1.0, length(probes.leuko.lo)) }
+    l.hi <- as.numeric(as.matrix(ave.leuko[probes.leuko.hi]))
+    l.lo <- as.numeric(as.matrix(ave.leuko[probes.leuko.lo]))
 
     ## calculating Leukocyte Percentage
     leuko.estimate <- vapply(seq_len(ncol(betas.tissue)), function(i) {
-        s.high <- betas.tissue[probes.leuko.high, i]
-        s.low <- betas.tissue[probes.leuko.low, i]
-        p <- c(
-            (s.high - t.high) / (l.high - t.high),
-            (s.low - t.low) / (l.low - t.low))
-
+        s.hi <- betas.tissue[probes.leuko.hi, i]
+        s.lo <- betas.tissue[probes.leuko.lo, i]
+        p <- c((s.hi - t.hi) / (l.hi - t.hi), (s.lo - t.lo) / (l.lo - t.lo))
         if (sum(!is.na(p)) < 10) return(NA); # not enough data
         dd <- density(na.omit(p))
         dd$x[which.max(dd$y)]
     }, numeric(1))
-    
     names(leuko.estimate) <- colnames(betas.tissue)
     leuko.estimate
 }
@@ -345,12 +304,8 @@ twoCompsEst2 <- function(
     pb <- intersect(
         intersect(rownames(pop1), rownames(pop2)),
         rownames(target))
-    message(length(pb),
-        " probes are shared among data sets. Starting from there.\n")
-    
-    pop1 <- pop1[pb,]
-    pop2 <- pop2[pb,]
-    target <- target[pb,]
+    message(length(pb), " probes shared. Starting from there.\n")
+    pop1 <- pop1[pb,]; pop2 <- pop2[pb,]; target <- target[pb,]
 
     if (is.null(diff_1m2u) || is.null(diff_1u2m)) {
         if (use.ave) {
@@ -358,42 +313,33 @@ twoCompsEst2 <- function(
             diff_1m2u <- names(tail(tt, n=1000))
             diff_1u2m <- names(head(tt, n=1000))
         } else {
-            diff_1u2m <- names(which(
-                apply(pop1,1,function(x) {
-                    all(x<0.3, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
-                }) & apply(pop2,1,function(x) {
-                    all(x>0.7, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
-                })))
+            diff_1u2m <- names(which(apply(pop1,1,function(x) {
+                all(x<0.3, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
+            }) & apply(pop2,1,function(x) {
+                all(x>0.7, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
+            })))
             
-            diff_1m2u <- names(which(
-                apply(pop1,1,function(x) {
-                    all(x>0.7, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
-                }) & apply(pop2,1,function(x) {
-                    all(x<0.3, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
-                })))
-        }
-    }
+            diff_1m2u <- names(which(apply(pop1,1,function(x) {
+                all(x>0.7, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
+            }) & apply(pop2,1,function(x) {
+                all(x<0.3, na.rm=TRUE) && sum(is.na(x)) / length(x) < 0.5
+            })))
+        }}
     
-    message(length(diff_1u2m),
-        " probes methylated in 2 and unmethylated in 1.\n")
-    message(length(diff_1m2u),
-        " probes methylated in 1 and unmethylated in 2.\n")
+    message(length(diff_1u2m), " probes meth. in 2 and unmeth. in 1.\n")
+    message(length(diff_1m2u), " probes meth. in 1 and unmeth. in 2.\n")
 
-    bnd_1u2m_hi <- rowMaxs(pop2[diff_1u2m,])
-    bnd_1u2m_lo <- rowMins(pop1[diff_1u2m,])
-
-    bnd_1m2u_hi <- rowMaxs(pop1[diff_1m2u,])
-    bnd_1m2u_lo <- rowMins(pop2[diff_1m2u,])
+    d1u2m_hi <- rowMaxs(pop2[diff_1u2m,])
+    d1u2m_lo <- rowMins(pop1[diff_1u2m,])
+    d1m2u_hi <- rowMaxs(pop1[diff_1m2u,])
+    d1m2u_lo <- rowMins(pop2[diff_1m2u,])
 
     est <- vapply(seq_len(ncol(target)), function(i) {
-        xx <- c(
-        (target[diff_1u2m,i] - bnd_1u2m_lo) / (bnd_1u2m_hi - bnd_1u2m_lo),
-        1-(target[diff_1m2u,i] - bnd_1m2u_lo) / (bnd_1m2u_hi - bnd_1m2u_lo))
-        
+        xx <- c((target[diff_1u2m,i] - d1u2m_lo) / (d1u2m_hi - d1u2m_lo),
+            1-(target[diff_1m2u,i] - d1m2u_lo) / (d1m2u_hi - d1m2u_lo))
         dd <- density(na.omit(xx))
         dd$x[which.max(dd$y)]
     }, numeric(1))
-
     names(est) <- colnames(target)
     est
 }

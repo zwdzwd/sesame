@@ -90,12 +90,10 @@ compareMouseStrainReference <- function(
     cd <- as_tibble(SummarizedExperiment::colData(se))
     rd <- as_tibble(SummarizedExperiment::rowData(se))
     md <- metadata(se)
-    se <- se[rd$QC != "FAIL",]
-    rd <- rd[rd$QC != "FAIL",]
+    se <- se[rd$QC != "FAIL",]; rd <- rd[rd$QC != "FAIL",]
 
     if (!is.null(betas) && is.null(dim(betas))) { # in case a vector
-        betas <- cbind(betas)
-    }
+        betas <- cbind(betas) }
 
     afs <- do.call(rbind, lapply(seq_along(rd$flipToAF), function(i)
         if(xor(rd$flipToAF[i], rd$flipForRefBias[i])) {
@@ -109,9 +107,7 @@ compareMouseStrainReference <- function(
         afs2 <- do.call(rbind, lapply(seq_along(rd$flipToAF), function(i) {
             if(xor(rd$flipToAF[i], rd$flipForRefBias[i])) {
                 1 - betas[rd$Probe_ID[i],]
-            } else {
-                betas[rd$Probe_ID[i],]
-            }}))
+            } else { betas[rd$Probe_ID[i],] }}))
         g <- g + WHeatmap(afs2, RightOf("b1"),
             cmp=CMPar(stop.points=stops, dmin=0, dmax=1),
             name="b2", xticklabels=TRUE, xticklabels.n=ncol(betas))

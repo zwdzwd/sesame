@@ -33,15 +33,12 @@ deIdentify <- function(
         if(grepl('_Grn$', pfx)) {
             out_path <- paste0(sub('_Grn$','',pfx), '_noid_Grn.idat')
         } else if (grepl('_Red$', pfx)) {
-            out_path <- paste0(sub('_Red$','',pfx), '_noid_Red.idat')
-        }
-    }
+            out_path <- paste0(sub('_Red$','',pfx), '_noid_Red.idat') }}
 
     if (is.null(mft)) {
-        mft <- sesameDataGet(paste0(platform, '.address'))$ordering
-    }
-    if (is.null(snps))
-        snps <- grep("^rs", mft$Probe_ID, value=TRUE)
+        mft <- sesameDataGet(paste0(platform, '.address'))$ordering }
+    if (is.null(snps)) {
+        snps <- grep("^rs", mft$Probe_ID, value=TRUE) }
     mft <- mft[mft$Probe_ID %in% snps,]
     
     snpsTango <- na.omit(c(mft$M, mft$U))
@@ -51,21 +48,14 @@ deIdentify <- function(
     if (randomize) {
         snpsIdx <- snpsIdx[!is.na(snpsIdx)]
         dt[snpsIdx] <- sample(dt[snpsIdx])
-    } else {
-        dt[snpsIdx] <- 0
-    }
+    } else { dt[snpsIdx] <- 0 }
     
-    if(grepl("\\.gz$", path)) {
-        con <- gzfile(path, "rb")
-    } else {
-        con <- file(path, "rb")
-    }
-    
+    if(grepl("\\.gz$", path)) { con <- gzfile(path, "rb")
+    } else { con <- file(path, "rb") }
     con2 <- file(out_path, "wb")
 
     ## before Mean section
-    writeBin(readBin(
-        con, "raw", n = res$fields["Mean", 'byteOffset']), con2)
+    writeBin(readBin(con, "raw", n = res$fields["Mean", 'byteOffset']), con2)
 
     ## write new Mean section
     writeBin(as.integer(dt), con2, size=2, endian='little')
@@ -109,15 +99,12 @@ reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
         if(grepl('_Grn$', pfx)) {
             out_path <- paste0(sub('_Grn$','',pfx), '_reid_Grn.idat')
         } else if (grepl('_Red$', pfx)) {
-            out_path <- paste0(sub('_Red$','',pfx), '_reid_Red.idat')
-        }
-    }
+            out_path <- paste0(sub('_Red$','',pfx), '_reid_Red.idat') }}
 
     if (is.null(mft)) {
-        mft <- sesameDataGet(paste0(platform, '.address'))$ordering
-    }
-    if (is.null(snps))
-        snps <- grep("^rs", mft$Probe_ID, value=TRUE)
+        mft <- sesameDataGet(paste0(platform, '.address'))$ordering }
+    if (is.null(snps)) {
+        snps <- grep("^rs", mft$Probe_ID, value=TRUE) }
     mft <- mft[mft$Probe_ID %in% snps,]
     
     snpsTango <- na.omit(c(mft$M, mft$U))
@@ -128,11 +115,8 @@ reIdentify <- function(path, out_path=NULL, snps=NULL, mft=NULL) {
     idx <- seq_along(snpsIdx)
     dt[snpsIdx] <- dt[snpsIdx[match(idx, sample(idx))]]
     
-    if(grepl("\\.gz$", path)) {
-        con <- gzfile(path, "rb")
-    } else {
-        con <- file(path, "rb")
-    }
+    if(grepl("\\.gz$", path)) { con <- gzfile(path, "rb")
+    } else { con <- file(path, "rb"); }
     
     con2 <- file(out_path, "wb")
 

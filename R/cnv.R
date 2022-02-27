@@ -234,6 +234,10 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' require ggplot2, scales
 #' @param seg a \code{CNSegment} object
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
+#' @importFrom GenomicRanges start
+#' @importFrom GenomicRanges end
+#' @importFrom GenomicRanges seqnames
+#' @importFrom GenomicRanges seqinfo
 #' @return plot graphics
 #' @examples
 #'
@@ -249,68 +253,50 @@ segmentBins <- function(bin.signals, bin.coords) {
 visualizeSegments <- function(seg, to.plot=NULL) {
 
     stopifnot(is(seg, "CNSegment"))
-    
     bin.coords <- seg$bin.coords
-    bin.seqinfo <- GenomicRanges::seqinfo(bin.coords)
+    bin.seqinfo <- seqinfo(bin.coords)
     bin.signals <- seg$bin.signals
-    seg.signals <- seg$seg.signals
+    sigs <- seg$seg.signals
     total.length <- sum(as.numeric(bin.seqinfo@seqlengths), na.rm=TRUE)
     
     ## skip chromosome too small (e.g, chrM)
-    if (is.null(to.plot))
-        to.plot <- (bin.seqinfo@seqlengths > total.length*0.01)
+    if (is.null(to.plot)) {
+        to.plot <- (bin.seqinfo@seqlengths > total.length*0.01) }
 
     seqlen <- as.numeric(bin.seqinfo@seqlengths[to.plot])
     seq.names <- bin.seqinfo@seqnames[to.plot]
-    total.length <- sum(seqlen, na.rm=TRUE)
+    totlen <- sum(seqlen, na.rm=TRUE)
     seqcumlen <- cumsum(seqlen)
-    seqcumlen <- seqcumlen[-length(seqcumlen)]
-    seqstart <- setNames(c(0,seqcumlen), seq.names)
-
-    bin.coords <- bin.coords[as.vector(
-        GenomicRanges::seqnames(bin.coords)) %in% seq.names]
+    seqstart <- setNames(c(0,seqcumlen[-length(seqcumlen)]), seq.names)
+    bin.coords <- bin.coords[as.vector(seqnames(bin.coords)) %in% seq.names]
     bin.signals <- bin.signals[names(bin.coords)]
 
     GenomicRanges::values(bin.coords)$bin.mids <-
-        (GenomicRanges::start(bin.coords) + GenomicRanges::end(bin.coords))/2
-
+        (start(bin.coords) + end(bin.coords)) / 2
     GenomicRanges::values(bin.coords)$bin.x <-
-        seqstart[as.character(GenomicRanges::seqnames(
-            bin.coords))] + bin.coords$bin.mids
+        seqstart[as.character(seqnames(bin.coords))] + bin.coords$bin.mids
 
     ## plot bin
-    p <- ggplot2::qplot(
-        bin.coords$bin.x / total.length,
+    p <- ggplot2::qplot(bin.coords$bin.x / totlen,
         bin.signals, color=bin.signals, alpha=I(0.8))
 
     ## plot segment
-    seg.beg <- (seqstart[seg.signals$chrom] +
-                    seg.signals$loc.start) / total.length
-    seg.end <- (seqstart[seg.signals$chrom] +
-                    seg.signals$loc.end) / total.length
-    p <- p +
-        ggplot2::geom_segment(
-            ggplot2::aes(
-                x = seg.beg, xend = seg.end,
-                y = seg.signals$seg.mean, yend=seg.signals$seg.mean),
-            size=1.5, color='blue')
+    seg.beg <- (seqstart[sigs$chrom] + sigs$loc.start) / totlen
+    seg.end <- (seqstart[sigs$chrom] + sigs$loc.end) / totlen
+    p <- p + ggplot2::geom_segment(ggplot2::aes(x = seg.beg, xend = seg.end,
+        y = sigs$seg.mean, yend=sigs$seg.mean), size=1.5, color='blue')
 
     ## chromosome boundary
-    p <- p + ggplot2::geom_vline(
-        xintercept=seqstart[-1]/total.length, alpha=I(0.5))
-    
+    p <- p + ggplot2::geom_vline(xintercept=seqstart[-1]/totlen, alpha=I(0.5))
+
     ## chromosome label
     p <- p + ggplot2::scale_x_continuous(
-        labels=seq.names, breaks=(seqstart+seqlen/2)/total.length) +
-            ggplot2::theme(
-                axis.text.x = ggplot2::element_text(angle=90, hjust=0.5))
-    
-    ## styling
+        labels=seq.names, breaks=(seqstart+seqlen/2)/totlen) +
+        ggplot2::theme(axis.text.x=ggplot2::element_text(angle=90, hjust=0.5))
+
     p <- p + ggplot2::scale_colour_gradient2(
         limits=c(-0.3,0.3), low='red', mid='grey', high='green',
-        oob=scales::squish) +
-            ggplot2::xlab('') + ggplot2::ylab('') +
-                ggplot2::theme(legend.position="none")
-    
+        oob=scales::squish) + ggplot2::xlab('') + ggplot2::ylab('') +
+        ggplot2::theme(legend.position="none")
     p
 }
