@@ -38,7 +38,7 @@ Imports:
     SummarizedExperiment,
     e1071,
     dplyr,
-    ggrepel, 
+    ggrepel,
     reshape2
 Suggests: scales,
           knitr,
