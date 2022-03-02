@@ -79,7 +79,7 @@ visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
 #' sample names on the columns and probe names on the rows. The function can
 #' also work on different genome builds (default to hg38, can be hg19).
 #'
-#' @param geneName gene name
+#' @param gene_name gene name
 #' @param betas beta value matrix (row: probes, column: samples)
 #' @param platform HM450, EPIC, or MM285 (default)
 #' @param upstream distance to extend upstream
@@ -92,15 +92,17 @@ visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
 #' betas <- sesameDataGet('HM450.76.TCGA.matched')$betas
 #' visualizeGene('ADA', betas, 'HM450')
 #' @export
-visualizeGene <- function(geneName, betas,
+visualizeGene <- function(gene_name, betas,
     platform = NULL, genome = NULL,
     upstream = 2000, dwstream = 2000, ...) {
 
     if (is.null(dim(betas))) { betas <- as.matrix(betas); }
     platform <- sesameData_check_platform(platform, rownames(betas))
     genome <- sesameData_check_genome(genome, platform)
-    
-    target.txns <- sesameData_getTranscriptsByGene(geneName, genome)
+
+    txns <- sesameDataGet(paste0("genomeInfo.", genome))$txns
+    target.txns <- txns[GenomicRanges::mcols(txns)$gene_name == gene_name]
+    stopifnot(length(target.txns) > 0)
     target.strand <- as.character(GenomicRanges::strand(target.txns[[1]][1]))
     if (target.strand == '+') {
         pad.start <- upstream

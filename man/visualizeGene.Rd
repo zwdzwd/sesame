@@ -5,7 +5,7 @@
 \title{Visualize Gene}
 \usage{
 visualizeGene(
-  geneName,
+  gene_name,
   betas,
   platform = NULL,
   genome = NULL,
@@ -15,7 +15,7 @@ visualizeGene(
 )
 }
 \arguments{
-\item{geneName}{gene name}
+\item{gene_name}{gene name}
 
 \item{betas}{beta value matrix (row: probes, column: samples)}
 

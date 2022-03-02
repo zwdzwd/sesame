@@ -8,3 +8,4 @@
 ^\..Rcheck$
 ^inst/data$
 .DS_Store
+^.Renv-version$
