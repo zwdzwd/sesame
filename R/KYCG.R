@@ -564,6 +564,7 @@ KYCG_annoProbes <- function(query, databases, db_names = NULL,
         return(ind)
     } else {
         anno <- apply(ind, 1, function(x) paste(names(dbs)[x], collapse=sep))
+        anno <- ifelse(anno == "", NA, anno)
         names(anno) <- query
         return(anno)
     }
