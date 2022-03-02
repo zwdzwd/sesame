@@ -7,6 +7,7 @@
 KYCG_annoProbes(
   query,
   databases,
+  db_names = NULL,
   platform = NULL,
   sep = ",",
   indicator = FALSE,
@@ -17,6 +18,8 @@ KYCG_annoProbes(
 \item{query}{probe IDs in a character vector}
 
 \item{databases}{character or actual database (i.e. list of probe IDs)}
+
+\item{db_names}{specific database (default to all databases)}
 
 \item{platform}{EPIC, MM285 etc. will infer from probe IDs if not given}
 

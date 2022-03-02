@@ -516,7 +516,7 @@ KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
             attr(db, "dbname") <- names(dbs)[ii]
             db
         }), names(dbs))}))
-
+    
     if (summary) {
         do.call(bind_rows, lapply(res, attributes))
     } else if (is.null(db_names)) {
@@ -533,6 +533,7 @@ KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
 #' (in GRanges)
 #' @param query probe IDs in a character vector
 #' @param databases character or actual database (i.e. list of probe IDs)
+#' @param db_names specific database (default to all databases)
 #' @param platform EPIC, MM285 etc. will infer from probe IDs if not given
 #' @param indicator return the indicator matrix instead of a concatenated
 #' annotation (in the case of have multiple annotations)
@@ -542,13 +543,13 @@ KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
 #' query <- names(sesameData_getManifestGRanges("MM285"))
 #' anno <- KYCG_annoProbes(query, "designGroup", silent = TRUE)
 #' @export
-KYCG_annoProbes <- function(query, databases,
+KYCG_annoProbes <- function(query, databases, db_names = NULL,
     platform = NULL, sep = ",", indicator = FALSE, silent = FALSE) {
 
     platform <- queryCheckPlatform(platform, query, silent = silent)
     if (is.character(databases)) {
-        dbs <- KYCG_getDBs(databases, platform = platform,
-            silent = silent, type = "categorical")
+        dbs <- KYCG_getDBs(databases, db_names = db_names,
+            platform = platform, silent = silent, type = "categorical")
     } else {
         dbs <- databases
     }
