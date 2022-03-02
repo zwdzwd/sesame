@@ -10,6 +10,7 @@ KYCG_getDBs(
   platform = NULL,
   summary = FALSE,
   allow_multi = FALSE,
+  type = NULL,
   silent = FALSE
 )
 }
@@ -24,6 +25,8 @@ that platform.}
 \item{summary}{return a summary of database instead of db itself}
 
 \item{allow_multi}{allow multiple groups to be returned for}
+
+\item{type}{numerical, categorical, default: all}
 
 \item{silent}{no messages
 each query.}

@@ -39,13 +39,13 @@ databases_getMeta <- function(dbs) {
 ##     res
 ## }
 
-queryCheckPlatform <- function(platform, query = NULL) {
+queryCheckPlatform <- function(platform, query = NULL, silent = FALSE) {
     if (is.null(platform)) {
         stopifnot(!is.null(query))
         if (is.numeric(query)) {
-            platform <- inferPlatformFromProbeIDs(names(query))
+            platform <- inferPlatformFromProbeIDs(names(query), silent = silent)
         } else {
-            platform <- inferPlatformFromProbeIDs(query)
+            platform <- inferPlatformFromProbeIDs(query, silent = silent)
         }
     }
     platform
@@ -91,7 +91,7 @@ testEnrichment <- function(
     query, databases = NULL, universe = NULL, alternative = "greater",
     platform = NULL, silent = FALSE) {
 
-    platform <- queryCheckPlatform(platform, query)
+    platform <- queryCheckPlatform(platform, query, silent = silent)
     if (is.null(universe)) {
         universe <- inferUniverse(platform) }
     
@@ -172,7 +172,7 @@ aggregateTestEnrichments <- function(
 KYCG_buildGeneDBs <- function(
     query = NULL, platform = NULL, max_distance = 10000, silent = FALSE) {
     
-    platform <- queryCheckPlatform(platform, query)
+    platform <- queryCheckPlatform(platform, query, silent = silent)
     genes <- sesameData_txnToGeneGRanges(
         sesameData_getTxnGRanges(
             sesameData_check_genome(NULL, platform)))
@@ -356,7 +356,7 @@ testEnrichmentGSEA1 <- function(query, database, precise=FALSE) {
 testEnrichmentGSEA <- function(query, databases = NULL,
     platform = NULL, silent = FALSE, precise = FALSE) {
 
-    platform <- queryCheckPlatform(platform, query)
+    platform <- queryCheckPlatform(platform, query, silent = silent)
     if (is.null(databases)) {
         if (is.character(query)) {
             dbs <- KYCG_getDBs(KYCG_listDBGroups( # by default, all dbs
@@ -426,19 +426,20 @@ testEnrichmentSpearman <- function(query, database) {
         overlap = length(query))
 }
 
-guess_dbnames <- function(nms, allow_multi=FALSE) {
-    df <- sesameDataList()
-    df <- df[grep("KYCG", df$Title),]
-    do.call(c, lapply(nms, function(nm) {
-        if (nm %in% df$Title) {
+guess_dbnames <- function(nms, platform = NULL,
+    allow_multi = FALSE, type = NULL, silent = FALSE) {
+    
+    gps <- KYCG_listDBGroups(type = type)
+    nms <- do.call(c, lapply(nms, function(nm) {
+        if (nm %in% gps$Title) {
             return(nm)
-        } else if (length(grep(nm, df$Title)) >= 1) {
-            ret <- grep(nm, df$Title, value=TRUE)
+        } else if (length(grep(nm, gps$Title)) >= 1) {
+            ret <- grep(nm, gps$Title, value=TRUE)
             if (!allow_multi) { ret <- ret[1]; }
             return(ret)
-        } else if (length(grep(nm, df$Title)) == 0) {
-            res <- df$Title[apply(do.call(cbind, lapply(
-                strsplit(nm, "\\.")[[1]], function(q1) grepl(q1, df$Title))),
+        } else if (length(grep(nm, gps$Title)) == 0) {
+            res <- gps$Title[apply(do.call(cbind, lapply(
+                strsplit(nm, "\\.")[[1]], function(q1) grepl(q1, gps$Title))),
                 1, all)]
             if (length(res) == 1) {
                 return(res[1])
@@ -446,6 +447,16 @@ guess_dbnames <- function(nms, allow_multi=FALSE) {
         }
         return(nm)
     }))
+    if (!is.null(platform)) {
+        nms <- grep(platform, nms, value = TRUE)
+    }
+    if (!silent) {
+        message("Selected the following database groups:")
+        invisible(lapply(seq_along(nms), function(i) {
+            message(sprintf("%d. %s", i, nms[i]))
+        }))
+    }
+    nms
 }
 
 #' List database group names
@@ -456,8 +467,7 @@ guess_dbnames <- function(nms, allow_multi=FALSE) {
 #' @examples
 #' head(KYCG_listDBGroups("chromHMM"))
 #' @export
-KYCG_listDBGroups <- function(
-    filter = NULL, type = NULL) {
+KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
     
     gps <- sesameDataList("KYCG", full=TRUE)[,c("Title","Description")]
     gps$type <- vapply(strsplit(
@@ -481,6 +491,7 @@ KYCG_listDBGroups <- function(
 #' that platform.
 #' @param summary return a summary of database instead of db itself
 #' @param allow_multi allow multiple groups to be returned for
+#' @param type numerical, categorical, default: all
 #' @param silent no messages
 #' each query.
 #' @return a list of databases
@@ -489,20 +500,14 @@ KYCG_listDBGroups <- function(
 #' dbs <- KYCG_getDBs(c("MM285.chromHMM", "MM285.probeType"))
 #' @export
 KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
-    summary = FALSE, allow_multi = FALSE, silent = FALSE) {
+    summary = FALSE, allow_multi = FALSE, type = NULL, silent = FALSE) {
     
     if (!is.character(group_nms)) {
         return(group_nms)
     }
-    group_nms <- guess_dbnames(group_nms, allow_multi = TRUE)
-    if (!is.null(platform)) {
-        group_nms <- grep(platform, group_nms, value = TRUE) }
-    group_nms_ <- paste(group_nms, sep="\n")
-    if (!silent) {
-        message("Selected the following database groups:")
-        invisible(lapply(seq_along(group_nms_), function(i) {
-            message(sprintf("%d. %s", i, group_nms_[i]))
-        }))}
+
+    group_nms <- guess_dbnames(group_nms, platform = platform,
+        allow_multi = TRUE, type = type, silent = silent)
     res <- do.call(c, lapply(unname(group_nms), function(nm) {
         dbs <- sesameDataGet(nm)
         setNames(lapply(seq_along(dbs), function(ii) {
@@ -519,6 +524,47 @@ KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
     } else {
         stopifnot(all(db_names %in% names(res)))
         res[db_names]
+    }
+}
+
+#' Annotate Probe IDs using KYCG databases
+#'
+#' see sesameData_annoProbes if you'd like to annotate by genomic coordinates
+#' (in GRanges)
+#' @param query probe IDs in a character vector
+#' @param databases character or actual database (i.e. list of probe IDs)
+#' @param platform EPIC, MM285 etc. will infer from probe IDs if not given
+#' @param indicator return the indicator matrix instead of a concatenated
+#' annotation (in the case of have multiple annotations)
+#' @param sep delimiter used in paste
+#' @param silent suppress message
+#' @return named annotation vector, or indicator matrix
+#' query <- names(sesameData_getManifestGRanges("MM285"))
+#' anno <- KYCG_annoProbes(query, "designGroup", silent = TRUE)
+#' @export
+KYCG_annoProbes <- function(query, databases,
+    platform = NULL, sep = ",", indicator = FALSE, silent = FALSE) {
+
+    platform <- queryCheckPlatform(platform, query, silent = silent)
+    if (is.character(databases)) {
+        dbs <- KYCG_getDBs(databases, platform = platform,
+            silent = silent, type = "categorical")
+    } else {
+        dbs <- databases
+    }
+
+    ind <- do.call(cbind, lapply(names(dbs), function(db_nm) {
+        db <- dbs[[db_nm]]
+        query %in% db
+    }))
+    if (indicator) {
+        rownames(ind) <- query
+        colnames(ind) <- names(dbs)
+        return(ind)
+    } else {
+        anno <- apply(ind, 1, function(x) paste(names(dbs)[x], collapse=sep))
+        names(anno) <- query
+        return(anno)
     }
 }
 
