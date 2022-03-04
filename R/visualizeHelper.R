@@ -157,7 +157,8 @@ assemble_plots <- function(
     dmin = 0, dmax = 1) {
     
     if (is.null(show.samples.n)) { show.samples.n <- ncol(betas); }
-    if (is.null(heat.height)) { heat.height <- 10 / length(txns); }
+    if (is.null(heat.height) && length(txns) > 0) {
+        heat.height <- 10 / length(txns); }
     w <- WGrob(plt.txns, name = 'txn')
     w <- w + WGrob(plt.mapLines, Beneath(pad=0, height=0.1))
     w <- w + WHeatmap(
