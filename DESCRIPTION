@@ -32,6 +32,7 @@ Imports:
     ggplot2,
     graphics,
     parallel,
+    BiocFileCache,
     matrixStats,
     DNAcopy,
     stats,
@@ -72,6 +73,7 @@ Collate:
     'feature_selection.R'
     'fileSet.R'
     'mask.R'
+    'sesameAnno.R'
     'open.R'
     'strain.R'
     'tissue.R'

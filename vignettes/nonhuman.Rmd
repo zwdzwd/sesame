@@ -36,20 +36,20 @@ sesameDataCache()
 The `openSesame` pipeline fully supports the MM285 and the Mammal40 arrays.
 Let's download an example mouse array IDAT and call `openSesame` function.
 
-```{r message=FALSE}
+```{r message=FALSE, eval=FALSE}
 tmp = tempdir()
-sesameData_getAnno("test/204637490002_R05C01_Grn.idat", dest_dir=tmp)
-sesameData_getAnno("test/204637490002_R05C01_Red.idat", dest_dir=tmp)
-head(openSesame(sprintf("%s/test/204637490002_R05C01", tmp), prep="TQCDPB"))
+sesameAnno_download("Test/204637490002_R05C01_Grn.idat", dest_dir=tmp)
+sesameAnno_download("Test/204637490002_R05C01_Red.idat", dest_dir=tmp)
+head(openSesame(sprintf("%s/Test/204637490002_R05C01", tmp), prep="TQCDPB"))
 ```
 
 Here is an example of `openSesame` processing on a Mammal40 array.
 
-```{r message=FALSE}
+```{r message=FALSE, eval=FALSE}
 tmp = tempdir()
-sesameData_getAnno("test/GSM4411982_Grn.idat.gz", dest_dir=tmp)
-sesameData_getAnno("test/GSM4411982_Red.idat.gz", dest_dir=tmp)
-head(openSesame(sprintf("%s/test/GSM4411982", tmp), prep="HSCDPM"))
+sesameAnno_download("Test/GSM4411982_Grn.idat.gz", dest_dir=tmp)
+sesameAnno_download("Test/GSM4411982_Red.idat.gz", dest_dir=tmp)
+head(openSesame(sprintf("%s/Test/GSM4411982", tmp), prep="HSCDPM"))
 ```
 
 The following sections provide a more detailed discussion of subsequent

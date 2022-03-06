@@ -26,10 +26,10 @@ sesameDataCacheAll()
 ```
 
 Let's take DNA methylation data from the HM450 platform for example.
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 tmp = tempdir()
-res_grn = sesameData_getAnno("test/3999492009_R01C01_Grn.idat", dest_dir=tmp)
-res_red = sesameData_getAnno("test/3999492009_R01C01_Red.idat", dest_dir=tmp)
+res_grn = sesameAnno_get("Test/3999492009_R01C01_Grn.idat", dest_dir=tmp)
+res_red = sesameAnno_get("Test/3999492009_R01C01_Red.idat", dest_dir=tmp)
 ```
                                                    
 ## De-identify by Masking
@@ -37,12 +37,12 @@ res_red = sesameData_getAnno("test/3999492009_R01C01_Red.idat", dest_dir=tmp)
 This first method of deIdentification masks SNP probe intensity mean by zero.
 As a consequence, the allele frequency will be 0.5. 
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 
 deIdentify(res_grn$dest_file, sprintf("%s/deidentified_Grn.idat", tmp))
 deIdentify(res_red$dest_file, sprintf("%s/deidentified_Red.idat", tmp))
 
-betas1 = getBetas(readIDATpair(sprintf("%s/test/3999492009_R01C01", tmp)))
+betas1 = getBetas(readIDATpair(sprintf("%s/Test/3999492009_R01C01", tmp)))
 betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", tmp)))
 
 head(betas1[grep('rs',names(betas1))]) 
@@ -58,7 +58,7 @@ This second method of deIdentification will scramble the intensities using
 a secret key to help formalize a random number. Therefore, randomize needs
 to be set to TRUE. 
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 
 my_secret <- 13412084
 set.seed(my_secret)
@@ -71,7 +71,7 @@ set.seed(my_secret)
 deIdentify(res_red$dest_file,
     sprintf("%s/deidentified_Red.idat", tmp), randomize=TRUE)
 
-betas1 = getBetas(readIDATpair(sprintf("%s/test/3999492009_R01C01", tmp)))
+betas1 = getBetas(readIDATpair(sprintf("%s/Test/3999492009_R01C01", tmp)))
 betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", tmp)))
 
 head(betas1[grep('rs',names(betas1))]) 
@@ -85,7 +85,7 @@ Note that the rs values are scrambled after deIdentify.
 To restore order of the deIdentified intensities, one can re-identify IDATs.
 The reIdentify function can thus restore the scrambled SNP intensities. 
 
-```{r, eval=TRUE}
+```{r, eval=FALSE}
 
 my_secret <- 13412084
 set.seed(my_secret)
@@ -98,7 +98,7 @@ set.seed(my_secret)
 reIdentify(sprintf("%s/deidentified_Red.idat", tmp),
     sprintf("%s/reidentified_Red.idat", tmp))
 
-betas1 = getBetas(readIDATpair(sprintf("%s/test/3999492009_R01C01", tmp)))
+betas1 = getBetas(readIDATpair(sprintf("%s/Test/3999492009_R01C01", tmp)))
 betas2 = getBetas(readIDATpair(sprintf("%s/reidentified", tmp)))
 
 head(betas1[grep('rs',names(betas1))]) 
