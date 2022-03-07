@@ -111,8 +111,8 @@ reasons including failed detection, high background, putative low quality
 probes etc. To compare samples in terms of detection success rate, one can use
 the `sesameQC_plotBar` function in the following way:
 
-```{r fig.height=15, fig.width=5}
-sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats))
+```{r fig.height=3, fig.width=5}
+sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, "detection"))
 ```
 
 ## Dye bias Q-Q plot
@@ -149,7 +149,7 @@ SeSAMe can extract explicit and Infinium-I-derived SNPs to identify potential
 sample swaps.
 
 ```{r fig.height=5, fig.width=5, message=FALSE}
-sesameQC_plotHeatSNPs(sdfs)
+sesameQC_plotHeatSNPs(sdfs[1:3])
 ```
 
 One can also output the allele frequencies and output a VCF file with

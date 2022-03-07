@@ -39,7 +39,7 @@ KYCG_plotEnrichAll <- function(df, fdr_max = 25, n_label = 15) {
     requireNamespace("ggrepel")
     ggplot(e2, aes(inc2, -log10(FDR))) +
         geom_point(aes(size=estimate, color=group), alpha=0.5) +
-        geom_text_repel(data = e2[head(order(e2$FDR), n = n_label),],
+        ggrepel::geom_text_repel(data = e2[head(order(e2$FDR), n = n_label),],
             aes(label=dbname, color=group), size = 3,
             ## box.padding = unit(0.35, "lines"),
             ## point.padding = unit(0.3, "lines"),
@@ -186,7 +186,7 @@ KYCG_plotVolcano <- function(data, label_column="dbname", alpha=0.05) {
             name = sprintf("Significance (q < %s)", alpha),
             values = c("Significant" = "red", "Not significant" = "black"))
     requireNamespace("ggrepel")
-    g <- g + geom_text_repel(
+    g <- g + ggrepel::geom_text_repel(
         data = subset(data, FDR < alpha & estimate > 0),
         aes(label = label), size = 5,
         box.padding = unit(0.35, "lines"),
@@ -274,7 +274,7 @@ KYCG_plotWaterfall <- function(df, label_column="dbname") {
         scale_size(trans="reverse") +
         geom_hline(yintercept=0, linetype="dashed", color="grey60") +
         theme_minimal() + ylab("Log2(OR)") + xlab("Databases") +
-        geom_text_repel(
+        ggrepel::geom_text_repel(
             data = df[head(order(df$log10.p.value),
                 n = min(10, nrow(df)*0.5)),],
             aes(label=label), nudge_x=-nrow(df)/10)
