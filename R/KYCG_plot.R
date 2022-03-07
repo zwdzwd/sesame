@@ -36,6 +36,7 @@ KYCG_plotEnrichAll <- function(df, fdr_max = 25, n_label = 15) {
             c(beg=min(x), middle=mean(x), end=max(x))))), "group")
 
     inc2 <- FDR <- estimate <- group <- dbname <- beg <- middle <- NULL
+    requireNamespace("ggrepel")
     ggplot(e2, aes(inc2, -log10(FDR))) +
         geom_point(aes(size=estimate, color=group), alpha=0.5) +
         geom_text_repel(data = e2[head(order(e2$FDR), n = n_label),],
@@ -163,7 +164,6 @@ KYCG_plotDot <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 #' Optional. (Default: 0.05)
 #' @return ggplot volcano plot
 #' @import ggplot2
-#' @import ggrepel
 #' @examples
 #' 
 #' KYCG_plotVolcano(data.frame(
@@ -185,6 +185,7 @@ KYCG_plotVolcano <- function(data, label_column="dbname", alpha=0.05) {
         scale_colour_manual(
             name = sprintf("Significance (q < %s)", alpha),
             values = c("Significant" = "red", "Not significant" = "black"))
+    requireNamespace("ggrepel")
     g <- g + geom_text_repel(
         data = subset(data, FDR < alpha & estimate > 0),
         aes(label = label), size = 5,
@@ -266,7 +267,8 @@ KYCG_plotWaterfall <- function(df, label_column="dbname") {
     
     df <- df[order(df$estimate),]
     df$index <- seq_len(nrow(df))
-
+    
+    requireNamespace("ggrepel")
     ggplot(df, aes(index, estimate)) +
         geom_point(aes(size=p.value), alpha=0.6) +
         scale_size(trans="reverse") +

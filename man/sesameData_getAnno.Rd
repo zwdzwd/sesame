@@ -20,6 +20,6 @@ annotation file
 retrieve additional annotation files
 }
 \examples{
-sesameData_getAnno(NULL)
+cat("Deprecated!")
 
 }

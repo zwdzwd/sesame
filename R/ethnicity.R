@@ -11,7 +11,6 @@
 #'
 #' @param sdf a \code{SigDF}
 #' @return string of ethnicity
-#' @importFrom randomForest randomForest
 #' @import sesameData
 #' @examples
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
@@ -30,5 +29,6 @@ inferEthnicity <- function(sdf) {
         getBetas(sdf, mask=FALSE)[rsprobes],
         getAFTypeIbySumAlleles(sdf, known.ccs.only = FALSE)[ccsprobes])
 
+    requireNamespace("randomForest")
     as.character(predict(ethnicity.model, af))
 }

@@ -329,10 +329,10 @@ twoCompsEst2 <- function(
     message(length(diff_1u2m), " probes meth. in 2 and unmeth. in 1.\n")
     message(length(diff_1m2u), " probes meth. in 1 and unmeth. in 2.\n")
 
-    d1u2m_hi <- rowMaxs(pop2[diff_1u2m,])
-    d1u2m_lo <- rowMins(pop1[diff_1u2m,])
-    d1m2u_hi <- rowMaxs(pop1[diff_1m2u,])
-    d1m2u_lo <- rowMins(pop2[diff_1m2u,])
+    d1u2m_hi <- apply(pop2[diff_1u2m,], 1, max, na.rm=TRUE)
+    d1u2m_lo <- apply(pop1[diff_1u2m,], 1, min, na.rm=TRUE)
+    d1m2u_hi <- apply(pop1[diff_1m2u,], 1, max, na.rm=TRUE)
+    d1m2u_lo <- apply(pop2[diff_1m2u,], 1, min, na.rm=TRUE)
 
     est <- vapply(seq_len(ncol(target)), function(i) {
         xx <- c((target[diff_1u2m,i] - d1u2m_lo) / (d1u2m_hi - d1u2m_lo),

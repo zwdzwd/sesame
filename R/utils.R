@@ -42,11 +42,4 @@ MValueToBetaValue <- function(m) {
     2^m/(1+2^m)
 }
 
-pkgTest <- function(x) {
-    ## if (!require(x, character.only = TRUE)) {
-    if (!(x %in% .packages(all.available = TRUE))) {
-        stop("Optional package ", x, " not found.
-Please install before continue.")
-    }
-}
 

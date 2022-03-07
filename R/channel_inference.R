@@ -9,8 +9,6 @@
 #' @param verbose whether to print correction summary
 #' @param switch_failed whether to switch failed probes (default to FALSE)
 #' @param summary return summarized numbers only.
-#' @importFrom matrixStats rowMaxs
-#' @importFrom matrixStats rowMins
 #' @return a \code{SigDF}, or numerics if summary == TRUE
 #' @examples
 #'

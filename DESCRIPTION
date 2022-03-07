@@ -14,11 +14,12 @@ Depends: R (>= 4.1),
 License: MIT + file LICENSE
 RoxygenNote: 7.1.2
 Imports:
+    graphics,
     BiocParallel,
-    grDevices,
     utils,
     methods,
     stringr,
+    readr,
     tibble,
     illuminaio,
     MASS,
@@ -28,26 +29,25 @@ Imports:
     grid,
     preprocessCore,
     S4Vectors,
-    randomForest,
     ggplot2,
-    graphics,
-    parallel,
     BiocFileCache,
-    matrixStats,
-    DNAcopy,
+    GenomeInfoDb,
     stats,
     SummarizedExperiment,
-    e1071,
     dplyr,
-    ggrepel,
     reshape2
 Suggests: scales,
           knitr,
+          DNAcopy,
+          e1071,
+          randomForest,
           RPMM,
           rmarkdown,
           testthat,
           tidyr,
-          BiocStyle
+          BiocStyle,
+          ggrepel,
+          grDevices
 Encoding: UTF-8
 VignetteBuilder: knitr
 URL: https://github.com/zwdzwd/sesame

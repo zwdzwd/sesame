@@ -116,9 +116,7 @@ inferSexKaryotypes <- function(sdf) {
 #' Note many factors such as Dnmt genotype, XXY male (Klinefelter's),
 #' 45,X female (Turner's) can confuse the model sometimes.
 #' This function works on a single sample.
-#' @importFrom randomForest randomForest
 #' @import sesameData
-#' @import e1071
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
@@ -137,6 +135,7 @@ inferSex <- function(x, pfm = NULL) {
     stopifnot(pfm %in% c('EPIC','HM450','MM285'))
     if (pfm == 'MM285'){
         inf <- sesameDataGet("MM285.inferences")$sex
+        requireNamespace("e1071")
         if (is(x, "SigDF")) { # if possible use signal intensity
             intensYvsAuto <- getIntensityRatioYvsAuto(x)
 
@@ -164,6 +163,7 @@ inferSex <- function(x, pfm = NULL) {
             
         } else { return(NA); }
     } else { # need to update human sex inference to match the mouse format
+        requireNamespace("randomForest")
         sex.info <- getSexInfo(x)[seq_len(3)]
         as.character(predict(
             sesameDataGet('sex.inference'), sex.info))

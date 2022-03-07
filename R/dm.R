@@ -39,7 +39,7 @@ checkLevels <- function(betas, fc) {
 #' @param mc.cores number of cores for parallel processing
 #' @return a list of test summaries, summary.lm objects
 #' @import stats
-#' @import parallel
+#' @import BiocParallel
 #' @examples
 #' sesameDataCache() # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
@@ -70,7 +70,7 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
     mm_holdout <- lapply(names(contr2lvs), function(cont) {
         mm[, !(colnames(mm) %in% paste0(cont, contr2lvs[[cont]]))] })
     names(mm_holdout) <- names(contr2lvs)
-    smry <- parallel::mclapply(seq_len(nrow(betas)), function(i) {
+    smry <- BiocParallel::bplapply(seq_len(nrow(betas)), function(i) {
         m0 <- lm(betas[i,]~.+0, data=as.data.frame(mm))
         sm <- summary(lm(betas[i,]~.+0, data=as.data.frame(mm)))
         ## the following is removed to reduce the size of return
@@ -83,7 +83,7 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
             c(stat = anv[["F"]][2], pval = anv[["Pr(>F)"]][2])
         }))
         sm
-    }, mc.cores=mc.cores)
+    }, BPPARAM = MulticoreParam(mc.cores))
     names(smry) <- rownames(betas)
     class(smry) <- "DMLSummary"
     attr(smry, "model.matrix") <- mm

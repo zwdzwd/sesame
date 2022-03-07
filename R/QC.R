@@ -408,11 +408,11 @@ sesameQC_calcStats_betas <- function(sdf, qc = NULL) {
 #' @param main plot title
 #' @param ... additional options to qqplot
 #' @return create a qqplot
+#' @import graphics
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesameQC_plotRedGrnQQ(sdf)
-#' @import graphics
 #' @export
 sesameQC_plotRedGrnQQ <- function(sdf, main="R-G QQ Plot", ...) {
     dG <- InfIG(noMasked(sdf)); dR <- InfIR(noMasked(sdf))
@@ -423,7 +423,7 @@ sesameQC_plotRedGrnQQ <- function(sdf, main="R-G QQ Plot", ...) {
         xlab = 'Infinium-I Red Signal', ylab = 'Infinium-I Grn Signal',
         main = main, cex = 0.5,
         xlim = c(0,m), ylim = c(0,m), ...)
-    abline(0,1,lty = 'dashed')
+    graphics::abline(0,1,lty = 'dashed')
 }
 
 #' Plot betas distinguishing different Infinium chemistries
@@ -434,6 +434,7 @@ sesameQC_plotRedGrnQQ <- function(sdf, main="R-G QQ Plot", ...) {
 #' @param mar margin of layout when showing steps of prep
 #' @param main main title in plots
 #' @param ... additional options to plot
+#' @import graphics
 #' @return create a density plot
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
@@ -475,12 +476,11 @@ sesameQC_plotBetaByDesign <- function(
 #' @param use_max to use max(M,U) or M+U
 #' @param ... additional arguments to smoothScatter
 #' @return create a total signal intensity vs beta value plot
+#' @import graphics
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sesameQC_plotIntensVsBetas(sdf)
-#' @import graphics
-#' @importFrom grDevices colorRampPalette
 #' @export
 sesameQC_plotIntensVsBetas <- function(
     sdf, mask=TRUE, use_max=FALSE, intens.range=c(5,15), ...) {
@@ -491,14 +491,16 @@ sesameQC_plotIntensVsBetas <- function(
     } else {
         intens <- totalIntensities(sdf, mask=mask)
     }
+
+    requireNamespace("grDevices")
     smoothScatter(log2(intens), getBetas(sdf, mask=mask)[names(intens)],
         xlab='Total Intensity (Log2(M+U))',
         ylab=expression(paste(beta, " (DNA methylation Level)")),
         nrpoints=0, 
-        colramp=colorRampPalette(c("white","white","lightblue",
+        colramp=grDevices::colorRampPalette(c("white","white","lightblue",
             "blue","green","yellow","orange","red","darkred"),
             space = "Lab"), xlim=intens.range, ...)
-    abline(h=0.5, lty='dashed')
+    graphics::abline(h=0.5, lty='dashed')
     ## plot envelope lines
     x <- c(seq(1,100,by=1), seq(101,10000,by=100))
     dG <- InfIG(sdf); dR <- InfIR(sdf)

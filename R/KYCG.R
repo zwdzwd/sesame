@@ -540,6 +540,7 @@ KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
 #' @param sep delimiter used in paste
 #' @param silent suppress message
 #' @return named annotation vector, or indicator matrix
+#' @examples
 #' query <- names(sesameData_getManifestGRanges("MM285"))
 #' anno <- KYCG_annoProbes(query, "designGroup", silent = TRUE)
 #' @export
@@ -625,7 +626,7 @@ dbStats <- function(
 #' @param databases Vector of probes corresponding to a single database set
 #' of interest.
 #' @return ggplot lollipop plot
-#' @import reshape2
+#' @importFrom reshape2 melt
 createDBNetwork <- function(databases) {
     m <- compareDatbaseSetOverlap(databases, metric="jaccard")
 

@@ -92,16 +92,15 @@ plotMapLines <- function(probes, beg, end) {
     ((seq_len(nprobes) - 0.5)/nprobes), 0, draw=FALSE)
 }
 
-## plot chromosome of genomic ranges and cytobands
-#' @importFrom grDevices gray.colors
 plotCytoBand <- function(
     chrom, beg, end, genome) {
 
     cytoBand <- sesameDataGet(paste0('genomeInfo.',genome))$cytoBand
 
+    requireNamespace("grDevices")
     ## set cytoband color
     cytoBand2col <- setNames(
-        gray.colors(7, start=0.9,end=0),
+        grDevices::gray.colors(7, start=0.9,end=0),
         c('stalk', 'gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100'))
     cytoBand2col['acen'] <- 'red'
     cytoBand2col['gvar'] <- cytoBand2col['gpos75']

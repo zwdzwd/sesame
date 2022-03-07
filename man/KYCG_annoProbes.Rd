@@ -32,10 +32,12 @@ annotation (in the case of have multiple annotations)}
 }
 \value{
 named annotation vector, or indicator matrix
-query <- names(sesameData_getManifestGRanges("MM285"))
-anno <- KYCG_annoProbes(query, "designGroup", silent = TRUE)
 }
 \description{
 see sesameData_annoProbes if you'd like to annotate by genomic coordinates
 (in GRanges)
+}
+\examples{
+query <- names(sesameData_getManifestGRanges("MM285"))
+anno <- KYCG_annoProbes(query, "designGroup", silent = TRUE)
 }

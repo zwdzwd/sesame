@@ -41,7 +41,8 @@ formatVCF <- function(sdf, vcf=NULL, genome="hg19", annoS=NULL, annoI=NULL) {
     
     platform <- sdfPlatform(sdf)
     if (is.null(annoS)) {
-        annoS <- sesameData_getAnno(sprintf("%s/%s.%s.snp_overlap_b151.rds",
+        annoS <- sesameAnno_get(sprintf(
+            "Anno/%s/%s.%s.snp_overlap_b151.rds",
             platform, platform, genome)) }
     betas <- getBetas(sdf)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
@@ -53,8 +54,10 @@ formatVCF <- function(sdf, vcf=NULL, genome="hg19", annoS=NULL, annoI=NULL) {
         names(annoS), annoS$REF, annoS$ALT, GS, ifelse(GS>20,'PASS','FAIL'),
         sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
 
-    if (is.null(annoI)) { annoI <- sesameData_getAnno(sprintf(
-        "%s/%s.%s.typeI_overlap_b151.rds", platform, platform, genome)) }
+    if (is.null(annoI)) {
+        annoI <- sesameAnno_get(sprintf(
+            "Anno/%s/%s.%s.typeI_overlap_b151.rds",
+            platform, platform, genome)) }
     af <- getAFTypeIbySumAlleles(sdf, known.ccs.only=FALSE)
     af <- af[names(annoI)]
     vafs <- ifelse(annoI$In.band == 'REF', af, 1-af)

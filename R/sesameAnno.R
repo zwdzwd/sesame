@@ -12,6 +12,7 @@ anno_base_default_version <- 1
 #' @importFrom readr cols
 #' @importFrom readr col_integer
 #' @importFrom readr col_character
+#' @importFrom GenomeInfoDb Seqinfo
 #' @examples
 #' 
 #' ## avoid testing since it depends on external host
@@ -41,6 +42,12 @@ sesameAnno_getManifestDF <- function(platform, genome=NULL,
             .default=col_character()))
 }
 
+guess_chrmorder <- function(chrms) {
+    chrms1 <- chrms[!(chrms %in% c("chrX","chrY","chrM"))]
+    paste0("chr",c(as.character(seq_len(max(as.integer(str_replace(
+        sort(unique(chrms1)), "chr", "")), na.rm=TRUE))), c("X","Y","M")))
+}
+
 buildManifestGRanges <- function(
     platform, genome = NULL, version = anno_base_default_version,
     decoy = FALSE, columns = NULL) {
@@ -65,11 +72,11 @@ buildManifestGRanges <- function(
     df <- df[!is.na(df$CpG_chrm) & !is.na(df$CpG_beg) & !is.na(df$CpG_end),]
     df <- df[df$CpG_chrm %in% chrms,]
     gr <- GRanges(df$CpG_chrm,
-        IRanges(df$CpG_beg+1, df$CpG_end),
+        IRanges::IRanges(df$CpG_beg+1, df$CpG_end),
         strand = ifelse(df$mapFlag_A=="0", "+", "-"),
         seqinfo = Seqinfo(chrms))
     if (length(columns) > 0) {
-        mcols(gr) <- df[,columns] }
+        SummarizedExperiment::mcols(gr) <- df[,columns] }
     names(gr) <- df$Probe_ID
     sort(gr, ignore.strand = TRUE)
 }
@@ -179,12 +186,12 @@ sesameAnno_get <- function(
 #' @param dest_dir if not NULL, download to this directory
 #' @return annotation file
 #' @examples
-#' sesameData_getAnno(NULL)
+#' cat("Deprecated!")
 #' 
 #' @export
 sesameData_getAnno <- function(
     title, version = anno_base_default_version, dest_dir = NULL) {
-    .Deprecated("anno_get")
+    .Deprecated("sesameAnno_get")
 }
 
 valid_url <- function(url_in,t=2){

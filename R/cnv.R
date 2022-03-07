@@ -196,7 +196,6 @@ binSignals <- function(probe.signals, bin.coords, probe.coords) {
 
 #' Segment bins using DNAcopy
 #'
-#' @import DNAcopy
 #' @param bin.signals bin signals (input)
 #' @param bin.coords bin coordinates
 #' @return segment signal data frame
