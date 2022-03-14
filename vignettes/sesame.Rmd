@@ -62,10 +62,9 @@ path of IDAT file pairs. The following code uses a directory that contains
 built-in two HM27 IDAT pairs to demonstrates the use of the function:
 
 
-```{r}
+```{r base1, eval=FALSE}
 idat_dir = system.file("extdata/", package = "sesameData")
 betas = openSesame(idat_dir, BPPARAM = BiocParallel::MulticoreParam(2))
-head(betas)
 ```
 
 Under the hood, the function performs the following tasks including searching
@@ -75,7 +74,7 @@ in as `SigDF` objects (the `readIDATpair` function), preprocessing the signals
 levels ($\beta$ values, the `getBetas` function). Here is what the `openSesame`
 function call above is equivalent to:
 
-```{r}
+```{r base2, eval=FALSE}
 idat_dir = system.file("extdata/", package = "sesameData")
 betas = do.call(cbind, BiocParallel::bplapply(
     searchIDATprefixes(idat_dir), function(pfx) {
@@ -128,7 +127,7 @@ Note that SeSAMe automatically detects and matches up the green and red signal
 files for the same sample. `SigDF` is and can be regarded and treated as a
 regular `data.frame`:
 
-```{r}
+```{r base3}
 sdf = sesameDataGet('EPIC.1.SigDF') # an example SigDF
 head(sdf) # peek into the internals
 ```
@@ -136,7 +135,7 @@ head(sdf) # peek into the internals
 One can summarize resulting `SigDF` using the 'sesameQC_calcStats'
 function (more QC can be found in the [quality control vignette](QC.html)).
 
-```{r}
+```{r base4}
 sesameQC_calcStats(sdf, "numProbes")
 ```
 
@@ -153,7 +152,7 @@ SeSAMe-compatible manifest is by following internal manifests for a
 SeSAMe-supported platform. They can be retrieved with the `sesameDataGet`
 function:
 
-```{r}
+```{r base5}
 mft = sesameDataGet("MM285.address")$ordering
 ```
 
@@ -163,7 +162,7 @@ column and `col` column is left as `NA`.  For example, one can check that both
 `M` and `col` columns are filled with the Infinium-I probes (in mouse array
 this can be indicated by a `_[TBN][CON]1` suffix):
 
-```{r}
+```{r base6}
 head(mft[!is.na(mft$col),])
 ```
 
@@ -186,7 +185,7 @@ R looping functions lets you process many IDATs without having to specify all
 IDAT names. `searchIDATprefixes` returns a named vector of prefixes with
 associated `Red` and `Grn` files, which can be given to `readIDATpair`:
 
-```{r}
+```{r base7}
 sdfs = lapply(searchIDATprefixes(system.file(
     "extdata/", package = "sesameData")), readIDATpair)
 ```
@@ -205,7 +204,7 @@ the `SigDF` as input.  The output is a named vector with probe ID as names.
 For example, the following commands read in one sample and convert it to
 $\beta$ values.
 
-```{r}
+```{r base8}
 betas = getBetas(sdf) # retrieve beta values
 head(betas)
 ```
@@ -228,7 +227,7 @@ a `SigDF` and returns a processed `SigDF`. The 2nd argument of `prepSesame`
 function is a string that encodes the preprocessing functions and the order of
 their execution. For example,
 
-```{r}
+```{r base9, eval=FALSE}
 sdf = sesameDataGet('EPIC.1.SigDF')
 sdf_preped = prepSesame(sdf, "DB")
 ```
@@ -243,7 +242,7 @@ Functions](#Preprocessing_Functions) section below for a more detailed
 discussion of these functions). The following table lists the best
 preprocessing strategy based on our experience.
 
-```{r echo=FALSE, result="asis"}
+```{r base10, echo=FALSE, result="asis"}
 library(knitr)
 df <- data.frame(rbind(
    c("EPIC/HM450", "human", "QCDPB"),
@@ -274,7 +273,7 @@ important when those arrays are used on non-reference organisms.
 The `prepSesameList` function lists all the available codes and the associated
 preprocessing functions.
 
-```{r}
+```{r base11}
 prepSesameList()
 ```
 
@@ -304,7 +303,7 @@ and probes with too much influence from signal background. We recommend the
 `pOOBAH` algorithm that was based on Infinium-I probe out-of-band signal for
 calibrating the distribution of the signal background:
 
-```{r}
+```{r base12, eval=FALSE}
 sum(sdf$mask)  # before pOOBAH, only quality mask
 sum(pOOBAH(sdf)$mask) # after pOOBAH, expect more probes
 sum(pOOBAH(resetMask(sdf))$mask) # pOOBAH-only masking
@@ -315,7 +314,7 @@ mask.  For example, one may want to upload the p-values to GEO separately. In
 those cases one can use the `return.pval` option and add pvalue-based mask
 later.
 
-```{r}
+```{r base13}
 pvals = pOOBAH(sdf, return.pval=TRUE)
 sdf2 = addMask(sdf, pvals > 0.05) # default, recommend between 0.05 and 0.2
 ```
@@ -329,7 +328,7 @@ and optionally with more aggressive subtraction (`scrub`). One can use
 following $\beta$ value distribution plot to see the effect of background
 subtraction. For example, the two (M and U) modes are further polarized.
 
-```{r fig.width=5, fig.height=5, fig.keep="last"}
+```{r base14, fig.width=5, fig.height=5, fig.keep="last"}
 par(mfrow=c(2,1), mar=c(3,3,2,1))
 sesameQC_plotBetaByDesign(sdf, main="Before", xlab="\beta")
 sesameQC_plotBetaByDesign(noob(sdf), main="After", xlab="\beta")
@@ -342,7 +341,7 @@ channel. SeSAMe offers two flavors of dye bias correction: linear scaling
 (`dyeBiasCorr`) and nonlinear scaling (`dyeBiasCorrTypeINorm`). Linear scaling
 equalize the mean of all probes from the two color channel.
 
-```{r fig.width=7, fig.height=4, fig.keep="last", message=FALSE}
+```{r base15, fig.width=7, fig.height=4, fig.keep="last", message=FALSE}
 par(mfrow=c(1,2))
 sesameQC_plotRedGrnQQ(dyeBiasCorr(sdf), main="Before") # linear correction
 sesameQC_plotRedGrnQQ(dyeBiasNL(sdf), main="After")   # nonlinear correction
@@ -359,7 +358,7 @@ values of Type-I probes.
 Sometimes Infinium-I channel spec is inaccurate in the manifest. We can
 infer the channel from data.
 
-```{r}
+```{r base16}
 sdf.InfICorrected = inferInfiniumIChannel(sdf, verbose=TRUE)
 ```
 
@@ -378,10 +377,10 @@ based on our experience) to match Infinium-I and Infinium-II beta value
 distribution. We **do not** recommend the use of this (or any such methods) for
 all data unless your data is known to be relatively well-behaving in
 methylation distribution, for protection of real biological signal. This
-function assumes Infinium-I/II probes are similar in $beta$ value distribution
+function assumes Infinium-I/II probes are similar in $\beta$ value distribution
 in the unmethylated and methylated mode.
 
-```{r fig.width=5, fig.height=5, fig.keep="last", message=FALSE}
+```{r base17, fig.width=5, fig.height=5, fig.keep="last", message=FALSE}
 par(mfrow=c(2,1), mar=c(3,3,2,1))
 sesameQC_plotBetaByDesign(sdf, main="Before", xlab="\beta")
 sesameQC_plotBetaByDesign(matchDesign(sdf), main="After", xlab="\beta")
@@ -400,7 +399,7 @@ color. This infrastructure is nimble to allow change of color channel, and mask
 species, strain, population etc. For example, the following data.frame
 operation let you easily peek into the signal intensities.
 
-```{r}
+```{r base18}
 head(sdf[sdf$col != "2",])      # Infinium-I probes
 head(sdf[sdf$col == "2",])      # Infinium-II probes
 ```
@@ -411,7 +410,7 @@ control probes will be parsed and included as regulator probes (except with a
 `ctl` prefix in the probe ID). The control probe annotation can be found using
 the following function:
 
-```{r}
+```{r base19}
 head(controls(sdf))
 ```
 
@@ -422,7 +421,7 @@ values show up having NA values. This NA-masking is controlled internally using
 the `mask` column in `SigDF`. To check probes to be NA-masked in a `SigDF`, one
 can use the `mask` function
 
-```{r}
+```{r base20}
 sum(sdf$mask)   # number of probes to be NA-masked
 sum(is.na(getBetas(sdf))) # should be the same as above
 ```
@@ -441,13 +440,13 @@ function. For more details of some of the maskings in `qualityMask` and
 `listAvailableMasks(sdf)`, one can refer to [Zhou et
 al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
 
-```{r, message=FALSE}
+```{r base21, message=FALSE}
 sdf = qualityMask(sesameDataGet('EPIC.1.SigDF'))
 ```
 
 One can clear existing masking by the `resetMask` function.
 
-```{r}
+```{r base22}
 sum(sdf$mask)  # before resetting
 sum(resetMask(sdf)$mask)  # after resetting, expect 0
 ```
@@ -455,7 +454,7 @@ sum(resetMask(sdf)$mask)  # after resetting, expect 0
 The `getBetas` function can also ignore NA-masking when extracting beta
 values by taking a `mask=FALSE` option:
 
-```{r}
+```{r base23}
 sum(is.na(getBetas(sdf, mask=FALSE)))  # expect 0
 ```
 
@@ -477,7 +476,7 @@ explicitly added by the function `qualityMask`:
 `SigDF` can be written as and read from plain text file (e.g, tab-delimited
 files and comma-delimited files) with the compliant column names (see above).
 
-```{r}
+```{r base24, eval=FALSE}
 tsv_file_path = sprintf("%s/sigdf.tsv", tempdir())
 sdf_write_table(sdf, file=tsv_file_path, sep="\t", quote=FALSE) # save as tsv
 sdf2 = sdf_read_table(tsv_file_path)                            # read back

@@ -13,7 +13,7 @@ vignette: >
 
 ```{r message=FALSE, results="hide"}
 library(sesame)
-sesameDataCacheAll()
+sesameDataCache()
 ```
 
 # Calculate quality metrics
@@ -25,17 +25,19 @@ functions can be accessed through the `sesameQC_calcStats`
 function. `sesameQC_calcStats()` calculates QC stats of one SigDF and returns a
 single object of the class `sesameQC`.
 
-```{r}
+```{r qc1}
 sdf <- sesameDataGet('EPIC.1.SigDF')
-sesameQC_calcStats(sdf)
+qc <- sesameQC_calcStats(sdf, c("dyeBias", "detection"))
+qc
 ```
 
-The choice of QC metrics depends on the 2nd argument of the
-`sesameQC_calcStats` function. This argument is optional and can take one or a
-list of the following keys. For example, "intensity" generates signal intensity
-related quality metrics. By default, all stats will be calculated. The
-following demonstrates the use of these functions. We consider signal detection
-the most important QC metric.
+The `sesameQC_calcStats` function returns an S4 `sesameQC` object. The choice
+of QC metrics depends on the 2nd argument of the `sesameQC_calcStats`
+function. This argument is optional and can take one or a list of the following
+keys. For example, "intensity" generates signal intensity related quality
+metrics. When the 2nd argument is not given, all stats will be calculated by
+default. The following demonstrates the use of these functions. We consider
+signal detection the most important QC metric.
 
 ```{r echo=FALSE}
 library(knitr)
@@ -58,30 +60,23 @@ kable(data.frame(
 
 One can calculate specific group(s) of metrics by giving the 2nd argument: e.g.,
 
-```{r}
-qc <- sesameQC_calcStats(sdf, c("dyeBias", "detection"))
-qc
-```
+One can retrieve the actual stats using the sesameQC_getStats
 
-The `sesameQC_calcStats` function returns an S4 `sesameQC` object. One can
-retrieve the actual stats using the sesameQC_getStats
-
-```{r}
+```{r qc2}
 sesameQC_getStats(qc, "frac_dt")
 ```
 
 One can combine multiple sesameQC into a data frame:
 
-```{r}
+```{r eval=FALSE}
 sdfs <- sesameDataGet("EPIC.5.SigDF.normal")
 df <- do.call(rbind, lapply(sdfs, function(sdf)
    as.data.frame(sesameQC_calcStats(sdf, "detection"))))
-head(df)
 ```
 
 # Rank quality metrics
 
-```{r echo=FALSE}
+```{r qc4, echo=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
@@ -90,7 +85,7 @@ SeSAMe features functions that compare your sample with public data sets. The
 `sesameQC` calculated from public datasets. It shows the rank percentage of the
 input sample as well as the number of datasets compared.
 
-```{r}
+```{r qc5}
 sdf <- sesameDataGet('EPIC.1.SigDF')
 qc <- sesameQC_calcStats(sdf, "intensity")
 qc
@@ -111,7 +106,7 @@ reasons including failed detection, high background, putative low quality
 probes etc. To compare samples in terms of detection success rate, one can use
 the `sesameQC_plotBar` function in the following way:
 
-```{r fig.height=3, fig.width=5}
+```{r fig.height=3, fig.width=5, eval=FALSE}
 sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, "detection"))
 ```
 
@@ -120,7 +115,7 @@ sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, "detection"))
 Dye bias is shown by an off-diagonal q-q plot of the red (x-axis) and green
 signal (y-axis).
 
-```{r fig.height=5, fig.width=5}
+```{r fig.height=5, fig.width=5, eval=FALSE}
 sesameQC_plotRedGrnQQ(sdf)
 ```
 
@@ -130,7 +125,7 @@ Beta value is more influenced by signal background for probes with low signal
 intensities. The following plot shows this dependency and the extent of probes
 with low signal intensity.
 
-```{r fig.height=5, fig.width=5}
+```{r fig.height=5, fig.width=5, eval=FALSE}
 sesameQC_plotIntensVsBetas(sdf)
 ```
 
@@ -140,7 +135,7 @@ Extra SNP allele frequencies can be obtained by summing up methylated and
 umethylated alleles of color-channel-switching probes. These allele frequencies
 can be combined with explicit SNP probes:
 
-```{r}
+```{r eval=FALSE}
 head(getAFs(sdf)) # combined
 head(getAFTypeIbySumAlleles(sdf)) # AFs from only color-channel-switching
 ```
@@ -148,15 +143,15 @@ head(getAFTypeIbySumAlleles(sdf)) # AFs from only color-channel-switching
 SeSAMe can extract explicit and Infinium-I-derived SNPs to identify potential
 sample swaps.
 
-```{r fig.height=5, fig.width=5, message=FALSE}
-sesameQC_plotHeatSNPs(sdfs[1:3])
+```{r fig.height=5, fig.width=5, message=FALSE, eval=FALSE}
+sesameQC_plotHeatSNPs(sdfs)
 ```
 
 One can also output the allele frequencies and output a VCF file with
 genotypes. This requires additional SNP information (ref and alt alleles),
 which can be downloaded using the following code:
 
-```{r}
+```{r eval=FALSE}
 head(formatVCF(sdf))
 ```
 
@@ -172,7 +167,7 @@ C/T-extension probes. Details of this method can be found in
 [Zhou et al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
 The closer the score to 1.0, the more complete the bisulfite conversion.
 
-```{r}
+```{r eval=FALSE}
 sdf <- sesameDataGet('EPIC.1.SigDF')
 bisConversionControl(sdf)
 ```
