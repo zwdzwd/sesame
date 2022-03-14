@@ -82,18 +82,15 @@ betas = openSesame(sdf, prep="QCDPB")
 By default the repeat and suboptimally designed probes are masked by `NA`.
 These suboptimally designed probes may take a new probe ID prefix ("uk") in
 addition to the "cg"/"ch"/"rs" typically seen. These masking is done by the
-`qualityMask` function (or `Q` in prep codes).
-
-```{r nh6}
-sum(is.na(getBetas(sdf)))
-```
-
-To override these probes, one can use the `resetMask` function (the `0` code in
-`openSesame`) to remove the default masking. We recommend using it after
-preprocessing function so that preprocessing can only use reliable probes. Note
-that there are still remaining NAs due to detection p-values (from pOOBAH):
+`qualityMask` function (or `Q` in prep codes).  To override these probes, one
+can use the `resetMask` function (the `0` code in `openSesame`) to remove the
+default masking. We recommend using it after preprocessing function so that
+preprocessing can only use reliable probes. Note that there are still remaining
+NAs due to detection p-values (from pOOBAH):
 
 ```{r nh7, message=TRUE}
+sdf = sesameDataGet('MM285.1.SigDF')
+sum(is.na(getBetas(sdf)))
 sum(is.na(openSesame(sdf, prep="TQCD0PB")))
 ```
 
