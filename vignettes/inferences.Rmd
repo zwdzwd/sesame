@@ -15,16 +15,17 @@ SeSAMe implements inference of sex, age, ethnicity. These are valuable
 information for checking the integrity of the experiment and detecting sample
 swaps.
 
-```{r echo=FALSE, message=FALSE}
+```{r inf1, echo=FALSE, message=FALSE}
 library(sesame)
-sesameDataCacheAll()
+sesameDataCache()
+sdf = sesameDataGet('EPIC.1.SigDF')
 ```
 
 # Sex
 
 Sex is inferred based on our curated X-linked probes and Y chromosome probes
 excluding pseudo-autosomal regions.
-```{r}
+```{r inf2, eval=FALSE}
 sdf = sesameDataGet('EPIC.1.SigDF')
 inferSex(sdf)
 inferSexKaryotypes(sdf)
@@ -34,14 +35,15 @@ inferSexKaryotypes(sdf)
 
 Ethnicity is inferred using a random forest model trained based on both the
 built-in SNPs (`rs` probes) and channel-switching Type-I probes.
-```{r}
+```{r inf3}
+sdf = sesameDataGet('EPIC.1.SigDF')
 inferEthnicity(sdf)
 ```
 
 # Age
 
 SeSAMe provides age regression a la the Horvath 353 model.
-```{r}
+```{r inf4}
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 predictAgeHorvath353(betas)
 ```
@@ -51,13 +53,13 @@ predictAgeHorvath353(betas)
 SeSAMe performs copy number variation in three steps: 1) normalizes the signal
 intensity using a copy-number-normal data set; 2) groups adjacent probes into
 bins; 3) runs DNAcopy internally to group bins into segments.
-```{r, message=FALSE, fig.width=6}
-sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
-segs <- cnSegmentation(sdf, sdfs.normal)
+```{r inf5, message=FALSE, fig.width=6, eval=FALSE}
+sdf = sesameDataGet('EPIC.1.SigDF')
+segs <- cnSegmentation(sdf)
 ```
 
 To visualize segmentation in SeSAMe,
-```{r, message=FALSE, fig.width=6}
+```{r inf6, message=FALSE, fig.width=6, eval=FALSE}
 visualizeSegments(segs)
 ```
 
@@ -66,10 +68,104 @@ visualizeSegments(segs)
 SeSAMe estimates leukocyte fraction using a two-component model.This function
 works for samples whose targeted cell-of-origin is not related to white blood
 cells.
-```{r, message=FALSE}
+```{r inf7, message=FALSE}
 betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 estimateLeukocyte(betas.tissue)
 ```
+
+# Genomic Privacy
+
+The goal of data sanitization is to modifiy IDAT files in place, so they can be
+released to public domain without privacy leak. This will be achieved by
+deIdentification.
+
+```{r inf8, message=FALSE, warning=FALSE, include=FALSE}
+library(sesame)
+sesameDataCacheAll()
+```
+
+Let's take DNA methylation data from the HM450 platform for example.
+```{r inf9, eval=FALSE}
+tmp = tempdir()
+res_grn = sesameAnno_get("Test/3999492009_R01C01_Grn.idat", dest_dir=tmp)
+res_red = sesameAnno_get("Test/3999492009_R01C01_Red.idat", dest_dir=tmp)
+```
+                                                   
+## De-identify by Masking
+
+This first method of deIdentification masks SNP probe intensity mean by zero.
+As a consequence, the allele frequency will be 0.5. 
+
+```{r inf10, eval=FALSE}
+
+deIdentify(res_grn$dest_file, sprintf("%s/deidentified_Grn.idat", tmp))
+deIdentify(res_red$dest_file, sprintf("%s/deidentified_Red.idat", tmp))
+
+betas1 = getBetas(readIDATpair(sprintf("%s/Test/3999492009_R01C01", tmp)))
+betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", tmp)))
+
+head(betas1[grep('rs',names(betas1))]) 
+head(betas2[grep('rs',names(betas2))])
+```
+
+Note that before deIdentify, the rs values will all be different. After
+deIdentify, the rs values will all be masked at an intensity of 0.5. 
+
+## De-identify by Scrambling
+
+This second method of deIdentification will scramble the intensities using
+a secret key to help formalize a random number. Therefore, randomize needs
+to be set to TRUE. 
+
+```{r inf11, eval=FALSE}
+
+my_secret <- 13412084
+set.seed(my_secret)
+
+deIdentify(res_grn$dest_file,
+    sprintf("%s/deidentified_Grn.idat", tmp), randomize=TRUE)
+
+my_secret <- 13412084
+set.seed(my_secret)
+deIdentify(res_red$dest_file,
+    sprintf("%s/deidentified_Red.idat", tmp), randomize=TRUE)
+
+betas1 = getBetas(readIDATpair(sprintf("%s/Test/3999492009_R01C01", tmp)))
+betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", tmp)))
+
+head(betas1[grep('rs',names(betas1))]) 
+head(betas2[grep('rs',names(betas2))]) 
+
+```
+Note that the rs values are scrambled after deIdentify.  
+
+## Re-identify
+
+To restore order of the deIdentified intensities, one can re-identify IDATs.
+The reIdentify function can thus restore the scrambled SNP intensities. 
+
+```{r inf12, eval=FALSE}
+
+my_secret <- 13412084
+set.seed(my_secret)
+
+reIdentify(sprintf("%s/deidentified_Grn.idat", tmp),
+    sprintf("%s/reidentified_Grn.idat", tmp))
+
+my_secret <- 13412084
+set.seed(my_secret)
+reIdentify(sprintf("%s/deidentified_Red.idat", tmp),
+    sprintf("%s/reidentified_Red.idat", tmp))
+
+betas1 = getBetas(readIDATpair(sprintf("%s/Test/3999492009_R01C01", tmp)))
+betas2 = getBetas(readIDATpair(sprintf("%s/reidentified", tmp)))
+
+head(betas1[grep('rs',names(betas1))]) 
+head(betas2[grep('rs',names(betas2))]) 
+```
+
+Note that reIdentify restored the values. Subsequently, they are the same as
+betas1. 
 
 # Session Info
 

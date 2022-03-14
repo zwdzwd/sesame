@@ -39,7 +39,7 @@ engineering, which is currently in development.
 
 The following commands prepares the use of KnowYourCG:
 
-```{r load-depenencies, results="hide", message=FALSE, warning=FALSE}
+```{r ky1, load-depenencies, results="hide", message=FALSE, warning=FALSE}
 library(sesame)
 sesameDataCache()
 ```
@@ -47,7 +47,7 @@ sesameDataCache()
 Our example uses a specific mouse design group as input (PGCMeth, methylated in
 primoridal germ cells). First get the CG list using the following code:
 
-```{r message=FALSE}
+```{r ky2, message=FALSE}
 query <- KYCG_getDBs("MM285.designGroup")[["PGCMeth"]]
 head(query)
 ```
@@ -55,7 +55,7 @@ head(query)
 Now test the enrichment over database groups. By default, KYCG will select all
 the categorical groups and overlapping genes (CpGs associated with a gene).
 
-```{r fig.width=8, fig.height=5, message=FALSE}
+```{r ky3, fig.width=8, fig.height=5, message=FALSE}
 results_pgc <- testEnrichment(query)
 head(results_pgc)
 ```
@@ -63,7 +63,7 @@ head(results_pgc)
 We can visualize the result of this test using the `KYCG_plotEnrichAll`
 function:
 
-```{r}
+```{r ky4}
 KYCG_plotEnrichAll(results_pgc)
 ```
 
@@ -82,7 +82,7 @@ and facilitate selective testing, we have organized our database sets into
 different groups. Each group contains one or multiple databases. Here is how to
 find the names of pre-built database groups:
 
-``` {r list-data, eval=TRUE, echo=TRUE}
+``` {r ky5, list-data, eval=TRUE, echo=TRUE}
 KYCG_listDBGroups("MM285")
 ```
 
@@ -103,14 +103,14 @@ guessing when a unique substring is given. For example, the following
 database. Let's look at the database group which we had used as the query
 (query and database are reciprocal) in our first example:
 
-``` {r cache-data, eval=TRUE, warning=FALSE}
+``` {r ky6, cache-data, eval=TRUE, warning=FALSE}
 dbs <- KYCG_getDBs("MM285.design")
 ```
 
 In total, 32 datasets have been loaded for this group. We can get the "PGCMeth"
 as a list element:
 
-``` {r view-data1, eval=TRUE, warning=FALSE}
+``` {r ky7, view-data1, eval=TRUE, warning=FALSE}
 str(dbs["PGCMeth"])
 ```
 
@@ -131,7 +131,7 @@ correlation with a phenotypic trait, and many others. For example, we could
 consider CpGs that show tissue-specific methylation as the query. We are
 getting the B-cell-specific hypomethylation.
 
-```{r message=FALSE}
+```{r ky8, message=FALSE}
 library(SummarizedExperiment)
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 query <- df$Probe_ID[df$branch == "B_cell"]
@@ -148,7 +148,7 @@ and database sets. They are shown with the respective testing scenario in the
 table below. `testEnrichment`, `testEnrichmentGSEA` are for Fisher's exact test
 and GSEA respectively.
 
-```{r echo = FALSE, results="asis"}
+```{r ky9, echo = FALSE, results="asis"}
 library(knitr)
 df = data.frame(
     "Continuous DB"=c("Correlation","GSEA"),
@@ -172,7 +172,7 @@ given platform. It can either be passed in as an argument called
 ```platform```. If neither of these are supplied, the universe set will be
 implied from the probes.
 
-```{r run-test-single, echo=TRUE, eval=TRUE}
+```{r ky10, run-test-single, echo=TRUE, eval=TRUE}
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 
 query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
@@ -205,20 +205,20 @@ overlap between the two sets, so that metric is reported as well in the
 
 We can visualize the results in a dot plot:
 
-```{r fig.width=5, fig.height=3.5}
+```{r ky11, fig.width=5, fig.height=3.5}
 KYCG_plotDot(results, n_max=20)
 ```
 
 or a bar plot:
 
-```{r fig.width=6.5, fig.height=4, message=FALSE}
+```{r ky12, fig.width=6.5, fig.height=4, message=FALSE}
 KYCG_plotBar(results, n_max=15)
 ```
  
 or a volcano plot. Here we need a two-tailed test to show both enrichment and
 depletion (the default is one-tailed):
 
-```{r fig.width=6, fig.height=4, warning=FALSE}
+```{r ky13, fig.width=6, fig.height=4, warning=FALSE}
 query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
 results_2tailed <- testEnrichment(query, "TFBS", alternative = "two.sided")
 KYCG_plotVolcano(results_2tailed)
@@ -226,14 +226,14 @@ KYCG_plotVolcano(results_2tailed)
 
 and a Waterfall plot:
 
-```{r fig.width=6, fig.height=4.5}
+```{r ky14, fig.width=6, fig.height=4.5}
 KYCG_plotWaterfall(results)
 ```
 
 If you have a list of cg groups and they were tested against the same set of
 databases, you can make a point range plot to summarize the overall trend:
 
-```{r fig.width=3.5, fig.height=4}
+```{r ky15, fig.width=3.5, fig.height=4}
 ## pick some big TFBS-overlapping CpG groups
 cg_lists <- KYCG_getDBs("MM285.TFBS", silent=TRUE)
 queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
@@ -257,7 +257,7 @@ with the query set, we can greatly reduce the number of tests. For this reason,
 the gene enrichment analysis is a special case of these enrichment tests. We
 can perform this analysis using the ```KYCG_buildGeneDBs()``` function.
 
-```{r fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
+```{r ky16, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE}
 query <- names(sesameData_getProbesByGene("Dnmt3a", "MM285"))
 results <- testEnrichment(query, KYCG_buildGeneDBs(query, max_distance=100000))
 results[,c("dbname","estimate","gene_name","FDR", "nQ", "nD", "overlap")]
@@ -265,7 +265,7 @@ results[,c("dbname","estimate","gene_name","FDR", "nQ", "nD", "overlap")]
 
 Using these sample results, we can plot a volcano plot and lollipop plot.
 
-```{r fig.width=5, fig.height=4, echo=TRUE}
+```{r ky17, fig.width=5, fig.height=4, echo=TRUE}
 KYCG_plotLollipop(results, label="gene_name")
 ```
 
@@ -275,7 +275,7 @@ As expected, we recover our targeted gene (Dnmt3a).
 
 One can get all the genes associated with a probe set by
 
-```{r}
+```{r ky18}
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
 genes <- sesameData_getGenesByProbes(query)
@@ -286,7 +286,7 @@ Here we demonstrate the use of
 [g:Profiler2](https://biit.cs.ut.ee/gprofiler/gost) to perform Gene ontology
 enrichment analysis:
 
-```{r eval = FALSE}
+```{r ky19, eval = FALSE}
 library(gprofiler2)
 
 ## use gene name
@@ -306,7 +306,7 @@ gostplot(gostres)
 KnowYourCG builds in several metagene/meta-feature coordinates. One can test
 enrichment over meta genes or simply plot the mean over metagenes:
 
-```{r plot-meta1, fig.width=5, fig.height=4}
+```{r ky20, plot-meta1, fig.width=5, fig.height=4, eval=FALSE}
 sdf <- sesameDataGet("EPIC.1.SigDF")
 KYCG_plotMeta(getBetas(sdf))
 ```
@@ -323,11 +323,11 @@ individually. One is a database set for CpG density and the other is a database
 set corresponding to the distance of the nearest transcriptional start site
 (TSS) to each probe.
 
-```{r run-test-data, echo=TRUE, eval=TRUE}
+```{r ky21, run-test-data, echo=TRUE, eval=TRUE}
 query <- KYCG_getDBs("KYCG.MM285.designGroup")[["TSS"]]
 ```
 
-```{r echo=TRUE, eval=TRUE, message=FALSE}
+```{r ky22, echo=TRUE, eval=TRUE, message=FALSE}
 res <- testEnrichmentGSEA(query, "MM285.seqContextN")
 res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
 ```
@@ -344,7 +344,7 @@ Alternatively one can test the enrichment of a continuous query with discrete
 databases. Here we will use the methylation level from a sample as the query
 and test it against the chromHMM chromatin states.
 
-```{r warning=FALSE}
+```{r ky23, warning=FALSE, eval=FALSE}
 beta_values <- getBetas(sesameDataGet("MM285.1.SigDF"))
 res <- testEnrichmentGSEA(beta_values, "MM285.chromHMM")
 res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
@@ -364,7 +364,7 @@ samples with 20k probes. The samplesheet includes UIDs pertaining to the sample
 and several categorical/numerical features. To use this data for a linear
 model, we will extract the most relevant prevalent features.
 
-``` {r run-feature-engineering-get-data, echo=TRUE, eval=TRUE}
+``` {r ky24, run-feature-engineering-get-data, echo=TRUE, eval=TRUE}
 library(SummarizedExperiment)
 betas = assay(sesameDataGet('MM285.20Kx467.SE'))
 ```
@@ -377,7 +377,7 @@ these pre-curated database sets by using their beta value summary statistics as
 features instead. We will calculate the summary statistics for the betas matrix
 using a list of database sets. The default is to calculate the mean.
 
-```{r run-feature-engineering-statistics}
+```{r ky25, run-feature-engineering-statistics}
 stats <- dbStats(betas, 'MM285.chromHMM')
 head(stats[, 1:5])
 ```
@@ -385,7 +385,7 @@ head(stats[, 1:5])
 Just from the few database set means above, we can see that TSS are
 consistently hypomethylated, which is consistent with known biology.
 
-```{r fig.width=6, fig.height=6}
+```{r ky26, fig.width=6, fig.height=6}
 library(wheatmap)
 WHeatmap(both.cluster(stats)$mat, xticklabels=TRUE,
     cmp=CMPar(stop.points=c("blue","yellow")))

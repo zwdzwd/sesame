@@ -21,7 +21,7 @@ values (DNA methylation levels) on known co-variates (e.g., case vs control)
 using linear modeling. This general supervised learning framework
 identifies CpG loci whose differential methylation is associated with known
 co-variates. Let's first load needed packages
-```{r message=FALSE}
+```{r model1, message=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)
 library(sesame)
 sesameDataCacheAll()
@@ -38,7 +38,7 @@ The dataset is stored
 in a `SummarizedExperiment` object, which contains a data matrix combined
 with column-wise metadata accessible with `colData`:
 
-```{r message=FALSE}
+```{r model2, message=FALSE}
 se = sesameDataGet("MM285.10.tissues")[1:1000,] # use a random 1000 probes
 colData(se)
 ```
@@ -53,7 +53,7 @@ This can be done using the `checkLevels` function.
 In the following, we will test for both sex and
 tissue as co-variates using the `checkLevels` function:
 
-```{r}
+```{r model3}
 se_ok = (checkLevels(assay(se), colData(se)$sex) &
     checkLevels(assay(se), colData(se)$tissue))
 sum(se_ok)
@@ -70,7 +70,7 @@ for-categorical-variables/)).
 For example, to use `Colon` as the
 reference tissue and `Female` as the reference sex, one can do the following
 
-```{r}
+```{r model4}
 colData(se)$tissue <- relevel(factor(colData(se)$tissue), "Colon")
 colData(se)$sex <- relevel(factor(colData(se)$sex), "Female")
 ```
@@ -84,7 +84,7 @@ corresponding slope test and goodness-of-fit test (F-test holding out each
 contrast variable). All these results are returned in an
 object of class `DMLSummary`:
 
-```{r}
+```{r model5}
 smry = DML(se, ~tissue + sex)
 smry
 ```
@@ -99,7 +99,7 @@ linear model (as would be returned by `summary(lm())`. The
 into a data frame with rows corresponding to CpGs/loci and columns containing
 the slopes and p-values of each variable.
 
-```{r}
+```{r model6}
 test_result = summaryExtractTest(smry)
 colnames(test_result) # the column names, show four groups of statistics
 head(test_result)
@@ -157,7 +157,7 @@ completed in the `DML` function. The test result is recorded
 in the **FPval_** columns. For example, to get all CpGs that are methylated
 specific to sex,
 
-```{r}
+```{r model7}
 test_result %>% dplyr::filter(FPval_sex < 0.05, Eff_sex > 0.1) %>%
     select(FPval_sex, Eff_sex)
 ```
@@ -170,7 +170,7 @@ monoallelically methylated.
 
 We can define CpG methylation as sex-specific, tissue-specific or both
 
-```{r}
+```{r model8}
 test_result %>%
     mutate(sex_specific =
         ifelse(FPval_sex < 0.05 & Eff_sex > 0.1, TRUE, FALSE)) %>%
@@ -189,14 +189,14 @@ From the test result, we can also ask whether the DNA methylation might
 be different between two sexes or two tissues. For example, `Est_sexMale`
 compares male from females. The following code creates a volcano plot.
 
-```{r}
+```{r model9}
 ggplot(test_result) + geom_point(aes(Est_sexMale, -log10(Pval_sexMale)))
 ```
 
 Likewise, we can ask whether DNA methylation might be different between fat
 and colon. We can do
 
-```{r}
+```{r model10}
 ggplot(test_result) + geom_point(aes(Est_tissueFat, -log10(Pval_tissueFat)))
 ```
 
@@ -206,14 +206,14 @@ The variable tested in the `DML` function can be continuous.
 Suppose we are interested in `age` besides `sex`. We will call the
 same function but with the following formula:
 
-```{r}
+```{r model11}
 smry2 = DML(se, ~ age + sex)
 test_result2 = summaryExtractTest(smry2) %>% arrange(Est_age)
 ```
 
 Let's verify the CpGs positively associated with age.
 
-```{r}
+```{r model12}
 test_result2 %>% dplyr::select(Est_age, Pval_age) %>% tail # positive assoc.
 df = data.frame(Age = colData(se)$age,
     BetaValue = assay(se)[rownames(test_result2)[nrow(test_result2)],])
@@ -228,7 +228,7 @@ For example, we can merge sex-specific differential methylation identified
 above to chromosome X regions that show X-inactivation-related methylation
 difference. To do this, we need to pick a contrast:
 
-```{r}
+```{r model13, eval=FALSE}
 dmContrasts(smry)                       # pick a contrast
 merged = DMR(se, smry, "sexMale")       # merge CpGs to regions / segments
 ```
@@ -240,7 +240,7 @@ will demonstrate how to create track view with transcript position marked
 focusing on a genomic region, a gene and specific probes.  Let's first load
 example HM450 data
 
-```{r}
+```{r model14}
 betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
 ```
 
@@ -248,7 +248,7 @@ betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
 
 To visualize probes from arbitrary region, we will call `visualizeRegion`:
 
-```{r, message=FALSE, fig.width=6, fig.height=5}
+```{r model15, message=FALSE, fig.width=6, fig.height=5}
 visualizeRegion(
     'chr19',10260000,10380000, betas, platform='HM450',
     show.probeNames = FALSE)
@@ -258,8 +258,10 @@ Zero to full methylation are displayed using the jet color scheme with blue
 representing no methylation and red full methylation.
 
 ## By Gene Name
+
 To visualize all probes from a gene, we will call `visualizeGene`
-```{r, message=FALSE, fig.width=6, fig.height=5}
+
+```{r model16, message=FALSE, fig.width=6, fig.height=5}
 visualizeGene('DNMT1', betas, platform='HM450')
 ```
 
@@ -268,7 +270,7 @@ visualizeGene('DNMT1', betas, platform='HM450')
 To visualize genome neighborhood using probe names, we will call
 `visualizeProbes`:
 
-```{r, message=FALSE, fig.width=6}
+```{r model17, message=FALSE, fig.width=6}
 visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
 ```
 

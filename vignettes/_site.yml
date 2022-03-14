@@ -12,14 +12,11 @@ navbar:
       icon: fa-paw
       href: nonhuman.html
     - text: "Modeling"
-      icon: fa-database
+      icon: fa-cog
       href: modeling.html
     - text: "Inference"
-      icon: fa-book
+      icon: fa-database
       href: inferences.html
     - text: "KnowYourCG"
       icon: fa-binoculars
       href: KYCG.html
-    - text: "Others"
-      icon: fa-cogs
-      href: other.html
