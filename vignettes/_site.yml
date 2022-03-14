@@ -12,7 +12,7 @@ navbar:
       icon: fa-paw
       href: nonhuman.html
     - text: "Modeling"
-      icon: fa-cog
+      icon: fa-cogs
       href: modeling.html
     - text: "Inference"
       icon: fa-database
@@ -20,3 +20,6 @@ navbar:
     - text: "KnowYourCG"
       icon: fa-binoculars
       href: KYCG.html
+    - text: "Supplemental"
+      icon: fa-book
+      href: https://zhou-lab.github.io/sesame/supplemental.html
