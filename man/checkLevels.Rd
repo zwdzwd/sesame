@@ -21,7 +21,7 @@ filter data matrix by factor completeness
 only works for discrete factors
 }
 \examples{
-se0 <- sesameDataGet("MM285.10.tissues")[1:1000,]
+se0 <- sesameDataGet("MM285.10.tissues")[1:100,]
 se_ok <- checkLevels(SummarizedExperiment::assay(se0),
     SummarizedExperiment::colData(se0)$tissue)
 sum(se_ok) # number of good probes

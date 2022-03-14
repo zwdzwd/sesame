@@ -7,7 +7,7 @@
 #' @return a boolean vector whether there is non-NA value for each tested
 #' group for each probe
 #' @examples
-#' se0 <- sesameDataGet("MM285.10.tissues")[1:1000,]
+#' se0 <- sesameDataGet("MM285.10.tissues")[1:100,]
 #' se_ok <- checkLevels(SummarizedExperiment::assay(se0),
 #'     SummarizedExperiment::colData(se0)$tissue)
 #' sum(se_ok) # number of good probes
@@ -99,7 +99,8 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
 #' @examples
 #' sesameDataCache() # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' ## test the first 10
+#' smry <- DML(data$betas[1:10,], ~type, meta=data$sampleInfo)
 #' smry
 #'
 #' sesameDataGet_resetEnv()
@@ -118,7 +119,7 @@ print.DMLSummary <- function(x, ...) {
 #' @examples
 #' sesameDataCache() # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' smry <- DML(data$betas[1:10,], ~type, meta=data$sampleInfo)
 #' slopes <- summaryExtractTest(smry)
 #'
 #' sesameDataGet_resetEnv()
@@ -318,7 +319,7 @@ DMR <- function(betas, smry, contrast,
 #' @return a character vector of contrasts
 #' @examples
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
-#' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+#' smry <- DML(data$betas[1:10,], ~type, meta=data$sampleInfo)
 #' dmContrasts(smry)
 #'
 #' sesameDataGet_resetEnv()

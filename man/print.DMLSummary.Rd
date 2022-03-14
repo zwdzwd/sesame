@@ -20,7 +20,8 @@ Print DMLSummary object
 \examples{
 sesameDataCache() # in case not done yet
 data <- sesameDataGet('HM450.76.TCGA.matched')
-smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+## test the first 10
+smry <- DML(data$betas[1:10,], ~type, meta=data$sampleInfo)
 smry
 
 sesameDataGet_resetEnv()

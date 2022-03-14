@@ -18,7 +18,7 @@ Extract slope information from DMLSummary
 \examples{
 sesameDataCache() # in case not done yet
 data <- sesameDataGet('HM450.76.TCGA.matched')
-smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
+smry <- DML(data$betas[1:10,], ~type, meta=data$sampleInfo)
 slopes <- summaryExtractTest(smry)
 
 sesameDataGet_resetEnv()
