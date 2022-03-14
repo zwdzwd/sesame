@@ -94,83 +94,12 @@ sesameQC_rankStats(qc, platform="EPIC")
 
 # Quality control plots
 
-## QC Stats Bar plot
-
 SeSAMe provides functions to create QC plots. Some functions takes sesameQC as
 input while others directly plots the SigDF objects. For example, the
 `sesameQC_plotBar` function takes a list of sesameQC objects and creates bar
-plot for each metric calculated.
-
-The fraction of detection failures are signs of masking due to variety of
-reasons including failed detection, high background, putative low quality
-probes etc. To compare samples in terms of detection success rate, one can use
-the `sesameQC_plotBar` function in the following way:
-
-```{r fig.height=3, fig.width=5, eval=FALSE}
-sesameQC_plotBar(lapply(sdfs, sesameQC_calcStats, "detection"))
-```
-
-## Dye bias Q-Q plot
-
-Dye bias is shown by an off-diagonal q-q plot of the red (x-axis) and green
-signal (y-axis).
-
-```{r fig.height=5, fig.width=5, eval=FALSE}
-sesameQC_plotRedGrnQQ(sdf)
-```
-
-## Intensity-beta plot
-
-Beta value is more influenced by signal background for probes with low signal
-intensities. The following plot shows this dependency and the extent of probes
-with low signal intensity.
-
-```{r fig.height=5, fig.width=5, eval=FALSE}
-sesameQC_plotIntensVsBetas(sdf)
-```
-
-# Genotype validation
-
-Extra SNP allele frequencies can be obtained by summing up methylated and
-umethylated alleles of color-channel-switching probes. These allele frequencies
-can be combined with explicit SNP probes:
-
-```{r eval=FALSE}
-head(getAFs(sdf)) # combined
-head(getAFTypeIbySumAlleles(sdf)) # AFs from only color-channel-switching
-```
-
-SeSAMe can extract explicit and Infinium-I-derived SNPs to identify potential
-sample swaps.
-
-```{r fig.height=5, fig.width=5, message=FALSE, eval=FALSE}
-sesameQC_plotHeatSNPs(sdfs)
-```
-
-One can also output the allele frequencies and output a VCF file with
-genotypes. This requires additional SNP information (ref and alt alleles),
-which can be downloaded using the following code:
-
-```{r eval=FALSE}
-head(formatVCF(sdf))
-```
-
-One can output to actual VCF file with a header by `formatVCF(sdf,
-vcf=path_to_vcf)`.
-
-# Bisulfite conversion
-
-Infinium platforms are intrinsically robust to incomplete bisulfite conversion
-as non-converted probes would fail to hybridize to the target. Residual
-incomplete bisulfite conversion can be quantified using GCT score based on
-C/T-extension probes. Details of this method can be found in
-[Zhou et al. 2017](https://academic.oup.com/nar/article/45/4/e22/2290930).
-The closer the score to 1.0, the more complete the bisulfite conversion.
-
-```{r eval=FALSE}
-sdf <- sesameDataGet('EPIC.1.SigDF')
-bisConversionControl(sdf)
-```
+plot for each metric calculated. More about quality control plots can be found
+in [Supplemental
+Vignette](https://zhou-lab.github.io/sesame/supplemental.html).
 
 # Session Info
 

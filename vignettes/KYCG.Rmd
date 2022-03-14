@@ -203,50 +203,9 @@ database set, respectively. Often, it's important to examine the extent of
 overlap between the two sets, so that metric is reported as well in the
 ```overlap``` column.
 
-We can visualize the results in a dot plot:
-
-```{r ky11, fig.width=5, fig.height=3.5}
-KYCG_plotDot(results, n_max=20)
-```
-
-or a bar plot:
-
-```{r ky12, fig.width=6.5, fig.height=4, message=FALSE}
-KYCG_plotBar(results, n_max=15)
-```
- 
-or a volcano plot. Here we need a two-tailed test to show both enrichment and
-depletion (the default is one-tailed):
-
-```{r ky13, fig.width=6, fig.height=4, warning=FALSE}
-query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
-results_2tailed <- testEnrichment(query, "TFBS", alternative = "two.sided")
-KYCG_plotVolcano(results_2tailed)
-```
-
-and a Waterfall plot:
-
-```{r ky14, fig.width=6, fig.height=4.5}
-KYCG_plotWaterfall(results)
-```
-
-If you have a list of cg groups and they were tested against the same set of
-databases, you can make a point range plot to summarize the overall trend:
-
-```{r ky15, fig.width=3.5, fig.height=4}
-## pick some big TFBS-overlapping CpG groups
-cg_lists <- KYCG_getDBs("MM285.TFBS", silent=TRUE)
-queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
-res <- lapply(queries, function(q) {
-    testEnrichment(q, "MM285.chromHMM", silent=TRUE)})
-
-## note the input of the function is a list of testEnrichment outputs.
-KYCG_plotPointRange(res)
-```
-
-Here we picked some transcription factor binding sites-overlapping CpGs and
-tested against chromHMM states. As expected, most of these CGs are enriched at
-promoters and enhancers but depleted at heterchromatic regions.
+See [Supplemental
+Vignette](https://zhou-lab.github.io/sesame/supplemental.html) for other
+specific ways of visualizing enrichment results.
 
 # Gene enrichment
 
@@ -301,16 +260,6 @@ gostres$result[order(gostres$result$p_value),]
 gostplot(gostres)
 ```
 
-# Meta gene enrichment
-
-KnowYourCG builds in several metagene/meta-feature coordinates. One can test
-enrichment over meta genes or simply plot the mean over metagenes:
-
-```{r ky20, plot-meta1, fig.width=5, fig.height=4, eval=FALSE}
-sdf <- sesameDataGet("EPIC.1.SigDF")
-KYCG_plotMeta(getBetas(sdf))
-```
-
 # GSEA
 
 The query may be a named continuous vector. In that case, either a gene
@@ -354,42 +303,6 @@ As expected, chromatin states `Tss`, `Enh` has negative enrichment score,
 meaning these databases are associated with small values of the query (DNA
 methylation level). On the contrary, `Quies` states are associated with high
 methylation level.
-
-# Feature engineering
-
-In addition to hypothesis testing, knowYourCG also uses the curated database
-sets for feature engineering. We have a pre-curated summarized experiment
-containing a samplesheet and beta value matrix corresponding to about 467 MM285
-samples with 20k probes. The samplesheet includes UIDs pertaining to the sample
-and several categorical/numerical features. To use this data for a linear
-model, we will extract the most relevant prevalent features.
-
-``` {r ky24, run-feature-engineering-get-data, echo=TRUE, eval=TRUE}
-library(SummarizedExperiment)
-betas = assay(sesameDataGet('MM285.20Kx467.SE'))
-```
-
-We have found that it is computationally expensive to perform a linear
-model/generalized linear model on a feature set of individual
-CpGs. Additionally, interpreting the mechanism the significantly contributing
-CpGs is non-trivial due to their complex interactions. We hope to leverage
-these pre-curated database sets by using their beta value summary statistics as
-features instead. We will calculate the summary statistics for the betas matrix
-using a list of database sets. The default is to calculate the mean.
-
-```{r ky25, run-feature-engineering-statistics}
-stats <- dbStats(betas, 'MM285.chromHMM')
-head(stats[, 1:5])
-```
-
-Just from the few database set means above, we can see that TSS are
-consistently hypomethylated, which is consistent with known biology.
-
-```{r ky26, fig.width=6, fig.height=6}
-library(wheatmap)
-WHeatmap(both.cluster(stats)$mat, xticklabels=TRUE,
-    cmp=CMPar(stop.points=c("blue","yellow")))
-```
 
 # Session Info
 

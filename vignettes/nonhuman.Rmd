@@ -18,13 +18,13 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 SeSAMe provides extensive native support for the Illumina mouse array (referred
-to as the MM285 array) and the Horvath Mammal40 array (refered to as Mammal40
-array). The MM285 array contains ~285,000 probes covering over 20 design
-categories including gene promoters, enhancers, CpGs in synteny to human EPIC
-array as well as other biology. This documents describe the procedure to
-process the MM285 and the Mammal40 array. To begin, let's retrieve mouse
-annotation data from ExperimentHub.  This only needs to be done once per sesame
-installation.
+to as the MMB array, previously also called MM285 array) and the Horvath
+Mammal40 array (refered to as Mammal40 array). The MMB array contains
+~285,000 probes covering over 20 design categories including gene promoters,
+enhancers, CpGs in synteny to human EPIC array as well as other biology. This
+documents describe the procedure to process the MMB and the Mammal40
+array. To begin, let's retrieve mouse annotation data from ExperimentHub.  This
+only needs to be done once per sesame installation.
 
 ```{r nh1, echo=FALSE, message=FALSE}
 library(sesame)
@@ -33,7 +33,7 @@ sesameDataCache()
 
 # The openSesame pipeline
 
-The `openSesame` pipeline fully supports the MM285 and the Mammal40 arrays.
+The `openSesame` pipeline fully supports the MMB and the Mammal40 arrays.
 Let's download an example mouse array IDAT and call `openSesame` function.
 
 ```{r nh2, message=FALSE, eval=FALSE}
@@ -55,7 +55,7 @@ head(openSesame(sprintf("%s/Test/GSM4411982", tmp), prep="HSCDPM"))
 The following sections provide a more detailed discussion of subsequent
 inference you can do with these array data.
 
-# MM285 array
+# MMB array
 
 ## Replicate Probes
 
@@ -65,7 +65,7 @@ probes. These replicate probes can be collapsed to the cg prefix by adding the
 function is used explicitly).
 
 ```{r nh4, message=TRUE, eval=FALSE}
-sdf = sesameDataGet('MM285.1.SigDF')
+sdf = sesameDataGet('MMB.1.SigDF')
 betas = openSesame(sdf, prep="TQCDPB", collapseToPfx=TRUE)
 ```
 
@@ -75,7 +75,7 @@ For the default C57BL/6J strain, one can use the `qualityMask` (Q) function
 without performing species or strain inference.
 
 ```{r nh5, message=TRUE, eval=FALSE}
-sdf = sesameDataGet('MM285.1.SigDF')
+sdf = sesameDataGet('MMB.1.SigDF')
 betas = openSesame(sdf, prep="QCDPB")
 ```
 
@@ -89,7 +89,7 @@ preprocessing can only use reliable probes. Note that there are still remaining
 NAs due to detection p-values (from pOOBAH):
 
 ```{r nh7, message=TRUE}
-sdf = sesameDataGet('MM285.1.SigDF')
+sdf = sesameDataGet('MMB.1.SigDF')
 sum(is.na(getBetas(sdf)))
 sum(is.na(openSesame(sdf, prep="TQCD0PB")))
 ```
@@ -149,7 +149,7 @@ As expected, the variant configuration is consistent with the NOD strain.
 ## Non-mouse Species
 
 ```{r nh12}
-sdf = sesameDataGet("MM285.1.SigDF") # an example SigDF
+sdf = sesameDataGet("MMB.1.SigDF") # an example SigDF
 ```
 
 Infer species (obviously this is a mouse, but this is supposed to work on rat,
@@ -164,7 +164,7 @@ inferSpecies(sdf, return.species = TRUE)
 
 Let's load beta values from SeSAMeData
 ```{r nh14}
-betas = sesameDataGet("MM285.10.tissue")$betas[,1:2]
+betas = sesameDataGet("MMB.10.tissue")$betas[,1:2]
 ```
 
 Compare mouse array data with mouse tissue references. This will return a grid
@@ -177,7 +177,7 @@ compareMouseTissueReference(betas)
 
 Let's load beta values from sesameData
 ```{r nh16}
-sdf = sesameDataGet("MM285.1.SigDF")
+sdf = sesameDataGet("MMB.1.SigDF")
 ```
 
 Sex inference can take either a `SigDF` or a $\beta$ value vector.
@@ -190,12 +190,12 @@ inferSex(sdf)
 
 Let's load beta values from SeSAMeData
 ```{r nh18}
-betas = sesameDataGet('MM285.10.tissue')$betas
+betas = sesameDataGet('MMB.10.tissue')$betas
 ```
 
 The age of the mouse can be predicted using the `predictMouseAgeInMonth`
 function. This looks for overlapping probes and estimates age using an aging
-model built from 347 MM285 probes. The function returns a numeric output of age
+model built from 347 MMB probes. The function returns a numeric output of age
 in months. The model is most accurate with SeSAMe preprocessing.  Here's an
 example.
 
@@ -219,7 +219,7 @@ inferSpecies(sesameDataGet("Mammal40.1.SigDF"), return.species = TRUE)
 The track visualization is supported for these arrays.
 
 ```{r nh21, message=FALSE}
-betas = sesameDataGet("MM285.10.tissue")$betas
+betas = sesameDataGet("MMB.10.tissue")$betas
 visualizeGene("Igf2", betas)
 ```
 

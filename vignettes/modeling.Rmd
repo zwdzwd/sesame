@@ -13,14 +13,15 @@ vignette: >
 
 # Linear Modeling
 
-Here I will try to address the analysis workflow of studying DNA methylation
-with one or more independent variable, be it tissue, cell type, sex, age,
-tumor/normal, treatment/control or a combination of these factors.
-The `DML` (short for Differential Methylation Locus) function models beta
-values (DNA methylation levels) on known co-variates (e.g., case vs control)
-using linear modeling. This general supervised learning framework
-identifies CpG loci whose differential methylation is associated with known
-co-variates. Let's first load needed packages
+Here we demonstrate the analysis of DNA methylation dependent on one or
+multiple predictors. The predictors might be it tissue, cell type, sex, age,
+tumor/normal, treatment/control or a combination of these factors.  The `DML`
+(short for Differential Methylation Locus) function models beta values (DNA
+methylation levels) on known co-variates (e.g., case vs control) using linear
+modeling. This general supervised learning framework identifies CpG loci whose
+differential methylation is associated with known co-variates. Let's first load
+needed packages
+
 ```{r model1, message=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)
 library(sesame)
@@ -233,46 +234,9 @@ dmContrasts(smry)                       # pick a contrast
 merged = DMR(se, smry, "sexMale")       # merge CpGs to regions / segments
 ```
 
-# Track View
-
-SeSAMe provide utilities to view methylation reading in a track view.  Next, we
-will demonstrate how to create track view with transcript position marked
-focusing on a genomic region, a gene and specific probes.  Let's first load
-example HM450 data
-
-```{r model14}
-betas <- sesameDataGet('HM450.10.TCGA.PAAD.normal')
-```
-
-## By Genomic Region
-
-To visualize probes from arbitrary region, we will call `visualizeRegion`:
-
-```{r model15, message=FALSE, fig.width=6, fig.height=5}
-visualizeRegion(
-    'chr19',10260000,10380000, betas, platform='HM450',
-    show.probeNames = FALSE)
-```
-
-Zero to full methylation are displayed using the jet color scheme with blue
-representing no methylation and red full methylation.
-
-## By Gene Name
-
-To visualize all probes from a gene, we will call `visualizeGene`
-
-```{r model16, message=FALSE, fig.width=6, fig.height=5}
-visualizeGene('DNMT1', betas, platform='HM450')
-```
-
-## By Probe ID
-
-To visualize genome neighborhood using probe names, we will call
-`visualizeProbes`:
-
-```{r model17, message=FALSE, fig.width=6}
-visualizeProbes(c("cg02382400", "cg03738669"), betas, platform='HM450')
-```
+See [Supplemental
+Vignette](https://zhou-lab.github.io/sesame/supplemental.html) for track-view
+visualization of the data.
 
 # Session Info
 
