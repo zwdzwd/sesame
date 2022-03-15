@@ -7,7 +7,7 @@
 #' @return a boolean vector whether there is non-NA value for each tested
 #' group for each probe
 #' @examples
-#' se0 <- sesameDataGet("MM285.10.tissues")[1:100,]
+#' se0 <- sesameDataGet("MM285.10.SE.tissue")[1:100,]
 #' se_ok <- checkLevels(SummarizedExperiment::assay(se0),
 #'     SummarizedExperiment::colData(se0)$tissue)
 #' sum(se_ok) # number of good probes
@@ -240,7 +240,8 @@ dmr_combine_pval <- function(cf, segs) {
 }
 
 DMGetProbeInfo <- function(platform, genome) {
-    mft <- sesameDataGet(sprintf("%s.%s.manifest", platform, genome))
+    ## mft <- sesameDataGet(sprintf("%s.%s.manifest", platform, genome))
+    mft <- sesameData_getManifestGRanges(platform, genome = genome)
     mft <- mft[GenomicRanges::seqnames(mft) != "*"]
     GenomicRanges::mcols(mft) <- NULL
     GenomicRanges::strand(mft) <- "*"

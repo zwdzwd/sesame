@@ -11,7 +11,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-# Linear Modeling
+# Differential Methylation
 
 Here we demonstrate the analysis of DNA methylation dependent on one or
 multiple predictors. The predictors might be it tissue, cell type, sex, age,
@@ -40,7 +40,7 @@ in a `SummarizedExperiment` object, which contains a data matrix combined
 with column-wise metadata accessible with `colData`:
 
 ```{r model2, message=FALSE}
-se = sesameDataGet("MM285.10.tissues")[1:1000,] # use a random 1000 probes
+se = sesameDataGet("MM285.10.SE.tissue")[1:1000,] # an arbitrary 1000 probes
 colData(se)
 ```
 
@@ -92,7 +92,7 @@ smry
 
 You can use `mc.cores` argument to parallelize the computing.
 
-## Test Interpretation
+# Test Interpretation
 
 The `DMLSummary` object is a list of expanded `summary.lm` objects from the
 linear model (as would be returned by `summary(lm())`. The
@@ -145,7 +145,7 @@ reference level (0).
 Multiple-testing adjustment can be done afterwards using R's p.adjust
 function. It is also integrated to the `DMR` function by default (see below).
 
-## Goodness of fit
+# Goodness of Fit
 
 One may want to ask a question like _whether the methylation of the probe is
 tissue-specific_ rather than whether the methylation of the probe is
@@ -184,7 +184,7 @@ As you can see from the result, two probes are sex-specific and one probe
 13 probes are tissue-specific. There is no overlap between probes whose
 methylation reading is differential across both contrasts.
 
-## Pairwise Comparison
+# Pairwise Comparison
 
 From the test result, we can also ask whether the DNA methylation might
 be different between two sexes or two tissues. For example, `Est_sexMale`
@@ -201,7 +201,7 @@ and colon. We can do
 ggplot(test_result) + geom_point(aes(Est_tissueFat, -log10(Pval_tissueFat)))
 ```
 
-## Continuous Variable
+# Continuous Predictors
 
 The variable tested in the `DML` function can be continuous.
 Suppose we are interested in `age` besides `sex`. We will call the

@@ -587,7 +587,7 @@ KYCG_annoProbes <- function(query, databases, db_names = NULL,
 #' @examples
 #' 
 #' library(SummarizedExperiment)
-#' se <- sesameDataGet('MM285.20Kx467.SE')
+#' se <- sesameDataGet('MM285.467.SE.tissue20Kprobes')
 #' head(dbStats(assay(se), "MM285.probeType")[,1:3])
 #' sesameDataGet_resetEnv()
 #' 

@@ -19,7 +19,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Preparation
 
-**CRITICAL** As sesame and sesameData are under active development, this
+> **CRITICAL** As sesame and sesameData are under active development, this
   documentation is specific to the following version of sesame, sesameData and
   ExperimentHub:
 
@@ -32,9 +32,9 @@ We recommend updating your R, ExperimentHub, sesameData and sesame to use this
 documentation consistently. If you install directly from github, we should
 make sure the compatible ExperimentHub is installed.
 
-**CRITICAL:** After a new installation, we need to cache the associated
-annotation data using the following command.
-This needs to be done only once per SeSAMe installation/update.
+> **CRITICAL:** After a new installation, we need to cache the associated
+annotation data using the following command.  This needs to be done only once
+per SeSAMe installation/update.
 
 ```{r message=FALSE}
 sesameDataCache()
