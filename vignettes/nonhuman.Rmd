@@ -25,30 +25,30 @@ CpGs in synteny to human EPIC array as well as other biology. This documents
 describe the procedure to process the MMB and the Mammal40 array.
 
 We first load required library and perform sesame data caching (only needed
-upon new sesame installation).
+at new SeSAMe installation).
 
-```{r nh1, echo=FALSE, message=FALSE}
+```{r nh1, message=FALSE}
 library(sesame)
 sesameDataCache()
 ```
 
 # Species Inference
 
-SeSAMe supports automatic inference of the assayed organism. This is achieved
-through the `inferSpecies` function. Usually, users need not call this function
-explicitly and only need to specify its code `S` as part of the 2nd argument of
-the `openSesame` function. See [Basics
-Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/sesame/inst/doc/sesame.html)
-for more detail.
+SeSAMe supports automatic inference of the profiled organism. This is achieved
+by the `inferSpecies` function. Usually, users need not call this function
+explicitly and only need to specify the code `S` as part of the 2nd argument of
+the `openSesame` function. See [The Basics Vignette](sesame.html#prep) for more
+detail.
 
 The following example downloads an example Mammal40 array IDAT pair and call
-`openSesame` function with species inference (note the `S` in the prep code).
+`openSesame` function with species inference (note the `S` in the `prep=`
+argument).
 
 ```{r nh3, message=FALSE, eval=FALSE}
 tmp = tempdir()
 sesameAnno_download("Test/GSM4411982_Grn.idat.gz", dest_dir=tmp)
 sesameAnno_download("Test/GSM4411982_Red.idat.gz", dest_dir=tmp)
-head(openSesame(sprintf("%s/Test/GSM4411982", tmp), prep="SHCDPM"))
+betas = openSesame(sprintf("%s/Test/GSM4411982", tmp), prep="SHCDPM")
 ```
 
 The above code is equivalent to
@@ -56,15 +56,15 @@ The above code is equivalent to
 ```{r nh4, eval=FALSE}
 ## equivalent to the above openSesame call
 betas = getBetas(matchDesign(pOOBAH(dyeBiasNL(inferInfiniumIChannel(
-    inferSpecies(prefixMaskButC(readIDATpair(
+    prefixMaskButC(inferSpecies(readIDATpair(
         sprintf("%s/Test/GSM4411982", tmp)))))))))
 ```
 
-As can be seen, `inferSpecies` takes a SigDF as input and output an updated
+As can be seen, `inferSpecies` takes a SigDF as input and outputs an updated
 SigDF which contains a species-specific masking and color channel
-designation. This information is key to proper preprocessing since the color
-channel designation and probe hybridization success of most probes is the
-inherent assumption of many preprocessing algorithms. One may instruct the
+designation. This information is key to proper preprocessing since knowledge of
+the color channel designation and probe hybridization success is the
+foundational assumption of many preprocessing algorithms. One may instruct the
 function to return the inferred species information by using the
 `return.species = TRUE` argument. The following example shows this usage:
 
@@ -75,29 +75,31 @@ inferSpecies(sdf, return.species = TRUE)
 
 Internally, we used a nonparametric scoring method to infer the most likely
 species from a pool of 310 candidate species from Ensembl (v101). The
-`return.auc = TRUE` argument allows one to peek into the AUC score used in this
-inference. The higher the score, the more likely the data is from the
-corresponding species. Knowing the scores can help the cases when several
-candidate species are closely related and hard to discriminate from data.
+`return.auc = TRUE` argument allows one to peek into the AUC (Area Under the
+Curve) score generated in this inference. The higher the score, the more likely
+the data is from the corresponding species. Knowing the scores can help
+diagnose misclassifications such as when several candidate species are closely
+related and hard to discriminate from data.
 
 ```{r nh14, message=FALSE}
 ## showing the candidate species with top scores
 head(sort(inferSpecies(sdf, return.auc = TRUE), decreasing=TRUE))
 ```
 
-If the users believe that automatic inference gives wrong (most often still
+If the user believes that automatic inference gives wrong (most often still
 close-related) species, one can force species inference to a target species by
-using the `updateSigDF` function. For example, the following code forced the
-`SigDF` to a `mus_musculus` sample. Note this doesn't alter signal intensity
-but only change the probe masking.
+using the `updateSigDF` function. For example, the following code forces the
+`SigDF` to be treated as a `mus_musculus` sample. Note this doesn't alter
+signal intensity but only change the probe masking and color channel spec (the
+view of the data, not the data reading itself).
 
 ```{r nh15, eval=FALSE}
 sdf_mouse <- updateSigDF(sdf, species="mus_musculus")
 ```
 
-> **CRITICAL** Since `updateSigDF` function resets the mask and color channel
-column of SigDF. This function (and `inferSpecies`) as the
-first step of the preprocessing.
+**CRITICAL:** Since `updateSigDF` function resets the whole mask and col column
+of SigDF. One should use this function (and `inferSpecies`) before other
+preprocessing functions that sets mask and col.
 
 
 # Mouse Strain Inference
@@ -116,15 +118,17 @@ betas = openSesame(sprintf("%s/Test/204637490002_R05C01", tmp), prep="TQCDPB")
 ```
 
 Like `inferSpecies`, one need to call the `inferStrain` function before calling
-the standard `noob`, `dyeBiasNL`, etc (by having "T" before "CDPB" when calling
-`openSesame`). Also like `inferSpecies`, `inferStrain` will return a new SigDF
-with col and mask updated to reflect the change of strain. Optionally, one can
-also specify `return.strain=TRUE`, `return.pval=TRUE` or `return.probability =
-TRUE` to return the inferred strain, the p-value or the probabilities of all 37
-strain candidates.  Internally, the function converts the beta values to
-variant allele frequencies. It should be noted that since variant allele
-frequency is not always measured by the M-allele of the probe. SeSAMe flips the
-beta values for some probes to calculate variant allele frequency. The following example shows what `inferStrain` does on a SigDF:
+the standard `noob`, `dyeBiasNL`, etc (by having `T` before `QCDPB` when
+calling `openSesame`). Also like `inferSpecies()`, `inferStrain()` will return
+a new `SigDF` with col and mask updated to reflect the change of
+strain. Optionally, one can also specify `return.strain=TRUE`,
+`return.pval=TRUE` or `return.probability=TRUE` to return the inferred
+strain, the p-value or the probabilities of all 37 strain candidates.
+Internally, the function converts the beta values to variant allele
+frequencies. It should be noted that since variant allele frequency is not
+always measured by the M-allele of the probe. SeSAMe flips the $\beta$ values for
+some probes to calculate variant allele frequency. The following example shows
+what `inferStrain` does to a `SigDF`:
 
 ```{r nh9, message=FALSE}
 sdf = sesameDataGet("MMB.1.SigDF") # an example dataset
@@ -134,7 +138,8 @@ sum(sdf$mask) # before strain inference
 sum(sdf_after$mask) # after strain inference
 ```
 
-Let's visualize the probabilities of all candidate strains.
+Let's visualize the probabilities of all candidate strains using the
+`return.probabilities` option:
 
 ```{r nh10, fig.width=6, fig.height=4, message=FALSE}
 library(ggplot2)
@@ -149,22 +154,23 @@ ggplot(data = df,  aes(x = strain, y = probs)) +
             legend.position = "none")
 ```
 
-Also see [Supplemental Vignette](https://zhou-lab.github.io/sesame/supplemental.html)
-for heatmap validation of strain inference.
+See also [The Supplemental
+Vignette](https://zhou-lab.github.io/sesame/supplemental.html#SNP) for heatmap
+validation of strain inference.
 
 # Quality Masking
 
 In the MMB array, we designed multimapping probes to allow querying
-transposable elements and other biology. We also exposed other probes with
-potentially design flaws. These suboptimally designed probes may take a new
-probe ID prefix ("uk") in addition to the "cg"/"ch"/"rs" typically seen.  By
-default the repeat and suboptimally designed probes are masked by `NA`. These
-masking is done by the `qualityMask` function (or `Q` in prep codes).  To
-override masking these probes, one can use the `resetMask` function (the `0`
-code in `openSesame`) to remove the default masking. We recommend using it
-after preprocessing function so that preprocessing can only use reliable
-probes. Note this way, there are still remaining NAs due to detection p-values
-(from pOOBAH):
+transposable elements and other biology. We also exposed probes with
+potentially design flaws. These suboptimally designed probes take a new probe
+ID prefix ("uk") in addition to the "cg"/"ch"/"rs" typically seen.  By default
+the repeat and suboptimally designed probes are masked by `NA`. These masking
+is done by the `qualityMask` function (or `Q` in prep codes).  To override
+masking these probes, one can use the `resetMask` function (the `0` code in
+`openSesame`) to remove the default masking. We recommend using it after the
+preprocessing function that depends on reliable/uniquely-mapped probes, but
+before detection p-value based masking (e.g. pOOBAH). This way, probes that
+fail detection can still be flagged (they should be).
 
 ```{r nh7, message=FALSE}
 sdf = sesameDataGet('MMB.1.SigDF')
@@ -178,8 +184,7 @@ UNDER CONSTRUCTION
 
 There are other inferences one can do on the nonhuman arrays, e.g., sex, age
 (epigenetic clocks), tissue, copy number alteration etc. These will be
-elaborated in the [Inference
-Vignette](https://bioconductor.org/packages/devel/bioc/vignettes/sesame/inst/doc/inference.html).
+elaborated in [The Inference Vignette](inference.html).
 
 # Session Info
 

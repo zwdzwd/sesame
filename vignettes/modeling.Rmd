@@ -44,7 +44,7 @@ se = sesameDataGet("MM285.10.SE.tissue")[1:1000,] # an arbitrary 1000 probes
 colData(se)
 ```
 
-> **CRITICAL:** If your data is NA-masked (see the Basic Usage tutorial), it is
+**CRITICAL:** If your data is NA-masked (see the Basic Usage tutorial), it is
 critical to preclude CpGs with missing levels. For example, if a CpG does
 not contain any non-NA values for all male mice, one cannot assess
 sex-specific DNA methylation for this CpG. One needs to preclude
@@ -61,7 +61,7 @@ sum(se_ok)
 se = se[se_ok,]
 ```
 
-> **NOTE:** If your model include discrete contrast variables like tissue and
+**NOTE:** If your model include discrete contrast variables like tissue and
 sex as in the current example, you should consider explicitly turning it into a
 factor variable with a reference level (we use `treatment coding`, see
 [different coding systems](

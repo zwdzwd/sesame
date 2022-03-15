@@ -19,7 +19,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Preparation
 
-> **CRITICAL** As sesame and sesameData are under active development, this
+**CRITICAL:** As sesame and sesameData are under active development, this
   documentation is specific to the following version of sesame, sesameData and
   ExperimentHub:
 
@@ -29,12 +29,13 @@ sapply(c("sesame","sesameData","ExperimentHub"),
 ```
 
 We recommend updating your R, ExperimentHub, sesameData and sesame to use this
-documentation consistently. If you install directly from github, we should
-make sure the compatible ExperimentHub is installed.
+documentation consistently. If you have installed directly from github, we
+should make sure the compatible ExperimentHub is installed.
 
-> **CRITICAL:** After a new installation, we need to cache the associated
-annotation data using the following command.  This needs to be done only once
-per SeSAMe installation/update.
+**CRITICAL:** After a new installation, one must cache the associated
+annotation data using the following command. This needs to be done only once
+per SeSAMe installation/update. Caching data to local guarantees proper data
+retrieval and saves internet traffic.
 
 ```{r message=FALSE}
 sesameDataCache()
@@ -50,13 +51,13 @@ location of the cached annotation data on your local computer using:
 tools::R_user_dir("ExperimentHub", which="cache")
 ```
 
-# The openSesame pipeline
+# The openSesame Pipeline
 
 The `openSesame` function provides end-to-end processing that converts IDATs to
-DNA methylation level (beta value) matrices in R. The function can take a
-directory where the IDAT files live. It also supports processing a specific
-path of IDAT file pairs. The following code uses a directory that contains
-built-in two HM27 IDAT pairs to demonstrates the use of the function:
+DNA methylation level (aka $\beta$ value) matrices in R. The function can take
+a directory where the IDAT files live, a specific path of IDAT file pairs, or a
+list of SigDF objects (see below). The following code uses a directory that
+contains built-in two HM27 IDAT pairs to demonstrates the use of `openSesame`:
 
 
 ```{r base1, eval=FALSE}
@@ -64,11 +65,12 @@ idat_dir = system.file("extdata/", package = "sesameData")
 betas = openSesame(idat_dir, BPPARAM = BiocParallel::MulticoreParam(2))
 ```
 
-Under the hood, the function performs the following tasks including searching
-IDAT files from the directory (the `searchIDATprefixes` function), reading them
-in as `SigDF` objects (the `readIDATpair` function), preprocessing the signals
-(the `prepSesame` function), and finally converting them to DNA methylation
-levels ($\beta$ values, the `getBetas` function).
+Under the hood, the function performs a series of tasks including: searching
+IDAT files from the directory (the `searchIDATprefixes` function), reading IDAT
+data in as `SigDF` objects (the `readIDATpair` function), preprocessing the
+signals (the `prepSesame` function), and finally converting them to DNA
+methylation levels ($\beta$ values, the `getBetas` function). Alternatively,
+one can run the following command to get the same results.
 
 ```{r base2, eval=FALSE}
 ##  The above `openSesame` call is equivalent to:
@@ -78,26 +80,26 @@ betas = do.call(cbind, BiocParallel::bplapply(
 }, BPPARAM = BiocParallel::MulticoreParam(2)))
 ```
 
-The `openSesame` function is highly customizable. The `prep=` argument takes
-the same argument of the `prepSesame` function (see
-[below](#Customize_preprocessing) for detail) which `openSesame` calls
-internally. The argument uniquely specifies a preprocessing procedure. The
-`func=` option specifies the signal extraction function which can be either
-`getBetas` (DNA methylation) or `getAFs` (allele frequencies of SNP
-probes). The `manifest=` option allows the processing of a custom array that is
-not natively supported by providing the array manifest. Finally, the `BPPARAM=`
-argument is the same argument taken by `BiocParallel::bplapply` to allow
-parallel processing.
+The `openSesame` function is highly customizable. The `prep=` argument is the
+same argument one gives when calling the `prepSesame` function (see [Customize
+Preprocessing] for detail) which `openSesame` calls internally. The argument
+uniquely specifies a preprocessing procedure. The `func=` option specifies the
+signal extraction function. It can be either be `getBetas` (DNA methylation) or
+`getAFs` (allele frequencies of SNP probes). The `manifest=` option allows one
+to provide an array manifest when handling data from platform not supported
+natively. Finally, the `BPPARAM=` argument is the same argument taken by
+`BiocParallel::bplapply` to allow parallel processing.
 
 See [Supplemental Vignette](https://zhou-lab.github.io/sesame/supplemental.html)
 for details of different component functions of openSesame.
 
-# Customize preprocessing
+# Customize Preprocessing {#prep}
 
-Sesame preprocessing can be done using the **prepSesame** function which takes
-a `SigDF` and returns a processed `SigDF`. The 2nd argument of `prepSesame`
-function is a string that encodes the preprocessing functions and the order of
-their execution. For example,
+Sesame preprocessing can be done using the `prepSesame` function which takes a
+`SigDF` and returns a processed `SigDF`. The 2nd argument of `prepSesame`
+function (also the `prep=` argument if using `openSesame`) is a string that
+selects the preprocessing functions and specifies the order of their
+execution. For example,
 
 ```{r base9, eval=FALSE}
 sdf = sesameDataGet('EPIC.1.SigDF')
@@ -107,11 +109,11 @@ sdf_preped = prepSesame(sdf, "DB")
 performs dye bias correction (`D`) followed by background subtraction (`B`). In
 other words, `prepSesame(sdf, "DB")` is equivalent to
 `noob(dyeBiasNL(sdf))`. All the preprocessing functions take a `SigDF` as input
-and return the updated `SigDF`. Therefore they can be chained together. The
-choice of function and the order in which one chains these preprocessing
-functions is important (see below and the [Preprocessing
-Functions](#Preprocessing_Functions) section below for a more detailed
-discussion of these functions). The following table lists the best
+and return an updated `SigDF`. Therefore, these functions can be chained
+together. The choice of preprocessing functions and the order of their chaining
+is important (see [Supplemental
+Vignette](https://zhou-lab.github.io/sesame/supplemental.html)) for detailed
+discussions of these functions). The following table lists the best
 preprocessing strategy based on our experience.
 
 ```{r base10, echo=FALSE, result="asis"}
@@ -130,17 +132,18 @@ kable(df, caption="Recommended Preprocessing")
 The optimal strategy of preprocessing depends on:
 
 1) **The array platform**. For example, certain array platforms (e.g., the
-Mammal40) do not have enough Infinium-I probes for normalization, therefore
-background subtraction (where the out-of-band signals are from) might not work
-most optimally;
+Mammal40) do not have enough Infinium-I probes for background estimation and
+dye bias correction, therefore background subtraction (where the out-of-band
+signals are from) might not work most optimally;
 
 2) **The expected sample property**. For example, some samples have the
-signature bimodal distribution of methylation while others may undergo global
-loss of methylation (germ cells, tumors etc). Other important factors include
-high-input vs low-input, tumor vs normal, somatic vs germ cells, human vs model
-organisms, mouse strains etc. Some platforms (e.g., Mammal40 and MMB) are
-designed for multiple species and strains. Therefore `S` and `T` would be
-important when those arrays are used on non-reference organisms.
+signature bimodal distribution of methylation of most mammalian cells. Others
+may undergo global loss of methylation (germ cells, tumors etc). Other
+important factors include high-input vs low-input, tumor vs normal, somatic vs
+germ cells, human vs model organisms, mouse strains etc. Some platforms (e.g.,
+Mammal40 and MMB) are designed for multiple species and strains. Therefore `S`
+and `T` would be important when those arrays are used on non-reference
+organisms (see [Working with Nonhuman Arrays](nonhuman.html)).
 
 The `prepSesameList` function lists all the available codes and the associated
 preprocessing functions.
@@ -149,22 +152,22 @@ preprocessing functions.
 prepSesameList()
 ```
 
-Here are some consideration of determining the preprocessing order. Species
-`(S)` and strain `(T)` inference sets the entire mask and color
-channels. Therefore when they are used, they need to be placed first. `Q` masks
-non-uniquely mapped probes which may inflate the out-of-band signal for
-background estimation. Therefore `Q` should be used before detection p-value
-calculation `P` and background subtraction `B` when necessary. Channel
-inference (`C`) and dye bias correction (`D`) should take place early since dye
-bias effect is global. `C` should be placed before `D` because dye bias
-correction uses in-band signal and relies on correct channel
-designation. Detection p-value (`P`) should happen before background
-subtraction (`B`) since background subtraction modifies signal and may affect
-out-of-band signal assumption used in `P`. Lastly, functions that explicitly
-normalizes $\beta$ value distribution (e.g., `matchDesign (M)`) should happen
-last if they even need to be used.
+Here are some consideration when determining the preprocessing order. Species
+`(S)` and strain `(T)` inference resets the mask and color channels based on
+probe alignment and presence of genetic variants. Therefore when they are used,
+they need to be called first. `Q` masks non-uniquely mapped probes which may
+inflate the out-of-band signal for background estimation. Therefore `Q` should
+be used before detection p-value calculation (`P`) and background subtraction
+(`B`) when necessary. Channel inference (`C`) and dye bias correction (`D`)
+should take place early since dye bias effect is global. `C` should be placed
+before `D` because dye bias correction uses in-band signal the identification
+of which relies on correct channel designation. Detection p-value (`P`) should
+happen before background subtraction (`B`) since background subtraction
+modifies signal and may affect out-of-band signal assumption used in
+`P`. Lastly, functions that explicitly normalizes $\beta$ value distribution
+(`M`) should happen last if they even need to be used.
 
-See [Supplemental Vignette](https://zhou-lab.github.io/sesame/supplemental.html)
+See [Supplemental Vignette](https://zhou-lab.github.io/sesame/supplemental.html#prepfuns)
 for details of preprocessing functions.
 
 # Session Info
