@@ -121,8 +121,8 @@ library(knitr)
 df <- data.frame(rbind(
    c("EPIC/HM450", "human", "QCDPB"),
    c("EPIC/HM450", "non-human organism", "SQCDPB"),
-   c("MMB", "mouse", "TQCDPB"),
-   c("MMB", "non-mouse organism", "SQCDPB"),
+   c("MM285", "mouse", "TQCDPB"),
+   c("MM285", "non-mouse organism", "SQCDPB"),
    c("Mammal40", "human", "HCDPB"),
    c("Mammal40", "non-human organism", "SHCDPM")))
 colnames(df) <- c("Platform", "Sample Organism", "Prep Code")
@@ -141,8 +141,8 @@ signature bimodal distribution of methylation of most mammalian cells. Others
 may undergo global loss of methylation (germ cells, tumors etc). Other
 important factors include high-input vs low-input, tumor vs normal, somatic vs
 germ cells, human vs model organisms, mouse strains etc. Some platforms (e.g.,
-Mammal40 and MMB) are designed for multiple species and strains. Therefore `S`
-and `T` would be important when those arrays are used on non-reference
+Mammal40 and MM285) are designed for multiple species and strains. Therefore
+`S` and `T` would be important when those arrays are used on non-reference
 organisms (see [Working with Nonhuman Arrays](nonhuman.html)).
 
 The `prepSesameList` function lists all the available codes and the associated

@@ -37,7 +37,7 @@ inferSexKaryotypes(sdf)
 Mouse:
 
 ```{r nh16}
-sdf = sesameDataGet("MMB.1.SigDF")
+sdf = sesameDataGet("MM285.1.SigDF")
 inferSex(sdf)
 ```
 
@@ -64,12 +64,12 @@ Mouse Array 347 Model:
 
 ```{r inf18, message=FALSE}
 library(SummarizedExperiment)
-betas = assay(sesameDataGet("MMB.10.SE.tissue"))
+betas = assay(sesameDataGet("MM285.10.SE.tissue"))
 ```
 
 The age of the mouse can be predicted using the `predictMouseAgeInMonth`
 function. This looks for overlapping probes and estimates age using an aging
-model built from 347 MMB probes. The function returns a numeric output of age
+model built from 347 MM285 probes. The function returns a numeric output of age
 in months. The model is most accurate with SeSAMe preprocessing.  Here's an
 example.
 

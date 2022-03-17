@@ -19,10 +19,12 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 SeSAMe provides extensive native support for the Illumina Mouse Methylation
 BeadChip array (referred to as the MM285 or MMB array) and the Horvath Mammal40
-array (refered to as the Mammal40 array). The MMB array contains ~285,000
+array (refered to as the Mammal40 array). The MM285 array contains ~285,000
 probes covering over 20 design categories including gene promoters, enhancers,
-CpGs in synteny to human EPIC array as well as other biology. This documents
-describe the procedure to process the MMB and the Mammal40 array.
+CpGs in synteny to human EPIC array as well as other biology. In SeSAMe, MM285
+is used as the product abbreviation to distinguish future platforms including
+MM320. This documents describe the procedure to process the MM285 and the
+Mammal40 array.
 
 We first load required library and perform sesame data caching (only needed
 at new SeSAMe installation).
@@ -131,7 +133,7 @@ some probes to calculate variant allele frequency. The following example shows
 what `inferStrain` does to a `SigDF`:
 
 ```{r nh9, message=FALSE}
-sdf = sesameDataGet("MMB.1.SigDF") # an example dataset
+sdf = sesameDataGet("MM285.1.SigDF") # an example dataset
 inferStrain(sdf, return.strain = TRUE) # return strain as a string
 sdf_after = inferStrain(sdf)   # update mask and col by strain inference
 sum(sdf$mask) # before strain inference
@@ -160,7 +162,7 @@ validation of strain inference.
 
 # Quality Masking
 
-In the MMB array, we designed multimapping probes to allow querying
+In the MM285 array, we designed multimapping probes to allow querying
 transposable elements and other biology. We also exposed probes with
 potentially design flaws. These suboptimally designed probes take a new probe
 ID prefix ("uk") in addition to the "cg"/"ch"/"rs" typically seen.  By default
@@ -173,7 +175,7 @@ before detection p-value based masking (e.g. pOOBAH). This way, probes that
 fail detection can still be flagged (they should be).
 
 ```{r nh7, message=FALSE}
-sdf = sesameDataGet('MMB.1.SigDF')
+sdf = sesameDataGet('MM285.1.SigDF')
 sum(is.na(openSesame(sdf, prep="TQCDPB")))
 sum(is.na(openSesame(sdf, prep="TQCD0PB")))
 ```

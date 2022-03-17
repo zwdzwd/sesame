@@ -13,51 +13,47 @@ vignette: >
 
 # Differential Methylation
 
-Here we demonstrate the analysis of DNA methylation dependent on one or
-multiple predictors. The predictors might be it tissue, cell type, sex, age,
-tumor/normal, treatment/control or a combination of these factors.  The `DML`
-(short for Differential Methylation Locus) function models beta values (DNA
-methylation levels) on known co-variates (e.g., case vs control) using linear
-modeling. This general supervised learning framework identifies CpG loci whose
-differential methylation is associated with known co-variates. Let's first load
-needed packages
+Here we demonstrate the analysis of DNA methylation dependent on one or more
+predictors. The predictors might be tissue, cell type, sex, age, tumor/normal,
+case/control or a combination of these factors.  The `DML` (Differential
+Methylation Locus) function models $\beta$ values (DNA methylation levels)
+using mixed linear models. This general supervised learning framework
+identifies CpG loci whose differential methylation is associated with known
+co-variates and can be used to perform epigenome-wide association studies
+(EWAS). Let's first load the needed packages:
+
+```{r model0, include=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
 
 ```{r model1, message=FALSE}
-options(rmarkdown.html_vignette.check_title = FALSE)
 library(sesame)
-sesameDataCacheAll()
-library(dplyr)
-library(tidyr)
 library(SummarizedExperiment)
-library(ggplot2)
+sesameDataCache() # required at new sesame installation
 ```
 
-In the following, we will use 10 mouse array samples as our example dataset.
-This dataset contains mouse samples
-from different tissues and individuals of different ages and sexes.
-The dataset is stored
-in a `SummarizedExperiment` object, which contains a data matrix combined
-with column-wise metadata accessible with `colData`:
+In the following, we will use an MM285 dataset of 10 mouse samples.  This
+dataset contains mouse samples from different tissues and mice of different
+ages and sexes.  The dataset is stored in a `SummarizedExperiment` object,
+which contains a data matrix combined with column-wise metadata accessible with
+`colData`:
 
 ```{r model2, message=FALSE}
-se = sesameDataGet("MM285.10.SE.tissue")[1:1000,] # an arbitrary 1000 probes
-colData(se)
+se = sesameDataGet("MM285.10.SE.tissue")[1:1000,] # an arbitrary 1000 CpGs
+cd = as.data.frame(colData(se)); rownames(cd) = NULL
+cd
 ```
 
-**CRITICAL:** If your data is NA-masked (see the Basic Usage tutorial), it is
-critical to preclude CpGs with missing levels. For example, if a CpG does
-not contain any non-NA values for all male mice, one cannot assess
-sex-specific DNA methylation for this CpG. One needs to preclude
-such CpGs from the modeling of sex-specific differential methylation.
-This can be done using the `checkLevels` function.
-
-In the following, we will test for both sex and
-tissue as co-variates using the `checkLevels` function:
+**CRITICAL:** If your data contains `NA`, it is required that you exclude CpGs
+with missing levels. For example, one cannot assess sex-specific DNA
+methylation for a CpG that only has non-NA measurement on one sex. Exclusion
+of such CpGs for differential methylation modeling can be done using the
+`checkLevels` function. Here, we will check this for both sex and tissue:
 
 ```{r model3}
 se_ok = (checkLevels(assay(se), colData(se)$sex) &
     checkLevels(assay(se), colData(se)$tissue))
-sum(se_ok)
+sum(se_ok)                      # the number of CpGs that passes
 se = se[se_ok,]
 ```
 
@@ -76,14 +72,14 @@ colData(se)$tissue <- relevel(factor(colData(se)$tissue), "Colon")
 colData(se)$sex <- relevel(factor(colData(se)$sex), "Female")
 ```
 
-Then we will model DNA methylation variation
-treating tissue and sex as covariates. To do that we will call the `DML`
-function and specify the R formula
-`~tissue + sex`. This function fits DNA methylation reading to a linear
-model and perform the
-corresponding slope test and goodness-of-fit test (F-test holding out each
-contrast variable). All these results are returned in an
-object of class `DMLSummary`:
+Then we will model DNA methylation variation treating tissue and sex as
+covariates. To do that we will call the `DML` function and specify the R
+formula `~tissue + sex`. This function fits DNA methylation reading to a linear
+model and perform the corresponding slope test and goodness-of-fit test (F-test
+holding out each contrast variable). See also
+[formula](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/formula.html)
+for how to specify lm/glm-like symbolic form for regression. All these results
+are returned in an object of class `DMLSummary`:
 
 ```{r model5}
 smry = DML(se, ~tissue + sex)
@@ -94,11 +90,11 @@ You can use `mc.cores` argument to parallelize the computing.
 
 # Test Interpretation
 
-The `DMLSummary` object is a list of expanded `summary.lm` objects from the
-linear model (as would be returned by `summary(lm())`. The
-`summaryExtractTest` function abstracts a `DMLSummary` object
-into a data frame with rows corresponding to CpGs/loci and columns containing
-the slopes and p-values of each variable.
+The `DMLSummary` object is a list of slightly expanded `summary.lm` objects as
+is typically returned by `summary(lm())`. The `summaryExtractTest` function
+extracts some key test statistics from the `DMLSummary` object and store them
+in a data frame. Rows of the data frame correspond to CpGs/loci and columns
+contain the slopes and p-values of each variable.
 
 ```{r model6}
 test_result = summaryExtractTest(smry)
@@ -110,66 +106,69 @@ With the exception of the `Intercept`, there are four groups of columns, each
 starting with "Est_", "Pval_", "FPval_", and "Eff_" as prefix. Here are what
 they represent:
 
-* **Est_**
-: The slope estimate (aka the beta coefficient) for continuous
-variable. DNA methylation difference of the current level
-with respect to the reference level for nominal contrast variables. Each suffix
-is concatenated from the contrast variable name (e.g., tissue, sex) and the
-level name if the contrast variable is discrete (e.g, Cecum, Esophagus, Fat).
-For example, `Est_tissueFat` should be interpreted as the
-estimated beta value difference of Fat compared to the reference tissue (which
-is `Colon`, as set above. If reference is not set, the first level in
-alphabetic order is used as the reference level).
-There are is a special column named ``Est_`(Intercept)` ``.
-They correspond to the beta value of the reference level (in this case a Female
-Colon sample).
+* **Est_\*** : The slope estimate (aka the $\beta$ coefficient, not to be
+confused with the DNA methylation $\beta$-value though) for continuous
+variable. DNA methylation difference of the current level with respect to the
+reference level for nominal contrast variables. Each suffix is concatenated
+from the contrast variable name (e.g., tissue, sex) and the level name if the
+contrast variable is discrete (e.g, Cecum, Esophagus, Fat).  For example,
+`Est_tissueFat` should be interpreted as the estimated methylation level
+difference of Fat compared to the reference tissue (which is `Colon`, as set
+above). If reference is not set, the first level in the alphabetic order is
+used as the reference level.  There is a special column named
+``Est_`(Intercept)` ``.  It corresponds to the base-level methylation of the
+reference (in this case a Female Colon sample).
 
-* **Pval_**
-: The **unadjusted** p-values of t-testing the slope (statistical
-significance of the difference). For example, `Pval_tissueFat` tests whether
-`Fat` is significantly different from `Colon` (the reference level) in DNA
-methylation. The ``Pval_`(Intercept)` `` tests whether the reference level is
-significantly different from zero.
+* **Pval_\*** : The unadjusted p-values of t-testing the slope. This
+represents the statistical significance of the methylation difference. For
+example, `Pval_tissueFat` tests whether `Fat` is significantly different from
+`Colon` (the reference level) in DNA methylation. The ``Pval_`(Intercept)` ``
+tests whether the reference level is significantly different from zero.
 
-* **FPval_**
-: The **unadjusted** p-value of the F-test contrasting the full model against a
-reduced model with the labeled contrasting held out. Note that "Pval_" and
-"FPval_" are equivalent when the contrast variable is a 2-level factor, i.e., a
-pairwise comparison.
+* **FPval_\*** : The unadjusted p-value of the F-test contrasting the full
+model against a reduced model with the labeled contrast variable held out. Note
+that "Pval_" and "FPval_" are equivalent when the contrast variable is a
+2-level factor, i.e., in the case of a pairwise comparison.
 
-* **Eff_**
-: The effect size of each normial contrast variable. This is
+* **Eff_\*** : The effect size of each normial contrast variable. This is
 equivalent to the maximum slope subtracted by the minimum level including the
 reference level (0).
 
-Multiple-testing adjustment can be done afterwards using R's p.adjust
-function. It is also integrated to the `DMR` function by default (see below).
+Multiple-testing adjustment can be done afterwards using R's `p.adjust`
+function. It is integrated to the `DMR` function by default (see below).
 
 # Goodness of Fit
 
-One may want to ask a question like _whether the methylation of the probe is
-tissue-specific_ rather than whether the methylation of the probe is
-differentially methylated in fat.
-The former question ask about the contrast variable
-as a whole instead of a specific level of the contrast variable. To answer
-this question, we can use an F-test contasting the full model with a reduced
-model with the target contrast held out. By default, this analysis is already
-completed in the `DML` function. The test result is recorded
-in the **FPval_** columns. For example, to get all CpGs that are methylated
-specific to sex,
+One may want to ask a question like
 
-```{r model7}
+> Is the CpG methylation tissue-specific?
+
+rather than
+
+> Is the CpG more methylated in fat compared to liver?
+
+The first question ask about the contrast variable as a whole while the second
+question concerns only a specific level in the contrast variable. To answer
+this question, we can use an F-test contasting the full model with a reduced
+model with the target contrast held out. By default, this statistics is already
+computed in the `DML` function. The test result is recorded in the **FPval_**
+columns. For example, to get all CpGs that are methylated specific to sex,
+
+```{r model7, message = FALSE}
+library(dplyr)
+library(tidyr)
 test_result %>% dplyr::filter(FPval_sex < 0.05, Eff_sex > 0.1) %>%
     select(FPval_sex, Eff_sex)
 ```
 
 Here we used 0.1 as the effect size threshold. This means DNA methylation
-difference under 0.1 (10%) is not considered a biologically meaningful
-difference. This is a valid assumption for homogenous cell composition as
-most cells would be either biallelically methylated, unmethylated or
-monoallelically methylated.
+difference under 0.1 (10%) is considered not biologically meaningful. This can
+be a valid assumption for homogenous cell composition as most cells would be
+either biallelically methylated, unmethylated or monoallelically
+methylated. But different threshold can be used in different analysis
+scenarios.
 
-We can define CpG methylation as sex-specific, tissue-specific or both
+We can define CpG methylation as sex-specific, tissue-specific or both, by:
 
 ```{r model8}
 test_result %>%
@@ -180,17 +179,18 @@ test_result %>%
     select(sex_specific, tissue_specific) %>% table
 ```
 
-As you can see from the result, two probes are sex-specific and one probe
-13 probes are tissue-specific. There is no overlap between probes whose
-methylation reading is differential across both contrasts.
+As you can see from the result, some probes are sex-specific and others are
+tissue-specific. There is no overlap between probes whose methylation reading
+is differential along both contrasts.
 
 # Pairwise Comparison
 
-From the test result, we can also ask whether the DNA methylation might
-be different between two sexes or two tissues. For example, `Est_sexMale`
+From the test result, we can also ask whether the DNA methylation is different
+between two sexes or between two specific tissues. For example, `Est_sexMale`
 compares male from females. The following code creates a volcano plot.
 
 ```{r model9}
+library(ggplot2)
 ggplot(test_result) + geom_point(aes(Est_sexMale, -log10(Pval_sexMale)))
 ```
 
@@ -229,9 +229,10 @@ For example, we can merge sex-specific differential methylation identified
 above to chromosome X regions that show X-inactivation-related methylation
 difference. To do this, we need to pick a contrast:
 
-```{r model13, eval=FALSE}
-dmContrasts(smry)                       # pick a contrast
+```{r model13, eval=TRUE}
+dmContrasts(smry)                       # pick a contrast from below
 merged = DMR(se, smry, "sexMale")       # merge CpGs to regions / segments
+merged %>% dplyr::filter(Seg_Pval_adj < 0.01)
 ```
 
 See [Supplemental
