@@ -367,7 +367,7 @@ readControls <- function(dm, controls) {
 searchIDATprefixes <- function(dir.name,
     recursive = TRUE, use.basename = TRUE) {
 
-    stopifnot(file.exists(dir.name))
+    stopifnot(dir.exists(dir.name))
 
     paths <- list.files(dir.name, '\\.idat(.gz)?$', recursive = recursive)
     prefixes <- unique(sub('_(Grn|Red).idat(.gz)?', '', paths))
