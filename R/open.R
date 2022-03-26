@@ -35,19 +35,24 @@ prepSesameList <- function() {
 #' @param sdf SigDF
 #' @param prep code that indicates preprocessing functions and their
 #' execution order (functions on the left is executed first).
+#' @param prep_args optional argument list to individual functions, e.g.,
+#' prepSesame(sdf, prep_args=list(Q=list(mask_names = "design_issue")))
+#' sets qualityMask(sdf, mask_names = "design_issue")
 #' @return SigDF
 #' @examples
 #' sdf <- sesameDataGet("MM285.1.SigDF")
 #' sdf1 <- prepSesame(sdf, "QCDPB")
 #' @export
-prepSesame <- function(sdf, prep = "QCDPB") {
+prepSesame <- function(sdf, prep = "QCDPB", prep_args = NULL) {
     cfuns <- prepSesameList()
     
     codes <- str_split(prep,"")[[1]]
     stopifnot(all(codes %in% cfuns$code))
     x <- sdf
     for(c1 in codes) {
-        x <- get(cfuns[cfuns$code == c1, "func"])(x) }
+        x <- do.call(get(cfuns[cfuns$code == c1, "func"]),
+            c(list(x), prep_args[[c1]]))
+    }
     x
 }
 
@@ -62,6 +67,7 @@ prepSesame <- function(sdf, prep = "QCDPB") {
 #' @param x SigDF(s), IDAT prefix(es)
 #' @param platform optional platform string
 #' @param prep preprocessing code, see ?prepSesame
+#' @param prep_args optional preprocessing argument list, see ?prepSesame
 #' @param manifest optional dynamic manifest
 #' @param func either getBetas or getAFs
 #' @param ... parameters to getBetas
@@ -75,7 +81,7 @@ prepSesame <- function(sdf, prep = "QCDPB") {
 #' betas <- openSesame(IDATprefixes)
 #' @export
 openSesame <- function(
-    x, platform = '', prep = "QCDPB", manifest = NULL,
+    x, platform = '', prep = "QCDPB", prep_args = NULL, manifest = NULL,
     func = getBetas, BPPARAM=SerialParam(), ...) {
 
     ## expand if a directory
@@ -84,20 +90,21 @@ openSesame <- function(
     }
 
     if (is(x, "SigDF")) {
-        func(prepSesame(x, prep), ...)
+        func(prepSesame(x, prep, prep_args), ...)
     } else if (is(x, 'character')) {
         if (length(x) == 1) {
             func(prepSesame(readIDATpair(
-                x, platform = platform, manifest = manifest), prep), ...)
+                x, platform = platform, manifest = manifest),
+                prep, prep_args), ...)
         } else { # multiple IDAT prefixes / SigDFs
             do.call(cbind, bplapply(x, openSesame,
-                platform = platform, prep = prep, fun = func,
-                manifest = manifest, BPPARAM=BPPARAM, ...))
+                platform = platform, prep = prep, prep_args = prep_args,
+                fun = func, manifest = manifest, BPPARAM=BPPARAM, ...))
         }
     } else if (is(x, "list") && is(x[[1]], "SigDF")) {
         do.call(cbind, bplapply(x, openSesame,
-            platform = platform, prep = prep, fun = func,
-            manifest = manifest, BPPARAM=BPPARAM, ...))
+            platform = platform, prep = prep, prep_args = prep_args,
+            fun = func, manifest = manifest, BPPARAM=BPPARAM, ...))
     } else {
         stop("Unsupported input")
     }
