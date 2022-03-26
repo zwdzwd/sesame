@@ -10,16 +10,17 @@
 #' channel inference.
 #'
 #' @param sdf a \code{SigDF}
+#' @param verbose print more messages
 #' @return string of ethnicity
 #' @import sesameData
 #' @examples
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' inferEthnicity(sdf)
 #' @export
-inferEthnicity <- function(sdf) {
+inferEthnicity <- function(sdf, verbose = FALSE) {
 
     stopifnot(is(sdf, 'SigDF'))
-    stopifnot(sdfPlatform(sdf) %in% c('EPIC','HM450'))
+    stopifnot(sdfPlatform(sdf, verbose = verbose) %in% c('EPIC','HM450'))
 
     ethnicity.inference <- sesameDataGet('ethnicity.inference')
     ccsprobes <- ethnicity.inference$ccs.probes

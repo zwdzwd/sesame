@@ -78,6 +78,14 @@ betas = do.call(cbind, BiocParallel::bplapply(
     searchIDATprefixes(idat_dir), function(pfx) {
         getBetas(prepSesame(readIDATpair(pfx), "QCDPB"))
 }, BPPARAM = BiocParallel::MulticoreParam(2)))
+
+## or even more explicitly (if one needs to control argument passed
+## to a specific preprocessing function)
+betas = do.call(cbind, BiocParallel::bplapply(
+    searchIDATprefixes(idat_dir), function(pfx) {
+        getBetas(noob(pOOBAH(dyeBiasNL(inferInfiniumIChannel(qualityMask(
+            readIDATpair(pfx)))))))
+}, BPPARAM = BiocParallel::MulticoreParam(2)))
 ```
 
 The `openSesame` function is highly customizable. The `prep=` argument is the

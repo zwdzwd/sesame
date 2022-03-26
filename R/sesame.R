@@ -472,6 +472,7 @@ SigSetToSigDF <- function(sset) {
 #' the incomplete conversion.
 #'
 #' @param sdf a SigDF
+#' @param verbose print more messages
 #' @return GCT score (the higher, the more incomplete conversion)
 #' @examples
 #' sesameDataCache() # if not done yet
@@ -479,11 +480,12 @@ SigSetToSigDF <- function(sset) {
 #' bisConversionControl(sdf)
 #'
 #' @export
-bisConversionControl <- function(sdf) {
+bisConversionControl <- function(sdf, verbose = FALSE) {
 
-    stopifnot(sdfPlatform(sdf) %in% c('EPICplus','EPIC','HM450'))
-    extC <- sesameDataGet(paste0(sdfPlatform(sdf), '.probeInfo'))$typeI.extC
-    extT <- sesameDataGet(paste0(sdfPlatform(sdf), '.probeInfo'))$typeI.extT
+    platform <- sdfPlatform(sdf, verbose = verbose)
+    stopifnot(platform %in% c('EPICplus','EPIC','HM450'))
+    extC <- sesameDataGet(paste0(platform, '.probeInfo'))$typeI.extC
+    extT <- sesameDataGet(paste0(platform, '.probeInfo'))$typeI.extT
     ## prbs <- rownames(oobG(sset))
     df <- InfIR(sdf)
     extC <- intersect(df$Probe_ID, extC)

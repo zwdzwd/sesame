@@ -9,10 +9,17 @@ detectionPoobEcdf(
   sdf,
   return.pval = FALSE,
   combine.neg = TRUE,
-  pval.threshold = 0.05
+  pval.threshold = 0.05,
+  verbose = FALSE
 )
 
-pOOBAH(sdf, return.pval = FALSE, combine.neg = TRUE, pval.threshold = 0.05)
+pOOBAH(
+  sdf,
+  return.pval = FALSE,
+  combine.neg = TRUE,
+  pval.threshold = 0.05,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
@@ -24,6 +31,8 @@ masked \code{SigDF}}
 the out-of-band probes in simulating the signal background}
 
 \item{pval.threshold}{minimum p-value to mask}
+
+\item{verbose}{print more messages}
 }
 \value{
 a \code{SigDF}, or a p-value vector if return.pval is TRUE

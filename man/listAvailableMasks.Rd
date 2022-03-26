@@ -4,10 +4,10 @@
 \alias{listAvailableMasks}
 \title{list existing quality masks for a SigDF}
 \usage{
-listAvailableMasks(sdf)
+listAvailableMasks(platform)
 }
 \arguments{
-\item{sdf}{a SigDF object}
+\item{platform}{EPIC, MM285, HM450 etc}
 }
 \value{
 a tibble of masks
@@ -16,6 +16,5 @@ a tibble of masks
 list existing quality masks for a SigDF
 }
 \examples{
-sdf <- sesameDataGet('EPIC.1.SigDF')
-listAvailableMasks(sdf)
+listAvailableMasks("EPIC")
 }

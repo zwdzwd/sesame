@@ -1,7 +1,7 @@
-getIntensityRatioYvsAuto <- function(sdf) {
+getIntensityRatioYvsAuto <- function(sdf, platform) {
     intens <- totalIntensities(sdf)
-    prbA <- names(sesameData_getAutosomeProbes(sdfPlatform(sdf)))
-    prbY <- names(sesameData_getProbesByChromosome("chrY", sdfPlatform(sdf)))
+    prbA <- names(sesameData_getAutosomeProbes(platform))
+    prbY <- names(sesameData_getProbesByChromosome("chrY", platform))
     median(intens[prbY], na.rm=TRUE) / median(intens[prbA], na.rm=TRUE)
 }
 
@@ -13,6 +13,7 @@ getIntensityRatioYvsAuto <- function(sdf) {
 #' probes excludes pseudo-autosomal probes.
 #'
 #' @param sdf a \code{SigDF}
+#' @param verbose print more messages
 #' @return medianY and medianX, fraction of XCI, methylated and unmethylated X
 #' probes, median intensities of auto-chromosomes.
 #' @examples
@@ -20,16 +21,12 @@ getIntensityRatioYvsAuto <- function(sdf) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' getSexInfo(sdf)
 #' @export
-getSexInfo <- function(sdf) {
+getSexInfo <- function(sdf, verbose = FALSE) {
     stopifnot(is(sdf, "SigDF"))
-    cleanY <- sesameDataGet(paste0(
-        sdfPlatform(sdf),'.probeInfo'))$chrY.clean
-
-    xLinked <- sesameDataGet(paste0(
-        sdfPlatform(sdf),'.probeInfo'))$chrX.xlinked
-
-    probe2chr <- sesameDataGet(paste0(
-        sdfPlatform(sdf),'.probeInfo'))$probe2chr.hg19
+    platform <- sdfPlatform(sdf, verbose = verbose)
+    cleanY <- sesameDataGet(paste0(platform,'.probeInfo'))$chrY.clean
+    xLinked <- sesameDataGet(paste0(platform,'.probeInfo'))$chrX.xlinked
+    probe2chr <- sesameDataGet(paste0(platform,'.probeInfo'))$probe2chr.hg19
 
     xLinkedBeta <- getBetas(sdf, mask=FALSE)[xLinked]
     intens <- totalIntensities(sdf)
@@ -103,7 +100,8 @@ inferSexKaryotypes <- function(sdf) {
 #'
 #' @param x either a raw \code{SigDF} or a beta value vector named by probe ID
 #' SigDF is preferred over beta values.
-#' @param pfm platform Only MM285, EPIC and HM450 are supported.
+#' @param platform Only MM285, EPIC and HM450 are supported.
+#' @param verbose print more messages
 #' @return 'F' or 'M'
 #' We established our sex calling based on the CpGs hypermethylated in
 #' inactive X (XiH), CpGs hypomethylated in inactive X (XiL) and signal
@@ -122,22 +120,22 @@ inferSexKaryotypes <- function(sdf) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' inferSex(sdf)
 #' @export
-inferSex <- function(x, pfm = NULL) {
+inferSex <- function(x, platform = NULL, verbose = FALSE) {
 
-    if (is.null(pfm)) {
+    if (is.null(platform)) {
         if (is.numeric(x)) {
-            pfm <- inferPlatformFromProbeIDs(names(x))
+            platform <- inferPlatformFromProbeIDs(names(x), silent = !verbose)
         } else if (is(x, "SigDF")) {
-            pfm <- sdfPlatform(x)
+            platform <- sdfPlatform(x, verbose = verbose)
         }
     }
     
-    stopifnot(pfm %in% c('EPIC','HM450','MM285'))
-    if (pfm == 'MM285'){
+    stopifnot(platform %in% c('EPIC','HM450','MM285'))
+    if (platform == 'MM285'){
         inf <- sesameDataGet("MM285.inferences")$sex
         requireNamespace("e1071")
         if (is(x, "SigDF")) { # if possible use signal intensity
-            intensYvsAuto <- getIntensityRatioYvsAuto(x)
+            intensYvsAuto <- getIntensityRatioYvsAuto(x, platform)
 
             ## assuming unnormalized data
             betas <- getBetas(pOOBAH(resetMask(dyeBiasNL(noob(x)))))

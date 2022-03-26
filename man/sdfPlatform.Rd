@@ -4,12 +4,12 @@
 \alias{sdfPlatform}
 \title{Convenience function to output platform attribute of SigDF}
 \usage{
-sdfPlatform(sdf, silent = FALSE)
+sdfPlatform(sdf, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a SigDF object}
 
-\item{silent}{whether to print message}
+\item{verbose}{print more messages}
 }
 \value{
 the platform string for the SigDF object

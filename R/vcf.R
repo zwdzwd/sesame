@@ -14,6 +14,18 @@ genotyper <- function(x, model_background=0.1, model_nbeads=40) {
     list(GT=GT, GS=GS)
 }
 
+vcf_header <- function(genome) {
+    c('##fileformat=VCFv4.0',
+        sprintf('##fileDate=%s',format(Sys.time(),"%Y%m%d")),
+        sprintf('##reference=%s', genome),
+        paste0('##INFO=<ID=PVF,Number=1,Type=Float,',
+            'Description="Pseudo Variant Frequency">'),
+        paste0('##INFO=<ID=GT,Number=1,Type=String,',
+            'Description="Genotype">'),
+        paste0('##INFO=<ID=GS,Number=1,Type=Integer,',
+            'Description="Genotyping score from 7 to 85">'))
+}
+
 #' Convert SNP from Infinium array to VCF file
 #'
 #' @param sdf SigDF
@@ -22,6 +34,7 @@ genotyper <- function(x, model_background=0.1, model_nbeads=40) {
 #' @param annoS SNP variant annotation, download if not given
 #' @param annoI Infinium-I variant annotation, download if not given
 #' hg19 and hg38 in human
+#' @param verbose print more messages
 #'
 #' @return VCF file. If vcf is NULL, a data.frame is output to
 #' console. The data.frame does not contain VCF headers.
@@ -37,9 +50,10 @@ genotyper <- function(x, model_background=0.1, model_nbeads=40) {
 #' head(formatVCF(sdf))
 #' 
 #' @export
-formatVCF <- function(sdf, vcf=NULL, genome="hg19", annoS=NULL, annoI=NULL) {
+formatVCF <- function(
+    sdf, vcf=NULL, genome="hg19", annoS=NULL, annoI=NULL, verbose = FALSE) {
     
-    platform <- sdfPlatform(sdf)
+    platform <- sdfPlatform(sdf, verbose = verbose)
     if (is.null(annoS)) { annoS <- sesameAnno_get(sprintf(
         "Anno/%s/%s.%s.snp_overlap_b151.rds", platform, platform, genome)) }
     betas <- getBetas(sdf)[names(annoS)]
@@ -65,16 +79,7 @@ formatVCF <- function(sdf, vcf=NULL, genome="hg19", annoS=NULL, annoI=NULL) {
         annoI$rs, annoI$REF, annoI$ALT, GS, ifelse(GS>20,'PASS','FAIL'),
         sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
 
-    header <- c('##fileformat=VCFv4.0',
-        sprintf('##fileDate=%s',format(Sys.time(),"%Y%m%d")),
-        sprintf('##reference=%s', genome),
-        paste0('##INFO=<ID=PVF,Number=1,Type=Float,',
-            'Description="Pseudo Variant Frequency">'),
-        paste0('##INFO=<ID=GT,Number=1,Type=String,',
-            'Description="Genotype">'),
-        paste0('##INFO=<ID=GS,Number=1,Type=Integer,',
-            'Description="Genotyping score from 7 to 85">'))
-    
+    header <- vcf_header(genome)    
     out <- data.frame(rbind(vcflines_snp, vcflines_typeI))
     colnames(out) <- c("#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO")
     rownames(out) <- out$ID

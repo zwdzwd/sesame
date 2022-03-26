@@ -4,7 +4,12 @@
 \alias{cnSegmentation}
 \title{Perform copy number segmentation}
 \usage{
-cnSegmentation(sdf, sdfs.normal = NULL, genome = c("hg19", "hg38"))
+cnSegmentation(
+  sdf,
+  sdfs.normal = NULL,
+  genome = c("hg19", "hg38"),
+  verbose = FALSE
+)
 }
 \arguments{
 \item{sdf}{\code{SigDF}}
@@ -14,6 +19,8 @@ use the stored normal data from sesameData. However, we do recommend using
 a matched copy number normal dataset for normalization.}
 
 \item{genome}{hg19 or hg38}
+
+\item{verbose}{print more messages}
 }
 \value{
 an object of \code{CNSegment}

@@ -4,10 +4,12 @@
 \alias{bisConversionControl}
 \title{Compute internal bisulfite conversion control}
 \usage{
-bisConversionControl(sdf)
+bisConversionControl(sdf, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a SigDF}
+
+\item{verbose}{print more messages}
 }
 \value{
 GCT score (the higher, the more incomplete conversion)

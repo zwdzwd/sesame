@@ -29,7 +29,7 @@ SigDF <- function(df, platform = "EPIC", ctl=NULL) {
 #' Convenience function to output platform attribute of SigDF
 #'
 #' @param sdf a SigDF object
-#' @param silent whether to print message
+#' @param verbose print more messages
 #' @return the platform string for the SigDF object
 #' @examples
 #' sesameDataCache()
@@ -37,11 +37,11 @@ SigDF <- function(df, platform = "EPIC", ctl=NULL) {
 #' sdfPlatform(sdf)
 #' 
 #' @export
-sdfPlatform <- function(sdf, silent = FALSE) {
+sdfPlatform <- function(sdf, verbose = FALSE) {
     if ("platform" %in% attributes(sdf)) {
         attr(sdf, "platform")
     } else {
-        inferPlatformFromProbeIDs(sdf$Probe_ID, silent = silent)
+        inferPlatformFromProbeIDs(sdf$Probe_ID, silent = !verbose)
     }
 }
 
@@ -91,16 +91,17 @@ oobR <- function(sdf) {
 #' get the controls attributes
 #'
 #' @param sdf a \code{SigDF}
+#' @param verbose print more messages
 #' @return the controls data frame
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' head(controls(sdf))
 #' @export
-controls <- function(sdf) {
+controls <- function(sdf, verbose = FALSE) {
     stopifnot(is(sdf, "SigDF"))
     df <- sesameDataGet(sprintf(
-        "%s.address", sdfPlatform(sdf, silent = FALSE)))$controls
+        "%s.address", sdfPlatform(sdf, verbose = verbose)))$controls
     if (is.null(df)) {
         sdf[grepl("^ctl", sdf$Probe_ID),]
     } else {
@@ -128,6 +129,7 @@ sdf_write_table <- function(sdf, ...) {
 #'
 #' @param fname file name
 #' @param platform array platform (will infer if not given)
+#' @param verbose print more information
 #' @param ... additional argument to read.table
 #' @return read table file to SigDF
 #' @examples
@@ -137,13 +139,14 @@ sdf_write_table <- function(sdf, ...) {
 #' sdf_write_table(sdf, file=fname)
 #' sdf2 <- sdf_read_table(fname)
 #' @export
-sdf_read_table <- function(fname, platform = NULL, ...) {
+sdf_read_table <- function(fname, platform = NULL, verbose=FALSE, ...) {
     df <- read.table(fname, header=TRUE, ...)
     sdf <- structure(df, class=c("SigDF", "data.frame"))
     sdf$col <- factor(sdf$col, levels=c("G","R","2"))
     sdf$mask <- as.logical(sdf$mask)
     if (is.null(platform)) {
-        attr(sdf, "platform") <- inferPlatformFromProbeIDs(sdf$Probe_ID)
+        attr(sdf, "platform") <- inferPlatformFromProbeIDs(
+            sdf$Probe_ID, silent = !verbose)
     }
     sdf
 }

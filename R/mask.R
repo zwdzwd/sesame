@@ -40,6 +40,7 @@ setMask <- function(sdf, probes) {
 #' Reset Masking
 #'
 #' @param sdf a \code{SigDF}
+#' @param verbose print more messages
 #' @return a new \code{SigDF} with mask reset to all FALSE
 #' @examples
 #' sesameDataCache() # if not done yet
@@ -49,33 +50,33 @@ setMask <- function(sdf, probes) {
 #' sum(sdf$mask)
 #' sum(resetMask(sdf)$mask)
 #' @export
-resetMask <- function(sdf) {
+resetMask <- function(sdf, verbose = FALSE) {
     sdf$mask <- FALSE
     sdf
 }
 
 #' list existing quality masks for a SigDF
 #'
-#' @param sdf a SigDF object
+#' @param platform EPIC, MM285, HM450 etc
 #' @return a tibble of masks
 #' @examples
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' listAvailableMasks(sdf)
+#' listAvailableMasks("EPIC")
 #' @export
-listAvailableMasks <- function(sdf) {
+listAvailableMasks <- function(platform) {
     KYCG_getDBs(sprintf(
-        "%s.mask", sdfPlatform(sdf)), summary=TRUE)
+        "%s.mask", platform), summary=TRUE)
 }
 
 #' Mask beta values by design quality
 #' 
 #' Currently quality masking only supports three platforms
-#' see also listAvailableMasks(sdf)
+#' see also listAvailableMasks(sdfPlatform(sdf))
 #' 
 #' @param sdf a \code{SigDF} object
 #' @param mask_names mask names, default to "recommended", can be a vector
 #' of multiple masks, e.g., c("design_issue", "multi"), NULL to skip
-#' @param prefixes mask by probe ID prefixes, e.g., cg, 
+#' @param prefixes mask by probe ID prefixes, e.g., cg
+#' @param verbose print more messages
 #' @return a filtered \code{SigDF}
 #' @examples
 #' sesameDataCache() # if not done yet
@@ -85,21 +86,23 @@ listAvailableMasks <- function(sdf) {
 #' sum(qualityMask(sdf, mask_names = NULL, prefixes = "rs")$mask)
 #'
 #' ## list available masks, the mask_name column
-#' listAvailableMasks(sdf)
+#' listAvailableMasks(sdfPlatform(sdf))
 #' 
 #' @export 
-qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL) {
+qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL,
+    verbose = FALSE) {
 
     masks <- character(0)
-    if (!is.null(prefixes)) {
+    if (!is.null(prefixes)) { # mask by prefix
         masks <- c(masks, do.call(c, lapply(prefixes, function(pfx) {
             grep(sprintf("^%s", pfx), sdf$Probe_ID, value=TRUE) })))
     }
 
-    if (!is.null(mask_names)) {
+    if (!is.null(mask_names)) { # mask by predefined sets
         masks <- c(masks, 
             do.call(c, KYCG_getDBs(sprintf(
-                "%s.mask", sdfPlatform(sdf)), mask_names, silent=TRUE)))
+                "%s.mask", sdfPlatform(sdf, verbose = verbose)),
+                mask_names, silent=!verbose)))
     }
     
     addMask(sdf, masks)

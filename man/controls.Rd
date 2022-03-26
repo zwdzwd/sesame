@@ -4,10 +4,12 @@
 \alias{controls}
 \title{get the controls attributes}
 \usage{
-controls(sdf)
+controls(sdf, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
+
+\item{verbose}{print more messages}
 }
 \value{
 the controls data frame

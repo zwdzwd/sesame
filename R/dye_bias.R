@@ -5,8 +5,9 @@
 #' 
 #' @param sdf a SigDF
 #' @param average whether to average
+#' @param verbose print more messages
 #' @return a data frame of normalization control signals
-normControls <- function(sdf, average = FALSE) {
+normControls <- function(sdf, average = FALSE, verbose = FALSE) {
     df <- controls(sdf)
     df <- df[grep('norm(_|\\.)', tolower(df$Type)),]
 
@@ -14,7 +15,7 @@ normControls <- function(sdf, average = FALSE) {
     if (nrow(df) == 0)
         stop("No normalization control probes found!")
 
-    if (sdfPlatform(sdf) == 'HM27') {
+    if (sdfPlatform(sdf, verbose = verbose) == 'HM27') {
         df$channel <- ifelse(grepl('norm\\.green', tolower(df$Type)), 'G', 'R')
     } else {
         df$channel <- ifelse(grepl('norm_(c|g)', tolower(df$Type)), 'G', 'R')
@@ -100,6 +101,7 @@ maskIG <- function(sdf) {
 #' with dye bias corrected.
 #' 
 #' @param sdf a \code{SigDF}
+#' @param verbose print more messages
 #' @return a \code{SigDF} after dye bias correction.
 #' @importFrom preprocessCore normalize.quantiles.use.target
 #' @importFrom stats approx
@@ -108,7 +110,7 @@ maskIG <- function(sdf) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.db <- dyeBiasCorrTypeINorm(sdf)
 #' @export
-dyeBiasCorrTypeINorm <- function(sdf) {
+dyeBiasCorrTypeINorm <- function(sdf, verbose = FALSE) {
 
     stopifnot(is(sdf, "SigDF"))
     ## mask IG if the grn channel failed completely

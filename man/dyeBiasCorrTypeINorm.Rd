@@ -5,12 +5,14 @@
 \alias{dyeBiasNL}
 \title{Dye bias correction by matching green and red to mid point}
 \usage{
-dyeBiasCorrTypeINorm(sdf)
+dyeBiasCorrTypeINorm(sdf, verbose = FALSE)
 
-dyeBiasNL(sdf)
+dyeBiasNL(sdf, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
+
+\item{verbose}{print more messages}
 }
 \value{
 a \code{SigDF} after dye bias correction.

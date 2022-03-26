@@ -4,12 +4,14 @@
 \alias{sdf_read_table}
 \title{read a table file to SigDF}
 \usage{
-sdf_read_table(fname, platform = NULL, ...)
+sdf_read_table(fname, platform = NULL, verbose = FALSE, ...)
 }
 \arguments{
 \item{fname}{file name}
 
 \item{platform}{array platform (will infer if not given)}
+
+\item{verbose}{print more information}
 
 \item{...}{additional argument to read.table}
 }

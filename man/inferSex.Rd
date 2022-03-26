@@ -4,13 +4,15 @@
 \alias{inferSex}
 \title{Infer Sex}
 \usage{
-inferSex(x, pfm = NULL)
+inferSex(x, platform = NULL, verbose = FALSE)
 }
 \arguments{
 \item{x}{either a raw \code{SigDF} or a beta value vector named by probe ID
 SigDF is preferred over beta values.}
 
-\item{pfm}{platform Only MM285, EPIC and HM450 are supported.}
+\item{platform}{Only MM285, EPIC and HM450 are supported.}
+
+\item{verbose}{print more messages}
 }
 \value{
 'F' or 'M'

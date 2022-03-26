@@ -4,7 +4,14 @@
 \alias{formatVCF}
 \title{Convert SNP from Infinium array to VCF file}
 \usage{
-formatVCF(sdf, vcf = NULL, genome = "hg19", annoS = NULL, annoI = NULL)
+formatVCF(
+  sdf,
+  vcf = NULL,
+  genome = "hg19",
+  annoS = NULL,
+  annoI = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{sdf}{SigDF}
@@ -17,6 +24,8 @@ formatVCF(sdf, vcf = NULL, genome = "hg19", annoS = NULL, annoI = NULL)
 
 \item{annoI}{Infinium-I variant annotation, download if not given
 hg19 and hg38 in human}
+
+\item{verbose}{print more messages}
 }
 \value{
 VCF file. If vcf is NULL, a data.frame is output to

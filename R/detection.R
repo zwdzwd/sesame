@@ -103,6 +103,7 @@ detectionPnegEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 #' masked \code{SigDF}
 #' @param combine.neg whether to combine negative control probes with
 #' the out-of-band probes in simulating the signal background
+#' @param verbose print more messages
 #' @return a \code{SigDF}, or a p-value vector if return.pval is TRUE
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
@@ -111,7 +112,7 @@ detectionPnegEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
 #' 
 #' @export
 detectionPoobEcdf <- function(sdf, return.pval = FALSE,
-    combine.neg = TRUE, pval.threshold=0.05) {
+    combine.neg = TRUE, pval.threshold=0.05, verbose = FALSE) {
 
     stopifnot(is(sdf, "SigDF"))
 
@@ -163,6 +164,7 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE,
 #' masked \code{SigDF}
 #' @param combine.neg whether to combine negative control probes with
 #' the out-of-band probes in simulating the signal background
+#' @param verbose print more messages
 #' @return a \code{SigDF}, or a p-value vector if return.pval is TRUE
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
@@ -171,7 +173,7 @@ detectionPoobEcdf <- function(sdf, return.pval = FALSE,
 #' sum(sdf$mask)
 #' @export
 detectionPoobEcdf2 <- function(sdf, return.pval = FALSE,
-    combine.neg = TRUE, pval.threshold=0.05){
+    combine.neg = TRUE, pval.threshold=0.05, verbose = FALSE){
 
     stopifnot(is(sdf, "SigDF"))
 

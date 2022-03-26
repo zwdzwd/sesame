@@ -4,10 +4,12 @@
 \alias{inferEthnicity}
 \title{Infer Ethnicity}
 \usage{
-inferEthnicity(sdf)
+inferEthnicity(sdf, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
+
+\item{verbose}{print more messages}
 }
 \value{
 string of ethnicity

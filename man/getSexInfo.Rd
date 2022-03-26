@@ -4,10 +4,12 @@
 \alias{getSexInfo}
 \title{Get sex-related information}
 \usage{
-getSexInfo(sdf)
+getSexInfo(sdf, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
+
+\item{verbose}{print more messages}
 }
 \value{
 medianY and medianX, fraction of XCI, methylated and unmethylated X

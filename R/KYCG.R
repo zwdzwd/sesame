@@ -60,6 +60,15 @@ inferUniverse <- function(platform) {
     sesameDataGet(mft)$ordering$Probe_ID
 }
 
+subsetDBs <- function(dbs, universe) {
+    dbs <- lapply(dbs, function(db) {
+        db1 <- intersect(db, universe)
+        attributes(db1) <- attributes(db)
+        db1
+    })
+    dbs <- dbs[length(dbs) > 0]
+}
+
 #' testEnrichment tests for the enrichment of set of probes (query set) in
 #' a number of features (database sets).
 #'
@@ -92,8 +101,6 @@ testEnrichment <- function(
     platform = NULL, silent = FALSE) {
 
     platform <- queryCheckPlatform(platform, query, silent = silent)
-    if (is.null(universe)) {
-        universe <- inferUniverse(platform) }
     
     if (is.null(databases)) {
         dbs <- c(KYCG_getDBs(KYCG_listDBGroups( # by default, all dbs + gene
@@ -109,6 +116,11 @@ testEnrichment <- function(
     if (!silent) {
         message(sprintf("Testing against %d database(s)...", length(dbs)))
     }
+
+    if (is.null(universe)) {
+        universe <- inferUniverse(platform)
+    } else { # subset the dbs by universe
+        dbs <- subsetDBs(dbs, universe) }
     
     res <- do.call(bind_rows, lapply(dbs, function(db) {
         testEnrichmentFisher(query = query, database = db,

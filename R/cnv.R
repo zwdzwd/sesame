@@ -13,6 +13,7 @@
 #' use the stored normal data from sesameData. However, we do recommend using
 #' a matched copy number normal dataset for normalization.
 #' @param genome hg19 or hg38
+#' @param verbose print more messages
 #' @return an object of \code{CNSegment}
 #' @examples
 #'
@@ -25,17 +26,18 @@
 #' sesameDataGet_resetEnv()
 #' 
 #' @export
-cnSegmentation <- function(sdf, sdfs.normal=NULL, genome=c('hg19','hg38')) {
+cnSegmentation <- function(sdf, sdfs.normal=NULL,
+    genome=c('hg19','hg38'), verbose = FALSE) {
 
     stopifnot(is(sdf, "SigDF"))
     genome <- match.arg(genome)
+    platform <- sdfPlatform(sdf, verbose = verbose)
 
     if (is.null(sdfs.normal)) {
-        if (sdfPlatform(sdf) == "EPIC") {
+        if (platform == "EPIC") {
             sdfs.normal <- sesameDataGet("EPIC.5.SigDF.normal")
         } else {
-            stop(sprintf("For %s, please provide the sdfs.normal argument.",
-                sdfPlatform(sdf)))
+            stop(sprintf("Please provide the sdfs.normal argument.", platform))
         }
     }
     
@@ -43,7 +45,7 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, genome=c('hg19','hg38')) {
     seqLength <- sesameDataGet(paste0('genomeInfo.', genome))$seqLength
     gapInfo <- sesameDataGet(paste0('genomeInfo.', genome))$gapInfo
     probe.coords <- sesameDataGet(paste0(
-        sdfPlatform(sdf), '.probeInfo'))[[paste0('mapped.probes.', genome)]]
+        platform, '.probeInfo'))[[paste0('mapped.probes.', genome)]]
     
     ## extract intensities
     target.intens <- totalIntensities(sdf)
@@ -67,12 +69,10 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, genome=c('hg19','hg38')) {
     bin.signals <- binSignals(probe.signals, bin.coords, probe.coords)
 
     ## segmentation
-    seg <- structure(list(
+    structure(list(
         seg.signals = segmentBins(bin.signals, bin.coords),
         bin.coords = bin.coords,
         bin.signals = bin.signals), class='CNSegment')
-    
-    seg
 }
 
 ## Left-right merge bins

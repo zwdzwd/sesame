@@ -4,12 +4,14 @@
 \alias{normControls}
 \title{get normalization control signal}
 \usage{
-normControls(sdf, average = FALSE)
+normControls(sdf, average = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a SigDF}
 
 \item{average}{whether to average}
+
+\item{verbose}{print more messages}
 }
 \value{
 a data frame of normalization control signals

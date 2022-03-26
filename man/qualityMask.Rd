@@ -4,7 +4,7 @@
 \alias{qualityMask}
 \title{Mask beta values by design quality}
 \usage{
-qualityMask(sdf, mask_names = "recommended", prefixes = NULL)
+qualityMask(sdf, mask_names = "recommended", prefixes = NULL, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a \code{SigDF} object}
@@ -12,14 +12,16 @@ qualityMask(sdf, mask_names = "recommended", prefixes = NULL)
 \item{mask_names}{mask names, default to "recommended", can be a vector
 of multiple masks, e.g., c("design_issue", "multi"), NULL to skip}
 
-\item{prefixes}{mask by probe ID prefixes, e.g., cg,}
+\item{prefixes}{mask by probe ID prefixes, e.g., cg}
+
+\item{verbose}{print more messages}
 }
 \value{
 a filtered \code{SigDF}
 }
 \description{
 Currently quality masking only supports three platforms
-see also listAvailableMasks(sdf)
+see also listAvailableMasks(sdfPlatform(sdf))
 }
 \examples{
 sesameDataCache() # if not done yet
@@ -29,6 +31,6 @@ sum(qualityMask(sdf)$mask)
 sum(qualityMask(sdf, mask_names = NULL, prefixes = "rs")$mask)
 
 ## list available masks, the mask_name column
-listAvailableMasks(sdf)
+listAvailableMasks(sdfPlatform(sdf))
 
 }

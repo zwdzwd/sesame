@@ -10,7 +10,8 @@ inferSpecies(
   threshold.pos = 0.01,
   threshold.neg = 0.1,
   return.auc = FALSE,
-  return.species = FALSE
+  return.species = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ increase this number can sometimes improve accuracy (DEFAULT: 1000)}
 \item{return.auc}{return AUC calculated, override return.species}
 
 \item{return.species}{return a string to represent species}
+
+\item{verbose}{print more messaeges}
 }
 \value{
 a SigDF

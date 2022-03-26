@@ -4,7 +4,7 @@
 \alias{updateSigDF}
 \title{Set color and mask using strain/species-specific manifest}
 \usage{
-updateSigDF(sdf, species = NULL, strain = NULL, addr = NULL)
+updateSigDF(sdf, species = NULL, strain = NULL, addr = NULL, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
@@ -14,6 +14,8 @@ updateSigDF(sdf, species = NULL, strain = NULL, addr = NULL)
 \item{strain}{the strain the sample is considered to be}
 
 \item{addr}{species-specific address species, optional}
+
+\item{verbose}{print more messages}
 }
 \value{
 a \code{SigDF} with updated color channel and mask
