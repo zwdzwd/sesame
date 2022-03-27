@@ -98,8 +98,9 @@ to provide an array manifest when handling data from platform not supported
 natively. Finally, the `BPPARAM=` argument is the same argument taken by
 `BiocParallel::bplapply` to allow parallel processing.
 
-See [Supplemental Vignette](https://zhou-lab.github.io/sesame/supplemental.html)
-for details of different component functions of openSesame.
+See [Supplemental
+Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html) for
+details of different component functions of openSesame.
 
 # Customize Preprocessing {#prep}
 
@@ -120,8 +121,8 @@ other words, `prepSesame(sdf, "DB")` is equivalent to
 and return an updated `SigDF`. Therefore, these functions can be chained
 together. The choice of preprocessing functions and the order of their chaining
 is important (see [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/supplemental.html)) for detailed
-discussions of these functions). The following table lists the best
+Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html)) for
+detailed discussions of these functions). The following table lists the best
 preprocessing strategy based on our experience.
 
 ```{r base10, echo=FALSE, result="asis"}
@@ -175,7 +176,8 @@ modifies signal and may affect out-of-band signal assumption used in
 `P`. Lastly, functions that explicitly normalizes $\beta$ value distribution
 (`M`) should happen last if they even need to be used.
 
-See [Supplemental Vignette](https://zhou-lab.github.io/sesame/supplemental.html#prepfuns)
+See [Supplemental
+Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#prepfuns)
 for details of preprocessing functions.
 
 # Session Info

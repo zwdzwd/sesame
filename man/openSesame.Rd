@@ -8,6 +8,7 @@ openSesame(
   x,
   platform = "",
   prep = "QCDPB",
+  prep_args = NULL,
   manifest = NULL,
   func = getBetas,
   BPPARAM = SerialParam(),
@@ -20,6 +21,8 @@ openSesame(
 \item{platform}{optional platform string}
 
 \item{prep}{preprocessing code, see ?prepSesame}
+
+\item{prep_args}{optional preprocessing argument list, see ?prepSesame}
 
 \item{manifest}{optional dynamic manifest}
 

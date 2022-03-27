@@ -101,12 +101,15 @@ plot for each metric calculated.
 
 - `sesameQC_plotRedGrnQQ()` graphs the dye bias between the two color channels.
 
-- `sesameQC_plotIntensVsBetas()` plots the relationship between $\beta$ values and signal intensity and can be used to diagnose artificial readout and influence of signal background.
+- `sesameQC_plotIntensVsBetas()` plots the relationship between $\beta$ values
+  and signal intensity and can be used to diagnose artificial readout and
+  influence of signal background.
 
-- `sesameQC_plotHeatSNPs()` plots SNP probes and can be used to detect sample swaps.
+- `sesameQC_plotHeatSNPs()` plots SNP probes and can be used to detect sample
+  swaps.
 
 More about quality control plots can be found in [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/supplemental.html#Quality_control_plots).
+Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#Quality_control_plots).
 
 # Session Info
 

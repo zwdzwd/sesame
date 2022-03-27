@@ -4,13 +4,17 @@
 \alias{prepSesame}
 \title{Apply a chain of sesame preprocessing functions in an arbitrary order}
 \usage{
-prepSesame(sdf, prep = "QCDPB")
+prepSesame(sdf, prep = "QCDPB", prep_args = NULL)
 }
 \arguments{
 \item{sdf}{SigDF}
 
 \item{prep}{code that indicates preprocessing functions and their
 execution order (functions on the left is executed first).}
+
+\item{prep_args}{optional argument list to individual functions, e.g.,
+prepSesame(sdf, prep_args=list(Q=list(mask_names = "design_issue")))
+sets qualityMask(sdf, mask_names = "design_issue")}
 }
 \value{
 SigDF

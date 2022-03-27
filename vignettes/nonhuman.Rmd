@@ -157,8 +157,8 @@ ggplot(data = df,  aes(x = strain, y = probs)) +
 ```
 
 See also [The Supplemental
-Vignette](https://zhou-lab.github.io/sesame/supplemental.html#SNP) for heatmap
-validation of strain inference.
+Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#SNP) for
+heatmap validation of strain inference.
 
 # Quality Masking
 
