@@ -186,7 +186,7 @@ UNDER CONSTRUCTION
 
 There are other inferences one can do on the nonhuman arrays, e.g., sex, age
 (epigenetic clocks), tissue, copy number alteration etc. These will be
-elaborated in [The Inference Vignette](inference.html).
+elaborated in [The Inference Vignette](inferences.html).
 
 # Session Info
 

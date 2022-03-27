@@ -139,8 +139,8 @@ overlap between the two sets, so that metric is reported as well in the
 ```overlap``` column.
 
 See [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html) for other
-ways of visualizing enrichment results.
+Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#kycg_vis)
+for other ways of visualizing enrichment results.
 
 # Database Sets
 
