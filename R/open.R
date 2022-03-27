@@ -56,6 +56,26 @@ prepSesame <- function(sdf, prep = "QCDPB", prep_args = NULL) {
     x
 }
 
+wrap_openSesame1 <- function(func, ret, ...) {
+    if (is.null(func)) {
+        ret
+    } else {
+        func(ret, ...)
+    }
+}
+
+wrap_openSesame <- function(func, x, ret) {
+    if (is.null(func)) {
+        ret
+    } else {
+        ret <- do.call(cbind, ret)
+        if (is.null(colnames(ret))) {
+            colnames(ret) <- basename(x)
+        }
+        ret
+    }
+}
+
 #' The openSesame pipeline
 #'
 #' This function is a simple wrapper of noob + nonlinear dye bias 
@@ -65,24 +85,23 @@ prepSesame <- function(sdf, prep = "QCDPB", prep_args = NULL) {
 #' the beta value numerics.
 #' 
 #' @param x SigDF(s), IDAT prefix(es)
-#' @param platform optional platform string
 #' @param prep preprocessing code, see ?prepSesame
 #' @param prep_args optional preprocessing argument list, see ?prepSesame
 #' @param manifest optional dynamic manifest
-#' @param func either getBetas or getAFs
+#' @param func either getBetas or getAFs, if NULL, then return SigDF list
+#' @param platform optional platform string
 #' @param ... parameters to getBetas
 #' @param BPPARAM get parallel with MulticoreParam(n)
 #' @return a numeric vector for processed beta values
 #' @import BiocParallel
 #' @examples
-#' sdf <- sesameDataGet('HM450.1.TCGA.PAAD')$sdf
 #' IDATprefixes <- searchIDATprefixes(
 #'     system.file("extdata", "", package = "sesameData"))
 #' betas <- openSesame(IDATprefixes)
 #' @export
 openSesame <- function(
-    x, platform = '', prep = "QCDPB", prep_args = NULL, manifest = NULL,
-    func = getBetas, BPPARAM=SerialParam(), ...) {
+    x, prep = "QCDPB", prep_args = NULL, manifest = NULL,
+    func = getBetas, BPPARAM=SerialParam(), platform = "", ...) {
 
     ## expand if a directory
     if (length(x) == 1 && is(x, 'character') && dir.exists(x)) {
@@ -90,19 +109,19 @@ openSesame <- function(
     }
 
     if (is(x, "SigDF")) {
-        func(prepSesame(x, prep, prep_args), ...)
+        wrap_openSesame1(func, prepSesame(x, prep, prep_args), ...)
     } else if (is(x, 'character')) {
         if (length(x) == 1) {
-            func(prepSesame(readIDATpair(
+            wrap_openSesame1(func, prepSesame(readIDATpair(
                 x, platform = platform, manifest = manifest),
                 prep, prep_args), ...)
         } else { # multiple IDAT prefixes / SigDFs
-            do.call(cbind, bplapply(x, openSesame,
+            wrap_openSesame(func, x, bplapply(x, openSesame,
                 platform = platform, prep = prep, prep_args = prep_args,
-                fun = func, manifest = manifest, BPPARAM=BPPARAM, ...))
+                func = func, manifest = manifest, BPPARAM=BPPARAM, ...))
         }
     } else if (is(x, "list") && is(x[[1]], "SigDF")) {
-        do.call(cbind, bplapply(x, openSesame,
+        wrap_openSesame(func, x, bplapply(x, openSesame,
             platform = platform, prep = prep, prep_args = prep_args,
             fun = func, manifest = manifest, BPPARAM=BPPARAM, ...))
     } else {

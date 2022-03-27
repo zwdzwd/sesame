@@ -55,25 +55,31 @@ tools::R_user_dir("ExperimentHub", which="cache")
 
 The `openSesame` function provides end-to-end processing that converts IDATs to
 DNA methylation level (aka $\beta$ value) matrices in R. The function can take
-a directory where the IDAT files live, a specific path of IDAT file pairs, or a
-list of SigDF objects (see below). The following code uses a directory that
-contains built-in two HM27 IDAT pairs to demonstrates the use of `openSesame`:
+either one of the following input:
 
+- A path to a directory where the IDAT files live
+- Specific path(s) of IDAT file prefix, one for each IDAT pair
+- One or a list of SigDF objects
+
+The following code uses a directory that contains built-in two HM27 IDAT pairs
+to demonstrates the use of `openSesame`:
 
 ```{r base1, eval=FALSE}
 idat_dir = system.file("extdata/", package = "sesameData")
 betas = openSesame(idat_dir, BPPARAM = BiocParallel::MulticoreParam(2))
 ```
 
-Under the hood, the function performs a series of tasks including: searching
-IDAT files from the directory (the `searchIDATprefixes` function), reading IDAT
-data in as `SigDF` objects (the `readIDATpair` function), preprocessing the
-signals (the `prepSesame` function), and finally converting them to DNA
-methylation levels ($\beta$ values, the `getBetas` function). Alternatively,
-one can run the following command to get the same results.
+The `BPPARAM=` option is from the `BiocParallel` package and controls parallel
+processing (in this case, we are using two cores). Under the hood, the function
+performs a series of tasks including: searching IDAT files from the directory
+(the `searchIDATprefixes` function), reading IDAT data in as `SigDF` objects
+(the `readIDATpair` function), preprocessing the signals (the `prepSesame`
+function), and finally converting them to DNA methylation levels ($\beta$
+values, the `getBetas` function). Alternatively, one can run the following
+command to get the same results, while gaining more refined control:
 
 ```{r base2, eval=FALSE}
-##  The above `openSesame` call is equivalent to:
+##  The above openSesame call is equivalent to:
 betas = do.call(cbind, BiocParallel::bplapply(
     searchIDATprefixes(idat_dir), function(pfx) {
         getBetas(prepSesame(readIDATpair(pfx), "QCDPB"))
@@ -89,30 +95,44 @@ betas = do.call(cbind, BiocParallel::bplapply(
 ```
 
 The `openSesame` function is highly customizable. The `prep=` argument is the
-same argument one gives when calling the `prepSesame` function (see [Customize
+same argument one gives to the `prepSesame` function (see [Customize
 Preprocessing] for detail) which `openSesame` calls internally. The argument
 uniquely specifies a preprocessing procedure. The `func=` option specifies the
 signal extraction function. It can be either be `getBetas` (DNA methylation) or
-`getAFs` (allele frequencies of SNP probes). The `manifest=` option allows one
-to provide an array manifest when handling data from platform not supported
-natively. Finally, the `BPPARAM=` argument is the same argument taken by
-`BiocParallel::bplapply` to allow parallel processing.
-
+`getAFs` (allele frequencies of SNP probes) or NULL (returns `SigDF`). The
+`manifest=` option allows one to provide an array manifest when handling data
+from platform not supported natively. Finally, the `BPPARAM=` argument is the
+same argument taken by `BiocParallel::bplapply` to allow parallel processing.
 See [Supplemental
 Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#openSesame)
-for details of different component functions of openSesame.
+for details of these component functions of openSesame.
 
-# Customize Preprocessing {#prep}
+The output of `openSesame` can also be customized. It can either be beta
+values, which are the end DNA methylation readings, as shown above. It can also
+be a list of `SigDF`s which stores the signal intensities and can be further
+put back to openSesame for more processing. The `openSesame(func=)` argument
+specifies whether the output is a SigDF list or beta values. The following
+shows some usage:
 
-Sesame preprocessing can be done using the `prepSesame` function which takes a
-`SigDF` and returns a processed `SigDF`. The 2nd argument of `prepSesame`
-function (also the `prep=` argument if using `openSesame`) is a string that
-selects the preprocessing functions and specifies the order of their
-execution. For example,
+```{r base12, eval=FALSE}
+betas = openSesame(idat_dir, func = getBetas) # getBetas is the default
+sdfs = openSesame(idat_dir, func = NULL) # return SigDF list
+allele_freqs = openSesame(idat_dir, func = getAFs) # SNP allele frequencies
+sdfs = openSesame(sdfs, prep = "Q", func = NULL)   # take and return SigDFs
+```
 
-```{r base9, eval=FALSE}
+# Customize Preprocessing
+
+The `prep=` argument instructs the `openSesame` function to call the
+`prepSesame` function to preprocess signal intensity under the hood. This can
+be skipped by using `prep=""`. The `prepSesame` function takes a single `SigDF`
+as input and returns a processed `SigDF`. When `prep=` is non-empty, it selects
+the preprocessing functions (see [Preprocessing Function Code](#prep)) and
+specifies the order of their execution. For example,
+
+```{r base9}
 sdf = sesameDataGet('EPIC.1.SigDF')
-sdf_preped = prepSesame(sdf, "DB")
+sdf_preped = openSesame(sdf, prep="DB", func=NULL)
 ```
 
 performs dye bias correction (`D`) followed by background subtraction (`B`). In
@@ -153,6 +173,8 @@ germ cells, human vs model organisms, mouse strains etc. Some platforms (e.g.,
 Mammal40 and MM285) are designed for multiple species and strains. Therefore
 `S` and `T` would be important when those arrays are used on non-reference
 organisms (see [Working with Nonhuman Arrays](nonhuman.html)).
+
+# Preprocessing Function Code {#prep}
 
 The `prepSesameList` function lists all the available codes and the associated
 preprocessing functions.

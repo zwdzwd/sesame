@@ -6,19 +6,17 @@
 \usage{
 openSesame(
   x,
-  platform = "",
   prep = "QCDPB",
   prep_args = NULL,
   manifest = NULL,
   func = getBetas,
   BPPARAM = SerialParam(),
+  platform = "",
   ...
 )
 }
 \arguments{
 \item{x}{SigDF(s), IDAT prefix(es)}
-
-\item{platform}{optional platform string}
 
 \item{prep}{preprocessing code, see ?prepSesame}
 
@@ -26,9 +24,11 @@ openSesame(
 
 \item{manifest}{optional dynamic manifest}
 
-\item{func}{either getBetas or getAFs}
+\item{func}{either getBetas or getAFs, if NULL, then return SigDF list}
 
 \item{BPPARAM}{get parallel with MulticoreParam(n)}
+
+\item{platform}{optional platform string}
 
 \item{...}{parameters to getBetas}
 }
@@ -44,7 +44,6 @@ If the input is an IDAT prefix or a \code{SigDF}, the output is
 the beta value numerics.
 }
 \examples{
-sdf <- sesameDataGet('HM450.1.TCGA.PAAD')$sdf
 IDATprefixes <- searchIDATprefixes(
     system.file("extdata", "", package = "sesameData"))
 betas <- openSesame(IDATprefixes)
