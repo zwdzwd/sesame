@@ -39,8 +39,8 @@ sesameDataCache()
 SeSAMe supports automatic inference of the profiled organism. This is achieved
 by the `inferSpecies` function. Usually, users need not call this function
 explicitly and only need to specify the code `S` as part of the 2nd argument of
-the `openSesame` function. See [The Basics Vignette](sesame.html#prep) for more
-detail.
+the `openSesame` function. See [the Basics Usage vignette](sesame.html#prep)
+for more detail.
 
 The following example downloads an example Mammal40 array IDAT pair and call
 `openSesame` function with species inference (note the `S` in the `prep=`

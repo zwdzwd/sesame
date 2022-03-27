@@ -99,8 +99,8 @@ natively. Finally, the `BPPARAM=` argument is the same argument taken by
 `BiocParallel::bplapply` to allow parallel processing.
 
 See [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html) for
-details of different component functions of openSesame.
+Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#openSesame)
+for details of different component functions of openSesame.
 
 # Customize Preprocessing {#prep}
 
@@ -121,9 +121,9 @@ other words, `prepSesame(sdf, "DB")` is equivalent to
 and return an updated `SigDF`. Therefore, these functions can be chained
 together. The choice of preprocessing functions and the order of their chaining
 is important (see [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html)) for
-detailed discussions of these functions). The following table lists the best
-preprocessing strategy based on our experience.
+Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#prepfuns))
+for detailed discussions of these functions). The following table lists the
+best preprocessing strategy based on our experience.
 
 ```{r base10, echo=FALSE, result="asis"}
 library(knitr)
