@@ -104,7 +104,7 @@ signal extraction function. It can be either be `getBetas` (DNA methylation) or
 from platform not supported natively. Finally, the `BPPARAM=` argument is the
 same argument taken by `BiocParallel::bplapply` to allow parallel processing.
 See [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#openSesame)
+Vignette](https://zhou-lab.github.io/sesame/v1.14/supplemental.html#openSesame)
 for details of these component functions of openSesame.
 
 The output of `openSesame` can also be customized. It can either be beta
@@ -141,7 +141,7 @@ other words, `prepSesame(sdf, "DB")` is equivalent to
 and return an updated `SigDF`. Therefore, these functions can be chained
 together. The choice of preprocessing functions and the order of their chaining
 is important (see [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#prepfuns))
+Vignette](https://zhou-lab.github.io/sesame/v1.14/supplemental.html#prepfuns))
 for detailed discussions of these functions). The following table lists the
 best preprocessing strategy based on our experience.
 
@@ -199,7 +199,7 @@ modifies signal and may affect out-of-band signal assumption used in
 (`M`) should happen last if they even need to be used.
 
 See [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#prepfuns)
+Vignette](https://zhou-lab.github.io/sesame/v1.14/supplemental.html#prepfuns)
 for details of preprocessing functions.
 
 # Session Info

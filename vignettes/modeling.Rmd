@@ -236,7 +236,7 @@ merged %>% dplyr::filter(Seg_Pval_adj < 0.01)
 ```
 
 See [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#track) for
+Vignette](https://zhou-lab.github.io/sesame/v1.14/supplemental.html#track) for
 track-view visualization of the data.
 
 # Session Info

@@ -124,13 +124,13 @@ the standard `noob`, `dyeBiasNL`, etc (by having `T` before `QCDPB` when
 calling `openSesame`). Also like `inferSpecies()`, `inferStrain()` will return
 a new `SigDF` with col and mask updated to reflect the change of
 strain. Optionally, one can also specify `return.strain=TRUE`,
-`return.pval=TRUE` or `return.probability=TRUE` to return the inferred
-strain, the p-value or the probabilities of all 37 strain candidates.
-Internally, the function converts the beta values to variant allele
-frequencies. It should be noted that since variant allele frequency is not
-always measured by the M-allele of the probe. SeSAMe flips the $\beta$ values for
-some probes to calculate variant allele frequency. The following example shows
-what `inferStrain` does to a `SigDF`:
+`return.pval=TRUE` or `return.probability=TRUE` to return the inferred strain,
+the p-value or the probabilities of all 37 strain candidates.  Internally, the
+function converts the beta values to variant allele frequencies. It should be
+noted that since variant allele frequency is not always measured by the
+M-allele of the probe. SeSAMe flips the $\beta$ values for some probes to
+calculate variant allele frequency. The following example shows what
+`inferStrain` does to a `SigDF`:
 
 ```{r nh9, message=FALSE}
 sdf = sesameDataGet("MM285.1.SigDF") # an example dataset
@@ -157,7 +157,7 @@ ggplot(data = df,  aes(x = strain, y = probs)) +
 ```
 
 See also [The Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#SNP) for
+Vignette](https://zhou-lab.github.io/sesame/v1.14/supplemental.html#SNP) for
 heatmap validation of strain inference.
 
 # Quality Masking
