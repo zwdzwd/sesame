@@ -1,5 +1,5 @@
 ---
-title: "Metadata Inference"
+title: "Sample Metadata Inference"
 date: "`r BiocStyle::doc_date()`"
 package: sesame
 output: rmarkdown::html_vignette
@@ -28,7 +28,7 @@ excluding pseudo-autosomal regions and XCI escapes.
 
 Human:
 
-```{r inf2, eval=FALSE}
+```{r inf2, message=FALSE}
 sdf = sesameDataGet('EPIC.1.SigDF')
 inferSex(sdf)
 inferSexKaryotypes(sdf)
@@ -36,7 +36,7 @@ inferSexKaryotypes(sdf)
 
 Mouse:
 
-```{r nh16}
+```{r nh16, message=FALSE}
 sdf = sesameDataGet("MM285.1.SigDF")
 inferSex(sdf)
 ```
@@ -52,15 +52,20 @@ inferEthnicity(sdf)
 
 # Age & Epigenetic Clock
 
-Horvath 353 Model:
+## Human
 
-SeSAMe provides age regression a la the Horvath 353 model.
+SeSAMe provides age regression a la the well-known Horvath 353 model (see
+[Horvath 2013](https://pubmed.ncbi.nlm.nih.gov/24138928/))
+
 ```{r inf4}
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 predictAgeHorvath353(betas)
 ```
 
-Mouse Array 347 Model:
+## Mouse
+
+SeSAMe provides age estimation using a set of 347 CpGs (see [Zhou et
+al. 2022](https://www.biorxiv.org/content/10.1101/2022.03.24.485667v1))
 
 ```{r inf18, message=FALSE}
 library(SummarizedExperiment)
@@ -80,24 +85,15 @@ This indicates thaat this mouse is approximately 1.41 months old.
 
 # Copy Number
 
-SeSAMe performs copy number variation in three steps: 1) normalizes the signal
-intensity using a copy-number-normal data set; 2) groups adjacent probes into
-bins; 3) runs DNAcopy internally to group bins into segments.
-```{r inf5, message=FALSE, fig.width=6, eval=FALSE}
-sdf = sesameDataGet('EPIC.1.SigDF')
-segs <- cnSegmentation(sdf)
-```
-
-To visualize segmentation in SeSAMe,
-```{r inf6, message=FALSE, fig.width=6, eval=FALSE}
-visualizeSegments(segs)
-```
+See [Supplemental
+Vignette](https://zhou-lab.github.io/sesame/v1.13/supplemental.html#cnv)
 
 # Cell Count Deconvolution
 
 SeSAMe estimates leukocyte fraction using a two-component model.This function
 works for samples whose targeted cell-of-origin is not related to white blood
 cells.
+
 ```{r inf7, message=FALSE}
 betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 estimateLeukocyte(betas.tissue)
