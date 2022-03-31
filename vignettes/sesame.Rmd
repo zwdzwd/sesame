@@ -12,20 +12,18 @@ vignette: >
 ---
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-library(sesame)
-library(dplyr)
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 # Preparation
 
-**CRITICAL:** As sesame and sesameData are under active development, this
-  documentation is specific to the following version of sesame, sesameData and
-  ExperimentHub:
+> As sesame and sesameData are under active development, this documentation is
+  specific to the following version of R, sesame, sesameData and ExperimentHub:
 
 ```{r}
 sapply(c("sesame","sesameData","ExperimentHub"),
     function(x) as.character(packageVersion(x)))
+with(R.Version(), paste0(major, ".", minor))
 ```
 
 We recommend updating your R, ExperimentHub, sesameData and sesame to use this
@@ -38,6 +36,7 @@ per SeSAMe installation/update. Caching data to local guarantees proper data
 retrieval and saves internet traffic.
 
 ```{r message=FALSE}
+library(sesame)
 sesameDataCache()
 ```
 
@@ -95,10 +94,10 @@ betas = do.call(cbind, BiocParallel::bplapply(
 ```
 
 The `openSesame` function is highly customizable. The `prep=` argument is the
-same argument one gives to the `prepSesame` function (see [Customize
-Preprocessing] for detail) which `openSesame` calls internally. The argument
-uniquely specifies a preprocessing procedure. The `func=` option specifies the
-signal extraction function. It can be either be `getBetas` (DNA methylation) or
+same argument one gives to the `prepSesame` function (see [Data Preprocessing]
+for detail) which `openSesame` calls internally. The argument uniquely
+specifies a preprocessing procedure. The `func=` option specifies the signal
+extraction function. It can be either be `getBetas` (DNA methylation) or
 `getAFs` (allele frequencies of SNP probes) or NULL (returns `SigDF`). The
 `manifest=` option allows one to provide an array manifest when handling data
 from platform not supported natively. Finally, the `BPPARAM=` argument is the
@@ -121,7 +120,7 @@ allele_freqs = openSesame(idat_dir, func = getAFs) # SNP allele frequencies
 sdfs = openSesame(sdfs, prep = "Q", func = NULL)   # take and return SigDFs
 ```
 
-# Customize Preprocessing
+# Data Preprocessing {#dataprep}
 
 The `prep=` argument instructs the `openSesame` function to call the
 `prepSesame` function to preprocess signal intensity under the hood. This can
