@@ -97,10 +97,10 @@ plotCytoBand <- function(
 
     cytoBand <- sesameDataGet(paste0('genomeInfo.',genome))$cytoBand
 
-    requireNamespace("grDevices")
     ## set cytoband color
+    requireNamespace("pals")
     cytoBand2col <- setNames(
-        grDevices::gray.colors(7, start=0.9,end=0),
+        pals::ocean.gray(10)[seq(9,3)],
         c('stalk', 'gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100'))
     cytoBand2col['acen'] <- 'red'
     cytoBand2col['gvar'] <- cytoBand2col['gpos75']

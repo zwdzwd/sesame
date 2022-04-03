@@ -492,14 +492,11 @@ sesameQC_plotIntensVsBetas <- function(
         intens <- totalIntensities(sdf, mask=mask)
     }
 
-    requireNamespace("grDevices")
     smoothScatter(log2(intens), getBetas(sdf, mask=mask)[names(intens)],
         xlab='Total Intensity (Log2(M+U))',
         ylab=expression(paste(beta, " (DNA methylation Level)")),
         nrpoints=0, 
-        colramp=grDevices::colorRampPalette(c("white","white","lightblue",
-            "blue","green","yellow","orange","red","darkred"),
-            space = "Lab"), xlim=intens.range, ...)
+        colramp=palgen("whiteturbo"), xlim=intens.range, ...)
     graphics::abline(h=0.5, lty='dashed')
     ## plot envelope lines
     x <- c(seq(1,100,by=1), seq(101,10000,by=100))

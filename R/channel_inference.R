@@ -45,15 +45,8 @@ inferInfiniumIChannel <- function(
     
     if (summary) { return(smry) }
 
-    if (verbose) {
-        message(
-            'Infinium-I color channel reset:\n',
-            'R>R: ', smry['R2R'], '\n',
-            'G>G: ', smry['G2G'], '\n',
-            'R>G: ', smry['R2G'], '\n',
-            'G>R: ', smry['G2R'], '\n')
-    }
-
-    sdf
+    sdfMsg(sdf, verbose, "%s: R>R:%d;G>G:%d;R>G:%d;G>R:%d",
+        "Infinium-I color channel reset",
+        smry["R2R"], smry["G2G"], smry["R2G"], smry["G2R"])
 }
 

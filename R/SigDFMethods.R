@@ -45,6 +45,16 @@ sdfPlatform <- function(sdf, verbose = FALSE) {
     }
 }
 
+sdfMsg <- function(sdf, verbose, msg, ...) {
+    msg <- sprintf(msg, ...)
+    msg <- sprintf("[%s] %s", Sys.time(), msg)
+    attr(sdf, "msg") <- c(attr(sdf, "msg"), msg)
+    if (verbose) {
+        message(msg)
+    }
+    sdf
+}
+
 #' remove masked probes from SigDF
 #'
 #' @param sdf input SigDF object

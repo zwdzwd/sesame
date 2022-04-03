@@ -28,16 +28,14 @@ updateSigDF <- function(
         }
         stopifnot(species %in% names(addr$species))
         addrS <- addr$species[[species]]
-        if (verbose) {
-             message(sprintf("Update using species: %s", species)) }
+        sdf <- sdfMsg(sdf, verbose, "Update using species: %s", species)
     } else if (!is.null(strain)) {
         if (is.null(addr)) {
             addr <- sesameDataGet(sprintf(
                 "%s.addressStrain", sdfPlatform(sdf, verbose = verbose))) }
         stopifnot(strain %in% names(addr$strain))
         addrS <- addr$strain[[strain]]
-        if (verbose) {
-            message(sprintf("Update using strain: %s", strain)) }
+        sdf <- sdfMsg(sdf, verbose, "Update using strain: %s", strain)
     } else {
         stop("Please specify a species or strain.")
     }
@@ -51,12 +49,8 @@ updateSigDF <- function(
     nc[is.na(nc)] <- '2'
     sdf$col[m_idx] <- factor(nc, levels=c("G","R","2"))
 
-    ## set mask, NA is masked by default
-    m_idx <- (!is.na(m))
-    sdf$mask <- TRUE
-    nm <- addrS$mask[m[m_idx]]
-    sdf$mask[!nm] <- FALSE
-    attr(sdf, "species") <- species
+    ## add mask
+    sdf$mask <- sdf$mask | (!is.na(m) & addrS$mask[m])
     sdf
 }
 
@@ -137,7 +131,7 @@ inferSpecies <- function(sdf, topN = 1000, threshold.pos = 0.01,
     ## the following is a empirical ladder where one is going to call
     ## reference for lack of negative probes
     if (success.rate >= 0.95 || (success.rate >= 0.80 && max(auc) < 0.50)) {
-        if (verbose) { message("Lack of negative probes. Use reference.") }
+        sdf <- sdfMsg(sdf, verbose, "Lack of negative probes. Use reference.")
         species <- addr$reference
     } else { species <- names(which.max(auc)) }
 

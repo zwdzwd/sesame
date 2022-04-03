@@ -9,7 +9,8 @@ inferStrain(
   return.strain = FALSE,
   return.probability = FALSE,
   return.pval = FALSE,
-  min_frac_dt = 0.2
+  min_frac_dt = 0.2,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -23,6 +24,8 @@ inferStrain(
 
 \item{min_frac_dt}{minimum fraction of detected signal (DEFAULT: 0.2)
 otherwise, we give up strain inference and return NA.}
+
+\item{verbose}{print more messages}
 }
 \value{
 a list of best guess, p-value of the best guess

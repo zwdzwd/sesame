@@ -14,6 +14,7 @@ mouseBetaToAF <- function(betas) {
 #' @param return.probability return probability vector for all strains
 #' @param return.pval return p-value
 #' @param return.strain return strain name
+#' @param verbose print more messages
 #' @return a list of best guess, p-value of the best guess
 #' and the probabilities of all strains
 #' @examples
@@ -24,8 +25,8 @@ mouseBetaToAF <- function(betas) {
 #' @import tibble
 #' @export
 inferStrain <- function(
-    sdf, return.strain = FALSE,
-    return.probability = FALSE, return.pval = FALSE, min_frac_dt = 0.2) {
+    sdf, return.strain = FALSE, return.probability = FALSE,
+    return.pval = FALSE, min_frac_dt = 0.2, verbose = FALSE) {
 
     addr <- sesameDataGet("MM285.addressStrain")
     se <- addr$strain_snps
@@ -42,7 +43,8 @@ inferStrain <- function(
         if (return.strain) { return(NA)
         } else if (return.probability) { return(rep(NA, ncol(strain_snps)))
         } else if (return.pval) { return(NA)
-        } else { return(sdf) }
+        } else { return(sdfMsg(sdf, verbose,
+            "Abort strain inference for low detection rate.")) }
     }
 
     vafs <- getBetas(dyeBiasNL(noob(sdf)), mask=FALSE)[rd$Probe_ID]
@@ -64,8 +66,7 @@ inferStrain <- function(
     } else if (return.pval) {
         1 - probs[best.index] / sum(probs)
     } else {
-        updateSigDF(sdf, strain = strain, addr = addr)
-    }
+        updateSigDF(sdf, strain = strain, addr = addr, verbose = verbose) }
 }
 
 #' Compare Strain SNPs with a reference panel

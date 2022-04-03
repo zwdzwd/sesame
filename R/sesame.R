@@ -323,7 +323,8 @@ readIDATpair <- function(
         controls <- df_address$controls
     }
 
-    sdf <- chipAddressToSignal(dm, manifest)
+    sdf <- sdfMsg(chipAddressToSignal(dm, manifest), verbose,
+        "IDAT platform: %s", attr(dm, "platform"))
     if (!is.null(controls) && nrow(controls) > 0) {
         attr(sdf, "controls") <- readControls(dm, controls)
     }
@@ -438,7 +439,6 @@ chipAddressToSignal <- function(dm, mft) {
     sdf$col <- factor(sdf$col, levels=c("G","R","2"))
     sdf <- sdf[match(mft$Probe_ID, sdf$Probe_ID),] # always the mft order
     sdf <- structure(sdf, class=c("SigDF", "data.frame"))
-    attr(sdf, "platform") <- attr(dm, 'platform')
     rownames(sdf) <- NULL
     sdf
 }
