@@ -63,6 +63,7 @@ resetMask <- function(sdf, verbose = FALSE) {
 #' listAvailableMasks("EPIC")
 #' @export
 listAvailableMasks <- function(platform) {
+    stopifnot(is.character(platform))
     KYCG_getDBs(sprintf(
         "%s.mask", platform), summary=TRUE)
 }

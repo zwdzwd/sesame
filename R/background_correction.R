@@ -80,6 +80,7 @@ noob <- function(sdf, offset=15) {
     if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
 
     ## background
+    nonuniq <- nonuniq(sdfPlatform(sdf))
     nmk <- noMasked(sdf)
     ooG <- oobG(nmk)
     ooR <- oobR(nmk)
