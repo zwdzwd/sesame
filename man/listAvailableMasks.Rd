@@ -4,10 +4,12 @@
 \alias{listAvailableMasks}
 \title{list existing quality masks for a SigDF}
 \usage{
-listAvailableMasks(platform)
+listAvailableMasks(platform, verbose = FALSE)
 }
 \arguments{
 \item{platform}{EPIC, MM285, HM450 etc}
+
+\item{verbose}{print more messages}
 }
 \value{
 a tibble of masks

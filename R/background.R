@@ -59,14 +59,20 @@ scrubSoft <- function(sdf) {
     sdf
 }
 
-#' Noob background correction
+#' Noob background subtraction
 #'
 #' The function takes a \code{SigDF} and returns a modified \code{SigDF}
 #' with background subtracted. Background was modelled in a normal distribution
 #' and true signal in an exponential distribution. The Norm-Exp deconvolution
-#' is parameterized using Out-Of-Band (oob) probes
+#' is parameterized using Out-Of-Band (oob) probes. For species-specific
+#' processing, one should call inferSpecies on SigDF first. Multi-mapping
+#' probes are excluded.
+#'
+#' When combine.neg = TRUE, background will be parameterized by both
+#' negative control and out-of-band probes.
 #' 
 #' @param sdf a \code{SigDF}
+#' @param combine.neg whether to combine negative control probe.
 #' @param offset offset
 #' @return a new \code{SigDF} with noob background correction
 #' @import stats
@@ -74,80 +80,30 @@ scrubSoft <- function(sdf) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.nb <- noob(sdf)
 #' @export
-noob <- function(sdf, offset=15) {
+noob <- function(sdf, combine.neg = TRUE, offset=15) {
 
-    ## if no Infinium-I probes
-    if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
-
-    ## background
-    nonuniq <- nonuniq(sdfPlatform(sdf))
-    nmk <- noMasked(sdf)
-    ooG <- oobG(nmk)
-    ooR <- oobR(nmk)
+    stopifnot(is(sdf, "SigDF"))
+    nmk <- sdf[!(sdf$Probe_ID %in% nonuniqMask(sdfPlatform(sdf))),]
+    bgG <- oobG(nmk)
+    bgR <- oobR(nmk)
+    if (combine.neg) {
+        neg <- negControls(sdf)
+        bgG <- c(bgG, neg$G)
+        bgR <- c(bgR, neg$R)
+    }
     
     ## if not enough out-of-band signal
-    if (sum(ooG > 0, na.rm=TRUE) < 100 ||
-            sum(ooR > 0, na.rm=TRUE) < 100) { return(sdf) }
-    ooR[ooR == 0] <- 1
-    ooG[ooG == 0] <- 1
+    if (sum(bgG > 0, na.rm=TRUE) < 100 || sum(bgR > 0, na.rm=TRUE) < 100) {
+        return(sdf)
+    }
+    bgR[bgR == 0] <- 1; bgG[bgG == 0] <- 1
     ## cap at 10xIQR, this is to proof against multi-mapping probes
-    ooR <- ooR[ooR < median(ooR, na.rm=TRUE) + 10*IQR(ooR, na.rm=TRUE)]
-    ooG <- ooG[ooG < median(ooG, na.rm=TRUE) + 10*IQR(ooG, na.rm=TRUE)]
+    bgR <- bgR[bgR < median(bgR, na.rm=TRUE) + 10*IQR(bgR, na.rm=TRUE)]
+    bgG <- bgG[bgG < median(bgG, na.rm=TRUE) + 10*IQR(bgG, na.rm=TRUE)]
 
     ## foreground
     ibG <- c(InfIG(nmk)$MG, InfIG(nmk)$UG, InfII(nmk)$UG)
     ibR <- c(InfIR(nmk)$MR, InfIR(nmk)$UR, InfII(nmk)$UR)
-    ibG[ibG == 0] <- 1 # set signal to 1 if 0
-    ibR[ibR == 0] <- 1 # set signal to 1 if 0
-
-    ## grn channel
-    fitG <- backgroundCorrectionNoobFit(ibG, ooG)
-    sdf$MG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + 15
-    sdf$UG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + 15
-
-    ## red channel
-    fitR <- backgroundCorrectionNoobFit(ibR, ooR)
-    sdf$MR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + 15
-    sdf$UR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + 15
-    
-    sdf
-}
-
-
-
-#' Negative control plus out-of-band background correction
-#'
-#' The function takes a \code{SigDF} and returns a modified \code{SigDF}
-#' with background subtracted. Background was modelled in a normal distribution
-#' and true signal in an exponential distribution. The Norm-Exp deconvolution
-#' is parameterized using both negative control and Out-Of-Band (oob) probes
-#' 
-#' @param sdf a \code{SigDF}
-#' @param offset offset
-#' @return a new \code{SigDF} with neob background correction
-#' @import stats
-#' @examples
-#' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdf.nb <- neob(sdf)
-#' @export
-neob <- function(sdf, offset=15) {
-
-    ## if no Infinium-I probes
-    if (nrow(InfIG(sdf)) == 0 && nrow(InfIR(sdf)) == 0) { return(sdf) }
-
-    ## background
-    neg <- negControls(sdf)
-    bgG <- c(oobG(noMasked(sdf)), neg$G)
-    bgR <- c(oobR(noMasked(sdf)), neg$R)
-    ## if not enough out-of-band signal
-    if (sum(bgG > 0, na.rm=TRUE) < 100 ||
-            sum(bgR > 0, na.rm=TRUE) < 100) { return(sdf) }
-    bgR[bgR == 0] <- 1
-    bgG[bgG == 0] <- 1
-
-    ## foreground
-    ibG <- c(InfIG(sdf)$MG, InfIG(sdf)$UG, InfII(sdf)$UG)
-    ibR <- c(InfIR(sdf)$MR, InfIR(sdf)$UR, InfII(sdf)$UR)
     ibG[ibG == 0] <- 1 # set signal to 1 if 0
     ibR[ibR == 0] <- 1 # set signal to 1 if 0
 
@@ -163,7 +119,6 @@ neob <- function(sdf, offset=15) {
     
     sdf
 }
-
 
 ## Noob background correction for one channel
 ## ib array of in-band signal

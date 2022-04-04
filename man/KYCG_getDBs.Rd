@@ -32,7 +32,7 @@ that platform.}
 each query.}
 }
 \value{
-a list of databases
+a list of databases, return NULL if no database is found
 }
 \description{
 Get databases by full or partial names of the database group(s)

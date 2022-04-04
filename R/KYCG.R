@@ -18,27 +18,6 @@ databases_getMeta <- function(dbs) {
     meta[,colnames(meta)!="hasMeta"]
 }
 
-## testEnrichment1 <- function(query, database, universe) {
-    
-##     if (is.numeric(query)) { # a named vector of continuous value
-##         if(is.numeric(database)) { # numeric db
-##             res <- testEnrichmentSpearman(query=query, database=database)
-##         } else {
-##             res <- testEnrichmentGSEA(query = query, database = database)
-##         }
-##     } else if (is.character(query)) { # categorical query
-##         if(is.numeric(database)) { # numeric db
-##             res <- testEnrichmentGSEA(query = database, database = query)
-##         } else { # categorical db
-##             res <- testEnrichmentFisher(query = query, database = database,
-##                 universe = universe)
-##         }
-##     } else {
-##         stop("Query is neither numerical or categorical.")
-##     }
-##     res
-## }
-
 queryCheckPlatform <- function(platform, query = NULL, silent = FALSE) {
     if (is.null(platform)) {
         stopifnot(!is.null(query))
@@ -506,7 +485,7 @@ KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
 #' @param type numerical, categorical, default: all
 #' @param silent no messages
 #' each query.
-#' @return a list of databases
+#' @return a list of databases, return NULL if no database is found
 #' @examples
 #' dbs <- KYCG_getDBs("MM285.chromHMM")
 #' dbs <- KYCG_getDBs(c("MM285.chromHMM", "MM285.probeType"))
@@ -520,6 +499,11 @@ KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
 
     group_nms <- guess_dbnames(group_nms, platform = platform,
         allow_multi = TRUE, type = type, silent = silent)
+    ## group_nms <- group_nms[sesameDataHas(group_nms)]
+    group_nms <- group_nms[group_nms %in% sesameDataList()$Title]
+    if (length(group_nms) == 0) {
+        return(NULL)
+    }
     res <- do.call(c, lapply(unname(group_nms), function(nm) {
         dbs <- sesameDataGet(nm)
         setNames(lapply(seq_along(dbs), function(ii) {

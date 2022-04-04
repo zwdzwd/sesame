@@ -325,7 +325,7 @@ readIDATpair <- function(
 
     sdf <- sdfMsg(chipAddressToSignal(dm, manifest), verbose,
         "IDAT platform: %s", attr(dm, "platform"))
-    ## Probe IDs might not resolve platform
+    ## Probe IDs might not fully resolve platform
     attr(sdf, "platform") <- attr(dm, "platform")
     if (!is.null(controls) && nrow(controls) > 0) {
         attr(sdf, "controls") <- readControls(dm, controls)

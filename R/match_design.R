@@ -17,8 +17,9 @@ valleyDescent <- function(x1, x2) {
     dfunc <- approxfun(dd$x, dd$y)
     lo <- min(m1, m2)
     hi <- max(m1, m2)
-    va <- min(dfunc(c(x1[x1 >= lo & x1 <= hi], x2[x2 >= lo & x2 <= hi])))
-    va / min(dfunc(c(lo, hi)))
+    va <- min(dfunc(c(x1[x1 >= lo & x1 <= hi], x2[x2 >= lo & x2 <= hi])),
+        na.rm=TRUE)
+    va / min(dfunc(c(lo, hi)), na.rm=TRUE)
 }
 
 match1To2_1state <- function(sdf) {

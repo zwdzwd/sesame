@@ -14,6 +14,7 @@ prepSesameList <- function() {
         c("D", "dyeBiasNL", "Dye bias correction (non-linear)"),
         c("E", "dyeBiasL", "Dye bias correction (linear)"),
         c("P", "pOOBAH", "Detection p-value masking using oob"),
+        c("I", "detectionIB", "Mask detection by intermediate beta values"),
         c("B", "noob", "Background subtraction using oob"),
         c("S", "inferSpecies", "Set species-specific mask"),
         c("T", "inferStrain", "Set strain-specific mask (mouse)"),
@@ -66,10 +67,15 @@ wrap_openSesame1 <- function(func, ret, ...) {
 
 wrap_openSesame <- function(func, x, ret) {
     if (is.null(func)) {
+        if (is.null(names(ret)) &&
+                is.character(x) && length(x) == length(ret)) {
+            names(ret) <- basename(x)
+        }
         ret
     } else {
         ret <- do.call(cbind, ret)
-        if (is.null(colnames(ret))) {
+        if (is.null(colnames(ret)) &&
+                is.character(x) && length(x) == ncol(ret)) {
             colnames(ret) <- basename(x)
         }
         ret

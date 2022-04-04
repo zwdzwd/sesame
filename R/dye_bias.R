@@ -101,6 +101,8 @@ maskIG <- function(sdf) {
 #' with dye bias corrected.
 #' 
 #' @param sdf a \code{SigDF}
+#' @param mask include masked probes in Infinium-I probes. No big difference is
+#' noted in practice. More probes are generally better.
 #' @param verbose print more messages
 #' @return a \code{SigDF} after dye bias correction.
 #' @importFrom preprocessCore normalize.quantiles.use.target
@@ -108,9 +110,9 @@ maskIG <- function(sdf) {
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdf.db <- dyeBiasCorrTypeINorm(sdf)
+#' sdf.db <- dyeBiasNL(sdf)
 #' @export
-dyeBiasCorrTypeINorm <- function(sdf, verbose = FALSE) {
+dyeBiasNL <- function(sdf, mask = TRUE, verbose = FALSE) {
 
     stopifnot(is(sdf, "SigDF"))
     ## mask IG if the grn channel failed completely
@@ -118,10 +120,11 @@ dyeBiasCorrTypeINorm <- function(sdf, verbose = FALSE) {
         return(maskIG(sdf)); }
     
     ## we use all Inf-I probes so we capture the entire support range
-    dG <- InfIG(noMasked(sdf)); dR <- InfIR(noMasked(sdf))
+    if (mask) { dG <- InfIG(sdf); dR <- InfIR(sdf)
+    } else { dG <- InfIG(noMasked(sdf)); dR <- InfIR(noMasked(sdf)) }
     IG0 <- c(dG$MG, dG$UG); IR0 <- c(dR$MR, dR$UR)
     
-    maxIG <- max(IG0, na.rm = TRUE); minIG <- min(IG0, na.rm = TRUE)
+    maxIG <- max(IG0, na2.rm = TRUE); minIG <- min(IG0, na.rm = TRUE)
     maxIR <- max(IR0, na.rm = TRUE); minIR <- min(IR0, na.rm = TRUE)
 
     if (maxIG <= 0 || maxIR <= 0) { return(sdf); }
@@ -160,12 +163,12 @@ dyeBiasCorrTypeINorm <- function(sdf, verbose = FALSE) {
     sdf
 }
 
-#' @rdname dyeBiasCorrTypeINorm
+#' @rdname dyeBiasNL
 #' @export
 #' @examples
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' sdf <- dyeBiasNL(sdf)
-dyeBiasNL <- dyeBiasCorrTypeINorm
+#' sdf <- dyeBiasCorrTypeINorm(sdf)
+dyeBiasCorrTypeINorm <- dyeBiasNL
 
 #' Correct dye bias in by linear scaling.
 #'

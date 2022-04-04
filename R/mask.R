@@ -58,14 +58,30 @@ resetMask <- function(sdf, verbose = FALSE) {
 #' list existing quality masks for a SigDF
 #'
 #' @param platform EPIC, MM285, HM450 etc
+#' @param verbose print more messages
 #' @return a tibble of masks
 #' @examples
 #' listAvailableMasks("EPIC")
 #' @export
-listAvailableMasks <- function(platform) {
+listAvailableMasks <- function(platform, verbose = FALSE) {
     stopifnot(is.character(platform))
     KYCG_getDBs(sprintf(
-        "%s.mask", platform), summary=TRUE)
+        "%s.mask", platform), summary=TRUE, silent=!verbose)
+}
+
+## list probes masked by probe nonuniqueness
+nonuniqMask <- function(platform, verbose = FALSE) {
+    stopifnot(is.character(platform))
+    df <- listAvailableMasks(platform, verbose = verbose)
+    if(is.null(df)) { return(NULL) }
+    mask_names <- c("nonunique", "sub35_copy", "multi", "design_issue")
+    mask_names <- df$mask_name[df$mask_name %in% mask_names]
+    if (length(mask_names) > 0) {
+        do.call(c, KYCG_getDBs(sprintf("%s.mask", platform),
+            mask_names, silent=!verbose))
+    } else {
+        NULL
+    }
 }
 
 #' Mask beta values by design quality
@@ -99,10 +115,15 @@ qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL,
             grep(sprintf("^%s", pfx), sdf$Probe_ID, value=TRUE) })))
     }
 
-    if (!is.null(mask_names)) { # mask by predefined sets
+    ## mask by predefined sets
+    platform <- sdfPlatform(sdf, verbose = verbose)
+    df <- listAvailableMasks(platform, verbose = verbose)
+    if(is.null(df)) { return(sdf) }
+    mask_names <- df$mask_name[df$mask_name %in% mask_names]
+    if (length(mask_names) > 0 && !is.null(mask_names)) {
         masks <- c(masks, 
             do.call(c, KYCG_getDBs(sprintf(
-                "%s.mask", sdfPlatform(sdf, verbose = verbose)),
+                "%s.mask", platform),
                 mask_names, silent=!verbose)))
     }
     
