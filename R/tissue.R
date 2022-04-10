@@ -1,5 +1,6 @@
 reference_plot_se <- function(
-    betas, se, color=c("blueYellow","jet"), show_sample_names=FALSE) {
+    betas, se, color=c("blueYellow","jet"), query_width=0.3,
+    show_sample_names=FALSE) {
 
     ## top N probes ordered by delta_beta, will
     ## be dominated by certain tissue otherwise
@@ -25,7 +26,7 @@ reference_plot_se <- function(
     g <- WHeatmap(assay(se), cmp=CMPar(stop.points=stop.points,
         dmin=0, dmax=1), xticklabels = show_sample_names, name="b1") # reference
     if (!is.null(betas)) {          # query samples
-        g <- g + WHeatmap(betas[rd$Probe_ID,], RightOf("b1"),
+        g <- g + WHeatmap(betas[rd$Probe_ID,], RightOf("b1", width=query_width),
             cmp=CMPar(stop.points=stop.points, dmin=0, dmax=1),
             name="b2", xticklabels=TRUE, xticklabels.n=ncol(betas))
         right <- "b2"
@@ -48,6 +49,7 @@ reference_plot_se <- function(
 #'
 #' @param betas matrix of betas for the target sample
 #' @param color either blueYellow or fullJet
+#' @param query_width the width of the query beta value matrix
 #' @return grid object that contrast the target sample with
 #' pre-built mouse tissue reference
 #' @export
@@ -60,10 +62,12 @@ reference_plot_se <- function(
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment rowData
-compareMouseTissueReference <- function(betas=NULL, color="blueYellow") {
+compareMouseTissueReference <- function(
+    betas=NULL, color="blueYellow", query_width=0.3) {
+    
     se <- sesameDataGet("MM285.tissueSignature")
 
-    reference_plot_se(betas, se, color=color)
+    reference_plot_se(betas, se, color=color, query_width=query_width)
 }
 
 #' inferTissue1 infers the tissue of a single sample (as identified through 

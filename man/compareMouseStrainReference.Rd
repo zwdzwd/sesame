@@ -4,12 +4,18 @@
 \alias{compareMouseStrainReference}
 \title{Compare Strain SNPs with a reference panel}
 \usage{
-compareMouseStrainReference(betas = NULL, show_sample_names = FALSE)
+compareMouseStrainReference(
+  betas = NULL,
+  show_sample_names = FALSE,
+  query_width = NULL
+)
 }
 \arguments{
 \item{betas}{beta value vector or matrix (for multiple samples)}
 
 \item{show_sample_names}{whether to show sample name}
+
+\item{query_width}{optional argument for adjusting query width}
 }
 \value{
 grid object that contrast the target sample with

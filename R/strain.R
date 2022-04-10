@@ -73,6 +73,7 @@ inferStrain <- function(
 #'
 #' @param betas beta value vector or matrix (for multiple samples)
 #' @param show_sample_names whether to show sample name
+#' @param query_width optional argument for adjusting query width
 #' @return grid object that contrast the target sample with
 #' pre-built mouse strain reference
 #' @importFrom S4Vectors metadata
@@ -83,7 +84,7 @@ inferStrain <- function(
 #' compareMouseStrainReference()
 #' @export
 compareMouseStrainReference <- function(
-    betas = NULL, show_sample_names = FALSE) {
+    betas = NULL, show_sample_names = FALSE, query_width = NULL) {
 
     ## betas = NULL; show_sample_names = FALSE;
     se <- sesameDataGet("MM285.addressStrain")$strain_snps
@@ -109,7 +110,7 @@ compareMouseStrainReference <- function(
             if(xor(rd$flipToAF[i], rd$flipForRefBias[i])) {
                 1 - betas[rd$Probe_ID[i],]
             } else { betas[rd$Probe_ID[i],] }}))
-        g <- g + WHeatmap(afs2, RightOf("b1"),
+        g <- g + WHeatmap(afs2, RightOf("b1", width=query_width),
             cmp=CMPar(stop.points=stops, dmin=0, dmax=1),
             name="b2", xticklabels=TRUE, xticklabels.n=ncol(betas))
         right <- "b2"
@@ -126,7 +127,7 @@ compareMouseStrainReference <- function(
     ## legends
     g <- g + WLegendV("st",
         TopRightOf("bh", just=c('left','top'), h.pad=0.02),
-        height=0.02)
+        height=0.03)
     ## g <- g + WLegendV('bh', Beneath(pad=0.06))
     g + WCustomize(mar.bottom=0.15, mar.right=0.06)
 }

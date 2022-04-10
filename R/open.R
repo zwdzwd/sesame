@@ -65,20 +65,23 @@ wrap_openSesame1 <- function(func, ret, ...) {
     }
 }
 
-wrap_openSesame <- function(func, x, ret) {
-    if (is.null(func)) {
-        if (is.null(names(ret)) &&
-                is.character(x) && length(x) == length(ret)) {
-            names(ret) <- basename(x)
-        }
-        ret
-    } else {
+wrap_openSesame <- function(x, ret) {
+    if (all(vapply(ret, is.numeric, logical(1))) &&
+            length(unique(vapply(ret, length, integer(1)))) == 1) {
+        ## getBetas, getAFs, ...
         ret <- do.call(cbind, ret)
         if (is.null(colnames(ret)) &&
                 is.character(x) && length(x) == ncol(ret)) {
             colnames(ret) <- basename(x)
         }
         ret
+    } else { # others
+        if (is.null(names(ret)) &&
+                is.character(x) && length(x) == length(ret)) {
+            names(ret) <- basename(x)
+        }
+        ret
+
     }
 }
 
@@ -122,12 +125,12 @@ openSesame <- function(
                 x, platform = platform, manifest = manifest),
                 prep, prep_args), ...)
         } else { # multiple IDAT prefixes / SigDFs
-            wrap_openSesame(func, x, bplapply(x, openSesame,
+            wrap_openSesame(x, bplapply(x, openSesame,
                 platform = platform, prep = prep, prep_args = prep_args,
                 func = func, manifest = manifest, BPPARAM=BPPARAM, ...))
         }
     } else if (is(x, "list") && is(x[[1]], "SigDF")) {
-        wrap_openSesame(func, x, bplapply(x, openSesame,
+        wrap_openSesame(x, bplapply(x, openSesame,
             platform = platform, prep = prep, prep_args = prep_args,
             fun = func, manifest = manifest, BPPARAM=BPPARAM, ...))
     } else {
