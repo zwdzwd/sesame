@@ -444,14 +444,14 @@ KYCG_plotManhattan <- function(
     SummarizedExperiment::mcols(gr)$Probe_ID <- names(gr)
     
     df <- as_tibble(gr)
-    df$seqnames <- factor(df$seqnames, level=names(seqLength))
+    df$seqnames <- factor(df$seqnames, levels=names(seqLength))
     requireNamespace("ggrepel")
     ggplot(df, aes_string(x="pos", y="val")) + 
         geom_point(aes(color=seqnames), alpha=0.8, size=1.3) + 
         ggrepel::geom_text_repel(data=df[df$val > label_min,],
             aes_string(label="Probe_ID")) +
         scale_color_manual(values = rep(col, length(seqLength))) +
-        scale_x_continuous(label = names(midLength), breaks= midLength) +
+        scale_x_continuous(labels = names(midLength), breaks= midLength) +
         scale_y_continuous(expand = c(0, 0)) +  
         theme_bw() +
         theme( 
