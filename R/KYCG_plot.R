@@ -95,6 +95,7 @@ preparePlotDF <- function(df, n_min, n_max, max_fdr) {
 #' @param n_min minimum number of databases to report
 #' @param n_max maximum number of databases to report
 #' @param max_fdr maximum FDR
+#' @param min_cap the minimum log2(OR), value below this are capped
 #' @return grid plot object
 #'
 #' @import ggplot2
@@ -103,7 +104,8 @@ preparePlotDF <- function(df, n_min, n_max, max_fdr) {
 #'   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=10,
 #'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #' @export
-KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
+KYCG_plotBar <- function(df, n_min = 10, n_max = 30,
+    max_fdr = 0.05, min_cap = -5) {
 
     db1 <- FDR <- overlap <- estimate <- NULL
     stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
@@ -112,9 +114,10 @@ KYCG_plotBar <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
     p1 <- ggplot(df1, aes(db1, -log10(FDR))) + geom_bar(stat="identity") +
         coord_flip() + ylab("-log10(P-value)") + xlab("CpG Group") +
         geom_label(aes(x=db1, y=-log10(FDR)/2,
-            label=sprintf("%d CGs", overlap)),
+            label=sprintf("N=%d", overlap)),
             data = df1[df1$FDR < 0.05,], alpha=0.6, hjust=0.5)
-    p2 <- ggplot(df1, aes(db1, estimate)) + geom_bar(stat="identity") +
+    p2 <- ggplot(df1, aes(db1, pmax(min_cap, estimate))) +
+        geom_bar(stat="identity") +
         coord_flip() + ylab("Log2(OR)") + xlab("") +
         theme(axis.text.y = element_blank())
     WGG(p1) + WGG(p2, RightOf(width=0.5, pad=0))
@@ -397,3 +400,64 @@ KYCG_plotPointRange <- function(result_list) {
         coord_flip()
 }
 
+#' KYCG_plotManhattan makes a manhattan plot to summarize EWAS results
+#'
+#' @param vals named vector of values (P,Q etc), vector name is Probe ID.
+#' @param platform String corresponding to the type of platform to use for
+#' retrieving GRanges coordinates 
+#' of probes. Either MM285, EPIC, HM450, or HM27. If it is not provided, it
+#' will be inferred from the query set probeIDs (Default: NA).
+#' @param gr GRanges object containing genomic coordinates of probes. If not
+#' provided, GRanges for provided or inferred platform will be retrieved
+#' @param genome genome build
+#' @param title title for plot
+#' @param label_min Threshold above which data points will be labelled with
+#' Probe ID
+#' @param col color
+#' @param ylabel y-axis label
+#' @return a ggplot object
+#' @examples
+#' 
+#' ## see vignette for examples
+#' sesameDataGet_resetEnv()
+#' 
+#' @export
+KYCG_plotManhattan <- function(
+    vals, platform = NULL, gr = NULL, genome = NULL, title = NULL,
+    label_min = 100, col = c("wheat1", "sienna3"), ylabel="Value") {
+
+    stopifnot(is(vals, "numeric"))
+    if (is.null(platform)) { platform <- queryCheckPlatform(
+        platform, query=vals, silent = FALSE) }
+    if (is.null(genome)) {genome <- sesameData_check_genome(genome, platform)}
+    if (is.null(gr)) { gr <- sesameData_getManifestGRanges(platform) }
+    seqLength <- sesameDataGet(sprintf("genomeInfo.%s", genome))$seqLength
+    
+    v <- vals[names(gr)]
+    gr <- gr[!is.na(v)]
+    SummarizedExperiment::mcols(gr)$val <- v[!is.na(v)]
+    cumLength <- setNames(c(0,cumsum(
+        as.numeric(seqLength))[-length(seqLength)]), names(seqLength))
+    midLength <- cumLength + seqLength/2
+    SummarizedExperiment::mcols(gr)$pos <- cumLength[
+        as.character(seqnames(gr))] + end(gr)
+    SummarizedExperiment::mcols(gr)$Probe_ID <- names(gr)
+    
+    df <- as_tibble(gr)
+    df$seqnames <- factor(df$seqnames, level=names(seqLength))
+    requireNamespace("ggrepel")
+    ggplot(df, aes_string(x="pos", y="val")) + 
+        geom_point(aes(color=seqnames), alpha=0.8, size=1.3) + 
+        ggrepel::geom_text_repel(data=df[df$val > label_min,],
+            aes_string(label="Probe_ID")) +
+        scale_color_manual(values = rep(col, length(seqLength))) +
+        scale_x_continuous(label = names(midLength), breaks= midLength) +
+        scale_y_continuous(expand = c(0, 0)) +  
+        theme_bw() +
+        theme( 
+            legend.position="none",
+            panel.border = element_blank(),
+            panel.grid.major.x = element_blank(),
+            panel.grid.minor.x = element_blank()
+        ) + labs(title=title) + xlab("Chromosome") + ylab(ylabel)
+}

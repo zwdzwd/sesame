@@ -4,7 +4,7 @@
 \alias{KYCG_plotBar}
 \title{Bar plot to show most enriched CG groups from testEnrichment}
 \usage{
-KYCG_plotBar(df, n_min = 10, n_max = 30, max_fdr = 0.05)
+KYCG_plotBar(df, n_min = 10, n_max = 30, max_fdr = 0.05, min_cap = -5)
 }
 \arguments{
 \item{df}{KYCG result data frame}
@@ -14,6 +14,8 @@ KYCG_plotBar(df, n_min = 10, n_max = 30, max_fdr = 0.05)
 \item{n_max}{maximum number of databases to report}
 
 \item{max_fdr}{maximum FDR}
+
+\item{min_cap}{the minimum log2(OR), value below this are capped}
 }
 \value{
 grid plot object
