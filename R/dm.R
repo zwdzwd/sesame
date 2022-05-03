@@ -127,9 +127,9 @@ print.DMLSummary <- function(x, ...) {
 summaryExtractTest <- function(smry) {
     est <- as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
         x$coefficients[,'Estimate']; }))))
-    est$Probe_ID <- names(smry)
     rownames(est) <- names(smry)
     colnames(est) <- paste0("Est_", colnames(est))
+    est$Probe_ID <- names(smry)
     pvals <- as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
         x$coefficients[,"Pr(>|t|)"] }))))
     rownames(pvals) <- names(smry)
