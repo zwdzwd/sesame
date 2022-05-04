@@ -124,7 +124,7 @@ dyeBiasNL <- function(sdf, mask = TRUE, verbose = FALSE) {
     } else { dG <- InfIG(noMasked(sdf)); dR <- InfIR(noMasked(sdf)) }
     IG0 <- c(dG$MG, dG$UG); IR0 <- c(dR$MR, dR$UR)
     
-    maxIG <- max(IG0, na2.rm = TRUE); minIG <- min(IG0, na.rm = TRUE)
+    maxIG <- max(IG0, na.rm = TRUE); minIG <- min(IG0, na.rm = TRUE)
     maxIR <- max(IR0, na.rm = TRUE); minIR <- min(IR0, na.rm = TRUE)
 
     if (maxIG <= 0 || maxIR <= 0) { return(sdf); }

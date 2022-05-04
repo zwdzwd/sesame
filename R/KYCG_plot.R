@@ -3,6 +3,7 @@
 #' @param df test enrichment result data frame
 #' @param fdr_max maximum fdr for capping
 #' @param n_label number of database to label
+#' @param min_estimate minimum estimate
 #' @return grid object
 #' @importFrom stringr str_replace
 #' @importFrom tibble rownames_to_column
@@ -13,7 +14,7 @@
 #' KYCG_plotEnrichAll(res)
 #' 
 #' @export
-KYCG_plotEnrichAll <- function(df, fdr_max = 25, n_label = 15) {
+KYCG_plotEnrichAll <- function(df, fdr_max = 25, n_label = 15, min_estimate = 0) {
 
     gp_size <- sort(table(df$group))
     gp_width <- log(2+gp_size)
@@ -28,7 +29,7 @@ KYCG_plotEnrichAll <- function(df, fdr_max = 25, n_label = 15) {
     if ("gene_name" %in% colnames(e1)) {
         e1$dbname[e1$group == "gene"] <- e1$gene_name[e1$group == "gene"] }
 
-    e2 <- e1[e1$estimate > 1 & e1$FDR < 0.01 ,]
+    e2 <- e1[e1$estimate > min_estimate & e1$FDR < 0.01 ,]
     e2$FDR[e2$FDR < 10**-fdr_max] <- 10**-(fdr_max*1.1)
 
     e3 <- rownames_to_column(as.data.frame(do.call(rbind, lapply(
