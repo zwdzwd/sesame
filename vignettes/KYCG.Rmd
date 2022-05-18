@@ -307,10 +307,6 @@ meaning these databases are associated with small values of the query (DNA
 methylation level). On the contrary, `Quies` states are associated with high
 methylation level.
 
-# WMCNA
-
-UNDER CONSTRUCTION
-
 # Session Info
 
 ```{r}
