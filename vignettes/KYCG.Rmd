@@ -1,7 +1,7 @@
 ---
-title: "knowYourCG"
+title: "KnowYourCG"
 shorttitle: "KYCG"
-package: knowYourCG
+package: sesame
 output: rmarkdown::html_vignette
 fig_width: 6
 fig_height: 5
@@ -76,19 +76,19 @@ factor `Trim28` binding enriched in this CG group.
 
 There are four testing scenarios depending on the type format of the query set
 and database sets. They are shown with the respective testing scenario in the
-table below. `testEnrichment`, `testEnrichmentGSEA` are for Fisher's exact test
-and GSEA respectively.
+table below. `testEnrichment`, `testEnrichmentSEA` are for Fisher's exact test
+and Set Enrichment Analysis respectively.
 
 ```{r ky9, echo = FALSE, results="asis"}
 library(knitr)
 df = data.frame(
-    "Continuous DB"=c("Correlation-based","GSEA"),
-    "Discrete DB"=c("GSEA","Fisher's Exact Test"))
+    "Continuous DB"=c("Correlation-based","Set Enrichment Analysis"),
+    "Discrete DB"=c("Set Enrichment Analysis","Fisher's Exact Test"))
 rownames(df) = c("Continuous Query", "Discrete Query")
 kable(df, caption="Four KnowYourCG Testing Scenarios")
 ```
 
-# Test Set Enrichment
+# Set Enrichment Analysis
 
 The main work horse function for test enrichment of a categorical query against
 categorical databases is the `testEnrichment` function. This function
@@ -128,7 +128,7 @@ sorted.
 
 It should be noted that the estimate (or test statistic) is test dependent and
 comparison between p-values should be limited to within the same type of
-test. For instance, the test statistics for Fisher's exact test and GSEA are
+test. For instance, the test statistics for Fisher's exact test and SEA are
 log fold change and the test statistic for Spearman's test is simply the rank
 order correlation coefficient. For simplicity, we report all of the test types
 in one data frame.
@@ -139,7 +139,7 @@ overlap between the two sets, so that metric is reported as well in the
 ```overlap``` column.
 
 See [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.14/supplemental.html#kycg_vis)
+Vignette](https://zhou-lab.github.io/sesame/v1.16/supplemental.html#kycg_vis)
 for other ways of visualizing enrichment results.
 
 # Database Sets
@@ -263,7 +263,7 @@ gostres$result[order(gostres$result$p_value),]
 gostplot(gostres)
 ```
 
-# GSEA-like
+# Set Enrichment Analysis
 
 The query may be a named continuous vector. In that case, either a gene
 enrichment score will be calculated (if the database is discrete) or a Spearman
@@ -280,7 +280,7 @@ query <- KYCG_getDBs("KYCG.MM285.designGroup")[["TSS"]]
 ```
 
 ```{r ky22, echo=TRUE, eval=TRUE, message=FALSE}
-res <- testEnrichmentGSEA(query, "MM285.seqContextN")
+res <- testEnrichmentSEA(query, "MM285.seqContextN")
 res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
 ```
 
@@ -292,13 +292,23 @@ enrichment score represent enrichment with the smaller values. As expected, the
 designed TSS CpGs are significantly enriched in smaller TSS distance and higher
 CpG density.
 
+One can plot the set enrichment analysis result by `prepPlot=TRUE` command
+followed by calling the `KYCG_plotSetEnrichment()` function.
+
+```{r ky24, GSEA, fig.width=6, fig.height=6, message=FALSE}
+query <- KYCG_getDBs("KYCG.MM285.designGroup")[["TSS"]]
+db <- KYCG_getDBs("MM285.seqContextN", "distToTSS")
+res <- testEnrichmentSEA(query, db, prepPlot = TRUE)
+KYCG_plotSetEnrichment(res[[1]])
+```
+
 Alternatively one can test the enrichment of a continuous query with discrete
 databases. Here we will use the methylation level from a sample as the query
 and test it against the chromHMM chromatin states.
 
 ```{r ky23, warning=FALSE, eval=FALSE}
 beta_values <- getBetas(sesameDataGet("MM285.1.SigDF"))
-res <- testEnrichmentGSEA(beta_values, "MM285.chromHMM")
+res <- testEnrichmentSEA(beta_values, "MM285.chromHMM")
 res[, c("dbname", "test", "estimate", "FDR", "nQ", "nD", "overlap")]
 ```
 
@@ -306,10 +316,6 @@ As expected, chromatin states `Tss`, `Enh` has negative enrichment score,
 meaning these databases are associated with small values of the query (DNA
 methylation level). On the contrary, `Quies` states are associated with high
 methylation level.
-
-# WMCNA
-
-UNDER CONSTRUCTION
 
 # Session Info
 
