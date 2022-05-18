@@ -142,6 +142,7 @@ summaryExtractTest <- function(smry) {
     effsize <- do.call(cbind, lapply(names(contr2lvs), function(cont) {
         lvs <- contr2lvs[[cont]]
         lvs <- lvs[2:length(lvs)]
+        lvs <- lvs[paste0("Est_", cont, lvs) %in% colnames(est)]
         apply(est[, paste0("Est_", cont, lvs),drop=FALSE], 1, function(x) {
             max(x,0) - min(x,0) }) }))
     colnames(effsize) <- paste0("Eff_", names(contr2lvs))
