@@ -21,8 +21,7 @@ plotTranscript1 <- function(txn, reg, i, beg, end,
     txn.end <- min(end, max(GenomicRanges::end(exons))+2000)
     exons <- subsetByOverlaps(exons, reg)
     txn.strand <- as.character(GenomicRanges::strand(exons[1]))
-    if (txn.strand == '+') { lined <- (c(txn.beg, txn.end)-beg) / plt.width
-    } else { lined <- (c(txn.end, txn.beg)-beg) / plt.width }
+    lined <- (c(txn.beg, txn.end)-beg) / plt.width # direction is in arrow ends
     
     y.bot <- (i-1) * isoformHeight + padHeight
     y.bot.exon <- y.bot + padHeight
