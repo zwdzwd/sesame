@@ -72,7 +72,7 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
     names(mm_holdout) <- names(contr2lvs)
     smry <- BiocParallel::bplapply(seq_len(nrow(betas)), function(i) {
         m0 <- lm(betas[i,]~.+0, data=as.data.frame(mm))
-        sm <- summary(lm(betas[i,]~.+0, data=as.data.frame(mm)))
+        sm <- summary(m0)
         ## the following is removed to reduce the size of return
         sm$cov.unscaled <- NULL
         sm$residuals <- NULL
