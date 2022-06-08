@@ -152,7 +152,11 @@ summaryExtractTest <- function(smry) {
 
 summaryExtractCf <- function(smry, contrast) {
     cf <- do.call(rbind, lapply(smry, function(x) {
-        x$coefficients[contrast,]
+        if (x$aliased[contrast]) { # missing fitting
+            NA
+        } else {
+            x$coefficients[contrast,]
+        }
     }))
     rownames(cf) <- names(smry)
     cf # probes x c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
