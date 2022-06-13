@@ -116,6 +116,8 @@ print.DMLSummary <- function(x, ...) {
 #' Extract slope information from DMLSummary
 #' @param smry DMLSummary from DML command
 #' @return a table of slope and p-value
+#' @importFrom dplyr bind_rows
+#' @importFrom dplyr bind_cols
 #' @examples
 #' sesameDataCache() # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
@@ -125,19 +127,15 @@ print.DMLSummary <- function(x, ...) {
 #' sesameDataGet_resetEnv()
 #' @export
 summaryExtractTest <- function(smry) {
-    est <- as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
-        x$coefficients[,'Estimate']; }))))
-    rownames(est) <- names(smry)
+    est <- do.call(bind_rows, lapply(smry, function(x) {
+        x$coefficients[,'Estimate']; }))
     colnames(est) <- paste0("Est_", colnames(est))
-    est$Probe_ID <- names(smry)
-    pvals <- as.data.frame(t(do.call(cbind, lapply(smry, function(x) {
-        x$coefficients[,"Pr(>|t|)"] }))))
-    rownames(pvals) <- names(smry)
+    pvals <- do.call(bind_rows, lapply(smry, function(x) {
+        x$coefficients[,"Pr(>|t|)"] }))
     colnames(pvals) <- paste0("Pval_", colnames(pvals))
     if(is.null(smry[[1]]$Ftest)) { return(cbind(est,pvals)) } # only continuous
     f_pvals <- do.call(rbind, lapply(smry, function(x) {
         x$Ftest["pval",,drop=FALSE] }))
-    rownames(f_pvals) <- names(smry)
     colnames(f_pvals) <- paste0("FPval_", colnames(f_pvals))
     contr2lvs <- attr(smry, "contr2lvs")
     effsize <- do.call(cbind, lapply(names(contr2lvs), function(cont) {
@@ -147,7 +145,7 @@ summaryExtractTest <- function(smry) {
         apply(est[, paste0("Est_", cont, lvs),drop=FALSE], 1, function(x) {
             max(x,0) - min(x,0) }) }))
     colnames(effsize) <- paste0("Eff_", names(contr2lvs))
-    cbind(est, pvals, f_pvals, effsize)
+    bind_cols(Probe_ID=names(smry), est, pvals, f_pvals, effsize)
 }
 
 summaryExtractCf <- function(smry, contrast) {
