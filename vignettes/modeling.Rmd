@@ -215,9 +215,9 @@ test_result2 = summaryExtractTest(smry2) %>% arrange(Est_age)
 Let's verify the CpGs positively associated with age.
 
 ```{r model12}
-test_result2 %>% dplyr::select(Est_age, Pval_age) %>% tail # positive assoc.
+test_result2 %>% dplyr::select(Probe_ID, Est_age, Pval_age) %>% tail
 df = data.frame(Age = colData(se)$age,
-    BetaValue = assay(se)[rownames(test_result2)[nrow(test_result2)],])
+    BetaValue = assay(se)[test_result2$Probe_ID[nrow(test_result2)],])
 ggplot(df, aes(Age, BetaValue)) + geom_smooth(method="lm") + geom_point()
 ```
 
