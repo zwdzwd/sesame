@@ -113,8 +113,8 @@ sesameDataCacheAll()
 Let's take DNA methylation data from the HM450 platform for example.
 ```{r inf9, eval=FALSE}
 tmp = tempdir()
-res_grn = sesameAnno_get("Test/3999492009_R01C01_Grn.idat", dest_dir=tmp)
-res_red = sesameAnno_get("Test/3999492009_R01C01_Red.idat", dest_dir=tmp)
+res_grn = sesameAnno_download("Test/3999492009_R01C01_Grn.idat", dest_dir=tmp)
+res_red = sesameAnno_download("Test/3999492009_R01C01_Red.idat", dest_dir=tmp)
 ```
                                                    
 ## De-identify by Masking
