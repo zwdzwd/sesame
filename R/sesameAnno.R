@@ -47,12 +47,13 @@ sesameAnno_get <- function(title,
     path <- bfcrpath(BiocFileCache(), rpath)
     if (return_path) { return(path); }
     if (endsWith(path, ".tsv.gz")) {
-        read_tsv(path, col_types=cols(
-            CpG_beg=col_integer(),
-            CpG_end=col_integer(),
-            address_A=col_integer(),
-            address_B=col_integer(),
-            .default=col_character()))
+        df = read_tsv(path)
+        for (col in c("CpG_beg","CpG_end","address_A","address_B")) {
+            if (col %in% colnames(df)) {
+                df[[col]] = as.integer(df[[col]])
+            }
+        }
+        return(df)
     } else if (endsWith(path, ".rds")) {
         readRDS(path)
     } else {

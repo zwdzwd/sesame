@@ -4,7 +4,7 @@
 \alias{DML}
 \title{Test differential methylation on each locus}
 \usage{
-DML(betas, fm, meta = NULL, mc.cores = 1)
+DML(betas, fm, meta = NULL, newdata = NULL, mc.cores = 1)
 }
 \arguments{
 \item{betas}{beta values, matrix or SummarizedExperiment
@@ -17,6 +17,8 @@ are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
 and are referenced in formula. Rows are samples.
 When the betas argument is a SummarizedExperiment object, this
 is ignored. colData(betas) will be used instead.}
+
+\item{newdata}{new data for prediction, useful for studying effect size}
 
 \item{mc.cores}{number of cores for parallel processing}
 }

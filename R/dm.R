@@ -36,6 +36,7 @@ checkLevels <- function(betas, fc) {
 #' and are referenced in formula. Rows are samples.
 #' When the betas argument is a SummarizedExperiment object, this
 #' is ignored. colData(betas) will be used instead.
+#' @param newdata new data for prediction, useful for studying effect size
 #' @param mc.cores number of cores for parallel processing
 #' @return a list of test summaries, summary.lm objects
 #' @import stats
@@ -47,7 +48,7 @@ checkLevels <- function(betas, fc) {
 #'
 #' sesameDataGet_resetEnv()
 #' @export
-DML <- function(betas, fm, meta=NULL, mc.cores=1) {
+DML <- function(betas, fm, meta=NULL, newdata=NULL, mc.cores=1) {
 
     if(is(betas, "SummarizedExperiment")) {
         betas0 <- betas
@@ -70,9 +71,13 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
     mm_holdout <- lapply(names(contr2lvs), function(cont) {
         mm[, !(colnames(mm) %in% paste0(cont, contr2lvs[[cont]]))] })
     names(mm_holdout) <- names(contr2lvs)
+    mm_newdata <- as.data.frame(model.matrix(fm, newdata))
     smry <- BiocParallel::bplapply(seq_len(nrow(betas)), function(i) {
         m0 <- lm(betas[i,]~.+0, data=as.data.frame(mm))
         sm <- summary(m0)
+        if (!is.null(newdata)) {
+            sm$newdata <- predict(m0, mm_newdata)
+        }
         ## the following is removed to reduce the size of return
         sm$cov.unscaled <- NULL
         sm$residuals <- NULL
@@ -87,6 +92,7 @@ DML <- function(betas, fm, meta=NULL, mc.cores=1) {
     names(smry) <- rownames(betas)
     class(smry) <- "DMLSummary"
     attr(smry, "model.matrix") <- mm
+    attr(smry, "newdata") <- newdata
     attr(smry, "contr2lvs") <- contr2lvs
     smry
 }
@@ -138,6 +144,7 @@ summaryExtractTest <- function(smry) {
         x$Ftest["pval",,drop=FALSE] }))
     colnames(f_pvals) <- paste0("FPval_", colnames(f_pvals))
     contr2lvs <- attr(smry, "contr2lvs")
+    ## this doesn't account for interaction terms
     effsize <- do.call(cbind, lapply(names(contr2lvs), function(cont) {
         lvs <- contr2lvs[[cont]]
         lvs <- lvs[2:length(lvs)]
