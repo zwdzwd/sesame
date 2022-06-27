@@ -66,18 +66,21 @@ DML <- function(betas, fm, meta=NULL, newdata=NULL, mc.cores=1) {
         x <- make.names(paste0("X",levels(factor(meta[[cont]]))))
         substr(x,2,nchar(x))
     }), contrs)
-    
+
     ## prepare holdout models
     mm_holdout <- lapply(names(contr2lvs), function(cont) {
         mm[, !(colnames(mm) %in% paste0(cont, contr2lvs[[cont]]))] })
     names(mm_holdout) <- names(contr2lvs)
-    mm_newdata <- as.data.frame(model.matrix(fm, newdata))
+    if (!is.null(newdata)) {
+        mm_newdata <- as.data.frame(model.matrix(fm, newdata))
+        colnames(mm_newdata) <- make.names(colnames(mm_newdata))
+    }
     smry <- BiocParallel::bplapply(seq_len(nrow(betas)), function(i) {
         m0 <- lm(betas[i,]~.+0, data=as.data.frame(mm))
         sm <- summary(m0)
         if (!is.null(newdata)) {
             sm$newdata <- predict(m0, mm_newdata)
-        }
+        } else { sm$newdata <- NULL; }
         ## the following is removed to reduce the size of return
         sm$cov.unscaled <- NULL
         sm$residuals <- NULL
@@ -152,7 +155,13 @@ summaryExtractTest <- function(smry) {
         apply(est[, paste0("Est_", cont, lvs),drop=FALSE], 1, function(x) {
             max(x,0) - min(x,0) }) }))
     colnames(effsize) <- paste0("Eff_", names(contr2lvs))
-    bind_cols(Probe_ID=names(smry), est, pvals, f_pvals, effsize)
+    if (!is.null(attr(smry, "newdata"))) {
+        newd <- do.call(bind_rows, lapply(smry, function(x) { x$newdata; }))
+        colnames(newd) <- paste0("New_", colnames(newd))
+    }
+    res <- bind_cols(Probe_ID=names(smry), est, pvals, f_pvals, effsize, newd)
+    attr(res, "newdata") <- attr(smry, "newdata") # add new data format
+    res
 }
 
 summaryExtractCf <- function(smry, contrast) {
