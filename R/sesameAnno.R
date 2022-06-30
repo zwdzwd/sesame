@@ -2,6 +2,11 @@
 
 #' download Infinium manifest from the associated Github repository
 #'
+#' Since most of the annotation is not essential to sesame functioning,
+#' sesameData package no longer host the full manifest. This is
+#' the command to use to retrieve the full manifest and other annotation
+#' from the following Github host:
+#'
 #' https://github.com/zhou-lab/InfiniumAnnotationV1
 #' 
 #' Please check the repo itself for what is available.
@@ -47,10 +52,10 @@ sesameAnno_get <- function(title,
     path <- bfcrpath(BiocFileCache(), rpath)
     if (return_path) { return(path); }
     if (endsWith(path, ".tsv.gz")) {
-        df = read_tsv(path)
+        df <- read_tsv(path)
         for (col in c("CpG_beg","CpG_end","address_A","address_B")) {
             if (col %in% colnames(df)) {
-                df[[col]] = as.integer(df[[col]])
+                df[[col]] <- as.integer(df[[col]])
             }
         }
         return(df)

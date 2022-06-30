@@ -17,9 +17,14 @@ sesameAnno_get(title, return_path = FALSE, version = 1)
 tibble
 }
 \description{
-https://github.com/zhou-lab/InfiniumAnnotationV1
+Since most of the annotation is not essential to sesame functioning,
+sesameData package no longer host the full manifest. This is
+the command to use to retrieve the full manifest and other annotation
+from the following Github host:
 }
 \details{
+https://github.com/zhou-lab/InfiniumAnnotationV1
+
 Please check the repo itself for what is available.
 See also
 http://zwdzwd.github.io/InfiniumAnnotation

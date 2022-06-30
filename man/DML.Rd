@@ -4,7 +4,7 @@
 \alias{DML}
 \title{Test differential methylation on each locus}
 \usage{
-DML(betas, fm, meta = NULL, newdata = NULL, mc.cores = 1)
+DML(betas, fm, meta = NULL, BPPARAM = SerialParam())
 }
 \arguments{
 \item{betas}{beta values, matrix or SummarizedExperiment
@@ -18,9 +18,10 @@ and are referenced in formula. Rows are samples.
 When the betas argument is a SummarizedExperiment object, this
 is ignored. colData(betas) will be used instead.}
 
-\item{newdata}{new data for prediction, useful for studying effect size}
-
-\item{mc.cores}{number of cores for parallel processing}
+\item{BPPARAM}{number of cores for parallel processing, default to
+SerialParam()
+Use MulticoreParam(mc.cores) for parallel processing.
+For Windows, try DoparParam or SnowParam.}
 }
 \value{
 a list of test summaries, summary.lm objects

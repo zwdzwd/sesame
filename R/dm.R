@@ -22,6 +22,15 @@ checkLevels <- function(betas, fc) {
     })
 }
 
+model_contrasts <- function(mm, meta) {
+    contrs <- names(attr(mm, "contrasts"))
+    contr2lvs <- setNames(lapply(contrs, function(cont) {
+        ## avoid X-prepended to levels that start with number
+        x <- make.names(paste0("X",levels(factor(meta[[cont]]))))
+        substr(x,2,nchar(x)) # remove the added X
+    }), contrs)
+}
+
 #' Test differential methylation on each locus
 #'
 #' The function takes a beta value matrix with probes on the rows and
@@ -36,11 +45,16 @@ checkLevels <- function(betas, fc) {
 #' and are referenced in formula. Rows are samples.
 #' When the betas argument is a SummarizedExperiment object, this
 #' is ignored. colData(betas) will be used instead.
-#' @param newdata new data for prediction, useful for studying effect size
-#' @param mc.cores number of cores for parallel processing
+#' @param BPPARAM number of cores for parallel processing, default to
+#' SerialParam()
+#' Use MulticoreParam(mc.cores) for parallel processing.
+#' For Windows, try DoparParam or SnowParam.
 #' @return a list of test summaries, summary.lm objects
 #' @import stats
 #' @import BiocParallel
+#' @importFrom SummarizedExperiment assay
+#' @importFrom SummarizedExperiment colData
+#' @importFrom SummarizedExperiment SummarizedExperiment
 #' @examples
 #' sesameDataCache() # in case not done yet
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
@@ -48,7 +62,7 @@ checkLevels <- function(betas, fc) {
 #'
 #' sesameDataGet_resetEnv()
 #' @export
-DML <- function(betas, fm, meta=NULL, newdata=NULL, mc.cores=1) {
+DML <- function(betas, fm, meta=NULL, BPPARAM=SerialParam()) {
 
     if(is(betas, "SummarizedExperiment")) {
         betas0 <- betas
@@ -57,47 +71,109 @@ DML <- function(betas, fm, meta=NULL, newdata=NULL, mc.cores=1) {
     }
 
     mm <- model.matrix(fm, meta)
-    ## clean the level names
     colnames(mm) <- make.names(colnames(mm))
-
-    contrs <- names(attr(mm, "contrasts"))
-    contr2lvs <- setNames(lapply(contrs, function(cont) {
-        ## avoid X-prepended to levels that start with number
-        x <- make.names(paste0("X",levels(factor(meta[[cont]]))))
-        substr(x,2,nchar(x))
-    }), contrs)
-
+    
     ## prepare holdout models
+    contr2lvs <- model_contrasts(mm, meta)
     mm_holdout <- lapply(names(contr2lvs), function(cont) {
         mm[, !(colnames(mm) %in% paste0(cont, contr2lvs[[cont]]))] })
     names(mm_holdout) <- names(contr2lvs)
-    if (!is.null(newdata)) {
-        mm_newdata <- as.data.frame(model.matrix(fm, newdata))
-        colnames(mm_newdata) <- make.names(colnames(mm_newdata))
-    }
+
+    ## fitting
     smry <- BiocParallel::bplapply(seq_len(nrow(betas)), function(i) {
         m0 <- lm(betas[i,]~.+0, data=as.data.frame(mm))
         sm <- summary(m0)
-        if (!is.null(newdata)) {
-            sm$newdata <- predict(m0, mm_newdata)
-        } else { sm$newdata <- NULL; }
-        ## the following is removed to reduce the size of return
-        sm$cov.unscaled <- NULL
-        sm$residuals <- NULL
-        sm$terms <- NULL
+        sm$cov.unscaled <- NULL # reduce size of return
+        sm$residuals <- NULL    # reduce size of return
+        sm$terms <- NULL        # reduce size of return
         sm$Ftest <- do.call(cbind, lapply(mm_holdout, function(mm_) {
             m1 <- lm(betas[i,]~.+0, data=as.data.frame(mm_))
             anv <- anova(m1, m0)
             c(stat = anv[["F"]][2], pval = anv[["Pr(>F)"]][2])
         }))
         sm
-    }, BPPARAM = MulticoreParam(mc.cores))
+    }, BPPARAM = BPPARAM)
     names(smry) <- rownames(betas)
     class(smry) <- "DMLSummary"
     attr(smry, "model.matrix") <- mm
-    attr(smry, "newdata") <- newdata
+    attr(smry, "fm") <- fm
     attr(smry, "contr2lvs") <- contr2lvs
     smry
+}
+
+#' Predict new data from DML
+#'
+#' This function is also important for investigating factor interactions.
+#' 
+#' @param betas beta values, matrix or SummarizedExperiment
+#' rows are probes and columns are samples.
+#' @param fm formula
+#' @param pred new data for prediction, useful for studying effect size.
+#' This argument is a data.frame to specify new data.
+#' If the argument is NULL, all combinations of all contrasts will be used
+#' as input. It might not work if there is a continuous variable input.
+#' One may need to explicitly provide the input in a data frame.
+#' @param meta data frame for sample information, column names
+#' are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
+#' and are referenced in formula. Rows are samples.
+#' When the betas argument is a SummarizedExperiment object, this
+#' is ignored. colData(betas) will be used instead.
+#' @param BPPARAM number of cores for parallel processing, default to
+#' SerialParam()
+#' Use MulticoreParam(mc.cores) for parallel processing.
+#' For Windows, try DoparParam or SnowParam.
+#' @return a SummarizedExperiment of predictions. The colData describes
+#' the input of the prediction.
+#' @importFrom SummarizedExperiment SummarizedExperiment
+#' @examples
+#' data <- sesameDataGet('HM450.76.TCGA.matched')
+#' 
+#' ## use all contrasts as new input
+#' res <- DMLpredict(data$betas[1:10,], ~type, meta=data$sampleInfo)
+#'
+#' ## specify new input
+#' res <- DMLpredict(data$betas[1:10,], ~type, meta=data$sampleInfo,
+#'   pred = data.frame(type=c("Normal","Tumour")))
+#'
+#' ## note that the prediction needs to be a factor of the same
+#' ## level structure as the original training data.
+#' pred = data.frame(type=factor(c("Normal"), levels=c("Normal","Tumour")))
+#' res <- DMLpredict(data$betas[1:10,], ~type,
+#'   meta=data$sampleInfo, pred = pred)
+#'
+#' @export
+DMLpredict <- function(betas, fm, pred = NULL, meta = NULL,
+    BPPARAM=SerialParam()) {
+
+    if(is(betas, "SummarizedExperiment")) {
+        betas0 <- betas
+        betas <- assay(betas0)
+        meta <- colData(betas0)
+    }
+
+    mm <- model.matrix(fm, meta)
+    colnames(mm) <- make.names(colnames(mm))
+    
+    if (is.null(pred)) { # use all combinations of all contrasts
+        contr2lvs <- model_contrasts(mm, meta)
+        ## NOTE: conversion to factor is done by occurrence,
+        ## not alphabetically. This is what we need. See ?expand.grid
+        pred <- do.call(expand.grid, contr2lvs)
+    }
+
+    ## prepare prediction input
+    mm_pred <- as.data.frame(model.matrix(fm, pred))
+    colnames(mm_pred) <- make.names(colnames(mm_pred))
+    stopifnot(all(colnames(mm_pred) %in% colnames(mm)))
+
+    ## fitting and prediction
+    res <- do.call(rbind, BiocParallel::bplapply(
+        seq_len(nrow(betas)), function(i) {
+            m0 <- lm(betas[i,]~.+0, data=as.data.frame(mm))
+            predict(m0, mm_pred)
+        }, BPPARAM = BPPARAM))
+    rownames(res) <- rownames(betas)
+    SummarizedExperiment(res, colData=pred)
 }
 
 #' Print DMLSummary object
@@ -132,7 +208,7 @@ print.DMLSummary <- function(x, ...) {
 #' data <- sesameDataGet('HM450.76.TCGA.matched')
 #' smry <- DML(data$betas[1:10,], ~type, meta=data$sampleInfo)
 #' slopes <- summaryExtractTest(smry)
-#'
+#' 
 #' sesameDataGet_resetEnv()
 #' @export
 summaryExtractTest <- function(smry) {
@@ -155,13 +231,41 @@ summaryExtractTest <- function(smry) {
         apply(est[, paste0("Est_", cont, lvs),drop=FALSE], 1, function(x) {
             max(x,0) - min(x,0) }) }))
     colnames(effsize) <- paste0("Eff_", names(contr2lvs))
-    if (!is.null(attr(smry, "newdata"))) {
-        newd <- do.call(bind_rows, lapply(smry, function(x) { x$newdata; }))
-        colnames(newd) <- paste0("New_", colnames(newd))
+    bind_cols(Probe_ID=names(smry), est, pvals, f_pvals, effsize)
+}
+
+#' Compute effect size for different variables from prediction matrix
+#'
+#' The effect size is defined by the maximum variation of a variable with all
+#' the other variables controled constant.
+#'
+#' @param pred predictions
+#' @return a data.frame of effect sizes. Columns are different variables.
+#' Rows are different probes.
+#' @examples
+#' data <- sesameDataGet('HM450.76.TCGA.matched')
+#' res <- DMLpredict(data$betas[1:10,], ~type, meta=data$sampleInfo)
+#' head(calcEffectSize(res))
+#' @export
+calcEffectSize <- function(pred) {
+    vars <- colnames(colData(pred))
+    if (length(vars) == 1) {
+        eff <- data.frame(x = rowMaxs(assay(pred)) - rowMins(assay(pred)))
+        colnames(eff) <- vars[[1]]
+        rownames(eff) <- rownames(pred)
+        return(eff)
     }
-    res <- bind_cols(Probe_ID=names(smry), est, pvals, f_pvals, effsize, newd)
-    attr(res, "newdata") <- attr(smry, "newdata") # add new data format
-    res
+    eff <- as.data.frame(do.call(cbind, lapply(vars, function(var) {
+        other_vars <- vars[vars != var]
+        col_indices <- seq_len(nrow(colData(pred)))
+        Reduce(pmax, lapply(split(col_indices, colData(pred)[other_vars]),
+            function(x) {
+                rowMaxs(assay(pred)[,x]) - rowMins(assay(pred)[,x])
+            }))
+    })))
+    colnames(eff) <- vars
+    rownames(eff) <- rownames(pred)
+    eff
 }
 
 summaryExtractCf <- function(smry, contrast) {
