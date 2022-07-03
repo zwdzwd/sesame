@@ -493,8 +493,8 @@ KYCG_plotSetEnrichment <- function(
 
     WGG(ggplot(data.frame(index=index, cs=cs[index])) +
         geom_segment(data=data.frame(pos=pos),
-                     aes(x = pos, xend = pos, y = -0.02, yend = 0.02),
-                     color="grey50") +
+            aes(x = pos, xend = pos, y = -0.02, yend = 0.02),
+            color="grey50") +
         geom_line(aes(x=index, y=cs), color="darkred") +
         xlab("") + ylab("ES(S)")) +
     WGG(ggplot(data.frame(

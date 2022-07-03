@@ -250,7 +250,8 @@ summaryExtractTest <- function(smry) {
 calcEffectSize <- function(pred) {
     vars <- colnames(colData(pred))
     if (length(vars) == 1) {
-        eff <- data.frame(x = rowMaxs(assay(pred)) - rowMins(assay(pred)))
+        eff <- data.frame(x = apply(
+            assay(pred), 1, function(x) max(x) - min(x)))
         colnames(eff) <- vars[[1]]
         rownames(eff) <- rownames(pred)
         return(eff)
@@ -260,7 +261,7 @@ calcEffectSize <- function(pred) {
         col_indices <- seq_len(nrow(colData(pred)))
         Reduce(pmax, lapply(split(col_indices, colData(pred)[other_vars]),
             function(x) {
-                rowMaxs(assay(pred)[,x]) - rowMins(assay(pred)[,x])
+                apply(assay(pred)[,x], 1, function(x) max(x) - min(x))
             }))
     })))
     colnames(eff) <- vars
@@ -386,7 +387,9 @@ DMGetProbeInfo <- function(platform, genome) {
 #' @param smry DML
 #' @param contrast the pair-wise comparison or contrast
 #' check colnames(attr(smry, "model.matrix")) if uncertain
-#' @param dist.cutoff distance cutoff (default to use dist.cutoff.quantile)
+#' @param dist.cutoff cutoff of beta value differences for two neighboring CGs
+#' to be considered the same DMR (by default it's determined using the
+#' quantile function on seg.per.locus)
 #' @param seg.per.locus number of segments per locus
 #' higher value leads to more segments
 #' @param platform EPIC, HM450, MM285, ...
