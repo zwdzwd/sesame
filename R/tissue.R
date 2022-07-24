@@ -48,6 +48,10 @@ reference_plot_se <- function(
 #' Compare mouse array data with mouse tissue references
 #'
 #' @param betas matrix of betas for the target sample
+#' This argument is optional. If not given, only the reference will be shown.
+#' @param ref the reference beta values in SummarizedExperiment.
+#' This argument is optional. If not given, the reference will be downloaded
+#' from the sesameData package.
 #' @param color either blueYellow or fullJet
 #' @param query_width the width of the query beta value matrix
 #' @return grid object that contrast the target sample with
@@ -63,11 +67,10 @@ reference_plot_se <- function(
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment rowData
 compareMouseTissueReference <- function(
-    betas=NULL, color="blueYellow", query_width=0.3) {
+    betas=NULL, ref=NULL, color="blueYellow", query_width=0.3) {
     
-    se <- sesameDataGet("MM285.tissueSignature")
-
-    reference_plot_se(betas, se, color=color, query_width=query_width)
+    ref <- sesameDataGet("MM285.tissueSignature")
+    reference_plot_se(betas, ref, color=color, query_width=query_width)
 }
 
 #' inferTissue1 infers the tissue of a single sample (as identified through 
