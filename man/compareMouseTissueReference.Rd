@@ -31,9 +31,5 @@ pre-built mouse tissue reference
 Compare mouse array data with mouse tissue references
 }
 \examples{
-
-sesameDataCache() # if not done yet
-compareMouseTissueReference()
-sesameDataGet_resetEnv()
-
+cat("Deprecated, see compareReference")
 }
