@@ -31,17 +31,16 @@ Genome Biology) from sesameDataGet. The function outputs a single numeric
 of age in years.
 
 Here are some built-in age models:
-
-Horvath353 - Horvath aging model (Horvath 2013 Genome Biol, 353 probes)
-SkinBlood - Horvath aging model (Horvath et al. 2018 Aging, 391 probes)
-PhenoAge - PhenoAge model (Levine 2018 Aging, 514 cg probes)
-Zhou347 - Mouse epigenetic clock (Zhou et al. 2022, 347 probes)
+Anno/HM450/Clock_Horvath353.rds
+Anno/HM450/Clock_Hannum.rds
+Anno/HM450/Clock_SkinBlood.rds
+Anno/EPIC/Clock_PhenoAge.rds
+Anno/MM285/Clock_Zhou347.rds
+see vignette inferences.html#Age__Epigenetic_Clock for details
 }
 \examples{
-\dontrun{
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-model <- sesameAnno_get("Anno/HM450/Clock_Horvath353.rds")
-predictAge(betas, model)
-}
+## model <- sesameAnno_get("Anno/HM450/Clock_Horvath353.rds")
+## predictAge(betas, model)
 
 }
