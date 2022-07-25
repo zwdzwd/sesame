@@ -22,9 +22,5 @@ The function outputs a single numeric of age in months. The clock is most
 accurate with the sesame preprocessing.
 }
 \examples{
-
-betas <- SummarizedExperiment::assay(sesameDataGet('MM285.10.SE.tissue'))[,1]
-predictMouseAgeInMonth(betas)
-sesameDataGet_resetEnv()
-
+cat("Deprecated. See predictAge")
 }

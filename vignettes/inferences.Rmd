@@ -57,7 +57,7 @@ e.g., the well-known Horvath 353 model ([Horvath
 2013](https://pubmed.ncbi.nlm.nih.gov/24138928/)) which returns the
 chronological age in the number of years. Here is an example:
 
-```{r inf4}
+```{r inf4, eval=FALSE}
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 model <- sesameAnno_get("Anno/HM450/Clock_Horvath353.rds")
 predictAge(betas, model)
@@ -68,11 +68,11 @@ al. 2022](https://www.cell.com/cell-genomics/fulltext/S2666-979X(22)00077-5))
 The function returns the age in the number of months. We recommend using SeSAMe
 preprocessed data as input to the function. Here’s an example:
 
-```{r inf18, message=FALSE}
+```{r inf18, message=FALSE, eval=FALSE}
 library(SummarizedExperiment)
-betas <- assay(sesameDataGet("MM285.10.SE.tissue"))
+betas <- assay(sesameDataGet("MM285.10.SE.tissue"))[,1]
 model <- sesameAnno_get("Anno/MM285/Clock_Zhou347.rds")
-predictAge(betas[,1], model)
+predictAge(betas, model)
 ```
 
 This indicates thaat this mouse is approximately 1.41 months old. The function
@@ -82,10 +82,11 @@ models. Other available epigenetic clocks are
 ```{r inf20, echo=FALSE, result="asis"}
 library(knitr)
 df <- data.frame(rbind(
-    c("Anno/HM450/Clock_Horvath353", "HM450/EPIC", "Horvath 2013 (24138928)"),
-    c("Anno/EPIC/PhenoAge", "HM450/EPIC", "Levine 2018 (29676998)"),
-    c("Anno/HM450/SkinBlood", "HM450/EPIC", "Horath 2018 (30048243)"),
-    c("Anno/MM285/Zhou347", "MM285", "Zhou 2022")
+    c("Anno/HM450/Clock_Horvath353.rds", "HM450/EPIC", "Horvath 2013 (24138928)"),
+    c("Anno/HM450/Clock_Hannum.rds", "HM450", "Hannum 2013 (23177740)"),
+    c("Anno/HM450/Clock_SkinBlood.rds", "HM450/EPIC", "Horath 2018 (30048243)"),
+    c("Anno/EPIC/Clock_PhenoAge.rds", "HM450/EPIC", "Levine 2018 (29676998)"),
+    c("Anno/MM285/Clock_Zhou347.rds", "MM285", "Zhou 2022")
 ))
 colnames(df) <- c("RDS Key", "Platform", "Reference (PMID)")
 kable(df, caption="Epigenetic Clocks")

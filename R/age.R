@@ -24,7 +24,7 @@
 #' @return age in the unit specified in the model (usually in year, but
 #' sometimes can be month, like in the mouse clocks).
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 #' model <- sesameAnno_get("Anno/HM450/Clock_Horvath353.rds")
 #' predictAge(betas, model)
@@ -56,11 +56,7 @@ predictAge <- function(betas, model, na_fallback=TRUE, min_nonna = 10) {
 #' @param na_fallback use the fallback default for NAs.
 #' @return age in month
 #' @examples
-#'
-#' betas <- SummarizedExperiment::assay(sesameDataGet('MM285.10.SE.tissue'))[,1]
-#' predictMouseAgeInMonth(betas)
-#' sesameDataGet_resetEnv()
-#' 
+#' cat("Deprecated. See predictAge")
 #' @export
 predictMouseAgeInMonth <- function(betas, na_fallback=TRUE) {
     .Deprecated("predictAge")

@@ -38,12 +38,10 @@ PhenoAge - PhenoAge model (Levine 2018 Aging, 514 cg probes)
 Zhou347 - Mouse epigenetic clock (Zhou et al. 2022, 347 probes)
 }
 \examples{
+\dontrun{
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
 model <- sesameAnno_get("Anno/HM450/Clock_Horvath353.rds")
 predictAge(betas, model)
+}
 
-betas <- SummarizedExperiment::assay(
-    sesameDataGet('MM285.10.SE.tissue'))[,1]
-model <- sesameAnno_get("Anno/MM285/Clock_Zhou347.rds")
-predictAge(betas, model)
 }
