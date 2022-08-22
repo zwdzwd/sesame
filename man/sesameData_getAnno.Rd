@@ -4,7 +4,7 @@
 \alias{sesameData_getAnno}
 \title{retrieve additional annotation files}
 \usage{
-sesameData_getAnno(title, version = anno_base_default_version, dest_dir = NULL)
+sesameData_getAnno(title, version = 1, dest_dir = NULL)
 }
 \arguments{
 \item{title}{title of the annotation file}

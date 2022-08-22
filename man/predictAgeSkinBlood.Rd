@@ -19,9 +19,5 @@ probes and estimate age using Horvath aging model (Horvath et al. 2018
 Aging, 391 probes). The function outputs a single numeric of age in years.
 }
 \examples{
-
-betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-predictAgeSkinBlood(betas)
-sesameDataGet_resetEnv()
-
+cat("Deprecated. See predictAge")
 }

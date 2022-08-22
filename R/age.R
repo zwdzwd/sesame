@@ -1,69 +1,46 @@
 
-Hv.age2response <- function(x, adult.age=20) {
-    ## trafo
-    x <- (x+1)/(adult.age+1)
-    ifelse(x<=1,log(x),x-1)
-}
-
-Hv.response2age <- function(x, adult.age=20) {
-    ## anti.trafo
-    ifelse(
-        x<0,
-        (1+adult.age)*exp(x)-1,
-        (1+adult.age)*x+adult.age)
-}
-
-#' Horvath 353 age predictor
+#' Predict age using linear models
 #'
 #' The function takes a named numeric vector of beta values. The name attribute
 #' contains the probe ID (cg, ch or rs IDs). The function looks for overlapping
-#' probes and estimate age using Horvath aging model (Horvath 2013
-#' Genome Biology). The function outputs a single numeric of age in years.
+#' probes and estimate age using different models.
 #'
-#' @param betas a probeID-named vector of beta values
-#' @return age in years
-#' @export
-#' @examples
+#' You can get the models such as the Horvath aging model (Horvath 2013
+#' Genome Biology) from sesameDataGet. The function outputs a single numeric
+#' of age in years.
 #'
-#' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-#' predictAgeHorvath353(betas)
-#' sesameDataGet_resetEnv()
+#' Here are some built-in age models:
+#' Anno/HM450/Clock_Horvath353.rds
+#' Anno/HM450/Clock_Hannum.rds
+#' Anno/HM450/Clock_SkinBlood.rds
+#' Anno/EPIC/Clock_PhenoAge.rds
+#' Anno/MM285/Clock_Zhou347.rds
+#' see vignette inferences.html#Age__Epigenetic_Clock for details
 #' 
-predictAgeHorvath353 <- function(betas) {
-    predictAge(betas, sesameDataGet('age.inference')$Horvath353)
-}
-
-#' Horvath Skin and Blood age predictor
-#'
-#' The function takes a named numeric vector of beta values. The name attribute
-#' contains the probe ID (cg, ch or rs IDs). The function looks for overlapping
-#' probes and estimate age using Horvath aging model (Horvath et al. 2018
-#' Aging, 391 probes). The function outputs a single numeric of age in years.
-#'
 #' @param betas a probeID-named vector of beta values
-#' @return age in years
-#' @export
+#' @param model a model object from sesameDataGet. should contain
+#' param, intercept, response2age. default to the Horvath353 model.
+#' @param na_fallback use fall back values if na
+#' @param min_nonna the minimum number of non-NA values.
+#' @return age in the unit specified in the model (usually in year, but
+#' sometimes can be month, like in the mouse clocks).
 #' @examples
-#'
 #' betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-#' predictAgeSkinBlood(betas)
-#' sesameDataGet_resetEnv()
+#' ## model <- sesameAnno_get("Anno/HM450/Clock_Horvath353.rds")
+#' ## predictAge(betas, model)
 #' 
-predictAgeSkinBlood <- function(betas) {
-    predictAge(betas, sesameDataGet('age.inference')$SkinBlood)
-}
+#' @export
+predictAge <- function(betas, model, na_fallback=TRUE, min_nonna = 10) {
 
-predictAge <- function(betas, cf) {
-    probes <- intersect(names(na.omit(betas)), cf$CpGmarker[-1])
-
-    if (length(probes) < 10) {
-        stop('Fewer than 10 matching probes left. Age prediction abort.')
+    betas <- betas[model$param$Probe_ID]
+    if (sum(!is.na(betas)) < min_nonna) {
+        stop("Fewer than 10 matching probes left. Age prediction abort.")
     }
-
-    drop(Hv.response2age(
-        cf$CoefficientTraining[1] +
-            cf$CoefficientTraining[
-                match(probes, cf$CpGmarker)] %*% betas[probes]))
+    if (sum(is.na(betas)) > 0 && na_fallback) {
+        k <- is.na(betas)
+        betas[k] <- model$param$na_fallback[k]
+    }
+    drop(model$response2age(betas %*% model$param$slope + model$intercept))
 }
 
 #' Mouse age predictor
@@ -78,18 +55,55 @@ predictAge <- function(betas, cf) {
 #' @param na_fallback use the fallback default for NAs.
 #' @return age in month
 #' @examples
-#'
-#' betas <- SummarizedExperiment::assay(sesameDataGet('MM285.10.SE.tissue'))[,1]
-#' predictMouseAgeInMonth(betas)
-#' sesameDataGet_resetEnv()
-#' 
+#' cat("Deprecated. See predictAge")
 #' @export
 predictMouseAgeInMonth <- function(betas, na_fallback=TRUE) {
-    coefs <- sesameDataGet("MM285.clock347")
-    dat <- betas[names(coefs$slopes)]
-    if (sum(is.na(dat)) > 0 && na_fallback) {
-        k <- is.na(dat)
-        dat[k] <- coefs$na_fallback[names(k[k])]
-    }
-    sum(dat * coefs$slopes) + coefs$intercept
+    .Deprecated("predictAge")
 }
+
+#' Horvath 353 age predictor
+#'
+#' The function takes a named numeric vector of beta values. The name attribute
+#' contains the probe ID (cg, ch or rs IDs). The function looks for overlapping
+#' probes and estimate age using Horvath aging model (Horvath 2013
+#' Genome Biology). The function outputs a single numeric of age in years.
+#'
+#' @param betas a probeID-named vector of beta values
+#' @return age in years
+#' @examples
+#' cat("Deprecated. See predictAge")
+#' @export
+predictAgeHorvath353 <- function(betas) {
+    .Deprecated("predictAge")
+}
+
+#' Horvath Skin and Blood age predictor
+#'
+#' The function takes a named numeric vector of beta values. The name attribute
+#' contains the probe ID (cg, ch or rs IDs). The function looks for overlapping
+#' probes and estimate age using Horvath aging model (Horvath et al. 2018
+#' Aging, 391 probes). The function outputs a single numeric of age in years.
+#'
+#' @param betas a probeID-named vector of beta values
+#' @return age in years
+#' @examples
+#' cat("Deprecated. See predictAge")
+#' @export
+predictAgeSkinBlood <- function(betas) {
+    .Deprecated("predictAge")
+}
+
+
+## Hv.age2response <- function(x, adult.age=20) {
+##     ## trafo
+##     x <- (x+1)/(adult.age+1)
+##     ifelse(x<=1,log(x),x-1)
+## }
+
+## Hv.response2age <- function(x, adult.age=20) {
+##     ## anti.trafo
+##     ifelse(
+##         x<0,
+##         (1+adult.age)*exp(x)-1,
+##         (1+adult.age)*x+adult.age)
+## }

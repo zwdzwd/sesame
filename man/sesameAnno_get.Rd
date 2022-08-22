@@ -2,38 +2,47 @@
 % Please edit documentation in R/sesameAnno.R
 \name{sesameAnno_get}
 \alias{sesameAnno_get}
-\title{Retrieve additional annotation Rds data}
+\title{download Infinium manifest from the associated Github repository}
 \usage{
-sesameAnno_get(title, version = anno_base_default_version, dest_dir = NULL)
+sesameAnno_get(title, return_path = FALSE, version = 1)
 }
 \arguments{
-\item{title}{title of the annotation file}
+\item{title}{the title of the resource}
 
-\item{version}{version number}
+\item{return_path}{return cached file path}
 
-\item{dest_dir}{if not NULL, download to this directory}
+\item{version}{release version, default is the latest}
 }
 \value{
-annotation file
+tibble
 }
 \description{
-From the Infinium annotation website associated github repo
-e.g., 
-https://github.com/zhou-lab/InfiniumAnnotationV1
+Since most of the annotation is not essential to sesame functioning,
+sesameData package no longer host the full manifest. This is
+the command to use to retrieve the full manifest and other annotation
+from the following Github host:
 }
 \details{
-The default version number should always work. One need to
-refer to the actual repo to see which one of the other versions
-also work.
+https://github.com/zhou-lab/InfiniumAnnotationV1
 
+Please check the repo itself for what is available.
 See also
 http://zwdzwd.github.io/InfiniumAnnotation
+
+Unless return_path = TRUE, This function calls import function
+depending on the resource name suffix. If the url ends with
+.rds, it will use readRDS. If the url ends with .tsv.gz it will
+use read_tsv. For all other cases, the function will return the
+cached file name.
+
+This function replaces sesameAnno_getManifestDF.
 }
 \examples{
 
-## avoided testing as this function uses external host
+## avoid testing since it depends on external host
 if (FALSE) {
-annoI <- anno_get("Anno/EPIC/EPIC.hg19.typeI_overlap_b151.rds")
+mapping <- sesameAnno_get("Mammal40/hg38.tsv.gz")
+annoI <- sesameAnno_get("Anno/EPIC/EPIC.hg19.typeI_overlap_b151.rds")
+mft <- sesameAnno_get("Anno/MM285/MM285.mm10.manifest.tsv.gz")
 }
-
 }

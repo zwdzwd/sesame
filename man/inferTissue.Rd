@@ -2,7 +2,7 @@
 % Please edit documentation in R/tissue.R
 \name{inferTissue}
 \alias{inferTissue}
-\title{inferTissue1 infers the tissue of a single sample (as identified through 
+\title{inferTissue infers the tissue of a single sample (as identified through 
 the branchIDs in the row data of the reference) by reporting independent 
 composition through cell type deconvolution.}
 \usage{
@@ -43,7 +43,7 @@ proportion of samples without an NA value at a given probe.}
 inferred tissue as a string
 }
 \description{
-inferTissue1 infers the tissue of a single sample (as identified through 
+inferTissue infers the tissue of a single sample (as identified through 
 the branchIDs in the row data of the reference) by reporting independent 
 composition through cell type deconvolution.
 }

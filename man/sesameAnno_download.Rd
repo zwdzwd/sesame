@@ -4,7 +4,7 @@
 \alias{sesameAnno_download}
 \title{Download additional annotation files}
 \usage{
-sesameAnno_download(title, dest_dir, version = anno_base_default_version)
+sesameAnno_download(title, dest_dir, version = 1)
 }
 \arguments{
 \item{title}{title of the annotation file}
@@ -17,17 +17,15 @@ sesameAnno_download(title, dest_dir, version = anno_base_default_version)
 annotation file
 }
 \description{
-From the Infinium annotation website associated github repo
-e.g., 
-https://github.com/zhou-lab/InfiniumAnnotationV1
+see also
+http://zwdzwd.github.io/InfiniumAnnotation
 }
 \details{
-The default version number should always work. One need to
-refer to the actual repo to see which one of the other versions
-also work.
-
-See also
-http://zwdzwd.github.io/InfiniumAnnotation
+This function acts similarly as sesameAnno_get except that it directly
+download files without invoking BiocFileCache. This is needed in some
+situation because BiocFileCache may change the file name and downstream
+program may depend on the correct file names. It also lets you download
+files in a cleaner way without routing through BiocFileCache
 }
 \examples{
 

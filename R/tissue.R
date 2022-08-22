@@ -1,34 +1,47 @@
-reference_plot_se <- function(
-    betas, se, color=c("blueYellow","jet"), query_width=0.3,
-    show_sample_names=FALSE) {
+#' Compare array data with references (e.g., tissue, cell types)
+#'
+#' @param ref the reference beta values in SummarizedExperiment.
+#' One can download them from the sesameData package. See examples.
+#' @param betas matrix of betas for the target sample
+#' This argument is optional. If not given, only the reference will be shown.
+#' @param stop.points stop points for the color palette.
+#' Default to blue, yellow.
+#' @param query_width the width of the query beta value matrix
+#' @param show_sample_names whether to show sample names (default: FALSE)
+#' @return grid object that contrast the target sample with
+#' references.
+#' @export
+#' @examples
+#' 
+#' sesameDataCache() # if not done yet
+#' compareReference(sesameDataGet("MM285.tissueSignature"))
+#' sesameDataGet_resetEnv()
+#' 
+#' @importFrom SummarizedExperiment assay
+#' @importFrom SummarizedExperiment colData
+#' @importFrom SummarizedExperiment rowData
+compareReference <- function(
+    ref, betas = NULL, stop.points = NULL, query_width=0.3,
+    show_sample_names = FALSE) {
 
-    ## top N probes ordered by delta_beta, will
-    ## be dominated by certain tissue otherwise
-    ## rd <- as.data.frame(rowData(se))
-    ## topN <- do.call(c, lapply(split(rd, rd$branch), function(x) {
-    ##     x$Probe_ID[order(x$delta_beta)][seq_len(min(nrow(x), 200))] }))
-    ## se <- se[rd$Probe_ID %in% topN,]
+    if (is.null(stop.points)) { stop.points <- c("blue","yellow") }
     
-    color <- match.arg(color)
-    if (color == "blueYellow") {
-        stop.points <- c("blue","yellow")
-    } else {
-        stop.points <- NULL
-    }
-
-    cd <- as_tibble(colData(se))
-    rd <- as_tibble(rowData(se))
-    md <- metadata(se)
+    cd <- as_tibble(colData(ref))
+    rd <- as_tibble(rowData(ref))
+    md <- metadata(ref)
     if (!is.null(betas) && is.null(dim(betas))) { # in case a vector
         betas <- cbind(betas)
     }
 
-    g <- WHeatmap(assay(se), cmp=CMPar(stop.points=stop.points,
-        dmin=0, dmax=1), xticklabels = show_sample_names, name="b1") # reference
-    if (!is.null(betas)) {          # query samples
+    ## reference
+    g <- WHeatmap(assay(ref), cmp=CMPar(stop.points=stop.points,
+        dmin=0, dmax=1), xticklabels = show_sample_names, name="b1")
+    ## query samples
+    if (!is.null(betas)) {
         g <- g + WHeatmap(betas[rd$Probe_ID,], RightOf("b1", width=query_width),
             cmp=CMPar(stop.points=stop.points, dmin=0, dmax=1),
-            name="b2", xticklabels=TRUE, xticklabels.n=ncol(betas))
+            name="b2", xticklabels = show_sample_names,
+            xticklabels.n=ncol(betas))
         right <- "b2"
     } else { # in case target is not given, plot just the reference
         right <- "b1"
@@ -48,29 +61,26 @@ reference_plot_se <- function(
 #' Compare mouse array data with mouse tissue references
 #'
 #' @param betas matrix of betas for the target sample
+#' This argument is optional. If not given, only the reference will be shown.
+#' @param ref the reference beta values in SummarizedExperiment.
+#' This argument is optional. If not given, the reference will be downloaded
+#' from the sesameData package.
 #' @param color either blueYellow or fullJet
 #' @param query_width the width of the query beta value matrix
 #' @return grid object that contrast the target sample with
 #' pre-built mouse tissue reference
 #' @export
 #' @examples
-#' 
-#' sesameDataCache() # if not done yet
-#' compareMouseTissueReference()
-#' sesameDataGet_resetEnv()
-#' 
+#' cat("Deprecated, see compareReference")
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment rowData
 compareMouseTissueReference <- function(
-    betas=NULL, color="blueYellow", query_width=0.3) {
-    
-    se <- sesameDataGet("MM285.tissueSignature")
-
-    reference_plot_se(betas, se, color=color, query_width=query_width)
+    betas=NULL, ref=NULL, color="blueYellow", query_width=0.3) {
+    .Deprecated("compareReference")
 }
 
-#' inferTissue1 infers the tissue of a single sample (as identified through 
+#' inferTissue infers the tissue of a single sample (as identified through 
 #' the branchIDs in the row data of the reference) by reporting independent 
 #' composition through cell type deconvolution.
 #'

@@ -152,7 +152,7 @@ df <- data.frame(rbind(
    c("MM285", "mouse", "TQCDPB"),
    c("MM285", "non-mouse organism", "SQCDPB"),
    c("Mammal40", "human", "HCDPB"),
-   c("Mammal40", "non-human organism", "SHCDPM")))
+   c("Mammal40", "non-human organism", "SHCDPB")))
 colnames(df) <- c("Platform", "Sample Organism", "Prep Code")
 kable(df, caption="Recommended Preprocessing")
 ```

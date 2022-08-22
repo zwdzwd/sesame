@@ -253,6 +253,7 @@ KYCG_plotLollipop <- function(df, label_column="dbname", n=20) {
 #'
 #' @param df data frame where each row is a database with test
 #' enrichment result
+#' @param n_label number of datapoints to label
 #' @param label_column column in df to be used as the label (default: dbname)
 #' @return grid
 #' @import ggplot2
@@ -265,9 +266,9 @@ KYCG_plotLollipop <- function(df, label_column="dbname", n=20) {
 #' KYCG_plotWaterfall(results)
 #' 
 #' @export
-KYCG_plotWaterfall <- function(df, label_column="dbname") {
+KYCG_plotWaterfall <- function(df, n_label = 10, label_column="dbname") {
 
-    index <- estimate <- p.value <- label <- NULL
+    index <- estimate <- log10.p.value <- label <- NULL
     df$label <- df[[label_column]]
     
     df <- df[order(df$estimate),]
@@ -275,13 +276,12 @@ KYCG_plotWaterfall <- function(df, label_column="dbname") {
     
     requireNamespace("ggrepel")
     ggplot(df, aes(index, estimate)) +
-        geom_point(aes(size=p.value), alpha=0.6) +
-        scale_size(trans="reverse") +
+        geom_point(aes(size=-log10.p.value), alpha=0.6) +
         geom_hline(yintercept=0, linetype="dashed", color="grey60") +
         theme_minimal() + ylab("Log2(OR)") + xlab("Databases") +
         ggrepel::geom_text_repel(
             data = df[head(order(df$log10.p.value),
-                n = min(10, nrow(df)*0.5)),],
+                n = min(n_label, nrow(df)*0.5)),],
             aes(label=label), nudge_x=-nrow(df)/10)
 }
 
@@ -493,8 +493,8 @@ KYCG_plotSetEnrichment <- function(
 
     WGG(ggplot(data.frame(index=index, cs=cs[index])) +
         geom_segment(data=data.frame(pos=pos),
-                     aes(x = pos, xend = pos, y = -0.02, yend = 0.02),
-                     color="grey50") +
+            aes(x = pos, xend = pos, y = -0.02, yend = 0.02),
+            color="grey50") +
         geom_line(aes(x=index, y=cs), color="darkred") +
         xlab("") + ylab("ES(S)")) +
     WGG(ggplot(data.frame(

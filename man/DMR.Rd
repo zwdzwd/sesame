@@ -26,7 +26,9 @@ check colnames(attr(smry, "model.matrix")) if uncertain}
 
 \item{genome}{hg38, hg19, mm10, ...}
 
-\item{dist.cutoff}{distance cutoff (default to use dist.cutoff.quantile)}
+\item{dist.cutoff}{cutoff of beta value differences for two neighboring CGs
+to be considered the same DMR (by default it's determined using the
+quantile function on seg.per.locus)}
 
 \item{seg.per.locus}{number of segments per locus
 higher value leads to more segments}

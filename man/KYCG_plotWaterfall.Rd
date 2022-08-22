@@ -4,11 +4,13 @@
 \alias{KYCG_plotWaterfall}
 \title{create a waterfall plot of log(estimate) given test enrichment}
 \usage{
-KYCG_plotWaterfall(df, label_column = "dbname")
+KYCG_plotWaterfall(df, n_label = 10, label_column = "dbname")
 }
 \arguments{
 \item{df}{data frame where each row is a database with test
 enrichment result}
+
+\item{n_label}{number of datapoints to label}
 
 \item{label_column}{column in df to be used as the label (default: dbname)}
 }

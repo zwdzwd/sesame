@@ -52,36 +52,51 @@ inferEthnicity(sdf)
 
 # Age & Epigenetic Clock
 
-## Human
+SeSAMe provides age regression through multiple previously established models,
+e.g., the well-known Horvath 353 model ([Horvath
+2013](https://pubmed.ncbi.nlm.nih.gov/24138928/)) which returns the
+chronological age in the number of years. Here is an example:
 
-SeSAMe provides age regression a la the well-known Horvath 353 model (see
-[Horvath 2013](https://pubmed.ncbi.nlm.nih.gov/24138928/))
-
-```{r inf4}
+```{r inf4, eval=FALSE}
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-predictAgeHorvath353(betas)
+model <- sesameAnno_get("Anno/HM450/Clock_Horvath353.rds")
+predictAge(betas, model)
 ```
 
-## Mouse
+And MM285 mouse array data using a set of 347 CpGs (see [Zhou et
+al. 2022](https://www.cell.com/cell-genomics/fulltext/S2666-979X(22)00077-5))
+The function returns the age in the number of months. We recommend using SeSAMe
+preprocessed data as input to the function. Here’s an example:
 
-SeSAMe provides age estimation using a set of 347 CpGs (see [Zhou et
-al. 2022](https://www.biorxiv.org/content/10.1101/2022.03.24.485667v1))
-
-```{r inf18, message=FALSE}
+```{r inf18, message=FALSE, eval=FALSE}
 library(SummarizedExperiment)
-betas = assay(sesameDataGet("MM285.10.SE.tissue"))
+betas <- assay(sesameDataGet("MM285.10.SE.tissue"))[,1]
+model <- sesameAnno_get("Anno/MM285/Clock_Zhou347.rds")
+predictAge(betas, model)
 ```
 
-The age of the mouse can be predicted using the `predictMouseAgeInMonth`
-function. This looks for overlapping probes and estimates age using an aging
-model built from 347 MM285 probes. The function returns a numeric output of age
-in months. The model is most accurate with SeSAMe preprocessing.  Here's an
-example.
+This indicates that this mouse is approximately 1.41 months old. The function
+looks for overlapping probes and estimates age using the corresponding clock
+models. Other available epigenetic clocks are
 
-```{r nh19}
-predictMouseAgeInMonth(betas[,1])
+```{r inf20, echo=FALSE, result="asis"}
+library(knitr)
+df <- data.frame(rbind(
+    c("Anno/HM450/Clock_Horvath353.rds", 353,
+        "HM450/EPIC", "Horvath 2013 (24138928)"),
+    c("Anno/HM450/Clock_Hannum.rds", 71,
+        "HM450", "Hannum 2013 (23177740)"),
+    c("Anno/HM450/Clock_SkinBlood.rds", 391,
+        "HM450/EPIC", "Horath 2018 (30048243)"),
+    c("Anno/EPIC/Clock_PhenoAge.rds", 514,
+        "HM450/EPIC", "Levine 2018 (29676998)"),
+    c("Anno/MM285/Clock_Zhou347.rds", 347,
+        "MM285", "Zhou 2022")
+))
+colnames(df) <- c("RDS Key", "Platform", "N", "Reference (PMID)")
+kable(df, caption="Available Epigenetic Clocks")
 ```
-This indicates thaat this mouse is approximately 1.41 months old.
+
 
 # Copy Number
 
@@ -113,8 +128,8 @@ sesameDataCacheAll()
 Let's take DNA methylation data from the HM450 platform for example.
 ```{r inf9, eval=FALSE}
 tmp = tempdir()
-res_grn = sesameAnno_get("Test/3999492009_R01C01_Grn.idat", dest_dir=tmp)
-res_red = sesameAnno_get("Test/3999492009_R01C01_Red.idat", dest_dir=tmp)
+res_grn = sesameAnno_download("Test/3999492009_R01C01_Grn.idat", dest_dir=tmp)
+res_red = sesameAnno_download("Test/3999492009_R01C01_Red.idat", dest_dir=tmp)
 ```
                                                    
 ## De-identify by Masking

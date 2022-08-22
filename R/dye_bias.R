@@ -88,7 +88,7 @@ dyeBiasCorrMostBalanced <- function(sdfs) {
     lapply(sdfs, function(sdf) dyeBiasCorr(sdf, ref))
 }
 
-maskIG <- function(sdf) {
+maskIG <- function(sdf) { # mask IG if the grn channel fails completely
     sdf$mask[sdf$col=="G"] <- TRUE
     sdf
 }
@@ -115,8 +115,8 @@ maskIG <- function(sdf) {
 dyeBiasNL <- function(sdf, mask = TRUE, verbose = FALSE) {
 
     stopifnot(is(sdf, "SigDF"))
-    ## mask IG if the grn channel failed completely
-    if (sesameQC_calcStats(sdf, "dyeBias")@stat$RGdistort >10) {
+    rgdistort <- sesameQC_calcStats(sdf, "dyeBias")@stat$RGdistort
+    if (is.na(rgdistort) || rgdistort >10) {
         return(maskIG(sdf)); }
     
     ## we use all Inf-I probes so we capture the entire support range

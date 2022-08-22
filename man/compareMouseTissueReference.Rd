@@ -6,12 +6,18 @@
 \usage{
 compareMouseTissueReference(
   betas = NULL,
+  ref = NULL,
   color = "blueYellow",
   query_width = 0.3
 )
 }
 \arguments{
-\item{betas}{matrix of betas for the target sample}
+\item{betas}{matrix of betas for the target sample
+This argument is optional. If not given, only the reference will be shown.}
+
+\item{ref}{the reference beta values in SummarizedExperiment.
+This argument is optional. If not given, the reference will be downloaded
+from the sesameData package.}
 
 \item{color}{either blueYellow or fullJet}
 
@@ -25,9 +31,5 @@ pre-built mouse tissue reference
 Compare mouse array data with mouse tissue references
 }
 \examples{
-
-sesameDataCache() # if not done yet
-compareMouseTissueReference()
-sesameDataGet_resetEnv()
-
+cat("Deprecated, see compareReference")
 }
