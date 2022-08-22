@@ -317,6 +317,40 @@ meaning these databases are associated with small values of the query (DNA
 methylation level). On the contrary, `Quies` states are associated with high
 methylation level.
 
+## Correlation Network Analysis
+
+Methylation Correlation Network Analysis is motivated by gene expression
+methods that seek to identify modules and networks from expression data. Genes
+that are co-expressed behave similarly over different environments and thus may
+share similar biological function and participate in functional networks.
+Similarly, CpGs that have highly correlated methylation fractions across
+different environments may be involved in common epigenetic and biological
+pathways.
+
+```{r figs, echo=FALSE, fig.cap="Two highly correlated CpGs belonging to the same module. Across 256 samples from different tissues, ages and sexes, methylation changes at one CpG is accompanied by similar changes in a separate co-methylated CpG"}
+
+se <- sesameDataGet("MM285.10.SE.tissue")
+
+
+## data <- readRDS("/Users/goldbergd2/20210319_1656_mouse_array_samples.rds")
+## tissues <- c("Cecum", "Colon", "Small Intestine")
+## sampleSheet <- read_xlsx("/Users/goldbergd2/Desktop/Lab/20210713_MouseArray_SampleTableFinal_local.xlsx")
+## IDs <- sampleSheet[sampleSheet$Tissue %in% tissues & sampleSheet$Strain == "C57BL/6J", ]$IDAT
+## mod_cpgs <- readRDS(file="/Users/goldbergd2/Desktop/Lab/20220407_KYCG_WMCNA_NND_Results.RData")
+## sub <- as.data.frame(data[mod_cpgs$CpGs[[1]], IDs]) #pick 2 random CpGs to plot and show correlation across samples
+## df_plot <- as.data.frame(t(sub[c("cg30910045_BC21","cg34861418_TC21"),])) %>% rownames_to_column()
+
+df_plot <- as.data.frame(t(assay(se)[c("cg30910045_BC21","cg34861418_TC21"),])) %>% rownames_to_column("IDAT")
+
+ggplot(df_plot) +
+    geom_line(mapping=aes(IDAT, y=cg30910045_BC21, group=1), color="blue") +
+    geom_line(mapping=aes(IDAT, y=cg34861418_TC21, group=1), color="red") +
+    labs(y="Methylation fraction", x="Sample") + theme_bw() +
+    theme(axis.text.x=element_blank(),
+          axis.ticks.x=element_blank())
+
+```
+
 # Session Info
 
 ```{r}
