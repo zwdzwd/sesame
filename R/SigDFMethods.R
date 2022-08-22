@@ -110,14 +110,19 @@ oobR <- function(sdf) {
 #' @export
 controls <- function(sdf, verbose = FALSE) {
     stopifnot(is(sdf, "SigDF"))
-    df <- sesameDataGet(sprintf(
-        "%s.address", sdfPlatform(sdf, verbose = verbose)))$controls
-    if (is.null(df)) {
-        sdf[grepl("^ctl", sdf$Probe_ID),]
-    } else {
-        cbind(df, sdf[
-            match(paste0("ctl_",df$Address), sdf$Probe_ID),
-            c("MG","MR","UG","UR")])
+    if (sesameDataHas(sprintf(
+        "%s.address", sdfPlatform(sdf, verbose = verbose)))) {
+        df <- sesameDataGet(sprintf(
+            "%s.address", sdfPlatform(sdf, verbose = verbose)))$controls
+        if (is.null(df)) {
+            return(sdf[grepl("^ctl", sdf$Probe_ID),])
+        } else {
+            cbind(df, sdf[
+                match(paste0("ctl_",df$Address), sdf$Probe_ID),
+                c("MG","MR","UG","UR")])
+        }
+    } else { # custom array
+        return(sdf[grepl("^ctl", sdf$Probe_ID),])
     }
 }
 
