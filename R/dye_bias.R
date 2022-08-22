@@ -115,7 +115,8 @@ maskIG <- function(sdf) { # mask IG if the grn channel fails completely
 dyeBiasNL <- function(sdf, mask = TRUE, verbose = FALSE) {
 
     stopifnot(is(sdf, "SigDF"))
-    if (sesameQC_calcStats(sdf, "dyeBias")@stat$RGdistort >10) {
+    rgdistort <- sesameQC_calcStats(sdf, "dyeBias")@stat$RGdistort
+    if (is.na(rgdistort) || rgdistort >10) {
         return(maskIG(sdf)); }
     
     ## we use all Inf-I probes so we capture the entire support range

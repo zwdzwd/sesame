@@ -33,12 +33,15 @@ compareReference <- function(
         betas <- cbind(betas)
     }
 
+    ## reference
     g <- WHeatmap(assay(ref), cmp=CMPar(stop.points=stop.points,
-        dmin=0, dmax=1), xticklabels = show_sample_names, name="b1") # reference
-    if (!is.null(betas)) {          # query samples
+        dmin=0, dmax=1), xticklabels = show_sample_names, name="b1")
+    ## query samples
+    if (!is.null(betas)) {
         g <- g + WHeatmap(betas[rd$Probe_ID,], RightOf("b1", width=query_width),
             cmp=CMPar(stop.points=stop.points, dmin=0, dmax=1),
-            name="b2", xticklabels=TRUE, xticklabels.n=ncol(betas))
+            name="b2", xticklabels = show_sample_names,
+            xticklabels.n=ncol(betas))
         right <- "b2"
     } else { # in case target is not given, plot just the reference
         right <- "b1"
