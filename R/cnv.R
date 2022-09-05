@@ -12,6 +12,12 @@
 #' @param sdfs.normal a list of \code{SigDF}s for normalization, if not given,
 #' use the stored normal data from sesameData. However, we do recommend using
 #' a matched copy number normal dataset for normalization.
+#' @param genome hg38, mm10, ..., will infer if not given.
+#' For additional mapping, download the GRanges object from
+#' http://zwdzwd.github.io/InfiniumAnnotation
+#' and provide the following argument
+#' ..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+#' to this function.
 #' @param verbose print more messages
 #' @return an object of \code{CNSegment}
 #' @examples
@@ -23,11 +29,12 @@
 #' ## seg <- cnSegmentation(sdf, sdfs.normal)
 #'
 #' @export
-cnSegmentation <- function(sdf, sdfs.normal=NULL, verbose = FALSE) {
+cnSegmentation <- function(
+    sdf, sdfs.normal=NULL, genome=NULL, verbose = FALSE) {
 
     stopifnot(is(sdf, "SigDF"))
     platform <- sdfPlatform(sdf, verbose = verbose)
-    genome <- sesameData_check_genome(NULL, platform)
+    genome <- sesameData_check_genome(genome, platform)
     if (verbose) {
         message(sprintf("Use coordinate on genome: %s", genome)) }
 
@@ -40,8 +47,9 @@ cnSegmentation <- function(sdf, sdfs.normal=NULL, verbose = FALSE) {
     }
     
     ## retrieve chromosome info and probe coordinates
-    seqLength <- sesameDataGet(paste0('genomeInfo.', genome))$seqLength
-    gapInfo <- sesameDataGet(paste0('genomeInfo.', genome))$gapInfo
+    genomeInfo <- sesameData_getGenomeInfo(genome)
+    seqLength <- genomeInfo$seqLength
+    gapInfo <- genomeInfo$gapInfo
     probe.coords <- sesameData_getManifestGRanges(platform, genome = genome)
     
     ## extract intensities

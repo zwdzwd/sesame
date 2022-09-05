@@ -121,38 +121,159 @@ guess_chrmorder <- function(chrms) {
         sort(unique(chrms1)), "chr", "")), na.rm=TRUE))), c("X","Y","M")))
 }
 
-buildManifestGRanges <- function(
-    platform, genome = NULL, version = 1,
-    decoy = FALSE, columns = NULL) {
+#' Build manifest GRanges from tsv
+#'
+#' @param tsv a file path, a platform (e.g., EPIC), or
+#' a tibble/data.frame object
+#' @param genome a genome string, e.g., hg38, mm10
+#' @param decoy consider decoy sequence in chromosome order
+#' @param columns the columns to include in the GRanges
+#' @importFrom SummarizedExperiment metadata<-
+#' @return GRanges
+#'
+#' ## genome <- sesameAnno_buildManifestGRanges("HM450", "hg38")
+#' ## or
+#' ## download tsv directly from
+#' ## http://zwdzwd.github.io/InfiniumAnnotation or
+#' ## genome <- sesameAnno_buildAddressFile("downloaded_file")
+#' @export
+sesameAnno_buildManifestGRanges <- function(
+    tsv, genome, decoy = FALSE, columns = NULL) {
 
-    platform <- sesameData_check_platform(platform)
-    genome <- sesameData_check_genome(genome, platform)
+    if (is.character(tsv)) { # file path
+        if (file.exists(tsv)) {
+            tsv <- sesameAnno_readManifestTSV(tsv)
+        } else {
+            platform <- tsv
+            if (is.null(genome)) {
+                genome <- sesameData_check_genome(NULL, platform)
+            }
+            tsv <- sesameAnno_get(sprintf("%s/%s.tsv.gz", platform, genome))
+        }
+    }
 
-    df <- sesameAnno_get(
-        sprintf("%s/%s.tsv.gz", platform, genome), version=version)
-    chrms <- df$CpG_chrm
+    for (col in c("CpG_beg","CpG_end","address_A","address_B")) {
+        if (col %in% colnames(tsv)) {
+            tsv[[col]] <- as.integer(tsv[[col]]) }}
+    
+    chrms <- tsv$CpG_chrm
     chrms <- chrms[!is.na(chrms)]
     if (genome %in% c("mm10","mm39","hg19","hg38")) {
-        if (decoy) {
-            chrms <- c(
-                guess_chrmorder(chrms[!grepl("_", chrms)]),
-                sort(unique(chrms[grepl("_", chrms)])))
+        if (decoy) { chrms <- c(
+            guess_chrmorder(chrms[!grepl("_", chrms)]),
+            sort(unique(chrms[grepl("_", chrms)])))
         } else {
             chrms <- guess_chrmorder(chrms[!grepl("_", chrms)])
         }
     } else {
         chrms <- sort(unique(chrms))
     }
-    df <- df[!is.na(df$CpG_chrm) & !is.na(df$CpG_beg) & !is.na(df$CpG_end),]
-    df <- df[df$CpG_chrm %in% chrms,]
-    gr <- GRanges(df$CpG_chrm,
-        IRanges::IRanges(df$CpG_beg+1, df$CpG_end),
-        strand = ifelse(df$mapFlag_A=="0", "+", "-"),
+    chrms <- c(chrms, "*")
+    idx <- is.na(tsv$CpG_chrm) | !(tsv$CpG_chrm %in% chrms)
+    tsv$CpG_chrm[idx] <- "*"
+    tsv$CpG_beg[idx] <- -1
+    tsv$CpG_end[idx] <- 0
+    
+    gr <- GRanges(tsv$CpG_chrm, IRanges::IRanges(tsv$CpG_beg+1, tsv$CpG_end),
+        strand = ifelse(
+            is.na(tsv$mapFlag_A), "*", ifelse(tsv$mapFlag_A=="0", "+", "-")),
         seqinfo = Seqinfo(chrms))
     if (length(columns) > 0) {
-        SummarizedExperiment::mcols(gr) <- df[,columns] }
-    names(gr) <- df$Probe_ID
+        SummarizedExperiment::mcols(gr) <- tsv[,columns] }
+    names(gr) <- tsv$Probe_ID
+    metadata(gr)[["genome"]] <- genome
+    message(sprintf("%d probes in GRanges.", length(gr)))
+    message(sprintf("%d probes belong to chr*.", sum(seqnames(gr)=="*")))
+    message(sprintf("%d probes on decoy chr.", sum(grepl("_", seqnames(gr)))))
     sort(gr, ignore.strand = TRUE)
+}
+
+create_mask <- function(df) {
+    unmapped <- (
+        is.na(df$mapAS_A) | df$mapAS_A < 35 |
+        (!is.na(df$mapAS_B) & df$mapAS_B < 35))
+    masks <- data.frame(
+        Probe_ID = df$Probe_ID,
+        nonunique = (
+            (!unmapped) &
+            (df$mapQ_A == 0 | (!is.na(df$mapQ_B) & df$mapQ_B == 0))),
+        missing_target = (
+            (!unmapped) &
+            (is.na(df$target) | (df$target != "CG")) &
+            grepl("^cg", df$Probe_ID)))
+    masks$control <- grepl("^ctl", df$Probe_ID)
+    masks$design_issue <- grepl("^uk", df$Probe_ID)
+    masks$unmapped <- (unmapped & masks$control != 1 & masks$design_issue != 1)
+    masks$low_mapq <- (
+        (!is.na(df$mapQ_A)) &
+        (df$mapQ_A < 30 | (!is.na(df$mapQ_B) & df$mapQ_B < 30)))
+    masks$ref_issue <- (unmapped | masks$missing_target)
+    masks[c("Probe_ID","unmapped","missing_target",
+        "ref_issue","nonunique","low_mapq","control","design_issue")]
+}
+
+sesameAnno_readManifestTSV <- function(tsv_fn) {
+    read_tsv(
+        tsv_fn, col_types=cols(
+            CpG_chrm = col_character(),
+            CpG_beg = col_integer(),
+            CpG_end = col_integer(),
+            address_A = col_integer(), address_B = col_integer(),
+            target = col_character(), nextBase = col_character(),
+            channel = col_character(),
+            Probe_ID = col_character(), mapFlag_A = col_integer(),
+            mapChrm_A = col_character(),
+            mapPos_A = col_integer(), mapQ_A = col_integer(),
+            mapCigar_A = col_character(),
+            AlleleA_ProbeSeq = col_character(),
+            mapNM_A = col_character(), mapAS_A = col_integer(),
+            mapYD_A = col_character(),
+            mapFlag_B = col_integer(),
+            mapChrm_B = col_character(), mapPos_B = col_integer(),
+            mapQ_B = col_integer(), mapCigar_B = col_character(),
+            AlleleB_ProbeSeq = col_character(),
+            mapNM_B = col_character(), mapAS_B = col_integer(),
+            mapYD_B = col_character(), type = col_character()))
+}
+
+#' Build sesame ordering address file from tsv
+#'
+#' @param tsv a platform name, a file path or a tibble/data.frame manifest file
+#' @return a list of ordering and controls
+#'
+#' ## addr <- sesameAnno_buildAddressFile("HM450")
+#' ## or
+#' ## download tsv directly from
+#' ## http://zwdzwd.github.io/InfiniumAnnotation or
+#' ## addr <- sesameAnno_buildAddressFile("downloaded_file")
+#' @export
+sesameAnno_buildAddressFile <- function(tsv) {
+
+    if (is.character(tsv)) { # file path
+        if (file.exists(tsv)) {
+            tsv <- sesameAnno_readManifestTSV(tsv)
+        } else {
+            platform <- tsv
+            genome <- sesameData_check_genome(NULL, platform)
+            tsv <- sesameAnno_get(sprintf("%s/%s.tsv.gz", platform, genome))
+        }
+    }
+    
+    ordering <- data.frame(
+        Probe_ID = tsv$Probe_ID,
+        M=tsv$address_B, U=tsv$address_A,
+        col=factor(tsv$channel, levels=c("G","R")), mask=FALSE)
+    ordering$mask <- create_mask(tsv)$ref_issue
+    
+    mft <- list()
+    mft$ordering <- ordering
+    mft$controls <- NULL
+    message(sprintf("%d probes masked", sum(mft$ordering$mask)))
+    message(sprintf("%d probes/rows in ordering", nrow(mft$ordering)))
+    message(sprintf("%d probes masked", sum(mft$ordering$mask)))
+    message(sprintf("%d red probes", sum(na.omit(mft$ordering$col=="R"))))
+    message(sprintf("%d grn probes", sum(na.omit(mft$ordering$col=="G"))))
+    mft
 }
 
 #' retrieve additional annotation files

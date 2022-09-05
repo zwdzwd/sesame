@@ -13,7 +13,12 @@ createUCSCtrack(betas, output = NULL, platform = "HM450", genome = "hg38")
 
 \item{platform}{HM450, EPIC etc.}
 
-\item{genome}{hg38, hg19 etc.}
+\item{genome}{hg38, mm10, ..., will infer if not given.
+For additional mapping, download the GRanges object from
+http://zwdzwd.github.io/InfiniumAnnotation
+and provide the following argument
+..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+to this function.}
 }
 \value{
 when output is null, return a data.frame, otherwise NULL

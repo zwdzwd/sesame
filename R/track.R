@@ -4,7 +4,12 @@
 #' @param betas a named numeric vector
 #' @param output output file name
 #' @param platform HM450, EPIC etc.
-#' @param genome hg38, hg19 etc.
+#' @param genome hg38, mm10, ..., will infer if not given.
+#' For additional mapping, download the GRanges object from
+#' http://zwdzwd.github.io/InfiniumAnnotation
+#' and provide the following argument
+#' ..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+#' to this function.
 #' @return when output is null, return a data.frame, otherwise NULL
 #' @examples
 #'

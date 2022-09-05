@@ -4,7 +4,7 @@
 \alias{cnSegmentation}
 \title{Perform copy number segmentation}
 \usage{
-cnSegmentation(sdf, sdfs.normal = NULL, verbose = FALSE)
+cnSegmentation(sdf, sdfs.normal = NULL, genome = NULL, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{\code{SigDF}}
@@ -12,6 +12,13 @@ cnSegmentation(sdf, sdfs.normal = NULL, verbose = FALSE)
 \item{sdfs.normal}{a list of \code{SigDF}s for normalization, if not given,
 use the stored normal data from sesameData. However, we do recommend using
 a matched copy number normal dataset for normalization.}
+
+\item{genome}{hg38, mm10, ..., will infer if not given.
+For additional mapping, download the GRanges object from
+http://zwdzwd.github.io/InfiniumAnnotation
+and provide the following argument
+..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+to this function.}
 
 \item{verbose}{print more messages}
 }

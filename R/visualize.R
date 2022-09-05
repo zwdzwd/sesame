@@ -13,7 +13,12 @@
 #' @param end end of the region
 #' @param betas beta value matrix (row: probes, column: samples)
 #' @param platform EPIC, HM450, or MM285
-#' @param genome hg38, hg19, or mm10
+#' @param genome hg38, mm10, ..., will infer if not given.
+#' For additional mapping, download the GRanges object from
+#' http://zwdzwd.github.io/InfiniumAnnotation
+#' and provide the following argument
+#' ..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+#' to this function.
 #' @param draw draw figure or return betas
 #' @param cluster.samples whether to cluster samples
 #' @param na.rm remove probes with all NA.
@@ -30,8 +35,9 @@
 #' visualizeRegion('chr20', 44648623, 44652152, betas, 'HM450')
 #' @export
 visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
-    genome = NULL, draw = TRUE, cluster.samples = FALSE, na.rm = FALSE,
-    nprobes.max = 1000, txn.types = "protein_coding", txn.font.size = 6, ...) {
+    genome = NULL, draw = TRUE, cluster.samples = FALSE,
+    na.rm = FALSE, nprobes.max = 1000, txn.types = "protein_coding",
+    txn.font.size = 6, ...) {
 
     if (is.null(dim(betas))) { betas <- as.matrix(betas) }
     platform <- sesameData_check_platform(platform, rownames(betas))
@@ -39,10 +45,10 @@ visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
 
     reg <- GRanges(chrm, IRanges::IRanges(beg, end))
     
-    txns <- sesameDataGet(paste0('genomeInfo.',genome))$txns
-    txns <- subsetByOverlaps(txns, reg)
+    genomeInfo <- sesameData_getGenomeInfo(genome)
+    txns <- subsetByOverlaps(genomeInfo$txns, reg)
 
-    probes <- sesameData_getManifestGRanges(platform, genome)
+    probes <- sesameData_getManifestGRanges(platform, genome = genome)
     probes <- subsetByOverlaps(probes, reg)
     probes <- probes[names(probes) %in% rownames(betas)]
     if (na.rm) { probes <- probes[apply(
@@ -58,7 +64,7 @@ visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
     plt.txns <- plotTranscripts(txns, reg, beg, end,
         txn.types = txn.types, txn.font.size = txn.font.size)
     plt.mapLines <- plotMapLines(probes, beg, end)
-    plt.cytoband <- plotCytoBand(chrm, beg, end, genome)
+    plt.cytoband <- plotCytoBand(chrm, beg, end, genomeInfo)
     
     ## clustering
     betas <- betas[names(probes),,drop=FALSE]

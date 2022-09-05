@@ -7,7 +7,6 @@
 KYCG_plotManhattan(
   vals,
   platform = NULL,
-  gr = NULL,
   genome = NULL,
   title = NULL,
   label_min = 100,
@@ -23,10 +22,12 @@ retrieving GRanges coordinates
 of probes. Either MM285, EPIC, HM450, or HM27. If it is not provided, it
 will be inferred from the query set probeIDs (Default: NA).}
 
-\item{gr}{GRanges object containing genomic coordinates of probes. If not
-provided, GRanges for provided or inferred platform will be retrieved}
-
-\item{genome}{genome build}
+\item{genome}{hg38, mm10, ..., will infer if not given.
+For additional mapping, download the GRanges object from
+http://zwdzwd.github.io/InfiniumAnnotation
+and provide the following argument
+..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+to this function.}
 
 \item{title}{title for plot}
 

@@ -393,7 +393,12 @@ DMGetProbeInfo <- function(platform, genome) {
 #' @param seg.per.locus number of segments per locus
 #' higher value leads to more segments
 #' @param platform EPIC, HM450, MM285, ...
-#' @param genome hg38, hg19, mm10, ...
+#' @param genome hg38, mm10, ..., will infer if not given.
+#' For additional mapping, download the GRanges object from
+#' http://zwdzwd.github.io/InfiniumAnnotation
+#' and provide the following argument
+#' ..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+#' to this function.
 #' @return coefficient table with segment ID and segment P-value
 #' each row is a locus, multiple loci may share a segment ID if
 #' they are merged to the same segment. Records are ordered by Seg_Est.

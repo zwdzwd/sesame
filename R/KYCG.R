@@ -149,6 +149,12 @@ aggregateTestEnrichments <- function(
 #' on the platform
 #' @param platform HM450, EPIC, MM285, Mammal40, will infer from
 #' query if not given
+#' @param genome hg38, mm10, ..., will infer if not given.
+#' For additional mapping, download the GRanges object from
+#' http://zwdzwd.github.io/InfiniumAnnotation
+#' and provide the following argument
+#' ..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+#' to this function.
 #' @param max_distance probe-gene distance for association
 #' @param silent suppress messages
 #' @return gene databases
@@ -161,13 +167,14 @@ aggregateTestEnrichments <- function(
 #' testEnrichment(query, dbs, platform = "EPIC")
 #' @export
 KYCG_buildGeneDBs <- function(
-    query = NULL, platform = NULL, max_distance = 10000, silent = FALSE) {
+    query = NULL, platform = NULL,
+    genome = NULL, max_distance = 10000, silent = FALSE) {
     
     platform <- queryCheckPlatform(platform, query, silent = silent)
     genes <- sesameData_txnToGeneGRanges(
         sesameData_getTxnGRanges(
             sesameData_check_genome(NULL, platform)))
-    all_probes <- sesameData_getManifestGRanges(platform)
+    all_probes <- sesameData_getManifestGRanges(platform, genome = genome)
     if (!is.null(query)) {
         probes <- all_probes[names(all_probes) %in% query] }
 

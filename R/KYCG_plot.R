@@ -409,9 +409,12 @@ KYCG_plotPointRange <- function(result_list) {
 #' retrieving GRanges coordinates 
 #' of probes. Either MM285, EPIC, HM450, or HM27. If it is not provided, it
 #' will be inferred from the query set probeIDs (Default: NA).
-#' @param gr GRanges object containing genomic coordinates of probes. If not
-#' provided, GRanges for provided or inferred platform will be retrieved
-#' @param genome genome build
+#' @param genome hg38, mm10, ..., will infer if not given.
+#' For additional mapping, download the GRanges object from
+#' http://zwdzwd.github.io/InfiniumAnnotation
+#' and provide the following argument
+#' ..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+#' to this function.
 #' @param title title for plot
 #' @param label_min Threshold above which data points will be labelled with
 #' Probe ID
@@ -425,15 +428,15 @@ KYCG_plotPointRange <- function(result_list) {
 #' 
 #' @export
 KYCG_plotManhattan <- function(
-    vals, platform = NULL, gr = NULL, genome = NULL, title = NULL,
+    vals, platform = NULL, genome = NULL, title = NULL,
     label_min = 100, col = c("wheat1", "sienna3"), ylabel="Value") {
 
     stopifnot(is(vals, "numeric"))
     if (is.null(platform)) { platform <- queryCheckPlatform(
         platform, query=vals, silent = FALSE) }
-    if (is.null(genome)) {genome <- sesameData_check_genome(genome, platform)}
-    if (is.null(gr)) { gr <- sesameData_getManifestGRanges(platform) }
-    seqLength <- sesameDataGet(sprintf("genomeInfo.%s", genome))$seqLength
+    genome <- sesameData_check_genome(genome, platform)
+    gr <- sesameData_getManifestGRanges(platform, genome=genome)
+    seqLength <- sesameData_getGenomeInfo(genome)$seqLength
     
     v <- vals[names(gr)]
     gr <- gr[!is.na(v)]

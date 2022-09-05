@@ -92,9 +92,9 @@ plotMapLines <- function(probes, beg, end) {
 }
 
 plotCytoBand <- function(
-    chrom, beg, end, genome) {
+    chrom, beg, end, genomeInfo) {
 
-    cytoBand <- sesameDataGet(paste0('genomeInfo.',genome))$cytoBand
+    cytoBand <- genomeInfo$cytoBand
 
     ## set cytoband color
     requireNamespace("pals")

@@ -31,7 +31,12 @@ visualizeRegion(
 
 \item{platform}{EPIC, HM450, or MM285}
 
-\item{genome}{hg38, hg19, or mm10}
+\item{genome}{hg38, mm10, ..., will infer if not given.
+For additional mapping, download the GRanges object from
+http://zwdzwd.github.io/InfiniumAnnotation
+and provide the following argument
+..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+to this function.}
 
 \item{draw}{draw figure or return betas}
 
