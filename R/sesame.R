@@ -424,9 +424,11 @@ chipAddressToSignal <- function(dm, mft) {
     tmpU <- dm[match(mft1$U, rownames(dm)),]
     sdf <- data.frame(
         Probe_ID=mft1$Probe_ID,
-        MG=tmpM[,"G"], MR=tmpM[,"R"], UG=tmpU[,"G"], UR=tmpU[,"R"],
+        MG=unname(tmpM[,"G"]),
+        MR=unname(tmpM[,"R"]),
+        UG=unname(tmpU[,"G"]),
+        UR=unname(tmpU[,"R"]),
         col=mft1$col, mask=FALSE)
-    ## if ("mask" %in% colnames(mft1)) { sdf$mask <- mft1$mask; }
 
     ## Infinium-II
     mft2 <- mft[is.na(mft$col),]
@@ -434,7 +436,10 @@ chipAddressToSignal <- function(dm, mft) {
         tmp <- dm[match(mft2$U, rownames(dm)),]
         s2 <- data.frame(
             Probe_ID=mft2$Probe_ID,
-            MG=NA, MR=NA, UG=tmp[,"G"], UR=tmp[,"R"], col="2", mask=FALSE)
+            MG=NA, MR=NA,
+            UG=unname(tmp[,"G"]),
+            UR=unname(tmp[,"R"]),
+            col="2", mask=FALSE)
         ## if ("mask" %in% colnames(mft2)) { s2$mask <- mft2$mask; }
         sdf <- rbind(sdf, s2)
     }

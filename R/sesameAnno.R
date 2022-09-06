@@ -264,16 +264,13 @@ sesameAnno_buildAddressFile <- function(tsv) {
         M=tsv$address_B, U=tsv$address_A,
         col=factor(tsv$channel, levels=c("G","R")), mask=FALSE)
     ordering$mask <- create_mask(tsv)$ref_issue
-    
-    mft <- list()
-    mft$ordering <- ordering
-    mft$controls <- NULL
-    message(sprintf("%d probes masked", sum(mft$ordering$mask)))
-    message(sprintf("%d probes/rows in ordering", nrow(mft$ordering)))
-    message(sprintf("%d probes masked", sum(mft$ordering$mask)))
-    message(sprintf("%d red probes", sum(na.omit(mft$ordering$col=="R"))))
-    message(sprintf("%d grn probes", sum(na.omit(mft$ordering$col=="G"))))
-    mft
+
+    message(sprintf("%d probes masked", sum(ordering$mask)))
+    message(sprintf("%d probes/rows in ordering", nrow(ordering)))
+    message(sprintf("%d probes masked", sum(ordering$mask)))
+    message(sprintf("%d red probes", sum(na.omit(ordering$col=="R"))))
+    message(sprintf("%d grn probes", sum(na.omit(ordering$col=="G"))))
+    ordering
 }
 
 #' retrieve additional annotation files
