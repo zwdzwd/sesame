@@ -476,6 +476,37 @@ KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
     gps
 }
 
+#' Load database groups
+#'
+#' @param in_paths folder that contains all databases
+#' @return a list of db group names
+#' @examples
+#'
+#' ## download regulatory annotations from
+#' ## http://zwdzwd.github.io/InfiniumAnnotation
+#' ## unzip the file
+#' if (FALSE) {
+#' dbs <- KYCG_loadDBs(path_to_unzipped_folder)
+#' }
+#' @export
+KYCG_loadDBs <- function(in_paths) {
+    if (length(in_paths)==1 && dir.exists(in_paths)) {
+        groupnms <- list.files(in_paths)
+        in_paths <- file.path(in_paths, groupnms)
+    } else {
+        groupnms <- basename(in_paths)
+    }
+    do.call(c, lapply(seq_along(groupnms), function(i) {
+        tbl <- read.table(in_paths[i],header=TRUE)
+        dbs <- split(tbl$Probe_ID, tbl$Knowledgebase)
+        lapply(names(dbs), function(dbname) {
+            db1 <- dbs[[dbname]];
+            attr(db1, "group") <- sub(".gz$","",groupnms[i]);
+            attr(db1, "dbname") <- dbname;
+            db1;})
+    }))
+}
+
 #' Get databases by full or partial names of the database group(s)
 #'
 #' @param group_nms database group names
@@ -679,3 +710,4 @@ compareDatbaseSetOverlap <- function(
     }
     m
 }
+
