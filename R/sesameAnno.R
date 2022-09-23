@@ -135,7 +135,7 @@ guess_chrmorder <- function(chrms) {
 #' ## or
 #' ## download tsv directly from
 #' ## http://zwdzwd.github.io/InfiniumAnnotation or
-#' ## genome <- sesameAnno_buildAddressFile("downloaded_file")
+#' ## genome <- sesameAnno_buildManifestGRanges("downloaded_file")
 #' @export
 sesameAnno_buildManifestGRanges <- function(
     tsv, genome, decoy = FALSE, columns = NULL) {

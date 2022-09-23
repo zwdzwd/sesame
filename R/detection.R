@@ -47,11 +47,15 @@ detectionIB <- function(
 negControls <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
 
-    df <- controls(sdf)
-    negctls <- df[grep('negative', tolower(df$Type)), c("UG","UR")]
-    colnames(negctls) <- c("G","R")
-    
-    negctls
+    idx <- grep("NEGATIVE",sdf$Probe_ID)
+    if (length(idx) > 0) {
+        sdf[grep("NEGATIVE",sdf$Probe_ID),c("UG","UR")]
+    } else {
+        df <- controls(sdf)
+        negctls <- df[grep('negative', tolower(df$Type)), c("UG","UR")]
+        colnames(negctls) <- c("G","R")
+        negctls
+    }
 }
 
 #' Detection P-value based on ECDF of negative control

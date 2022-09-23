@@ -23,7 +23,7 @@ GRanges
 ## or
 ## download tsv directly from
 ## http://zwdzwd.github.io/InfiniumAnnotation or
-## genome <- sesameAnno_buildAddressFile("downloaded_file")
+## genome <- sesameAnno_buildManifestGRanges("downloaded_file")
 }
 \description{
 Build manifest GRanges from tsv

@@ -38,7 +38,7 @@ SigDF <- function(df, platform = "EPIC", ctl=NULL) {
 #' 
 #' @export
 sdfPlatform <- function(sdf, verbose = FALSE) {
-    if ("platform" %in% attributes(sdf)) {
+    if ("platform" %in% names(attributes(sdf))) {
         attr(sdf, "platform")
     } else {
         inferPlatformFromProbeIDs(sdf$Probe_ID, silent = !verbose)
@@ -114,14 +114,15 @@ controls <- function(sdf, verbose = FALSE) {
         "%s.address", sdfPlatform(sdf, verbose = verbose)))) {
         df <- sesameDataGet(sprintf(
             "%s.address", sdfPlatform(sdf, verbose = verbose)))$controls
-        if (is.null(df)) {
+        if (is.null(df)) { # no control probe annotation found
             return(sdf[grepl("^ctl", sdf$Probe_ID),])
-        } else {
+        } else { # control probe is treated as normal probes.
+            ## Their Probe IDs are in the format of "ctl_[Address]"
             cbind(df, sdf[
                 match(paste0("ctl_",df$Address), sdf$Probe_ID),
                 c("MG","MR","UG","UR")])
         }
-    } else { # custom array
+    } else { # no control probe annotation found
         return(sdf[grepl("^ctl", sdf$Probe_ID),])
     }
 }
