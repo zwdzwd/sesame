@@ -249,10 +249,14 @@ sesameAnno_readManifestTSV <- function(tsv_fn) {
 #' @export
 sesameAnno_buildAddressFile <- function(tsv) {
 
-    if (is.character(tsv)) { # file path
-        if (file.exists(tsv)) {
+    if (is.character(tsv)) { # string input
+        if (startsWith(tsv, "https:")) { # url
+            tsv <- sesameAnno_readManifestTSV(gzcon(url(tsv)))
+        } else if (file.exists(tsv) && !dir.exists(tsv)) { # file path
             tsv <- sesameAnno_readManifestTSV(tsv)
-        } else {
+        } else { # use some guess
+            ## note there is a discrepancy in the
+            ## control probe IDs, to update
             platform <- tsv
             genome <- sesameData_check_genome(NULL, platform)
             tsv <- sesameAnno_get(sprintf("%s/%s.tsv.gz", platform, genome))
