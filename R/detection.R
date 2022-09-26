@@ -47,9 +47,9 @@ detectionIB <- function(
 negControls <- function(sdf) {
     stopifnot(is(sdf, "SigDF"))
 
-    idx <- grep("NEGATIVE",sdf$Probe_ID)
+    idx <- grep("negative",tolower(sdf$Probe_ID))
     if (length(idx) > 0) {
-        negctls <- sdf[grep("NEGATIVE",sdf$Probe_ID),c("UG","UR")]
+        negctls <- sdf[idx,c("UG","UR")]
     } else {
         df <- controls(sdf)
         negctls <- df[grep('negative', tolower(df$Type)), c("UG","UR")]
