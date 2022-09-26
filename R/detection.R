@@ -49,13 +49,13 @@ negControls <- function(sdf) {
 
     idx <- grep("NEGATIVE",sdf$Probe_ID)
     if (length(idx) > 0) {
-        sdf[grep("NEGATIVE",sdf$Probe_ID),c("UG","UR")]
+        negctls <- sdf[grep("NEGATIVE",sdf$Probe_ID),c("UG","UR")]
     } else {
         df <- controls(sdf)
         negctls <- df[grep('negative', tolower(df$Type)), c("UG","UR")]
-        colnames(negctls) <- c("G","R")
-        negctls
     }
+    colnames(negctls) <- c("G","R")
+    negctls
 }
 
 #' Detection P-value based on ECDF of negative control
