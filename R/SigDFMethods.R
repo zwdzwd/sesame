@@ -110,7 +110,10 @@ oobR <- function(sdf) {
 #' @export
 controls <- function(sdf, verbose = FALSE) {
     stopifnot(is(sdf, "SigDF"))
-    if (sesameDataHas(sprintf(
+    if (!is.null(attr(sdf, "controls"))) { # control as an attr, to obsolete
+        df <- attr(sdf, "controls")
+        return(data.frame(UG=df$G, UR=df$R, Type=df$type))
+    } else if (sesameDataHas(sprintf( # from the associated annotation
         "%s.address", sdfPlatform(sdf, verbose = verbose)))) {
         df <- sesameDataGet(sprintf(
             "%s.address", sdfPlatform(sdf, verbose = verbose)))$controls
@@ -122,7 +125,7 @@ controls <- function(sdf, verbose = FALSE) {
                 match(paste0("ctl_",df$Address), sdf$Probe_ID),
                 c("MG","MR","UG","UR")])
         }
-    } else { # no control probe annotation found
+    } else { # no control probe annotation found, use this in the future
         return(sdf[grepl("^ctl", sdf$Probe_ID),])
     }
 }
