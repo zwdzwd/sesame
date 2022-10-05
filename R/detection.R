@@ -131,13 +131,7 @@ pOOBAH <- function(sdf, return.pval = FALSE,
     ## if there is no background signal, use an empirical prior
     if (sum(!is.na(bgG)) <= 100) { bgG <- seq_len(1000) }
     if (sum(!is.na(bgR)) <= 100) { bgR <- seq_len(1000) }
-
-    ## if the background is extremely low, be conservative
-    bgG95 <- quantile(bgG, 0.95)
-    if (bgG95 < 100) { bgG <- bgG * 100 / bgG95 }
-    bgR95 <- quantile(bgR, 0.95)
-    if (bgR95 < 100) { bgR <- bgR * 100 / bgR95 }
-
+    
     funcG <- ecdf(bgG)
     funcR <- ecdf(bgR)
 
@@ -151,3 +145,10 @@ pOOBAH <- function(sdf, return.pval = FALSE,
 
     addMask(sdf, pvals > pval.threshold)
 }
+
+
+## ## if the background is extremely low, be conservative
+## bgG95 <- quantile(bgG, 0.95, na.rm=TRUE)
+## if (bgG95 < 100) { bgG <- bgG * 100 / bgG95 }
+## bgR95 <- quantile(bgR, 0.95, na.rm=TRUE)
+## if (bgR95 < 100) { bgR <- bgR * 100 / bgR95 }
