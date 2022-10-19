@@ -497,7 +497,7 @@ KYCG_loadDBs <- function(in_paths) {
         groupnms <- basename(in_paths)
     }
     do.call(c, lapply(seq_along(groupnms), function(i) {
-        tbl <- read.table(in_paths[i],header=TRUE)
+        tbl <- read.table(in_paths[i],sep="\t",header=TRUE)
         dbs <- split(tbl$Probe_ID, tbl$Knowledgebase)
         lapply(names(dbs), function(dbname) {
             db1 <- dbs[[dbname]];
