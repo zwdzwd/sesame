@@ -49,7 +49,7 @@ compareReference <- function(
     ## branch color bar (vertical)
     g <- g + WColorBarV(rd$branch, RightOf(right, width=0.03),
         cmp=CMPar(label2color=md$branch_color), name="bh")
-    ## tissue color bar (horizontal)
+    ## tissue color bar (horizontal), branch should be replaced by CellType
     g <- g + WColorBarH(cd$branch, TopOf("b1",height=0.03),
         cmp=CMPar(label2color=md$branch_color), name="ti")
     ## legends
