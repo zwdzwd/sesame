@@ -259,7 +259,12 @@ sesameAnno_buildAddressFile <- function(tsv) {
             ## control probe IDs, to update
             platform <- tsv
             genome <- sesameData_check_genome(NULL, platform)
-            tsv <- sesameAnno_get(sprintf("%s/%s.tsv.gz", platform, genome))
+
+            if (platform %in% c("EPICv2")) {
+                tsv <- sesameAnno_get(sprintf("Anno/%s/%s.%s.manifest.tsv.gz", platform, platform, genome))
+            } else {
+                tsv <- sesameAnno_get(sprintf("%s/%s.tsv.gz", platform, genome))
+            }
         }
     }
     

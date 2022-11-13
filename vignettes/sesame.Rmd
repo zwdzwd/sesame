@@ -120,6 +120,19 @@ allele_freqs = openSesame(idat_dir, func = getAFs) # SNP allele frequencies
 sdfs = openSesame(sdfs, prep = "Q", func = NULL)   # take and return SigDFs
 ```
 
+# EPICv2
+
+To use SeSAMe with EPICv2, one needs to build and pass an address data frame to
+openSesame's manifest argument. The address data frame can be built using the
+`sesameAnno_buildAddressFile` function. In the future releases, EPICv2 will be
+natively supported and this extra operation will be come unnecessary. Here is
+an example:
+
+```{r base13, eval=FALSE}
+addr = sesameAnno_buildAddressFile("EPICv2")
+betas = openSesame("IDAT_folder", manifest=addr)
+```
+
 # Data Preprocessing {#dataprep}
 
 The `prep=` argument instructs the `openSesame` function to call the
