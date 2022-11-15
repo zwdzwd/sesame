@@ -150,11 +150,33 @@ plotCytoBand <- function(
 assemble_plots <- function(
     betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband,
     heat.height = NULL, 
-    show.probeNames = TRUE, show.samples.n = NULL,
+    show.probeNames = TRUE, replace.probes.with.loci = TRUE, show.samples.n = NULL,
     show.sampleNames = TRUE, sample.name.fontsize = 10,
     dmin = 0, dmax = 1) {
-    
-    if (is.null(show.samples.n)) { show.samples.n <- ncol(betas); }
+
+  if (replace.probes.with.loci) {
+  #converting probes to genomic loci in betas 'rownames' //START
+  betas <- GenomicRanges::as.data.frame(betas)
+  
+  betas["probes"]<- rownames(betas)
+  
+  probes.df <- GenomicRanges::as.data.frame(probes)
+  probes.df["genomic.loci"] <- paste0(probes.df$seqnames, ":", probes.df$start, "-", probes.df$end)
+  probes.df["probes"]<- row.names(probes.df)
+  probes.df
+  
+  betas  <- merge(probes.df[c("genomic.loci", "probes")], betas, by = "probes")
+  
+  row.names(betas) <- betas$genomic.loci
+  
+  betas$probes <- NULL
+  betas$genomic.loci <- NULL
+  betas <- as.matrix(betas)
+  #converting probes to genomic loci in betas 'rownames' //END
+  }
+  
+  
+  if (is.null(show.samples.n)) { show.samples.n <- ncol(betas); }
     if (is.null(heat.height) && length(txns) > 0) {
         heat.height <- 10 / length(txns); }
     w <- WGrob(plt.txns, name = 'txn')
