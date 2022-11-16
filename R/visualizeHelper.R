@@ -185,14 +185,13 @@ rename_probes_to_loci_and_de_duplicate_if_needed function(probes.list.or.betas, 
 assemble_plots <- function(
     betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband,
     heat.height = NULL, 
-    show.probeNames = TRUE, replace.probes.with.loci = TRUE, 
-    show.regulatory.features = TRUE, #only done for genome 'mm39' and 'MM285'
+    show.probeNames = TRUE, 
+    replace.probes.with.loci_and_show.regulatory.features = TRUE,
     show.samples.n = NULL,
     show.sampleNames = TRUE, sample.name.fontsize = 10,
     dmin = 0, dmax = 1) {
-
- if (show.regulatory.features = TRUE && replace.probes.with.loci = TRUE) {
-  if (genome == 'mm39' && platform == 'MM285') {
+#replace.probes.with.loci_and_show.regulatory.features = TRUE is only really meant to be used with (mouse) mm39, since the regulatory features were obtained from Ensembl 108 (mouse) mm39
+ if (replace.probes.with.loci_and_show.regulatory.features) {
       #START - Addition by Pratik - bring in regulatory features from mft
       mft <- sesameDataGet(sprintf('%s.%s.manifest', platform, genome))
       probe.list <- data.frame(mft[which(names(mft) %in% rownames(betas))])
@@ -217,13 +216,10 @@ cpg_island_color <- pals::tol.rainbow(n=12)[6]
 names(cpg_island_color) <- "CpG Island"
 #END - PRATIK - add colors for features
       
-      rename_probes_to_loci_and_de_duplicate_if_needed(betas, probes)
+      betas <- rename_probes_to_loci_and_de_duplicate_if_needed(betas, probes)
         }
      }
     
-if (show.regulatory.features = FALSE && replace.probes.with.loci = TRUE) {
-betas <- rename_probes_to_loci_and_de_duplicate_if_needed(probe.list, probes)
-}
   
   
   if (is.null(show.samples.n)) { show.samples.n <- ncol(betas); }
@@ -242,6 +238,13 @@ betas <- rename_probes_to_loci_and_de_duplicate_if_needed(probe.list, probes)
         yticklabels.n = show.samples.n,
         xticklabels.n = length(probes))
     w <- w + WGrob(plt.cytoband, TopOf('txn', height=0.15))
-    if 
-    w
+    if (replace.probes.with.loci_and_show.regulatory.features) {
+    w <- w + WLegendV(x = "betas", RightOf("betas"), n.text = 2, "betalegend", decreasing = TRUE)  +
+             WColorBarH(probe.list$CpG_Island, Beneath('betas', v.scale.proportional = TRUE), cmp=CMPar(brewer.name= 'Set2'), label = "CpG Island", label.side = 'l', "CpG") +
+             WColorBarH(probe.list$regulatory_feature, Beneath(v.scale.proportional = TRUE), cmp=CMPar(brewer.name= 'Paired', label2color = mycolors), label = "Genomic Feature Type", label.side = 'l', 'GFT') +
+             WLabel(x= "Beta Values", TopOf("betalegend", pad=0.1), fontsize = 15) +
+             WLegendV(x= "CpG", BottomRightOf("betas",just = c('center', 'center'), h.pad = .10, v.pad = -.3), height = rel(la.size), label.fontsize = sample.name.fontsize, yticklabel.pad=0.05) +
+             WLegendV(x= "GFT",Beneath(), label.fontsize = sample.name.fontsize, yticklabel.pad=0.05, height = .3)
+     w
+  }
 }
