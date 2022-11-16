@@ -150,7 +150,9 @@ plotCytoBand <- function(
 assemble_plots <- function(
     betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband,
     heat.height = NULL, 
-    show.probeNames = TRUE, replace.probes.with.loci = TRUE, show.samples.n = NULL,
+    show.probeNames = TRUE, replace.probes.with.loci = TRUE, 
+    ##show.regulatory.features = TRUE,  // working on currently
+    show.samples.n = NULL,
     show.sampleNames = TRUE, sample.name.fontsize = 10,
     dmin = 0, dmax = 1) {
 
@@ -166,9 +168,20 @@ assemble_plots <- function(
   probes.df
   
   betas  <- merge(probes.df[c("genomic.loci", "probes")], betas, by = "probes")
+      
+#below 'if/else statement' will determine if any genomic loci coordinates are repeated, if so, de-duplicate by paste0'ing together probe_ID and genomic loci by an '_' in between and setting that to the row.name, instead of just the genomic.loci
+#for duplicates only, the paste0'd (combined probe_ID and genomic loci coordinates) will be their heatmap "x-axis", otherwise only genomic loci coordinate will be used
+  if (any(duplicated(betas$genomic.loci))) {
+      
+betas[which(duplicated(betas$genomic.loci)), "redundant_loci"] <- c('TRUE')
+rownames(betas)[which(betas$redundant_loci == TRUE)] <- paste0(betas[which(betas$redundant_loci == TRUE),"probes"], "_", betas[which(betas$redundant_loci == TRUE),"genomic.loci"])
+rownames(betas)[which(is.na(betas$redundant_loci))] <- betas[which(is.na(betas$redundant_loci)), "genomic.loci"]
+      betas$redundant_loci <- NULL
+      
+      } else {
   
   row.names(betas) <- betas$genomic.loci
-  
+      }
   betas$probes <- NULL
   betas$genomic.loci <- NULL
   betas <- as.matrix(betas)
