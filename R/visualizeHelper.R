@@ -130,33 +130,41 @@ plotCytoBand <- function(
             x0 = pltx0, y0 = 0.3, x1 = pltx0, y1 = 0.6,
             gp = gpar(col = "red"), draw = FALSE))
 }
-
+        
 #this is a function to convert probes to loci and also de-duplicate loci (by combining probeID with the genomic loci)
 #this is made for the assemble_plots function (the same code was more or less being used twice, so to reduce lines of code, it was made into one function)
-rename_probes_to_loci_and_de_duplicate_if_needed function(probes.list.or.betas, probes) {
+rename_probes_to_loci_and_de_duplicate_if_needed <- function(probes.list.or.betas, probes) {
+    
+    
+    probes <- GenomicRanges::as.data.frame(probes)
+    probes["genomic.loci"] <-  paste0(probes$seqnames, ":", probes$start, "-", probes$end)
+probes["probes"] <-  rownames(probes)
+
   #converting probes to genomic loci in probes.list.or.betas 'rownames' //START
   probes.list.or.betas <- GenomicRanges::as.data.frame(probes.list.or.betas)
-  
-  probes.list.or.betas["probes"]<- rownames(probes.list.or.betas)
-  
-  probes.df <- GenomicRanges::as.data.frame(probes)
-  probes.df["genomic.loci"] <- paste0(probes.df$seqnames, ":", probes.df$start, "-", probes.df$end)
-  probes.df["probes"]<- row.names(probes.df)
-  probes.df
-  
-  probes.list.or.betas  <- merge(probes.df[c("genomic.loci", "probes")], probes.list.or.betas, by = "probes")
-  
+probes.list.or.betas["probes"] <- rownames(probes.list.or.betas)
+
+  probes.list.or.betas  <- merge(probes[c("genomic.loci", "probes")], probes.list.or.betas, by = "probes")
+
   #below 'if/else statement' will determine if any genomic loci coordinates are repeated, if so, de-duplicate by paste0'ing together probe_ID and genomic loci by an '_' in between and setting that to the row.name, instead of just the genomic.loci
   #for duplicates only, the paste0'd (combined probe_ID and genomic loci coordinates) will be their heatmap "x-axis", otherwise only genomic loci coordinate will be used
-  if (any(duplicated(probes.list.or.betas$genomic.loci))) {
-    
-    probes.list.or.betas[which(duplicated(probes.list.or.betas$genomic.loci)), "redundant_loci"] <- c('TRUE')
-    rownames(probes.list.or.betas)[which(probes.list.or.betas$redundant_loci == TRUE)] <- paste0(probes.list.or.betas[which(probes.list.or.betas$redundant_loci == TRUE),"probes"], "_", probes.list.or.betas[which(probes.list.or.betas$redundant_loci == TRUE),"genomic.loci"])
+if (any(duplicated(probes.list.or.betas$genomic.loci))) {
+  
+  #identifies *all* duplicate loci - by marking TRUE in the column "redundant_loci" for the corresponding row
+  probes.list.or.betas[probes.list.or.betas$genomic.loci %in% unique(probes.list.or.betas[duplicated(probes.list.or.betas$genomic.loci),"genomic.loci"]), "redundant_loci"] <- "TRUE"
+  
+  #wherever there is TRUE in redundant loci, probe and genomic loci and combined via paste0 with a '_' delimiter in between - and then the rowname is changed to the paste0 output
+  rownames(probes.list.or.betas)[which(probes.list.or.betas$redundant_loci == TRUE)] <- paste0(probes.list.or.betas[which(probes.list.or.betas$redundant_loci == TRUE),"probes"], "_", probes.list.or.betas[which(probes.list.or.betas$redundant_loci == TRUE),"genomic.loci"])
+  
+      #wherevere there is an NA in "redunant_loci" column change (where no duplicates exist) - change the rowname to the genomic loci
     rownames(probes.list.or.betas)[which(is.na(probes.list.or.betas$redundant_loci))] <- probes.list.or.betas[which(is.na(probes.list.or.betas$redundant_loci)), "genomic.loci"]
-    probes.list.or.betas$redundant_loci <- NULL
-    
+  
+      #NULL/clear out redundant loci column
+      probes.list.or.betas$redundant_loci <- NULL
+     probes.list.or.betas
+
   } else {
-    
+
     row.names(probes.list.or.betas) <- probes.list.or.betas$genomic.loci
   }
   probes.list.or.betas$probes <- NULL
@@ -165,7 +173,7 @@ rename_probes_to_loci_and_de_duplicate_if_needed function(probes.list.or.betas, 
   #converting probes to genomic loci in probes.list.or.betas 'rownames' //END
   probes.list.or.betas
 }
- 
+
 #' assemble plots
 #'
 #' @param betas beta value
@@ -185,44 +193,15 @@ rename_probes_to_loci_and_de_duplicate_if_needed function(probes.list.or.betas, 
 assemble_plots <- function(
     betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband,
     heat.height = NULL, 
-    show.probeNames = TRUE, 
-    replace.probes.with.loci_and_show.regulatory.features = TRUE,
-    show.samples.n = NULL,
+    show.probeNames = TRUE, show.samples.n = NULL, replace.probes.with.loci = TRUE,
     show.sampleNames = TRUE, sample.name.fontsize = 10,
     dmin = 0, dmax = 1) {
-#replace.probes.with.loci_and_show.regulatory.features = TRUE is only really meant to be used with (mouse) mm39, since the regulatory features were obtained from Ensembl 108 (mouse) mm39
- if (replace.probes.with.loci_and_show.regulatory.features) {
-      #START - Addition by Pratik - bring in regulatory features from mft
-      mft <- sesameDataGet(sprintf('%s.%s.manifest', platform, genome))
-      probe.list <- data.frame(mft[which(names(mft) %in% rownames(betas))])
-      rownames(probe.list) <- probe.list$probeID
-      probe.list <- probe.list[row.names(betas),]
-      
-      cpg.and.regulatory.feature.probe.list <- rename_probes_to_loci_and_de_duplicate_if_needed(probe.list, probes)
-      #END - Addition by Pratik - Dynamic loci rearrangement with clustering on heatmaps
-        
-#START - PRATIK - add colors for features
-#tol.rainbow color pallete is color-blind friendly
-regulatory_features_4_colors <- pals::tol.rainbow(n=12)[1:4] 
-regulatory_features_ctcf_colors <- pals::tol.rainbow(n=12)[5]
-
-#from unique(mft$regulatory_feature)[1:4]
-names(regulatory_features_4_colors) <- c("predicted enhancer", "predicted promoter", "open chromatin region", "TF binding site")
-#from unique(mft$CTCF_binding_site)[2]
-names(regulatory_features_ctcf_colors) <- "CTCF binding site"
-      
-cpg_island_color <- pals::tol.rainbow(n=12)[6]
-#below from unique(mft$CpG_Island)[2]
-names(cpg_island_color) <- "CpG Island"
-#END - PRATIK - add colors for features
-      
-      betas <- rename_probes_to_loci_and_de_duplicate_if_needed(betas, probes)
-        }
-     }
     
-  
-  
-  if (is.null(show.samples.n)) { show.samples.n <- ncol(betas); }
+    if (replace.probes.with.loci) {
+    betas <- rename_probes_to_loci_and_de_duplicate_if_needed(betas, probes)
+    }
+    
+    if (is.null(show.samples.n)) { show.samples.n <- ncol(betas); }
     if (is.null(heat.height) && length(txns) > 0) {
         heat.height <- 10 / length(txns); }
     w <- WGrob(plt.txns, name = 'txn')
@@ -238,13 +217,5 @@ names(cpg_island_color) <- "CpG Island"
         yticklabels.n = show.samples.n,
         xticklabels.n = length(probes))
     w <- w + WGrob(plt.cytoband, TopOf('txn', height=0.15))
-    if (replace.probes.with.loci_and_show.regulatory.features) {
-    w <- w + WLegendV(x = "betas", RightOf("betas"), n.text = 2, "betalegend", decreasing = TRUE)  +
-             WColorBarH(probe.list$CpG_Island, Beneath('betas', v.scale.proportional = TRUE), cmp=CMPar(brewer.name= 'Set2'), label = "CpG Island", label.side = 'l', "CpG") +
-             WColorBarH(probe.list$regulatory_feature, Beneath(v.scale.proportional = TRUE), cmp=CMPar(brewer.name= 'Paired', label2color = mycolors), label = "Genomic Feature Type", label.side = 'l', 'GFT') +
-             WLabel(x= "Beta Values", TopOf("betalegend", pad=0.1), fontsize = 15) +
-             WLegendV(x= "CpG", BottomRightOf("betas",just = c('center', 'center'), h.pad = .10, v.pad = -.3), height = rel(la.size), label.fontsize = sample.name.fontsize, yticklabel.pad=0.05) +
-             WLegendV(x= "GFT",Beneath(), label.fontsize = sample.name.fontsize, yticklabel.pad=0.05, height = .3)
-     w
-  }
+    w
 }
