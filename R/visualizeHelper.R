@@ -130,6 +130,49 @@ plotCytoBand <- function(
             x0 = pltx0, y0 = 0.3, x1 = pltx0, y1 = 0.6,
             gp = gpar(col = "red"), draw = FALSE))
 }
+        
+#this is a function to convert probes to loci and also de-duplicate loci (by combining probeID with the genomic loci)
+#this is made for the assemble_plots function (the same code was more or less being used twice, so to reduce lines of code, it was made into one function)
+rename_probes_to_loci_and_de_duplicate_if_needed <- function(probes.list.or.betas, probes) {
+    
+    
+    probes <- GenomicRanges::as.data.frame(probes)
+    probes["genomic.loci"] <-  paste0(probes$seqnames, ":", probes$start, "-", probes$end)
+probes["probes"] <-  rownames(probes)
+
+  #converting probes to genomic loci in probes.list.or.betas 'rownames' //START
+  probes.list.or.betas <- GenomicRanges::as.data.frame(probes.list.or.betas)
+probes.list.or.betas["probes"] <- rownames(probes.list.or.betas)
+
+  probes.list.or.betas  <- merge(probes[c("genomic.loci", "probes")], probes.list.or.betas, by = "probes")
+
+  #below 'if/else statement' will determine if any genomic loci coordinates are repeated, if so, de-duplicate by paste0'ing together probe_ID and genomic loci by an '_' in between and setting that to the row.name, instead of just the genomic.loci
+  #for duplicates only, the paste0'd (combined probe_ID and genomic loci coordinates) will be their heatmap "x-axis", otherwise only genomic loci coordinate will be used
+if (any(duplicated(probes.list.or.betas$genomic.loci))) {
+  
+  #identifies *all* duplicate loci - by marking TRUE in the column "redundant_loci" for the corresponding row
+  probes.list.or.betas[probes.list.or.betas$genomic.loci %in% unique(probes.list.or.betas[duplicated(probes.list.or.betas$genomic.loci),"genomic.loci"]), "redundant_loci"] <- "TRUE"
+  
+  #wherever there is TRUE in redundant loci, probe and genomic loci and combined via paste0 with a '_' delimiter in between - and then the rowname is changed to the paste0 output
+  rownames(probes.list.or.betas)[which(probes.list.or.betas$redundant_loci == TRUE)] <- paste0(probes.list.or.betas[which(probes.list.or.betas$redundant_loci == TRUE),"probes"], "_", probes.list.or.betas[which(probes.list.or.betas$redundant_loci == TRUE),"genomic.loci"])
+  
+      #wherevere there is an NA in "redunant_loci" column change (where no duplicates exist) - change the rowname to the genomic loci
+    rownames(probes.list.or.betas)[which(is.na(probes.list.or.betas$redundant_loci))] <- probes.list.or.betas[which(is.na(probes.list.or.betas$redundant_loci)), "genomic.loci"]
+  
+      #NULL/clear out redundant loci column
+      probes.list.or.betas$redundant_loci <- NULL
+     probes.list.or.betas
+
+  } else {
+
+    row.names(probes.list.or.betas) <- probes.list.or.betas$genomic.loci
+  }
+  probes.list.or.betas$probes <- NULL
+  probes.list.or.betas$genomic.loci <- NULL
+  probes.list.or.betas <- as.matrix(probes.list.or.betas)
+  #converting probes to genomic loci in probes.list.or.betas 'rownames' //END
+  probes.list.or.betas
+}
 
 #' assemble plots
 #'
@@ -150,9 +193,13 @@ plotCytoBand <- function(
 assemble_plots <- function(
     betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband,
     heat.height = NULL, 
-    show.probeNames = TRUE, show.samples.n = NULL,
+    show.probeNames = TRUE, show.samples.n = NULL, replace.probes.with.loci = TRUE,
     show.sampleNames = TRUE, sample.name.fontsize = 10,
     dmin = 0, dmax = 1) {
+    
+    if (replace.probes.with.loci) {
+    betas <- rename_probes_to_loci_and_de_duplicate_if_needed(betas, probes)
+    }
     
     if (is.null(show.samples.n)) { show.samples.n <- ncol(betas); }
     if (is.null(heat.height) && length(txns) > 0) {
