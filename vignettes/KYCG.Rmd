@@ -56,7 +56,7 @@ Now test the enrichment over database groups. By default, KYCG will select all
 the categorical groups and overlapping genes (CpGs associated with a gene).
 
 ```{r ky3, fig.width=8, fig.height=5, message=FALSE}
-results_pgc <- testEnrichment(query)
+results_pgc <- testEnrichment(query, platform="MM285")
 head(results_pgc)
 ```
 
@@ -110,12 +110,12 @@ library(SummarizedExperiment)
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
 
-results <- testEnrichment(query, "TFBS")
+results <- testEnrichment(query, "TFBS", platform="MM285")
 results %>% dplyr::filter(overlap>10) %>% head
 
 ## prepare another query
 query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
-results <- testEnrichment(query, "TFBS")
+results <- testEnrichment(query, "TFBS", platform="MM285")
 results %>% dplyr::filter(overlap>10) %>%
     dplyr::select(dbname, estimate, test, FDR) %>% head
 ```
@@ -221,7 +221,9 @@ enrichment tests. We can perform this analysis using the
 
 ```{r ky16, fig.width=7, fig.height=6, echo=TRUE, warning=FALSE, message=FALSE}
 query <- names(sesameData_getProbesByGene("Dnmt3a", "MM285"))
-results <- testEnrichment(query, KYCG_buildGeneDBs(query, max_distance=100000))
+results <- testEnrichment(query, 
+    KYCG_buildGeneDBs(query, max_distance=100000, platform="MM285"),
+    platform="MM285")
 results[,c("dbname","estimate","gene_name","FDR", "nQ", "nD", "overlap")]
 ```
 
@@ -240,7 +242,7 @@ One can get all the genes associated with a probe set by
 ```{r ky18, message=FALSE}
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
-genes <- sesameData_getGenesByProbes(query)
+genes <- sesameData_getGenesByProbes(query, platform="MM285")
 genes
 ```
 

@@ -12,11 +12,17 @@
 #' @param sdfs.normal a list of \code{SigDF}s for normalization, if not given,
 #' use the stored normal data from sesameData. However, we do recommend using
 #' a matched copy number normal dataset for normalization.
-#' @param genome hg38, mm10, ..., will infer if not given.
+#' assembly
+#' @param genomeInfo the genomeInfo files. The default is retrieved from
+#' sesameData. Alternative genomeInfo files can be found at
+#' https://github.com/zhou-lab/GenomeInfo
+#' @param probeCoords the probe coordinates in the corresponding genome
+#' if NULL (default), then the default genome assembly is used.
+#' Default genome is given by, e.g., sesameData_check_genome(NULL, "EPIC")
 #' For additional mapping, download the GRanges object from
 #' http://zwdzwd.github.io/InfiniumAnnotation
 #' and provide the following argument
-#' ..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+#' ..., probeCoords = sesameAnno_buildManifestGRanges("downloaded_file"),...
 #' to this function.
 #' @param verbose print more messages
 #' @return an object of \code{CNSegment}
@@ -30,14 +36,12 @@
 #'
 #' @export
 cnSegmentation <- function(
-    sdf, sdfs.normal=NULL, genome=NULL, verbose = FALSE) {
-
+    sdf, sdfs.normal=NULL, genomeInfo=NULL,
+    probeCoords=NULL, verbose = FALSE) {
+    
     stopifnot(is(sdf, "SigDF"))
     platform <- sdfPlatform(sdf, verbose = verbose)
-    genome <- sesameData_check_genome(genome, platform)
-    if (verbose) {
-        message(sprintf("Use coordinate on genome: %s", genome)) }
-
+    
     if (is.null(sdfs.normal)) {
         if (platform == "EPIC") {
             sdfs.normal <- sesameDataGet("EPIC.5.SigDF.normal")
@@ -46,11 +50,16 @@ cnSegmentation <- function(
         }
     }
     
-    ## retrieve chromosome info and probe coordinates
-    genomeInfo <- sesameData_getGenomeInfo(genome)
+    if (is.null(genomeInfo)) { # genome/chromosome info
+        genome <- sesameData_check_genome(NULL, platform)
+        genomeInfo <- sesameData_getGenomeInfo(genome)
+    }
+    if (is.null(probeCoords)) { # probe coordinates
+        genome <- sesameData_check_genome(NULL, platform)
+        probeCoords <- sesameData_getManifestGRanges(platform, genome = genome)
+    }
     seqLength <- genomeInfo$seqLength
     gapInfo <- genomeInfo$gapInfo
-    probe.coords <- sesameData_getManifestGRanges(platform, genome = genome)
     
     ## extract intensities
     target.intens <- totalIntensities(sdf)
@@ -59,10 +68,10 @@ cnSegmentation <- function(
 
     ## find overlapping probes
     pb <- intersect(rownames(normal.intens), names(target.intens))
-    pb <- intersect(names(probe.coords), pb)
+    pb <- intersect(names(probeCoords), pb)
     target.intens <- target.intens[pb]
     normal.intens <- normal.intens[pb,]
-    probe.coords <- probe.coords[pb]
+    probeCoords <- probeCoords[pb]
     
     ## normalize probes intensities
     fit <- lm(y~., data=data.frame(y=target.intens, X=normal.intens))
@@ -70,8 +79,8 @@ cnSegmentation <- function(
 
     ## bin signals
     ## fix bin coordinates, TODO: this is too time-consuming
-    bin.coords <- getBinCoordinates(seqLength, gapInfo, probe.coords)
-    bin.signals <- binSignals(probe.signals, bin.coords, probe.coords)
+    bin.coords <- getBinCoordinates(seqLength, gapInfo, probeCoords)
+    bin.signals <- binSignals(probe.signals, bin.coords, probeCoords)
 
     ## segmentation
     structure(list(
@@ -138,9 +147,9 @@ leftRightMerge1 <- function(chrom.windows, min.probes.per.bin=20) {
 #' 
 #' @param seqLength chromosome information object
 #' @param gapInfo chromosome gap information
-#' @param probe.coords probe coordinates
+#' @param probeCoords probe coordinates
 #' @return bin.coords
-getBinCoordinates <- function(seqLength, gapInfo, probe.coords) {
+getBinCoordinates <- function(seqLength, gapInfo, probeCoords) {
 
     tiles <- sort(GenomicRanges::tileGenome(
         seqLength, tilewidth=50000, cut.last.tile.in.chrom = TRUE))
@@ -150,7 +159,7 @@ getBinCoordinates <- function(seqLength, gapInfo, probe.coords) {
         GenomicRanges::setdiff(tiles[seq(2, length(tiles), 2)], gapInfo)))
     
     GenomicRanges::values(tiles)$probes <-
-        GenomicRanges::countOverlaps(tiles, probe.coords)
+        GenomicRanges::countOverlaps(tiles, probeCoords)
     
     bin.coords <- do.call(rbind, lapply(
         split(tiles, as.vector(GenomicRanges::seqnames(tiles))),
@@ -182,17 +191,17 @@ getBinCoordinates <- function(seqLength, gapInfo, probe.coords) {
 #' 
 #' @param probe.signals probe signals
 #' @param bin.coords bin coordinates
-#' @param probe.coords probe coordinates
+#' @param probeCoords probe coordinates
 #' @importFrom methods .hasSlot
 #' @return bin signals
-binSignals <- function(probe.signals, bin.coords, probe.coords) {
-    ov <- GenomicRanges::findOverlaps(probe.coords, bin.coords)
+binSignals <- function(probe.signals, bin.coords, probeCoords) {
+    ov <- GenomicRanges::findOverlaps(probeCoords, bin.coords)
     if (.hasSlot(ov, 'queryHits')) {
         .bins <- names(bin.coords)[ov@subjectHits]
-        .probe.signals <- probe.signals[names(probe.coords)[ov@queryHits]]
+        .probe.signals <- probe.signals[names(probeCoords)[ov@queryHits]]
     } else {
         .bins <- names(bin.coords)[ov@to]
-        .probe.signals <- probe.signals[names(probe.coords)[ov@from]]
+        .probe.signals <- probe.signals[names(probeCoords)[ov@from]]
     }
 
     bin.signals <- vapply(split(.probe.signals, .bins), median, 1, na.rm=TRUE)

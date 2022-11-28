@@ -393,11 +393,13 @@ DMGetProbeInfo <- function(platform, genome) {
 #' @param seg.per.locus number of segments per locus
 #' higher value leads to more segments
 #' @param platform EPIC, HM450, MM285, ...
-#' @param genome hg38, mm10, ..., will infer if not given.
+#' @param probe.coords GRanges object that defines CG coordinates
+#' if NULL (default), then the default genome assembly is used.
+#' Default genome is given by, e.g., sesameData_check_genome(NULL, "EPIC")
 #' For additional mapping, download the GRanges object from
 #' http://zwdzwd.github.io/InfiniumAnnotation
 #' and provide the following argument
-#' ..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+#' ..., probe.coords = sesameAnno_buildManifestGRanges("downloaded_file"),...
 #' to this function.
 #' @return coefficient table with segment ID and segment P-value
 #' each row is a locus, multiple loci may share a segment ID if
@@ -412,27 +414,27 @@ DMGetProbeInfo <- function(platform, genome) {
 #' smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 #' colnames(attr(smry, "model.matrix")) # pick a contrast from here
 #' ## showing on a small set of 100 CGs
-#' merged_segs <- DMR(data$betas[1:100,], smry, "typeTumour")
+#' merged_segs <- DMR(data$betas[1:1000,], smry, "typeTumour", platform="HM450")
 #'
 #' sesameDataGet_resetEnv()
 #' 
 #' @export
 DMR <- function(betas, smry, contrast,
-    platform=NULL, genome=NULL, dist.cutoff=NULL, seg.per.locus=0.5) {
+    platform=NULL, probe.coords=NULL, dist.cutoff=NULL, seg.per.locus=0.5) {
 
     stopifnot(is(smry, "DMLSummary"))
-    if (is.null(platform)) {
-        platform <- inferPlatformFromProbeIDs(rownames(betas))
-    }
-    
-    genome <- sesameData_check_genome(genome, platform)
-
     if(is(betas, "SummarizedExperiment")) {
         betas <- assay(betas)
     }
 
     ## sort by coordinates
-    probe.coords <- DMGetProbeInfo(platform, genome)
+    if (is.null(probe.coords)) {
+        if (is.null(platform)) {
+            platform <- inferPlatformFromProbeIDs(rownames(betas))
+        }
+        genome <- sesameData_check_genome(NULL, platform)
+        probe.coords <- DMGetProbeInfo(platform, genome)
+    }
     message("Merging correlated CpGs ... ", appendLF=FALSE)
     segs <- dmr_merge_cpgs(betas, probe.coords, dist.cutoff, seg.per.locus)
     message(sprintf('Generated %d segments.', segs$id[length(segs$id)]))

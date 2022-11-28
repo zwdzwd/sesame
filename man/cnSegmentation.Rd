@@ -4,20 +4,33 @@
 \alias{cnSegmentation}
 \title{Perform copy number segmentation}
 \usage{
-cnSegmentation(sdf, sdfs.normal = NULL, genome = NULL, verbose = FALSE)
+cnSegmentation(
+  sdf,
+  sdfs.normal = NULL,
+  genomeInfo = NULL,
+  probeCoords = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{sdf}{\code{SigDF}}
 
 \item{sdfs.normal}{a list of \code{SigDF}s for normalization, if not given,
 use the stored normal data from sesameData. However, we do recommend using
-a matched copy number normal dataset for normalization.}
+a matched copy number normal dataset for normalization.
+assembly}
 
-\item{genome}{hg38, mm10, ..., will infer if not given.
+\item{genomeInfo}{the genomeInfo files. The default is retrieved from
+sesameData. Alternative genomeInfo files can be found at
+https://github.com/zhou-lab/GenomeInfo}
+
+\item{probeCoords}{the probe coordinates in the corresponding genome
+if NULL (default), then the default genome assembly is used.
+Default genome is given by, e.g., sesameData_check_genome(NULL, "EPIC")
 For additional mapping, download the GRanges object from
 http://zwdzwd.github.io/InfiniumAnnotation
 and provide the following argument
-..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+..., probeCoords = sesameAnno_buildManifestGRanges("downloaded_file"),...
 to this function.}
 
 \item{verbose}{print more messages}

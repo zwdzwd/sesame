@@ -9,7 +9,7 @@ DMR(
   smry,
   contrast,
   platform = NULL,
-  genome = NULL,
+  probe.coords = NULL,
   dist.cutoff = NULL,
   seg.per.locus = 0.5
 )
@@ -24,11 +24,13 @@ check colnames(attr(smry, "model.matrix")) if uncertain}
 
 \item{platform}{EPIC, HM450, MM285, ...}
 
-\item{genome}{hg38, mm10, ..., will infer if not given.
+\item{probe.coords}{GRanges object that defines CG coordinates
+if NULL (default), then the default genome assembly is used.
+Default genome is given by, e.g., sesameData_check_genome(NULL, "EPIC")
 For additional mapping, download the GRanges object from
 http://zwdzwd.github.io/InfiniumAnnotation
 and provide the following argument
-..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
+..., probe.coords = sesameAnno_buildManifestGRanges("downloaded_file"),...
 to this function.}
 
 \item{dist.cutoff}{cutoff of beta value differences for two neighboring CGs
@@ -59,7 +61,7 @@ data <- sesameDataGet('HM450.76.TCGA.matched')
 smry <- DML(data$betas[1:1000,], ~type, meta=data$sampleInfo)
 colnames(attr(smry, "model.matrix")) # pick a contrast from here
 ## showing on a small set of 100 CGs
-merged_segs <- DMR(data$betas[1:100,], smry, "typeTumour")
+merged_segs <- DMR(data$betas[1:1000,], smry, "typeTumour", platform="HM450")
 
 sesameDataGet_resetEnv()
 

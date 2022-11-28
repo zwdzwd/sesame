@@ -231,7 +231,7 @@ difference. To do this, we need to pick a contrast:
 
 ```{r model13, eval=TRUE}
 dmContrasts(smry)                       # pick a contrast from below
-merged = DMR(se, smry, "sexMale")       # merge CpGs to regions / segments
+merged = DMR(se, smry, "sexMale", platform="MM285") # merge CpGs to regions
 merged %>% dplyr::filter(Seg_Pval_adj < 0.01)
 ```
 

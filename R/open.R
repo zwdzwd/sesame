@@ -104,9 +104,13 @@ wrap_openSesame <- function(x, ret) {
 #' @return a numeric vector for processed beta values
 #' @import BiocParallel
 #' @examples
-#' IDATprefixes <- searchIDATprefixes(
-#'     system.file("extdata", "", package = "sesameData"))
+#'
+#' in_dir <- system.file("extdata", "", package = "sesameData")
+#' betas <- openSesame(in_dir)
+#' ## or
+#' IDATprefixes <- searchIDATprefixes(in_dir)
 #' betas <- openSesame(IDATprefixes)
+#'
 #' @export
 openSesame <- function(
     x, prep = "QCDPB", prep_args = NULL, manifest = NULL,

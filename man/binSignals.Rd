@@ -4,14 +4,14 @@
 \alias{binSignals}
 \title{Bin signals from probe signals}
 \usage{
-binSignals(probe.signals, bin.coords, probe.coords)
+binSignals(probe.signals, bin.coords, probeCoords)
 }
 \arguments{
 \item{probe.signals}{probe signals}
 
 \item{bin.coords}{bin coordinates}
 
-\item{probe.coords}{probe coordinates}
+\item{probeCoords}{probe coordinates}
 }
 \value{
 bin signals

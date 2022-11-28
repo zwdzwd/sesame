@@ -44,7 +44,11 @@ If the input is an IDAT prefix or a \code{SigDF}, the output is
 the beta value numerics.
 }
 \examples{
-IDATprefixes <- searchIDATprefixes(
-    system.file("extdata", "", package = "sesameData"))
+
+in_dir <- system.file("extdata", "", package = "sesameData")
+betas <- openSesame(in_dir)
+## or
+IDATprefixes <- searchIDATprefixes(in_dir)
 betas <- openSesame(IDATprefixes)
+
 }

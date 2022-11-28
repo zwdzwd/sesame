@@ -43,11 +43,15 @@
 sesameAnno_get <- function(title,
     return_path = FALSE,
     version = 1) {
-    
-    rpath <- paste(
-        "https://github.com/zhou-lab",
-        sprintf("InfiniumAnnotationV%d", version),
-        "raw/main", title, sep="/")
+
+    if (startsWith(title, "http")) {
+        rpath <- title
+    } else {
+        rpath <- paste(
+            "https://github.com/zhou-lab",
+            sprintf("InfiniumAnnotationV%d", version),
+            "raw/main", title, sep="/")
+    }
     
     path <- bfcrpath(BiocFileCache(), rpath)
     if (return_path) { return(path); }
@@ -136,13 +140,16 @@ guess_chrmorder <- function(chrms) {
 #' ## download tsv directly from
 #' ## http://zwdzwd.github.io/InfiniumAnnotation or
 #' ## genome <- sesameAnno_buildManifestGRanges("downloaded_file")
+#' ## genome <- sesameAnno_buildManifestGRanges("url")
 #' @export
 sesameAnno_buildManifestGRanges <- function(
-    tsv, genome, decoy = FALSE, columns = NULL) {
+    tsv, genome = NULL, decoy = FALSE, columns = NULL) {
 
     if (is.character(tsv)) { # file path
         if (file.exists(tsv)) {
             tsv <- sesameAnno_readManifestTSV(tsv)
+        } else if (startsWith(tsv, "http")) {
+            tsv <- sesameAnno_get(tsv)
         } else {
             platform <- tsv
             if (is.null(genome)) {
@@ -158,7 +165,7 @@ sesameAnno_buildManifestGRanges <- function(
     
     chrms <- tsv$CpG_chrm
     chrms <- chrms[!is.na(chrms)]
-    if (genome %in% c("mm10","mm39","hg19","hg38")) {
+    if (!is.null(genome) && genome %in% c("mm10","mm39","hg19","hg38")) {
         if (decoy) { chrms <- c(
             guess_chrmorder(chrms[!grepl("_", chrms)]),
             sort(unique(chrms[grepl("_", chrms)])))

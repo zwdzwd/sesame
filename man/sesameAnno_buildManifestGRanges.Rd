@@ -4,7 +4,12 @@
 \alias{sesameAnno_buildManifestGRanges}
 \title{Build manifest GRanges from tsv}
 \usage{
-sesameAnno_buildManifestGRanges(tsv, genome, decoy = FALSE, columns = NULL)
+sesameAnno_buildManifestGRanges(
+  tsv,
+  genome = NULL,
+  decoy = FALSE,
+  columns = NULL
+)
 }
 \arguments{
 \item{tsv}{a file path, a platform (e.g., EPIC), or
@@ -24,6 +29,7 @@ GRanges
 ## download tsv directly from
 ## http://zwdzwd.github.io/InfiniumAnnotation or
 ## genome <- sesameAnno_buildManifestGRanges("downloaded_file")
+## genome <- sesameAnno_buildManifestGRanges("url")
 }
 \description{
 Build manifest GRanges from tsv
