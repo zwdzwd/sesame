@@ -23,7 +23,7 @@ plot enrichment test result
 }
 \examples{
 query <- KYCG_getDBs("MM285.designGroup")[["PGCMeth"]]
-res <- testEnrichment(query)
+res <- testEnrichment(query, platform="MM285")
 KYCG_plotEnrichAll(res)
 
 }

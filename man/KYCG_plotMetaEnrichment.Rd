@@ -19,7 +19,7 @@ Plot meta gene or other meta genomic features
 cg_lists <- KYCG_getDBs("MM285.TFBS")
 queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
 result_list <- lapply(queries, testEnrichment,
-    "MM285.metagene", silent=TRUE)
+    "MM285.metagene", silent=TRUE, platform="MM285")
 
 KYCG_plotMetaEnrichment(result_list)
 }

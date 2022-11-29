@@ -10,7 +10,7 @@
 #' @import ggplot2
 #' @examples
 #' query <- KYCG_getDBs("MM285.designGroup")[["PGCMeth"]]
-#' res <- testEnrichment(query)
+#' res <- testEnrichment(query, platform="MM285")
 #' KYCG_plotEnrichAll(res)
 #' 
 #' @export
@@ -262,7 +262,7 @@ KYCG_plotLollipop <- function(df, label_column="dbname", n=20) {
 #' library(SummarizedExperiment)
 #' df <- rowData(sesameDataGet('MM285.tissueSignature'))
 #' query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
-#' results <- testEnrichment(query, "TFBS")
+#' results <- testEnrichment(query, "TFBS", platform="MM285")
 #' KYCG_plotWaterfall(results)
 #' 
 #' @export
@@ -293,7 +293,7 @@ KYCG_plotWaterfall <- function(df, n_label = 10, label_column="dbname") {
 #' cg_lists <- KYCG_getDBs("MM285.TFBS")
 #' queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
 #' result_list <- lapply(queries, testEnrichment,
-#'     "MM285.metagene", silent=TRUE)
+#'     "MM285.metagene", silent=TRUE, platform="MM285")
 #' 
 #' KYCG_plotMetaEnrichment(result_list)
 #' @export
@@ -374,7 +374,8 @@ KYCG_plotMeta <- function(betas, platform = NULL) {
 #' cg_lists <- KYCG_getDBs("MM285.TFBS")
 #' queries <- cg_lists[(sapply(cg_lists, length) > 40000)]
 
-#' result_list <- lapply(queries, testEnrichment, "MM285.chromHMM")
+#' result_list <- lapply(queries, testEnrichment,
+#'     "MM285.chromHMM", platform="MM285")
 #' KYCG_plotPointRange(result_list)
 #' 
 #' @export

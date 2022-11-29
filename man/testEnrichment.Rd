@@ -46,7 +46,7 @@ a number of features (database sets).
 library(SummarizedExperiment)
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 query <- df$Probe_ID[df$branch == "B_cell"]
-res <- testEnrichment(query, "chromHMM")
+res <- testEnrichment(query, "chromHMM", platform="MM285")
 sesameDataGet_resetEnv()
 
 }

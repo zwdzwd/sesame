@@ -25,7 +25,7 @@ create a waterfall plot of log(estimate) given test enrichment
 library(SummarizedExperiment)
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 query <- df$Probe_ID[df$branch == "fetal_brain" & df$type == "Hypo"]
-results <- testEnrichment(query, "TFBS")
+results <- testEnrichment(query, "TFBS", platform="MM285")
 KYCG_plotWaterfall(results)
 
 }
