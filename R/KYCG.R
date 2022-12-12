@@ -254,8 +254,8 @@ testEnrichmentFisherN <- function(
     }
     
     odds_ratio <- nDQ / nQmD / nDmQ * nUmDQ # can be NaN if 0
-    if (odds_ratio == Inf) { odds_ratio = .Machine$double.xmax; }
-    if (odds_ratio == 0) { odds_ratio = .Machine$double.xmin; }
+    odds_ratio[odds_ratio == Inf] <- .Machine$double.xmax
+    odds_ratio[odds_ratio == 0] <- .Machine$double.xmin
     data.frame(
         estimate = log2(odds_ratio),
         p.value = 10**(log10.p.value),
