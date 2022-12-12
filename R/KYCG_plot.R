@@ -66,7 +66,7 @@ KYCG_plotEnrichAll <- function(
 preparePlotDF <- function(df, n_min, n_max, max_fdr) {
     df <- df[df$nD >0,]
     df$FDR[df$FDR==0] <- .Machine$double.xmin
-    df <- df[order(df$FDR),]
+    df <- df[order(df$FDR, -df$estimate),]
     if (sum(df$FDR < max_fdr) < n_min) {
         df1 <- head(df, n=n_min)
     } else {

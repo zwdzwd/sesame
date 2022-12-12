@@ -216,34 +216,53 @@ KYCG_buildGeneDBs <- function(
 testEnrichmentFisher <- function(query, database, universe,
     alternative = "greater") {
 
-    l_d <- length(database)
-    l_q <- length(query)
-    qd <- length(intersect(query, database))
-    dnq <- l_d - qd
-    qnd <- l_q - qd
-    nqd <- length(universe) - l_q - l_d + qd
+    nD <- length(database)
+    nQ <- length(query)
+    nDQ <- length(intersect(query, database))
+    nU <- length(universe)
+
+    testEnrichmentFisherN(nD, nQ, nDQ, nU, alternative = alternative)
+}
+
+testEnrichmentFisherN <- function(
+    nD, nQ, nDQ, nU, alternative = "greater") {
+    
+    nDmQ <- nD - nDQ
+    nQmD <- nQ - nDQ
+    nUmDQ <- nU - nQ - nD + nDQ
 
     if (alternative == "two.sided") {
-        pval_g <- phyper(qd-1, qd + qnd, nqd + dnq, dnq + qd,
+        pvg <- phyper(
+            nDQ-1, nDQ + nQmD, nUmDQ + nDmQ, nDmQ + nDQ,
             lower.tail = FALSE, log.p = TRUE) / log(10)
-        pval_l <- phyper(qd, qd + qnd, nqd + dnq, dnq + qd,
+        pvl <- phyper(
+            nDQ, nDQ + nQmD, nUmDQ + nDmQ, nDmQ + nDQ,
             lower.tail = TRUE, log.p = TRUE) / log(10)
-        log10.p.value <- pmin(pmin(pval_g, pval_l) + log(2), 0) / log(10)
+        log10.p.value <- pmin(pmin(pvg, pvl) + log(2), 0) / log(10)
         ## log10.p.value <- log10(fisher.test(matrix(c(
-        ##     qd, dnq, qnd, nqd), nrow = 2))$p.value)
+        ##     nDQ, nDmQ, nQmD, nUmDQ), nrow = 2))$p.value)
     } else if (alternative == "greater") {
-        log10.p.value <- phyper(qd-1, qd + qnd, nqd + dnq, dnq + qd,
+        log10.p.value <- phyper(
+            nDQ-1, nDQ + nQmD, nUmDQ + nDmQ, nDmQ + nDQ,
             lower.tail = FALSE, log.p = TRUE) / log(10)
     } else if (alternative == "less") {
-        log10.p.value <- phyper(qd, qd + qnd, nqd + dnq, dnq + qd,
+        log10.p.value <- phyper(
+            nDQ, nDQ + nQmD, nUmDQ + nDmQ, nDmQ + nDQ,
             lower.tail = TRUE, log.p = TRUE) / log(10)
-    } else { stop("alternative must be either greater, less or two-sided.") }
+    } else {
+        stop("alternative must be either greater, less or two-sided.")
+    }
     
-    odds_ratio <- qd / qnd / dnq * nqd # can be NaN if 0
+    odds_ratio <- nDQ / nQmD / nDmQ * nUmDQ # can be NaN if 0
     data.frame(
         estimate = log2(odds_ratio), p.value = 10**(log10.p.value),
-        log10.p.value = log10.p.value, test = "Log2(OR)",
-        nQ = length(query), nD = length(database), overlap = qd)
+        log10.p.value = log10.p.value,
+        test = "Log2(OR)",
+        nQ = nQ, nD = nD, overlap = nDQ,
+        cf_Jaccard = nDQ / (nD + nQmD),
+        cf_overlap = nDQ / pmin(nD, nQ), # Szymkiewicz–Simpson
+        cf_NPMI = (log2(nD * nQ / nU / nU) / log2(nDQ / nU)) - 1,
+        cf_SorensenDice = 2 * nDQ/(nQ + nQ))
 }
 
 calcES_Significance <- function(dCont, dDisc, permut=100, precise=FALSE) {
