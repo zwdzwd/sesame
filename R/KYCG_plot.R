@@ -63,25 +63,27 @@ KYCG_plotEnrichAll <- function(
             panel.grid.minor.x = element_blank())
 }
 
-preparePlotDF <- function(df, n_min, n_max, max_fdr) {
+preparePlotDF <- function(df, n, order_by) {
+    stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
     df <- df[df$nD >0,]
-    df$FDR[df$FDR==0] <- .Machine$double.xmin
-    df <- df[order(df$FDR, -df$estimate),]
-    if (sum(df$FDR < max_fdr) < n_min) {
-        df1 <- head(df, n=n_min)
+    df$FDR[df$FDR==0] <- .Machine$double.xmin # cap FDR
+    ord <- df[[order_by]]
+    if (order_by == "estimate") { ord <- -ord; }
+    df <- df[order(ord, -df$estimate),]
+    df1 <- head(df, n=n)
+
+    if ("group" %in% colnames(df1)) {
+        gp <- sprintf("%s~", vapply(str_split(
+            df1$group, "\\."), function(x) x[3], character(1)))
     } else {
-        df <- df[df$estimate > 0,] # enrichment only, exclude depletion
-        df1 <- df[df$FDR < max_fdr,]
-        df1 <- head(df1, n=n_max)
+        gp <- ""
     }
-    
-    gp <- vapply(str_split(df1$group, "\\."), function(x) x[3], character(1))
-    ## if ("Target" %in% colnames(df1)) {
-    ##     df1$db1 <- sprintf("%s: %s (%s)", gp, df1$Target, df1$dbname)
-    ## } else if ("gene_name" %in% colnames(df1) {
-    ##     df1$db1 <- sprintf(
-    ## } else {
-    df1$db1 <- sprintf("%s: %s", gp, df1$dbname)
+    ## TODO: make everything use dbname
+    if ("dbname" %in% colnames(df1)) {
+        df1$db1 <- paste0(gp, df1$dbname)
+    } else if ("feat" %in% colnames(df1)) { # genome-wide data
+        df1$db1 <- paste0(gp, df1$feat)
+    }
     df1$db1 <- factor(df1$db1, levels=rev(df1$db1))
     df1
 }
@@ -94,10 +96,9 @@ preparePlotDF <- function(df, n_min, n_max, max_fdr) {
 #' Top CG groups are determined by estimate (descending order).
 #'
 #' @param df KYCG result data frame
-#' @param n_min minimum number of databases to report
-#' @param n_max maximum number of databases to report
-#' @param max_fdr maximum FDR
-#' @param min_cap the minimum log2(OR), value below this are capped
+#' @param y the column to be plotted on y-axis
+#' @param n number of CG groups to plot
+#' @param order_by the column by which CG groups are ordered
 #' @return grid plot object
 #'
 #' @import ggplot2
@@ -106,23 +107,34 @@ preparePlotDF <- function(df, n_min, n_max, max_fdr) {
 #'   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=10,
 #'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #' @export
-KYCG_plotBar <- function(df, n_min = 10, n_max = 30,
-    max_fdr = 0.05, min_cap = -5) {
+KYCG_plotBar <- function(df, y = "-log10(FDR)",
+    n = 20, order_by = "FDR", label = FALSE) {
 
-    db1 <- FDR <- overlap <- estimate <- NULL
     stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
+    df1 <- preparePlotDF(df, n, order_by)
+    if (y == "-log10(FDR)") {
+        df1[["-log10(FDR)"]] <- -log10(df1$FDR)
+    }
 
-    df1 <- preparePlotDF(df, n_min, n_max, max_fdr)
-    p1 <- ggplot(df1, aes(db1, -log10(FDR))) + geom_bar(stat="identity") +
-        coord_flip() + ylab("-log10(P-value)") + xlab("CpG Group") +
-        geom_label(aes(x=db1, y=-log10(FDR)/2,
-            label=sprintf("N=%d", overlap)),
-            data = df1[df1$FDR < 0.05,], alpha=0.6, hjust=0.5)
-    p2 <- ggplot(df1, aes(db1, pmax(min_cap, estimate))) +
+    p <- ggplot(df1, aes_string("db1", y)) +
         geom_bar(stat="identity") +
-        coord_flip() + ylab("Log2(OR)") + xlab("") +
-        theme(axis.text.y = element_blank())
-    WGG(p1) + WGG(p2, RightOf(width=0.5, pad=0))
+        coord_flip() + ylab(y) + xlab("CpG Group")
+    
+    if (label) {
+        ## only significant ones are labeled
+        df1_label <- df1[df1$FDR < 0.05,]
+        df1_label$pos_label <- df1_label[[y]]/2
+        df1_label$label <- sprintf("N=%d", df1_label$overlap)
+        p <- p + geom_label(aes_string(
+            x="db1", y="pos_label", label="label"),
+            data = df1_label, alpha=0.6, hjust=0.5)
+    }
+    p
+    ## p2 <- ggplot(df1, aes_string("db1", "estimate")) +
+    ##     geom_bar(stat="identity") +
+    ##     coord_flip() + ylab("Log2(OR)") + xlab("") +
+    ##     theme(axis.text.y = element_blank())
+    ## WGG(p1) + WGG(p2, RightOf(width=0.5, pad=0))
 }
 
 
@@ -135,10 +147,12 @@ KYCG_plotBar <- function(df, n_min = 10, n_max = 30,
 #' Top CG groups are determined by estimate (descending order).
 #'
 #' @param df KYCG result data frame
-#' @param n_min minimum number of databases to report
-#' @param n_max maximum number of databases to report
-#' @param max_fdr maximum FDR
-#' @return grid plot object
+#' @param y the column to be plotted on y-axis
+#' @param n number of CG groups to plot
+#' @param order_by the column by which CG groups are ordered
+#' @param size_by the column by which CG group size plot
+#' @param color_by the column by which CG groups are colored
+#' @return grid plot object (by ggplot)
 #'
 #' @import ggplot2
 #' @examples
@@ -146,17 +160,19 @@ KYCG_plotBar <- function(df, n_min = 10, n_max = 30,
 #'   estimate=runif(10,0,10), FDR=runif(10,0,1), nD=runif(10,10,20),
 #'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #' @export
-KYCG_plotDot <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
+KYCG_plotDot <- function(df, y = "-log10(FDR)",
+    n = 20, order_by = "FDR",
+    size_by = "overlap", color_by = "estimate") {
 
-    db1 <- FDR <- overlap <- estimate <- NULL
-    stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
-
-    df1 <- preparePlotDF(df, n_min, n_max, max_fdr)
+    df1 <- preparePlotDF(df, n, order_by)
+    if (y == "-log10(FDR)") {
+        df1[["-log10(FDR)"]] <- -log10(df1$FDR)
+    }
     ggplot(df1) +
-        geom_point(aes(db1, -log10(FDR), size=overlap, color=estimate)) +
+        geom_point(aes_string("db1", y, size=size_by, color=color_by)) +
         coord_flip() + ggtitle("Enriched Databases") +
         scale_color_gradient(low="blue",high="red") +
-        ylab("-log10(FDR)") + xlab("")
+        ylab(y) + xlab("")
 }
 
 #' creates a volcano plot of -log2(p.value) and log(estimate)
@@ -164,7 +180,7 @@ KYCG_plotDot <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 #'
 #' @param data DataFrame where each field is a database name with two fields
 #' for the estimate and p.value.
-#' @param label_column column in df to be used as the label (default: dbname)
+#' @param label_by column in df to be used as the label (default: dbname)
 #' @param alpha Float representing the cut-off alpha value for the plot. 
 #' Optional. (Default: 0.05)
 #' @return ggplot volcano plot
@@ -176,15 +192,18 @@ KYCG_plotDot <- function(df, n_min = 10, n_max = 30, max_fdr = 0.05) {
 #'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #'
 #' @export
-KYCG_plotVolcano <- function(data, label_column="dbname", alpha=0.05) {
+KYCG_plotVolcano <- function(df, label_by="dbname", alpha=0.05) {
     ## suppress R CMD CHECK no visible binding warning
     estimate <- FDR <- label <- NULL
 
-    data$label <- data[[label_column]]
-    data <- data[data$estimate > -Inf,]
+    ## volcano plot cannot plot extreme effect size
+    df <- df[abs(df$estimate) < 1000,]
+    df[["-log10(FDR)"]] <- -log10(df$FDR)
+    df$Significance <- ifelse(
+        df$FDR < alpha, "Significant", "Not significant")
     ## TODO: replace with column specifying sig vs non sig
-    g <- ggplot(data=data, aes(x = estimate, y = -log10(FDR),
-        color = ifelse(FDR < alpha, "Significant", "Not significant")))
+    g <- ggplot(data=df,
+        aes_string(x = "estimate", y = "-log10(FDR)", color = "Significance"))
     g <- g + geom_point() + xlab("log2(OR)")
     g <- g + ylab("-log10 FDR") +
         scale_colour_manual(
@@ -192,8 +211,8 @@ KYCG_plotVolcano <- function(data, label_column="dbname", alpha=0.05) {
             values = c("Significant" = "red", "Not significant" = "black"))
     requireNamespace("ggrepel")
     g <- g + ggrepel::geom_text_repel(
-        data = subset(data, FDR < alpha & estimate > 0),
-        aes(label = label), size = 5,
+        data = df[df$FDR < alpha & df$estimate > 0,],
+        aes_string(label = label_by), size = 5,
         box.padding = unit(0.35, "lines"),
         point.padding = unit(0.3, "lines"),
         show.legend = FALSE)
@@ -231,10 +250,11 @@ KYCG_plotLollipop <- function(df, label_column="dbname", n=20) {
     cap_line <- max(allest) * 1.2
     df$estimate[df$estimate == Inf] <- cap
     
-    ggplot(df, aes(x = label, y = estimate, label = label)) +
+    ggplot(df, aes_string(x = "label", y = "estimate", label = "label")) +
         geom_hline(yintercept = 0) +
-        geom_segment(aes(y = 0, x = reorder(label, -estimate), 
-            yend = estimate, xend=label), color='black') +
+        geom_segment(aes(
+            x=reorder(label, -estimate), y=0,
+            yend=estimate, xend=label), color='black') +
         geom_point(fill="black", stat='identity', size=15,
             alpha=0.95, shape=21) +
         scale_fill_gradientn(name='Log2(OR)',
@@ -253,8 +273,10 @@ KYCG_plotLollipop <- function(df, label_column="dbname", n=20) {
 #'
 #' @param df data frame where each row is a database with test
 #' enrichment result
+#' @param order_by the column by which CG groups are ordered
+#' @param size_by the column by which CG group size plot
 #' @param n_label number of datapoints to label
-#' @param label_column column in df to be used as the label (default: dbname)
+#' @param label_by column in df to be used as the label (default: dbname)
 #' @return grid
 #' @import ggplot2
 #' @examples
@@ -266,23 +288,32 @@ KYCG_plotLollipop <- function(df, label_column="dbname", n=20) {
 #' KYCG_plotWaterfall(results)
 #' 
 #' @export
-KYCG_plotWaterfall <- function(df, n_label = 10, label_column="dbname") {
+KYCG_plotWaterfall <- function(df,
+    order_by="estimate", size_by="-log10(FDR)",
+    label_by="dbname", n_label=10) {
 
-    index <- estimate <- log10.p.value <- label <- NULL
-    df$label <- df[[label_column]]
-    
-    df <- df[order(df$estimate),]
+    df$label <- df[[label_by]]
+    if (size_by == "-log10(FDR)") {
+        df[["-log10(FDR)"]] <- -log10(df$FDR)
+    }
+    if (order_by == "estimate") {
+        message(sprintf("%d extremes are excluded.",
+            sum(abs(df$estimate) > 1000)))
+        df <- df[abs(df$estimate) < 1000,] # skip extremes
+    }
+
+    df <- df[order(df[[order_by]]),]
     df$index <- seq_len(nrow(df))
     
     requireNamespace("ggrepel")
-    ggplot(df, aes(index, estimate)) +
-        geom_point(aes(size=-log10.p.value), alpha=0.6) +
+    ggplot(df, aes_string("index", order_by)) +
+        geom_point(aes_string(size=size_by), alpha=0.6) +
         geom_hline(yintercept=0, linetype="dashed", color="grey60") +
         theme_minimal() + ylab("Log2(OR)") + xlab("Databases") +
         ggrepel::geom_text_repel(
             data = df[head(order(df$log10.p.value),
                 n = min(n_label, nrow(df)*0.5)),],
-            aes(label=label), nudge_x=-nrow(df)/10)
+            aes_string(label="label"), nudge_x=-nrow(df)/10)
 }
 
 #' Plot meta gene or other meta genomic features
@@ -388,11 +419,13 @@ KYCG_plotPointRange <- function(result_list) {
     df <- summarize(group_by(df, state), 
         ave = mean(pmax(-4, est),na.rm=TRUE),
         sd = sd(pmax(-10,est),na.rm=TRUE))
+    df$ymin = df$ave - df$sd
+    df$ymax = df$ave + df$sd
     
     df$state <- factor(df$state, levels = df$state[order(df$ave)])
     
     ggplot(df) +
-        geom_pointrange(aes(state, ave, ymin=ave-sd, ymax=ave+sd)) +
+        geom_pointrange(aes_string("state", "ave", ymin="ymin", ymax="ymax")) +
         geom_hline(yintercept=0, linetype='dashed') +
         ylab("Log2 Fold Enrichment") + xlab("") +
         scale_y_continuous(position="right") +
@@ -453,7 +486,7 @@ KYCG_plotManhattan <- function(
     df$seqnames <- factor(df$seqnames, levels=names(seqLength))
     requireNamespace("ggrepel")
     ggplot(df, aes_string(x="pos", y="val")) + 
-        geom_point(aes(color=seqnames), alpha=0.8, size=1.3) + 
+        geom_point(aes_string(color="seqnames"), alpha=0.8, size=1.3) + 
         ggrepel::geom_text_repel(data=df[df$val > label_min,],
             aes_string(label="Probe_ID")) +
         scale_color_manual(values = rep(col, length(seqLength))) +
@@ -497,12 +530,12 @@ KYCG_plotSetEnrichment <- function(
 
     WGG(ggplot(data.frame(index=index, cs=cs[index])) +
         geom_segment(data=data.frame(pos=pos),
-            aes(x = pos, xend = pos, y = -0.02, yend = 0.02),
+            aes_string(x = "pos", xend = "pos", y = -0.02, yend = 0.02),
             color="grey50") +
-        geom_line(aes(x=index, y=cs), color="darkred") +
+        geom_line(aes_string(x="index", y="cs"), color="darkred") +
         xlab("") + ylab("ES(S)")) +
-    WGG(ggplot(data.frame(
-        index=index, var=dCont[index]), aes(x=index, y=var)) +
+    WGG(ggplot(data.frame(index=index, var=dCont[index]),
+        aes_string(x="index", y="var")) +
         geom_area() +
         xlab("CpGs") + ylab("Phenotype Var"), Beneath(height=0.5))
 }

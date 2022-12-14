@@ -64,6 +64,8 @@ The following code uses a directory that contains built-in two HM27 IDAT pairs
 to demonstrates the use of `openSesame`:
 
 ```{r base1, eval=FALSE}
+## The following use the idat_dir in system.file,
+## Replace it with your actual IDAT path
 idat_dir = system.file("extdata/", package = "sesameData")
 betas = openSesame(idat_dir, BPPARAM = BiocParallel::MulticoreParam(2))
 ```

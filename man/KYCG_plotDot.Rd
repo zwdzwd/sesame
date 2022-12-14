@@ -4,19 +4,30 @@
 \alias{KYCG_plotDot}
 \title{Dot plot to show most enriched CG groups from testEnrichment}
 \usage{
-KYCG_plotDot(df, n_min = 10, n_max = 30, max_fdr = 0.05)
+KYCG_plotDot(
+  df,
+  y = "-log10(FDR)",
+  n = 20,
+  order_by = "FDR",
+  size_by = "overlap",
+  color_by = "estimate"
+)
 }
 \arguments{
 \item{df}{KYCG result data frame}
 
-\item{n_min}{minimum number of databases to report}
+\item{y}{the column to be plotted on y-axis}
 
-\item{n_max}{maximum number of databases to report}
+\item{n}{number of CG groups to plot}
 
-\item{max_fdr}{maximum FDR}
+\item{order_by}{the column by which CG groups are ordered}
+
+\item{size_by}{the column by which CG group size plot}
+
+\item{color_by}{the column by which CG groups are colored}
 }
 \value{
-grid plot object
+grid plot object (by ggplot)
 }
 \description{
 The input data frame should have an "estimate" and

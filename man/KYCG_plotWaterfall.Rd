@@ -4,15 +4,25 @@
 \alias{KYCG_plotWaterfall}
 \title{create a waterfall plot of log(estimate) given test enrichment}
 \usage{
-KYCG_plotWaterfall(df, n_label = 10, label_column = "dbname")
+KYCG_plotWaterfall(
+  df,
+  order_by = "estimate",
+  size_by = "-log10(FDR)",
+  label_by = "dbname",
+  n_label = 10
+)
 }
 \arguments{
 \item{df}{data frame where each row is a database with test
 enrichment result}
 
-\item{n_label}{number of datapoints to label}
+\item{order_by}{the column by which CG groups are ordered}
 
-\item{label_column}{column in df to be used as the label (default: dbname)}
+\item{size_by}{the column by which CG group size plot}
+
+\item{label_by}{column in df to be used as the label (default: dbname)}
+
+\item{n_label}{number of datapoints to label}
 }
 \value{
 grid

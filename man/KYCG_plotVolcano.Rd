@@ -5,16 +5,16 @@
 \title{creates a volcano plot of -log2(p.value) and log(estimate)
 given data with fields estimate and p.value.}
 \usage{
-KYCG_plotVolcano(data, label_column = "dbname", alpha = 0.05)
+KYCG_plotVolcano(df, label_by = "dbname", alpha = 0.05)
 }
 \arguments{
-\item{data}{DataFrame where each field is a database name with two fields
-for the estimate and p.value.}
-
-\item{label_column}{column in df to be used as the label (default: dbname)}
+\item{label_by}{column in df to be used as the label (default: dbname)}
 
 \item{alpha}{Float representing the cut-off alpha value for the plot. 
 Optional. (Default: 0.05)}
+
+\item{data}{DataFrame where each field is a database name with two fields
+for the estimate and p.value.}
 }
 \value{
 ggplot volcano plot
