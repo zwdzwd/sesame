@@ -265,7 +265,7 @@ testEnrichmentFisherN <- function(
         cf_Jaccard = nDQ / (nD + nQmD),
         cf_overlap = nDQ / pmin(nD, nQ), # Szymkiewicz–Simpson
         cf_NPMI = (log2(nD)+log2(nQ)-2*log2(nU))/(log2(nDQ)-log2(nU))-1,
-        cf_SorensenDice = 2 * nDQ/(nQ + nQ))
+        cf_SorensenDice = 2 * nDQ/(nD + nQ))
 }
 
 calcES_Significance <- function(dCont, dDisc, permut=100, precise=FALSE) {
