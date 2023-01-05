@@ -518,7 +518,7 @@ KYCG_loadDBs <- function(in_paths) {
     } else {
         groupnms <- basename(in_paths)
     }
-    do.call(c, lapply(seq_along(groupnms), function(i) {
+    db_list <- do.call(c, lapply(seq_along(groupnms), function(i) {
         tbl <- read.table(in_paths[i],sep="\t",header=TRUE)
         dbs <- split(tbl$Probe_ID, tbl$Knowledgebase)
         lapply(names(dbs), function(dbname) {
@@ -527,6 +527,8 @@ KYCG_loadDBs <- function(in_paths) {
             attr(db1, "dbname") <- dbname;
             db1;})
     }))
+    names(db_list) <- vapply(db_list, function(x) attributes(x)$dbname, character(1))
+    db_list
 }
 
 #' Get databases by full or partial names of the database group(s)
