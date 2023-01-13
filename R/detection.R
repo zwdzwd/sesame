@@ -28,12 +28,15 @@ detectionIB <- function(
 
     ## the range to search for intermediate betas
     error_max_index <- min(
+        ## 1st window with few intermediate betas
         which(fmid <= sort(fmid)[1] + 0.01)[1],
-        which(df$MU > capMU)[1])
+        ## in case there are a lot of intermediate betas
+        which(df$MU > capMU)[1], na.rm=TRUE)
     df_err <- df[seq_len(error_max_index),]
-    errors <- df_err$MU[abs(df_err$beta - 0.5) < 0.2]
+    ## only the intermediate betas parameterize the background
+    bgs <- df_err$MU[abs(df_err$beta - 0.5) < 0.2]
     
-    pvals <- setNames(1-ecdf(errors)(df$MU), df$Probe_ID)
+    pvals <- setNames(1-ecdf(bgs)(df$MU), df$Probe_ID)
     pvals[is.na(pvals)] <- 1.0 # set NA to 1
 
     if (return.pval) { return(pvals) }
