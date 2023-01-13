@@ -31,7 +31,7 @@ detectionIB <- function(
         ## 1st window with few intermediate betas
         which(fmid <= sort(fmid)[1] + 0.01)[1],
         ## in case there are a lot of intermediate betas
-        which(df$MU > capMU)[1], na.rm=TRUE)
+        which(df$MU > capMU)[1], nrow(df), na.rm=TRUE)
     df_err <- df[seq_len(error_max_index),]
     ## only the intermediate betas parameterize the background
     bgs <- df_err$MU[abs(df_err$beta - 0.5) < 0.2]
