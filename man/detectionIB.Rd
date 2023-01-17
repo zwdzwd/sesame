@@ -8,7 +8,6 @@ detectionIB(
   sdf,
   return.pval = FALSE,
   pval.threshold = 0.05,
-  bw = "nrd0",
   capMU = 3000,
   delta.beta = 0.2,
   n.windows = 500
@@ -20,8 +19,6 @@ detectionIB(
 \item{return.pval}{whether to return p-values, instead of a SigDF}
 
 \item{pval.threshold}{minimum p-value to mask}
-
-\item{bw}{bandwidth for mode searching}
 
 \item{capMU}{the maximum M+U to search for intermediate betas}
 

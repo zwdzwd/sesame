@@ -4,7 +4,6 @@
 #' @param sdf a \code{SigDF}
 #' @param return.pval whether to return p-values, instead of a SigDF
 #' @param pval.threshold minimum p-value to mask
-#' @param bw bandwidth for mode searching
 #' @param capMU the maximum M+U to search for intermediate betas
 #' @param delta.beta the delta beta from the intermediate beta to cut
 #' @param n.windows number of windows for smoothing
@@ -15,31 +14,31 @@
 #' sum(detectionIB(sdf)$mask)
 #' @export
 detectionIB <- function(
-    sdf, return.pval = FALSE, pval.threshold = 0.05, bw = "nrd0",
+    sdf, return.pval = FALSE, pval.threshold = 0.05,
     capMU = 3000, delta.beta = 0.2, n.windows = 500) {
 
     df <- signalMU(sdf)
     df$MU <- df$M + df$U
     df$beta <- df$M / (df$M + df$U)
     df <- df[order(df$MU),]
-
+    
     thres <- 2**(seq(
         log2(1+df$MU[1]), log2(1+df$MU[nrow(df)]),
         length.out = n.windows))
-    groups <- cut(df$MU, breaks=thres)
-    idx <- groups %in% names(which(table(groups) > 100))
-    groups1 <- droplevels(groups[idx])
-    df1 <- df[idx,]
 
-    fmodes <- vapply(split(df1$beta, groups1), function(bt) {
-        if (length(bt) < 100) { NA }
-        else { with(density(bt, bw = bw), x[which.max(y)]) }
-    }, numeric(1))
-    fmode1 <- na.omit(fmodes)[1]
-    maxMU <- thres[which(levels(
-        groups) == names(fmodes[abs(fmodes - fmode1) > delta.beta])[1])]
+    rngs <- vapply(thres, function(t1) {
+        bt <- df$beta[df$MU > t1][1:500]
+        quantile(bt, c(0.1, 0.9), na.rm=TRUE)
+    }, numeric(2))
+
+    if (rngs[2,1] - rngs[1,1] > 0.3) { # missing negative probes
+        maxMU <- thres[1]
+    } else {
+        maxMU <- thres[rngs[1,] - rngs[1,1] < -delta.beta |
+                       rngs[2,] - rngs[2,1] > +delta.beta][1]
+    }
     maxMU <- min(maxMU, capMU)
-    
+
     bgs <- df$MU[df$MU < maxMU]
     pvals <- setNames(1-ecdf(bgs)(df$MU), df$Probe_ID)
     pvals[is.na(pvals)] <- 1.0 # set NA to 1
