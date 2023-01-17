@@ -21,13 +21,14 @@ detectionIB <- function(
     df$MU <- df$M + df$U
     df$beta <- df$M / (df$M + df$U)
     df <- df[order(df$MU),]
+    df1 <- df[!is.na(df$MU) & !is.nan(df$beta),]
     
     thres <- 2**(seq(
-        log2(1+df$MU[1]), log2(1+df$MU[nrow(df)]),
+        log2(1+df1$MU[1]), log2(1+df1$MU[nrow(df1)]),
         length.out = n.windows))
 
     rngs <- vapply(thres, function(t1) {
-        bt <- df$beta[df$MU > t1][1:500]
+        bt <- df1$beta[df1$MU > t1][1:500]
         quantile(bt, c(0.1, 0.9), na.rm=TRUE)
     }, numeric(2))
 
@@ -38,8 +39,7 @@ detectionIB <- function(
                        rngs[2,] - rngs[2,1] > +delta.beta][1]
     }
     maxMU <- min(maxMU, capMU)
-
-    bgs <- df$MU[df$MU < maxMU]
+    bgs <- df1$MU[df1$MU < maxMU]
     pvals <- setNames(1-ecdf(bgs)(df$MU), df$Probe_ID)
     pvals[is.na(pvals)] <- 1.0 # set NA to 1
 
