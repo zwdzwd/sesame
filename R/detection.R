@@ -4,8 +4,10 @@
 #' @param sdf a \code{SigDF}
 #' @param return.pval whether to return p-values, instead of a SigDF
 #' @param pval.threshold minimum p-value to mask
+#' @param bw bandwidth for mode searching
 #' @param capMU the maximum M+U to search for intermediate betas
-#' @param window window size for smoothing and beta fraction calc.
+#' @param delta.beta the delta beta from the intermediate beta to cut
+#' @param n.windows number of windows for smoothing
 #' @return a \code{SigDF} with mask added
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
@@ -13,8 +15,8 @@
 #' sum(detectionIB(sdf)$mask)
 #' @export
 detectionIB <- function(
-    sdf, return.pval = FALSE, pval.threshold = 0.05,
-    capMU = 3000, delta_beta = 0.3, nbins = 100) {
+    sdf, return.pval = FALSE, pval.threshold = 0.05, bw = "nrd0",
+    capMU = 3000, delta.beta = 0.2, n.windows = 500) {
 
     df <- signalMU(sdf)
     df$MU <- df$M + df$U
@@ -23,41 +25,22 @@ detectionIB <- function(
 
     thres <- 2**(seq(
         log2(1+df$MU[1]), log2(1+df$MU[nrow(df)]),
-        length.out=nbins))
+        length.out = n.windows))
     groups <- cut(df$MU, breaks=thres)
     idx <- groups %in% names(which(table(groups) > 100))
-    groups <- droplevels(groups[idx])
+    groups1 <- droplevels(groups[idx])
     df1 <- df[idx,]
 
-    fmodes <- vapply(split(df1$beta, groups), function(bt) {
+    fmodes <- vapply(split(df1$beta, groups1), function(bt) {
         if (length(bt) < 100) { NA }
-        else { with(density(bt), x[which.max(y)]) }
+        else { with(density(bt, bw = bw), x[which.max(y)]) }
     }, numeric(1))
-    fmode1 = na.omit(fmodes)[1]
-    maxMU = thres[which(levels(groups) == names(fmodes[abs(fmodes - fmode1) > delta_beta])[1])]
-    maxMU = min(maxMU, capMU)
+    fmode1 <- na.omit(fmodes)[1]
+    maxMU <- thres[which(levels(
+        groups) == names(fmodes[abs(fmodes - fmode1) > delta.beta])[1])]
+    maxMU <- min(maxMU, capMU)
     
-    df_err <- df[df$MU < maxMU,]
-    bgs <- df_err$MU
-
-    ## franges <- quantile(df$beta[1:100], c(0.1, 0.9))
-    ## ## fraction of the intermediate beta
-    ## fmid <- vapply(seq_len(nrow(df)-window), function(i) {
-    ##     ## sum(abs(df$beta[i:(i+window-1)] - 0.5)<0.1) / window;
-    ##     x <- df$beta[i:(i+window-1)]
-    ##     sum(x > franges[1] & x < franges[2], na.rm=TRUE) / window
-    ## }, numeric(1))
-
-    ## ## the range to search for intermediate betas
-    ## error_max_index <- min(
-    ##     ## 1st window with few intermediate betas
-    ##     which(fmid <= sort(fmid)[1] + 0.01)[1],
-    ##     ## in case there are a lot of intermediate betas
-    ##     which(df$MU > capMU)[1], nrow(df), na.rm=TRUE)
-    ## df_err <- df[seq_len(error_max_index),]
-    ## ## only the intermediate betas parameterize the background
-    ## bgs <- df_err$MU[abs(df_err$beta - 0.5) < 0.2]
-    
+    bgs <- df$MU[df$MU < maxMU]
     pvals <- setNames(1-ecdf(bgs)(df$MU), df$Probe_ID)
     pvals[is.na(pvals)] <- 1.0 # set NA to 1
 

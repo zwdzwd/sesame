@@ -8,8 +8,10 @@ detectionIB(
   sdf,
   return.pval = FALSE,
   pval.threshold = 0.05,
+  bw = "nrd0",
   capMU = 3000,
-  window = 100
+  delta.beta = 0.2,
+  n.windows = 500
 )
 }
 \arguments{
@@ -19,9 +21,13 @@ detectionIB(
 
 \item{pval.threshold}{minimum p-value to mask}
 
+\item{bw}{bandwidth for mode searching}
+
 \item{capMU}{the maximum M+U to search for intermediate betas}
 
-\item{window}{window size for smoothing and beta fraction calc.}
+\item{delta.beta}{the delta beta from the intermediate beta to cut}
+
+\item{n.windows}{number of windows for smoothing}
 }
 \value{
 a \code{SigDF} with mask added
