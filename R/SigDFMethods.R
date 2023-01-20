@@ -55,6 +55,41 @@ sdfMsg <- function(sdf, verbose, msg, ...) {
     sdf
 }
 
+#' report M and U for regular probes
+#'
+#' @param sdf a \code{SigDF}
+#' @param mask whether to apply mask
+#' @return a data frame of M and U columns
+#' @examples
+#' sesameDataCache() # if not done yet
+#' sdf <- sesameDataGet('EPIC.1.SigDF')
+#' head(signalMU(sdf))
+#' @export
+signalMU <- function(sdf, mask = TRUE) {
+    stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
+    dG <- InfIG(sdf); dR <- InfIR(sdf); d2 <- InfII(sdf)
+    sdf2 <- rbind(
+        data.frame(M = dG$MG, U = dG$UG, Probe_ID = dG$Probe_ID),
+        data.frame(M = dR$MR, U = dR$UR, Probe_ID = dR$Probe_ID),
+        data.frame(M = d2$UG, U = d2$UR, Probe_ID = d2$Probe_ID))
+    sdf2 <- sdf2[match(sdf$Probe_ID, sdf2$Probe_ID),]
+    if (mask) { sdf2 <- sdf2[!sdf$mask,] }
+    rownames(sdf2) <- NULL
+    sdf2
+}
+
+## out-of-band signal MU
+signalMU_oo <- function(sdf) {
+    stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
+    dG <- InfIG(sdf)
+    dR <- InfIR(sdf)
+    sdf2 <- rbind(
+        data.frame(M = dG$MR, U = dG$UR, Probe_ID = dG$Probe_ID),
+        data.frame(M = dR$MG, U = dR$UG, Probe_ID = dR$Probe_ID))
+    rownames(sdf2) <- NULL
+    sdf2
+}
+
 #' remove masked probes from SigDF
 #'
 #' @param sdf input SigDF object

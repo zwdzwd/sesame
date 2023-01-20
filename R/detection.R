@@ -1,4 +1,3 @@
-
 #' Mask detection by intermediate beta values
 #'
 #' @param sdf a \code{SigDF}
@@ -17,14 +16,14 @@ detectionIB <- function(
     sdf, return.pval = FALSE, pval.threshold = 0.05,
     capMU = 3000, delta.beta = 0.2, n.windows = 500) {
 
-    df <- signalMU(sdf)
+    df <- rbind(signalMU(sdf, mask=FALSE), signalMU_oo(sdf))
     df$MU <- df$M + df$U
     df$beta <- df$M / (df$M + df$U)
     df <- df[order(df$MU),]
     df1 <- df[!is.na(df$MU) & !is.nan(df$beta),]
     
     thres <- 2**(seq(
-        log2(1+df1$MU[1]), log2(1+df1$MU[nrow(df1)]),
+        log2(max(1,df1$MU[1]-1)), log2(df1$MU[nrow(df1)]+1),
         length.out = n.windows))
 
     rngs <- vapply(thres, function(t1) {
@@ -35,11 +34,22 @@ detectionIB <- function(
     if (rngs[2,1] - rngs[1,1] > 0.3) { # missing negative probes
         maxMU <- thres[1]
     } else {
-        maxMU <- thres[rngs[1,] - rngs[1,1] < -delta.beta |
-                       rngs[2,] - rngs[2,1] > +delta.beta][1]
+        t1 <- thres[rngs[1,] - rngs[1,1] < -delta.beta |
+                    rngs[2,] - rngs[2,1] > +delta.beta][1]
+        maxMU <- df1$MU[df1$MU > t1][500]
     }
     maxMU <- min(maxMU, capMU)
     bgs <- df1$MU[df1$MU < maxMU]
+
+    ## warn if background is not variable enough
+    rngs_bg <- quantile(bgs, c(0.1,0.9))
+    if (rngs_bg[2] - rngs_bg[1] < 10) {
+        warning(paste(
+            "Background signal lacks variation.",
+            "The detection masking may not be stringent enough.",
+            "Consider running dyeBiasNL immediately before this step."))
+    }
+    
     pvals <- setNames(1-ecdf(bgs)(df$MU), df$Probe_ID)
     pvals[is.na(pvals)] <- 1.0 # set NA to 1
 
