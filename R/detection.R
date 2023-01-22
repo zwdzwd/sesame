@@ -42,7 +42,7 @@ detectionIB <- function(
     bgs <- df1$MU[df1$MU < maxMU]
 
     ## warn if background is not variable enough
-    rngs_bg <- quantile(bgs, c(0.1,0.9))
+    rngs_bg <- quantile(bgs, c(0.1,0.9), na.rm=TRUE)
     if (rngs_bg[2] - rngs_bg[1] < 10) {
         warning(paste(
             "Background signal lacks variation.",
