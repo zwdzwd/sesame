@@ -226,8 +226,12 @@ getAFs <- function(sdf, ...) {
 
 inferPlatformFromTango <- function(res) {
     sig <- sesameDataGet('idatSignature')
-    names(which.max(vapply(
-        sig, function(x) sum(x %in% rownames(res$Quants)), integer(1))))
+    cnts <- vapply(
+        sig, function(x) sum(x %in% rownames(res$Quants)), integer(1))
+    if (max(cnts) < min(sapply(sig, length))) {
+        stop("Error, cannot infer platform. Please provide custom manifest.")
+    }
+    names(which.max(cnts))
 }
 
 ## Import one IDAT file
