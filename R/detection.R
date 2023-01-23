@@ -1,18 +1,19 @@
-#' Mask detection by intermediate beta values
+#' ELiminate BAckground-dominated Reading (ELBAR)
 #'
 #' @param sdf a \code{SigDF}
 #' @param return.pval whether to return p-values, instead of a SigDF
 #' @param pval.threshold minimum p-value to mask
 #' @param capMU the maximum M+U to search for intermediate betas
-#' @param delta.beta the delta beta from the intermediate beta to cut
+#' @param delta.beta maximum beta value change from
+#' sheer background-dominated readings
 #' @param n.windows number of windows for smoothing
 #' @return a \code{SigDF} with mask added
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
 #' sum(sdf$mask)
-#' sum(detectionIB(sdf)$mask)
+#' sum(ELBAR(sdf)$mask)
 #' @export
-detectionIB <- function(
+ELBAR <- function(
     sdf, return.pval = FALSE, pval.threshold = 0.05,
     capMU = 3000, delta.beta = 0.2, n.windows = 500) {
 
