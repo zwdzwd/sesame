@@ -18,17 +18,16 @@ ELBAR <- function(
     capMU = 3000, delta.beta = 0.2, n.windows = 500) {
 
     df <- rbind(signalMU(sdf, mask=FALSE), signalMU_oo(sdf))
-    df$MU <- df$M + df$U
-    df$beta <- df$M / (df$M + df$U)
+    df$MU <- df$M + df$U; df$beta <- df$M / (df$M + df$U)
     df <- df[order(df$MU),]
-    df1 <- df[!is.na(df$MU) & !is.nan(df$beta),]
+    df <- df[!is.na(df$MU) & !is.nan(df$beta),]
     
     thres <- 2**(seq(
-        log2(max(1,df1$MU[1]-1)), log2(df1$MU[nrow(df1)]+1),
+        log2(max(1,df$MU[1]-1)), log2(df$MU[nrow(df)]+1),
         length.out = n.windows))
 
     rngs <- vapply(thres, function(t1) {
-        bt <- df1$beta[df1$MU > t1][1:500]
+        bt <- df$beta[df$MU > t1][1:500]
         quantile(bt, c(0.1, 0.9), na.rm=TRUE)
     }, numeric(2))
 
@@ -37,10 +36,10 @@ ELBAR <- function(
     } else {
         t1 <- thres[rngs[1,] - rngs[1,1] < -delta.beta |
                     rngs[2,] - rngs[2,1] > +delta.beta][1]
-        maxMU <- df1$MU[df1$MU > t1][500]
+        maxMU <- df$MU[df$MU > t1][500]
     }
     maxMU <- min(maxMU, capMU)
-    bgs <- df1$MU[df1$MU < maxMU]
+    bgs <- df$MU[df$MU < maxMU]
 
     ## warn if background is not variable enough
     rngs_bg <- quantile(bgs, c(0.1,0.9), na.rm=TRUE)
@@ -50,7 +49,8 @@ ELBAR <- function(
             "The detection masking may not be stringent enough.",
             "Consider running dyeBiasNL immediately before this step."))
     }
-    
+
+    df <- signalMU(sdf, mask=FALSE); df$MU <- df$M + df$U
     pvals <- setNames(1-ecdf(bgs)(df$MU), df$Probe_ID)
     pvals[is.na(pvals)] <- 1.0 # set NA to 1
 
