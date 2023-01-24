@@ -3,6 +3,8 @@
 #' @param sdf a \code{SigDF}
 #' @param return.pval whether to return p-values, instead of a SigDF
 #' @param pval.threshold minimum p-value to mask
+#' @param margin the percentile margin to define envelope, the smaller
+#' the value the more aggressive the masking.
 #' @param capMU the maximum M+U to search for intermediate betas
 #' @param delta.beta maximum beta value change from
 #' sheer background-dominated readings
@@ -15,7 +17,7 @@
 #' @export
 ELBAR <- function(
     sdf, return.pval = FALSE, pval.threshold = 0.05,
-    capMU = 3000, delta.beta = 0.3, n.windows = 500) {
+    margin = 0.05, capMU = 3000, delta.beta = 0.3, n.windows = 500) {
 
     df <- rbind(
         signalMU(sdf, mask=FALSE, MU=TRUE), signalMU_oo(sdf, MU=TRUE))
@@ -29,7 +31,7 @@ ELBAR <- function(
 
     rngs <- vapply(thres, function(t1) {
         bt <- df$beta[df$MU > t1][1:500]
-        quantile(bt, c(0.02, 0.98), na.rm=TRUE)
+        quantile(bt, c(margin, 1-margin), na.rm=TRUE)
     }, numeric(2))
 
     if (rngs[2,1] - rngs[1,1] > 0.5) { # missing negative probes

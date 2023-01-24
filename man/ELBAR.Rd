@@ -8,6 +8,7 @@ ELBAR(
   sdf,
   return.pval = FALSE,
   pval.threshold = 0.05,
+  margin = 0.05,
   capMU = 3000,
   delta.beta = 0.3,
   n.windows = 500
@@ -19,6 +20,9 @@ ELBAR(
 \item{return.pval}{whether to return p-values, instead of a SigDF}
 
 \item{pval.threshold}{minimum p-value to mask}
+
+\item{margin}{the percentile margin to define envelope, the smaller
+the value the more aggressive the masking.}
 
 \item{capMU}{the maximum M+U to search for intermediate betas}
 
