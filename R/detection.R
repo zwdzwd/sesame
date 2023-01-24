@@ -29,27 +29,28 @@ ELBAR <- function(
 
     rngs <- vapply(thres, function(t1) {
         bt <- df$beta[df$MU > t1][1:500]
-        quantile(bt, c(0.1, 0.9), na.rm=TRUE)
+        quantile(bt, c(0.02, 0.98), na.rm=TRUE)
     }, numeric(2))
 
-    if (rngs[2,1] - rngs[1,1] > 0.3) { # missing negative probes
-        maxMU <- thres[1]
+    if (rngs[2,1] - rngs[1,1] > 0.5) { # missing negative probes
+        warning(paste("Background signal is dichotomous.",
+            "Consider running noob+dyeBiasNL before this step."))
+        maxMU <- df$MU[10]
     } else {
         t1 <- thres[rngs[1,] - rngs[1,1] < -delta.beta |
                     rngs[2,] - rngs[2,1] > +delta.beta][1]
         maxMU <- df$MU[df$MU > t1][500]
     }
-    maxMU <- min(maxMU, capMU)
-    df1 <- df[df$MU < maxMU,]
+    maxMU <- min(maxMU, capMU, na.rm=TRUE)
+    df1 <- df[df$MU <= maxMU,]
     bgs <- pmax(df1$M, df1$U, na.rm=TRUE)
 
     ## warn if background is not variable enough
     rngs_bg <- quantile(bgs, c(0.1,0.9), na.rm=TRUE)
-    if (rngs_bg[2] - rngs_bg[1] < 10) {
-        warning(paste(
-            "Background signal lacks variation.",
+    if (is.na(rngs_bg[1]) || rngs_bg[2] - rngs_bg[1] < 10) {
+        warning(paste("Background signal lacks variation.",
             "The detection masking may not be stringent enough.",
-            "Consider running dyeBiasNL immediately before this step."))
+            "Consider running noob+dyeBiasNL before this step."))
     }
 
     df <- signalMU(sdf, mask=FALSE)
