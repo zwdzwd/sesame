@@ -59,13 +59,14 @@ sdfMsg <- function(sdf, verbose, msg, ...) {
 #'
 #' @param sdf a \code{SigDF}
 #' @param mask whether to apply mask
+#' @param MU add a column for M+U
 #' @return a data frame of M and U columns
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' head(signalMU(sdf))
 #' @export
-signalMU <- function(sdf, mask = TRUE) {
+signalMU <- function(sdf, mask = TRUE, MU = FALSE) {
     stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
     dG <- InfIG(sdf); dR <- InfIR(sdf); d2 <- InfII(sdf)
     sdf2 <- rbind(
@@ -75,11 +76,12 @@ signalMU <- function(sdf, mask = TRUE) {
     sdf2 <- sdf2[match(sdf$Probe_ID, sdf2$Probe_ID),]
     if (mask) { sdf2 <- sdf2[!sdf$mask,] }
     rownames(sdf2) <- NULL
+    if (MU) { sdf2$MU <- sdf2$M + sdf2$U }
     sdf2
 }
 
 ## out-of-band signal MU
-signalMU_oo <- function(sdf) {
+signalMU_oo <- function(sdf, MU = FALSE) {
     stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
     dG <- InfIG(sdf)
     dR <- InfIR(sdf)
@@ -87,6 +89,7 @@ signalMU_oo <- function(sdf) {
         data.frame(M = dG$MR, U = dG$UR, Probe_ID = dG$Probe_ID),
         data.frame(M = dR$MG, U = dR$UG, Probe_ID = dR$Probe_ID))
     rownames(sdf2) <- NULL
+    if (MU) { sdf2$MU <- sdf2$M + sdf2$U }
     sdf2
 }
 

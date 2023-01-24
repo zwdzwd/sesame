@@ -9,7 +9,7 @@ ELBAR(
   return.pval = FALSE,
   pval.threshold = 0.05,
   capMU = 3000,
-  delta.beta = 0.2,
+  delta.beta = 0.3,
   n.windows = 500
 )
 }

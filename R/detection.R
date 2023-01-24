@@ -15,10 +15,11 @@
 #' @export
 ELBAR <- function(
     sdf, return.pval = FALSE, pval.threshold = 0.05,
-    capMU = 3000, delta.beta = 0.2, n.windows = 500) {
+    capMU = 3000, delta.beta = 0.3, n.windows = 500) {
 
-    df <- rbind(signalMU(sdf, mask=FALSE), signalMU_oo(sdf))
-    df$MU <- df$M + df$U; df$beta <- df$M / (df$M + df$U)
+    df <- rbind(
+        signalMU(sdf, mask=FALSE, MU=TRUE), signalMU_oo(sdf, MU=TRUE))
+    df$beta <- df$M / (df$M + df$U)
     df <- df[order(df$MU),]
     df <- df[!is.na(df$MU) & !is.nan(df$beta),]
     
@@ -39,7 +40,8 @@ ELBAR <- function(
         maxMU <- df$MU[df$MU > t1][500]
     }
     maxMU <- min(maxMU, capMU)
-    bgs <- df$MU[df$MU < maxMU]
+    df1 <- df[df$MU < maxMU,]
+    bgs <- pmax(df1$M, df1$U, na.rm=TRUE)
 
     ## warn if background is not variable enough
     rngs_bg <- quantile(bgs, c(0.1,0.9), na.rm=TRUE)
@@ -50,8 +52,8 @@ ELBAR <- function(
             "Consider running dyeBiasNL immediately before this step."))
     }
 
-    df <- signalMU(sdf, mask=FALSE); df$MU <- df$M + df$U
-    pvals <- setNames(1-ecdf(bgs)(df$MU), df$Probe_ID)
+    df <- signalMU(sdf, mask=FALSE)
+    pvals <- setNames(1-ecdf(bgs)(pmax(df$M, df$U)), df$Probe_ID)
     pvals[is.na(pvals)] <- 1.0 # set NA to 1
 
     if (return.pval) { return(pvals) }

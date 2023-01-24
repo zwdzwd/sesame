@@ -4,12 +4,14 @@
 \alias{signalMU}
 \title{report M and U for regular probes}
 \usage{
-signalMU(sdf, mask = TRUE)
+signalMU(sdf, mask = TRUE, MU = FALSE)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
 
 \item{mask}{whether to apply mask}
+
+\item{MU}{add a column for M+U}
 }
 \value{
 a data frame of M and U columns
