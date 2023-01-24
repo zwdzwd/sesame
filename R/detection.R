@@ -17,7 +17,7 @@
 #' @export
 ELBAR <- function(
     sdf, return.pval = FALSE, pval.threshold = 0.05,
-    margin = 0.05, capMU = 3000, delta.beta = 0.3, n.windows = 500) {
+    margin = 0.05, capMU = 3000, delta.beta = 0.2, n.windows = 500) {
 
     df <- rbind(
         signalMU(sdf, mask=FALSE, MU=TRUE), signalMU_oo(sdf, MU=TRUE))
