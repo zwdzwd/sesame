@@ -419,8 +419,8 @@ KYCG_plotPointRange <- function(result_list) {
     df <- summarize(group_by(df, state), 
         ave = mean(pmax(-4, est),na.rm=TRUE),
         sd = sd(pmax(-10,est),na.rm=TRUE))
-    df$ymin = df$ave - df$sd
-    df$ymax = df$ave + df$sd
+    df$ymin <- df$ave - df$sd
+    df$ymax <- df$ave + df$sd
     
     df$state <- factor(df$state, levels = df$state[order(df$ave)])
     

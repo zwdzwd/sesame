@@ -474,6 +474,7 @@ sesameQC_plotBetaByDesign <- function(
 #' @param mask whether to remove probes that are masked
 #' @param intens.range plot range of signal intensity
 #' @param use_max to use max(M,U) or M+U
+#' @param pal color palette, whiteturbo, whiteblack, whitejet
 #' @param ... additional arguments to smoothScatter
 #' @return create a total signal intensity vs beta value plot
 #' @import graphics
@@ -483,7 +484,8 @@ sesameQC_plotBetaByDesign <- function(
 #' sesameQC_plotIntensVsBetas(sdf)
 #' @export
 sesameQC_plotIntensVsBetas <- function(
-    sdf, mask=TRUE, use_max=FALSE, intens.range=c(5,15), ...) {
+    sdf, mask=TRUE, use_max=FALSE, intens.range=c(5,15),
+    pal="whiteturbo", ...) {
 
     if (use_max) {
         df <- signalMU(sdf)
@@ -496,7 +498,7 @@ sesameQC_plotIntensVsBetas <- function(
         xlab='Total Intensity (Log2(M+U))',
         ylab=expression(paste(beta, " (DNA methylation Level)")),
         nrpoints=0, 
-        colramp=palgen("whiteturbo"), xlim=intens.range, ...)
+        colramp=palgen(pal), xlim=intens.range, ...)
     graphics::abline(h=0.5, lty='dashed')
     ## plot envelope lines
     x <- c(seq(1,100,by=1), seq(101,10000,by=100))

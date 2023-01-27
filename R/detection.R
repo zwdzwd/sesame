@@ -1,39 +1,62 @@
-
-#' Mask detection by intermediate beta values
+#' ELiminate BAckground-dominated Reading (ELBAR)
 #'
 #' @param sdf a \code{SigDF}
 #' @param return.pval whether to return p-values, instead of a SigDF
 #' @param pval.threshold minimum p-value to mask
+#' @param margin the percentile margin to define envelope, the smaller
+#' the value the more aggressive the masking.
 #' @param capMU the maximum M+U to search for intermediate betas
-#' @param window window size for smoothing and beta fraction calc.
+#' @param delta.beta maximum beta value change from
+#' sheer background-dominated readings
+#' @param n.windows number of windows for smoothing
 #' @return a \code{SigDF} with mask added
 #' @examples
 #' sdf <- sesameDataGet("EPIC.1.SigDF")
 #' sum(sdf$mask)
-#' sum(detectionIB(sdf)$mask)
+#' sum(ELBAR(sdf)$mask)
 #' @export
-detectionIB <- function(
+ELBAR <- function(
     sdf, return.pval = FALSE, pval.threshold = 0.05,
-    capMU = 3000, window = 100) {
+    margin = 0.05, capMU = 3000, delta.beta = 0.2, n.windows = 500) {
 
-    df <- signalMU(sdf)
-    df$MU <- df$M + df$U
+    df <- rbind(
+        signalMU(sdf, mask=FALSE, MU=TRUE), signalMU_oo(sdf, MU=TRUE))
     df$beta <- df$M / (df$M + df$U)
     df <- df[order(df$MU),]
-
-    ## fraction of the intermediate beta
-    fmid <- vapply(seq_len(nrow(df)-window), function(i) {
-        sum(abs(df$beta[i:(i+window-1)] - 0.5)<0.1) / window;
-    }, numeric(1))
-
-    ## the range to search for intermediate betas
-    error_max_index <- min(
-        which(fmid <= sort(fmid)[1] + 0.01)[1],
-        which(df$MU > capMU)[1])
-    df_err <- df[seq_len(error_max_index),]
-    errors <- df_err$MU[abs(df_err$beta - 0.5) < 0.2]
+    df <- df[!is.na(df$MU) & !is.nan(df$beta),]
     
-    pvals <- setNames(1-ecdf(errors)(df$MU), df$Probe_ID)
+    thres <- 2**(seq(
+        log2(max(1,df$MU[1]-1)), log2(df$MU[nrow(df)]+1),
+        length.out = n.windows))
+
+    rngs <- vapply(thres, function(t1) {
+        bt <- df$beta[df$MU > t1][1:500]
+        quantile(bt, c(margin, 1-margin), na.rm=TRUE)
+    }, numeric(2))
+
+    if (rngs[2,1] - rngs[1,1] > 0.5) { # missing negative probes
+        warning(paste("Background signal is dichotomous.",
+            "Consider running noob+dyeBiasNL before this step."))
+        maxMU <- df$MU[10]
+    } else {
+        t1 <- thres[rngs[1,] - rngs[1,1] < -delta.beta |
+                    rngs[2,] - rngs[2,1] > +delta.beta][1]
+        maxMU <- df$MU[df$MU > t1][500]
+    }
+    maxMU <- min(maxMU, capMU, na.rm=TRUE)
+    df1 <- df[df$MU <= maxMU,]
+    bgs <- pmax(df1$M, df1$U, na.rm=TRUE)
+
+    ## warn if background is not variable enough
+    rngs_bg <- quantile(bgs, c(0.1,0.9), na.rm=TRUE)
+    if (is.na(rngs_bg[1]) || rngs_bg[2] - rngs_bg[1] < 10) {
+        warning(paste("Background signal lacks variation.",
+            "The detection masking may not be stringent enough.",
+            "Consider running noob+dyeBiasNL before this step."))
+    }
+
+    df <- signalMU(sdf, mask=FALSE)
+    pvals <- setNames(1-ecdf(bgs)(pmax(df$M, df$U)), df$Probe_ID)
     pvals[is.na(pvals)] <- 1.0 # set NA to 1
 
     if (return.pval) { return(pvals) }

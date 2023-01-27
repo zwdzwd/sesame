@@ -11,6 +11,7 @@ sesameQC_plotIntensVsBetas(
   mask = TRUE,
   use_max = FALSE,
   intens.range = c(5, 15),
+  pal = "whiteturbo",
   ...
 )
 }
@@ -22,6 +23,8 @@ sesameQC_plotIntensVsBetas(
 \item{use_max}{to use max(M,U) or M+U}
 
 \item{intens.range}{plot range of signal intensity}
+
+\item{pal}{color palette, whiteturbo, whiteblack, whitejet}
 
 \item{...}{additional arguments to smoothScatter}
 }

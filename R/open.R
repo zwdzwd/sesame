@@ -14,7 +14,7 @@ prepSesameList <- function() {
         c("D", "dyeBiasNL", "Dye bias correction (non-linear)"),
         c("E", "dyeBiasL", "Dye bias correction (linear)"),
         c("P", "pOOBAH", "Detection p-value masking using oob"),
-        c("I", "detectionIB", "Mask detection by intermediate beta values"),
+        c("I", "ELBAR", "Mask background-dominated readings"),
         c("B", "noob", "Background subtraction using oob"),
         c("S", "inferSpecies", "Set species-specific mask"),
         c("T", "inferStrain", "Set strain-specific mask (mouse)"),

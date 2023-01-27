@@ -15,7 +15,8 @@ palgen <- function(pal, n=150, space = "Lab") {
     adhoc_pals <- list(
         whiteturbo = c("white","white",pals::turbo(10)[seq(2,10)]),
         whitejet = c("white","white","lightblue",
-            "blue","green","yellow","orange","red","darkred"))
+            "blue","green","yellow","orange","red","darkred"),
+        whiteblack = c("white", "black"))
 
     if (length(pal) == 1 && is.character(pal) &&
             (pal %in% names(adhoc_pals))) {

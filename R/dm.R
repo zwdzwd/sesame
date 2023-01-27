@@ -218,7 +218,9 @@ summaryExtractTest <- function(smry) {
     pvals <- do.call(bind_rows, lapply(smry, function(x) {
         x$coefficients[,"Pr(>|t|)"] }))
     colnames(pvals) <- paste0("Pval_", colnames(pvals))
-    if(is.null(smry[[1]]$Ftest)) { return(cbind(Probe_ID=names(smry),est,pvals)) } # only continuous
+    if(is.null(smry[[1]]$Ftest)) { # only continuous
+        return(cbind(Probe_ID=names(smry),est,pvals))
+    }
     f_pvals <- do.call(rbind, lapply(smry, function(x) {
         x$Ftest["pval",,drop=FALSE] }))
     colnames(f_pvals) <- paste0("FPval_", colnames(f_pvals))
