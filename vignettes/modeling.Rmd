@@ -86,7 +86,7 @@ smry = DML(se, ~tissue + sex)
 smry
 ```
 
-You can use `mc.cores` argument to parallelize the computing.
+You can use `BPPARAM` argument to parallelize the computing.
 
 # Test Interpretation
 
