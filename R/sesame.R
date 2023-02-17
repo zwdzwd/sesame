@@ -228,8 +228,8 @@ inferPlatformFromTango <- function(res) {
     sig <- sesameDataGet('idatSignature')
     cnts <- vapply(
         sig, function(x) sum(x %in% rownames(res$Quants)), integer(1))
-    if (max(cnts) < min(sapply(sig, length))) {
-        stop("Error, cannot infer platform. Please provide custom manifest.")
+    if (max(cnts) < min(vapply(sig, length, numeric(1)))) {
+        stop("Cannot infer platform. Please provide custom manifest.")
     }
     names(which.max(cnts))
 }

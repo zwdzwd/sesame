@@ -14,6 +14,8 @@ KYCG_plotBar(df, y = "-log10(FDR)", n = 20, order_by = "FDR", label = FALSE)
 \item{n}{number of CG groups to plot}
 
 \item{order_by}{the column by which CG groups are ordered}
+
+\item{label}{whether to label significant bars}
 }
 \value{
 grid plot object

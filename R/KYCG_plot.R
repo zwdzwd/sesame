@@ -99,6 +99,7 @@ preparePlotDF <- function(df, n, order_by) {
 #' @param y the column to be plotted on y-axis
 #' @param n number of CG groups to plot
 #' @param order_by the column by which CG groups are ordered
+#' @param label whether to label significant bars
 #' @return grid plot object
 #'
 #' @import ggplot2
@@ -178,7 +179,7 @@ KYCG_plotDot <- function(df, y = "-log10(FDR)",
 #' creates a volcano plot of -log2(p.value) and log(estimate)
 #' given data with fields estimate and p.value.
 #'
-#' @param data DataFrame where each field is a database name with two fields
+#' @param df DataFrame where each field is a database name with two fields
 #' for the estimate and p.value.
 #' @param label_by column in df to be used as the label (default: dbname)
 #' @param alpha Float representing the cut-off alpha value for the plot. 
@@ -202,7 +203,7 @@ KYCG_plotVolcano <- function(df, label_by="dbname", alpha=0.05) {
     df$Significance <- ifelse(
         df$FDR < alpha, "Significant", "Not significant")
     ## TODO: replace with column specifying sig vs non sig
-    g <- ggplot(data=df,
+    g <- ggplot(data = df,
         aes_string(x = "estimate", y = "-log10(FDR)", color = "Significance"))
     g <- g + geom_point() + xlab("log2(OR)")
     g <- g + ylab("-log10 FDR") +
