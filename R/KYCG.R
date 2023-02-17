@@ -270,21 +270,26 @@ testEnrichmentFisherN <- function(
 
 calcES_Significance <- function(dCont, dDisc, permut=100, precise=FALSE) {
 
-    dCont <- sort(dCont)
+    #dCont <- sort(dCont)
+    dCont <- sort(dCont,decreasing=TRUE)
     dContName <- names(dCont)
-    dDiscN <- length(dDisc)
-    dContN <- length(dCont)
-    s <- rep(-1/(dContN-dDiscN), dContN)
-
+    dDiscN <- length(dDisc) 
+    dContN <- length(dCont) 
+    #s <- rep(-1/(dContN-dDiscN), dContN)
+    miss <- -1/(dContN-dDiscN)
+    s <- rep(miss, dContN)
     ess <- do.call(rbind, lapply(seq_len(permut), function(i) {
-        s[sample.int(dContN, dDiscN)] <- 1/dDiscN
+        #s[sample.int(dContN, dDiscN)] <- 1/dDiscN
+        ind <- sample.int(dContN, dDiscN)
+        s[ind] <- abs(dCont[ind]) / sum(abs(dCont[ind]))
         cs <- cumsum(s)
         data.frame(es_max = max(cs), es_min = min(cs))
     }))
 
     ## es <- calcES(dCont, dDisc)
     presence <- names(dCont) %in% dDisc
-    s <- ifelse(presence, 1/sum(presence), -1/sum(!presence))
+    s[presence] <- abs(dCont[presence]) / sum(abs(dCont[presence]))
+    #s <- ifelse(presence, 1/sum(presence), -1/sum(!presence))
     cs <- cumsum(s)
     es_max <- max(cs)
     es_min <- min(cs)
