@@ -32,10 +32,13 @@ queryCheckPlatform <- function(platform, query = NULL, silent = FALSE) {
 
 inferUniverse <- function(platform) {
     mfts <- c(
-        "MM285.address", "EPIC.address",
+        "MM285.address", "EPIC.address", "EPICv2.address",
         "Mammal40.address", "HM450.address", "HM27.address")
     mft <- mfts[grepl(platform, mfts)]
-    stopifnot(length(mft) == 1 && all(mft %in% mfts))
+    if (!(length(mft) == 1 && all(mft %in% mfts))) {
+        stop("Platform unsupported. Please provide universe set explicitly.")
+    }
+    stopifnot()
     sesameDataGet(mft)$ordering$Probe_ID
 }
 
@@ -634,17 +637,20 @@ KYCG_annoProbes <- function(query, databases, db_names = NULL,
 #' @param f_min min fraction of non-NA for aggregation function to apply
 #' @param n_min min number of non-NA for aggregation function to apply,
 #' overrides f_min
+#' @param long produce long-form result
 #' @return matrix with samples on the rows and database set on the columns
 #' @examples
 #' 
 #' library(SummarizedExperiment)
 #' se <- sesameDataGet('MM285.467.SE.tissue20Kprobes')
-#' head(dbStats(assay(se), "MM285.probeType")[,1:3])
+#' head(dbStats(assay(se), "MM285.chromHMM")[,1:3])
 #' sesameDataGet_resetEnv()
 #' 
+#' @importFrom reshape2 melt
 #' @export
 dbStats <- function(
-    betas, databases, fun = mean, na.rm = TRUE, n_min = NULL, f_min = 0.1) {
+    betas, databases, fun = mean, na.rm = TRUE, n_min = NULL,
+    f_min = 0.1, long = FALSE) {
 
     if (is(betas, "numeric")) { betas <- cbind(sample = betas); }
     if (is.character(databases)) {
@@ -669,6 +675,9 @@ dbStats <- function(
     }))
     colnames(stats) <- names(dbs)
     rownames(stats) <- colnames(betas)
+    if (long) {
+        stats <- melt(stats, varnames = c("query", "db"), value.name = "value")
+    }
     stats
 }
 

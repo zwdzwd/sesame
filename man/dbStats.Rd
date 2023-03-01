@@ -5,7 +5,15 @@
 \title{dbStats builds dataset for a given betas matrix 
 composed of engineered features from the given database sets}
 \usage{
-dbStats(betas, databases, fun = mean, na.rm = TRUE, n_min = NULL, f_min = 0.1)
+dbStats(
+  betas,
+  databases,
+  fun = mean,
+  na.rm = TRUE,
+  n_min = NULL,
+  f_min = 0.1,
+  long = FALSE
+)
 }
 \arguments{
 \item{betas}{matrix of beta values where probes are on the rows and
@@ -22,6 +30,8 @@ which the features will be extracted}
 overrides f_min}
 
 \item{f_min}{min fraction of non-NA for aggregation function to apply}
+
+\item{long}{produce long-form result}
 }
 \value{
 matrix with samples on the rows and database set on the columns
@@ -34,7 +44,7 @@ composed of engineered features from the given database sets
 
 library(SummarizedExperiment)
 se <- sesameDataGet('MM285.467.SE.tissue20Kprobes')
-head(dbStats(assay(se), "MM285.probeType")[,1:3])
+head(dbStats(assay(se), "MM285.chromHMM")[,1:3])
 sesameDataGet_resetEnv()
 
 }

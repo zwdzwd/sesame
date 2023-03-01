@@ -375,18 +375,16 @@ KYCG_plotMeta <- function(betas, platform = NULL) {
     }
     stopifnot(!is.null(platform))
 
-    meta <- KYCG_getDBs(sprintf("%s.metagene", platform))
-    mb <- do.call(cbind, lapply(
-        meta, function(m1) apply(betas[m1,,drop=FALSE],2, mean, na.rm=TRUE)))
-    df <- melt(mb, varnames=c("query","db"), value.name="mean_betas")
+    dbs <- KYCG_getDBs(sprintf("%s.metagene", platform))
+    df = dbStats(betas, dbs, long=TRUE)
     dflabel <- data.frame(
-        ord = as.integer(names(meta)),
-        reg = vapply(meta, function(x) attr(x, "label"), character(1)))
+        ord = as.integer(names(dbs)),
+        reg = vapply(dbs, function(x) attr(x, "label"), character(1)))
     
     ggplot(df) +
         annotate("rect", xmin = -1, xmax = 10, ymin = -Inf,
             ymax = Inf, fill = "grey80", alpha = .5, color = NA) +
-        geom_line(aes_string("db", "mean_betas")) +
+        geom_line(aes_string("db", "value", group="query")) +
         scale_x_continuous(breaks=dflabel$ord, labels=dflabel$reg) +
         ylab("Mean DNA Methylation Level") + xlab("") +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
