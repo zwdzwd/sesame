@@ -34,7 +34,7 @@ from the query set probeIDs (Default: NA).}
 \item{silent}{output message? (Default: FALSE)}
 }
 \value{
-One list containing features corresponding the test estimate,
+A data frame containing features corresponding to the test estimate,
 p-value, and type of test.
 }
 \description{

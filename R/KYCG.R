@@ -66,7 +66,7 @@ subsetDBs <- function(dbs, universe) {
 #' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 #' from the query set probeIDs (Default: NA).
 #' @param silent output message? (Default: FALSE)
-#' @return One list containing features corresponding the test estimate,
+#' @return A data frame containing features corresponding to the test estimate,
 #' p-value, and type of test.
 #' @importFrom dplyr bind_rows
 #' @examples
@@ -115,6 +115,26 @@ testEnrichment <- function(
     ## bind meta data
     res <- cbind(res, databases_getMeta(dbs))
     res[order(res$log10.p.value, -abs(res$estimate)), ]
+}
+
+#' Convenient function for testing enrichment of gene linkage
+#'
+#' @param query probe set of interest
+#' @param platform string corresponding to the type of platform to use. Either
+#' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
+#' from the query set probe IDs.
+#' @param silent whether to output message
+#' @param ... addition argument provided to testEnrichment
+#' @return A data frame containing features corresponding to the test estimate,
+#' p-value, and type of test etc.
+#' @examples
+#' query <- c("cg04707299", "cg13380562", "cg00480749")
+#' testEnrichment(query, platform = "EPIC")
+#' @export
+testEnrichmentGene <- function(query, platform = NULL, silent = FALSE, ...) {
+    platform <- queryCheckPlatform(platform, query, silent = silent)
+    dbs_gene <- KYCG_buildGeneDBs(query, platform)
+    testEnrichment(query, databases = dbs_gene, platform = platform, ...)
 }
 
 #' Aggregate test enrichment results
