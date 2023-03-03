@@ -34,8 +34,8 @@ inferUniverse <- function(platform) {
     mfts <- c(
         "MM285.address", "EPIC.address", "EPICv2.address",
         "Mammal40.address", "HM450.address", "HM27.address")
-    mft <- mfts[grepl(platform, mfts)]
-    if (!(length(mft) == 1 && all(mft %in% mfts))) {
+    mft <- paste0(platform, ".address")
+    if (!(mft %in% mfts)) {
         stop("Platform unsupported. Please provide universe set explicitly.")
     }
     stopifnot()

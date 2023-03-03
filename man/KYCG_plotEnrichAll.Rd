@@ -4,7 +4,13 @@
 \alias{KYCG_plotEnrichAll}
 \title{plot enrichment test result}
 \usage{
-KYCG_plotEnrichAll(df, fdr_max = 25, n_label = 15, min_estimate = 0)
+KYCG_plotEnrichAll(
+  df,
+  fdr_max = 25,
+  n_label = 15,
+  min_estimate = 0,
+  short_label = TRUE
+)
 }
 \arguments{
 \item{df}{test enrichment result data frame}
@@ -14,6 +20,8 @@ KYCG_plotEnrichAll(df, fdr_max = 25, n_label = 15, min_estimate = 0)
 \item{n_label}{number of database to label}
 
 \item{min_estimate}{minimum estimate}
+
+\item{short_label}{use short label}
 }
 \value{
 grid object

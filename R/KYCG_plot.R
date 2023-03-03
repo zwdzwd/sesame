@@ -4,6 +4,7 @@
 #' @param fdr_max maximum fdr for capping
 #' @param n_label number of database to label
 #' @param min_estimate minimum estimate
+#' @param short_label use short label
 #' @return grid object
 #' @importFrom stringr str_replace
 #' @importFrom tibble rownames_to_column
@@ -15,7 +16,7 @@
 #' 
 #' @export
 KYCG_plotEnrichAll <- function(
-    df, fdr_max = 25, n_label = 15, min_estimate = 0) {
+    df, fdr_max = 25, n_label = 15, min_estimate = 0, short_label = TRUE) {
 
     gp_size <- sort(table(df$group))
     gp_width <- log(2+gp_size)
@@ -38,6 +39,10 @@ KYCG_plotEnrichAll <- function(
             c(beg=min(x), middle=mean(x), end=max(x))))), "group")
 
     inc2 <- FDR <- estimate <- group <- dbname <- beg <- middle <- NULL
+    if (short_label) {
+        e2$dbname <- vapply(
+            strsplit(e2$dbname, ";"), function(x) {
+                if(length(x)>1) { x[[2]]; } else { x[[1]]; }}, character(1)) }
     requireNamespace("ggrepel")
     ggplot(e2, aes(inc2, -log10(FDR))) +
         geom_point(aes(size=estimate, color=group), alpha=0.5) +
@@ -290,31 +295,40 @@ KYCG_plotLollipop <- function(df, label_column="dbname", n=20) {
 #' 
 #' @export
 KYCG_plotWaterfall <- function(df,
-    order_by="estimate", size_by="-log10(FDR)",
+    order_by="Log2(OR)", size_by="-log10(FDR)",
     label_by="dbname", n_label=10) {
 
     df$label <- df[[label_by]]
-    if (size_by == "-log10(FDR)") {
+    if (size_by == "-log10(FDR)" ||
+        order_by == "-log10(FDR)" ||
+        label_by == "-log10(FDR)") {
         df[["-log10(FDR)"]] <- -log10(df$FDR)
     }
-    if (order_by == "estimate") {
-        message(sprintf("%d extremes are excluded.",
-            sum(abs(df$estimate) > 1000)))
-        df <- df[abs(df$estimate) < 1000,] # skip extremes
+    if (df$test[[1]] == "Log2(OR)" && (
+        size_by == "Log2(OR)" || order_by == "Log2(OR)" ||
+        label_by == "Log2(OR)")) {
+        df[["Log2(OR)"]] <- df$estimate
+        message(sprintf("%d extremes are capped.",
+            sum(abs(df[["Log2(OR)"]]) > 1000)))
+        ## cap extremes
+        df[["Log2(OR)"]][df[["Log2(OR)"]] > 1000] = 1000
+        df[["Log2(OR)"]][df[["Log2(OR)"]] < -1000] = -1000
+        ## df <- df[abs(df$estimate) < 1000,] # skip extremes
     }
 
     df <- df[order(df[[order_by]]),]
     df$index <- seq_len(nrow(df))
     
     requireNamespace("ggrepel")
-    ggplot(df, aes_string("index", order_by)) +
-        geom_point(aes_string(size=size_by), alpha=0.6) +
+    ggplot(df, aes(.data[["index"]], .data[[order_by]])) +
+        geom_point(aes(size=.data[[size_by]]), alpha=0.6) +
         geom_hline(yintercept=0, linetype="dashed", color="grey60") +
-        theme_minimal() + ylab("Log2(OR)") + xlab("Databases") +
+        theme_minimal() + ylab(order_by) + xlab("Databases") +
         ggrepel::geom_text_repel(
             data = df[head(order(df$log10.p.value),
                 n = min(n_label, nrow(df)*0.5)),],
-            aes_string(label="label"), nudge_x=-nrow(df)/10)
+            aes_string(label="label"), nudge_x=-nrow(df)/10,
+            max.overlaps=999)
 }
 
 #' Plot meta gene or other meta genomic features
