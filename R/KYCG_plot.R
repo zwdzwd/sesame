@@ -68,27 +68,37 @@ KYCG_plotEnrichAll <- function(
             panel.grid.minor.x = element_blank())
 }
 
-preparePlotDF <- function(df, n, order_by) {
+#' @importFrom dplyr slice_min
+preparePlotDF <- function(
+    df, n, order_by, short_label = FALSE, label_by = "dbname") {
+    
     stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
-    df <- df[df$nD >0,]
-    df$FDR[df$FDR==0] <- .Machine$double.xmin # cap FDR
-    ord <- df[[order_by]]
-    if (order_by == "estimate") { ord <- -ord; }
-    df <- df[order(ord, -df$estimate),]
-    df1 <- head(df, n=n)
+    df1 <- df[df$nD >0,]
+    df1$FDR[df1$FDR==0] <- .Machine$double.xmin # cap FDR
 
-    if ("group" %in% colnames(df1)) {
+    if ("group" %in% colnames(df1) && !short_label) {
         gp <- sprintf("%s~", vapply(str_split(
-            df1$group, "\\."), function(x) x[3], character(1)))
+            df1$group, "\\."), function(x) {
+                if(length(x)>3) {x[3]} else {x[1]}}, character(1)))
     } else {
         gp <- ""
     }
     ## TODO: make everything use dbname
-    if ("dbname" %in% colnames(df1)) {
-        df1$db1 <- paste0(gp, df1$dbname)
+    if (label_by %in% colnames(df1)) {
+        df1$db1 <- paste0(gp, df1[[label_by]])
     } else if ("feat" %in% colnames(df1)) { # genome-wide data
         df1$db1 <- paste0(gp, df1$feat)
     }
+    if (length(unique(df1$db1)) != nrow(df1)) {
+        df1 <- df1 %>% group_by(db1) %>% slice_min(
+            order_by=FDR, n=1, with_ties=FALSE) %>% ungroup()
+    }
+
+    ord <- df1[[order_by]]
+    if (order_by == "estimate") { ord <- -ord; }
+    df1 <- df1[order(ord, -df1$estimate),]
+    df1 <- head(df1, n=n)
+
     df1$db1 <- factor(df1$db1, levels=rev(df1$db1))
     df1
 }
@@ -158,6 +168,9 @@ KYCG_plotBar <- function(df, y = "-log10(FDR)",
 #' @param order_by the column by which CG groups are ordered
 #' @param size_by the column by which CG group size plot
 #' @param color_by the column by which CG groups are colored
+#' @param label_by the column for label
+#' @param short_label omit group in label
+#' @param title plot title
 #' @return grid plot object (by ggplot)
 #'
 #' @import ggplot2
@@ -167,16 +180,20 @@ KYCG_plotBar <- function(df, y = "-log10(FDR)",
 #'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #' @export
 KYCG_plotDot <- function(df, y = "-log10(FDR)",
-    n = 20, order_by = "FDR",
-    size_by = "overlap", color_by = "estimate") {
+    n = 20, order_by = "FDR", title = "Enriched Databases",
+    label_by = "dbname", size_by = "overlap", color_by = "estimate",
+    short_label = FALSE) {
 
-    df1 <- preparePlotDF(df, n, order_by)
+    df1 <- preparePlotDF(
+        df, n, order_by, short_label = short_label, label_by = label_by)
+
     if (y == "-log10(FDR)") {
         df1[["-log10(FDR)"]] <- -log10(df1$FDR)
     }
     ggplot(df1) +
-        geom_point(aes_string("db1", y, size=size_by, color=color_by)) +
-        coord_flip() + ggtitle("Enriched Databases") +
+        geom_point(aes(.data[["db1"]], .data[[y]],
+            size = .data[[size_by]], color = .data[[color_by]])) +
+        coord_flip() + ggtitle(title) +
         scale_color_gradient(low="blue",high="red") +
         ylab(y) + xlab("")
 }

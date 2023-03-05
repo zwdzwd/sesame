@@ -80,19 +80,23 @@ subsetDBs <- function(dbs, universe) {
 #' @export
 testEnrichment <- function(
     query, databases = NULL, universe = NULL, alternative = "greater",
-    platform = NULL, silent = FALSE) {
+    include_genes = FALSE, platform = NULL, silent = FALSE) {
 
     platform <- queryCheckPlatform(platform, query, silent = silent)
     
     if (is.null(databases)) {
         dbs <- c(KYCG_getDBs(KYCG_listDBGroups( # by default, all dbs + gene
-            platform, type="categorical")$Title, silent = silent),
-            KYCG_buildGeneDBs(query, platform, silent = silent))
+            platform, type="categorical")$Title, silent = silent))
     } else if (is.character(databases)) {
         dbs <- KYCG_getDBs(databases, platform = platform, silent = silent)
     } else {
         dbs <- databases
     }
+
+    if (include_genes) {
+        dbs <- c(dbs, KYCG_buildGeneDBs(query, platform, silent = silent))
+    }
+    
     ## there shouldn't be empty databases, but just in case
     dbs <- dbs[vapply(dbs, length, integer(1)) > 0]
     if (!silent) {
@@ -544,6 +548,9 @@ KYCG_loadDBs <- function(in_paths) {
     do.call(c, lapply(seq_along(groupnms), function(i) {
         tbl <- read.table(in_paths[i],sep="\t",header=TRUE)
         dbs <- split(tbl$Probe_ID, tbl$Knowledgebase)
+        idx <- grepl(";", names(dbs))
+        names(dbs)[idx] <- vapply(strsplit(
+            names(dbs)[idx], ";"), function(x) x[2], character(1))
         lapply(names(dbs), function(dbname) {
             db1 <- dbs[[dbname]];
             attr(db1, "group") <- sub(".gz$","",groupnms[i]);

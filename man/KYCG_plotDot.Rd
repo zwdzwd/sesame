@@ -9,8 +9,11 @@ KYCG_plotDot(
   y = "-log10(FDR)",
   n = 20,
   order_by = "FDR",
+  title = "Enriched Databases",
+  label_by = "dbname",
   size_by = "overlap",
-  color_by = "estimate"
+  color_by = "estimate",
+  short_label = FALSE
 )
 }
 \arguments{
@@ -22,9 +25,15 @@ KYCG_plotDot(
 
 \item{order_by}{the column by which CG groups are ordered}
 
+\item{title}{plot title}
+
+\item{label_by}{the column for label}
+
 \item{size_by}{the column by which CG group size plot}
 
 \item{color_by}{the column by which CG groups are colored}
+
+\item{short_label}{omit group in label}
 }
 \value{
 grid plot object (by ggplot)

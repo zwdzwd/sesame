@@ -10,6 +10,7 @@ testEnrichment(
   databases = NULL,
   universe = NULL,
   alternative = "greater",
+  include_genes = FALSE,
   platform = NULL,
   silent = FALSE
 )
