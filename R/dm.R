@@ -44,7 +44,8 @@ model_contrasts <- function(mm, meta) {
 #' are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
 #' and are referenced in formula. Rows are samples.
 #' When the betas argument is a SummarizedExperiment object, this
-#' is ignored. colData(betas) will be used instead.
+#' is ignored. colData(betas) will be used instead. The row order of the
+#' data frame must match the column order of the beta value matrix.
 #' @param BPPARAM number of cores for parallel processing, default to
 #' SerialParam()
 #' Use MulticoreParam(mc.cores) for parallel processing.
@@ -69,6 +70,7 @@ DML <- function(betas, fm, meta=NULL, BPPARAM=SerialParam()) {
         betas <- assay(betas0)
         meta <- colData(betas0)
     }
+    stopifnot(nrow(meta) == ncol(betas))
 
     mm <- model.matrix(fm, meta)
     colnames(mm) <- make.names(colnames(mm))

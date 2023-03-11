@@ -62,6 +62,7 @@ subsetDBs <- function(dbs, universe) {
 #' the probes to be considered in the test. If it is not provided, it will be
 #' inferred from the provided platform. (Default: NA).
 #' @param alternative "two.sided", "greater", or "less"
+#' @param include_genes include gene link enrichment testing
 #' @param platform String corresponding to the type of platform to use. Either
 #' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 #' from the query set probeIDs (Default: NA).
@@ -528,6 +529,7 @@ KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
 #' Load database groups
 #'
 #' @param in_paths folder that contains all databases
+#' @param group_use_filename whether to use file name for groups
 #' @return a list of db group names
 #' @examples
 #'
@@ -538,7 +540,7 @@ KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
 #' dbs <- KYCG_loadDBs(path_to_unzipped_folder)
 #' }
 #' @export
-KYCG_loadDBs <- function(in_paths) {
+KYCG_loadDBs <- function(in_paths, group_use_filename=FALSE) {
     if (length(in_paths)==1 && dir.exists(in_paths)) {
         groupnms <- list.files(in_paths)
         in_paths <- file.path(in_paths, groupnms)
@@ -548,13 +550,20 @@ KYCG_loadDBs <- function(in_paths) {
     do.call(c, lapply(seq_along(groupnms), function(i) {
         tbl <- read.table(in_paths[i],sep="\t",header=TRUE)
         dbs <- split(tbl$Probe_ID, tbl$Knowledgebase)
-        idx <- grepl(";", names(dbs))
-        names(dbs)[idx] <- vapply(strsplit(
-            names(dbs)[idx], ";"), function(x) x[2], character(1))
-        lapply(names(dbs), function(dbname) {
-            db1 <- dbs[[dbname]];
-            attr(db1, "group") <- sub(".gz$","",groupnms[i]);
-            attr(db1, "dbname") <- dbname;
+        lapply(names(dbs), function(gp_dbname) {
+            gp_dbname_lst <- str_split(gp_dbname, ";", n=2)[[1]]
+            db1 <- dbs[[gp_dbname]];
+            ## group names come from file instead of file name
+            if (group_use_filename) {
+                attr(db1, "group") <- sub(".gz$","",groupnms[i])
+            } else {
+                attr(db1, "group") <- gp_dbname_lst[[1]]
+            }
+            if (length(gp_dbname_lst) > 1) {
+                attr(db1, "dbname") <- gp_dbname_lst[[2]]
+            } else {
+                attr(db1, "dbname") <- attr(db1, "group")
+            }
             db1;})
     }))
 }
@@ -636,8 +645,7 @@ KYCG_annoProbes <- function(query, databases, db_names = NULL,
         dbs <- databases
     }
 
-    ind <- do.call(cbind, lapply(names(dbs), function(db_nm) {
-        db <- dbs[[db_nm]]
+    ind <- do.call(cbind, lapply(dbs, function(db) {
         query %in% db
     }))
     if (indicator) {
@@ -685,8 +693,7 @@ dbStats <- function(
     } else {
         dbs <- databases
     }
-    stats <- do.call(cbind, lapply(names(dbs), function(db_nm) {
-        db <- dbs[[db_nm]]
+    stats <- do.call(cbind, lapply(dbs, function(db) {
         betas1 <- betas[db[db %in% rownames(betas)],,drop=FALSE]
         n_probes <- nrow(betas1)
         if (n_probes == 0) { return(rep(NA, ncol(betas))); }
@@ -700,7 +707,9 @@ dbStats <- function(
         stat1[nacnt < n_min1] <- NA
         stat1
     }))
-    colnames(stats) <- names(dbs)
+    if (!is.null(names(dbs))) {
+        colnames(stats) <- names(dbs)
+    }
     rownames(stats) <- colnames(betas)
     if (long) {
         stats <- melt(stats, varnames = c("query", "db"), value.name = "value")

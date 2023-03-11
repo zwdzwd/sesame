@@ -69,8 +69,11 @@ KYCG_plotEnrichAll <- function(
 }
 
 #' @importFrom dplyr slice_min
+#' @importFrom dplyr ungroup
 preparePlotDF <- function(
     df, n, order_by, short_label = FALSE, label_by = "dbname") {
+    ## suppress R CMD CHECK no visible binding warning
+    db1 <- FDR <- NULL
     
     stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
     df1 <- df[df$nD >0,]
@@ -328,8 +331,8 @@ KYCG_plotWaterfall <- function(df,
         message(sprintf("%d extremes are capped.",
             sum(abs(df[["Log2(OR)"]]) > 1000)))
         ## cap extremes
-        df[["Log2(OR)"]][df[["Log2(OR)"]] > 1000] = 1000
-        df[["Log2(OR)"]][df[["Log2(OR)"]] < -1000] = -1000
+        df[["Log2(OR)"]][df[["Log2(OR)"]] > 1000] <- 1000
+        df[["Log2(OR)"]][df[["Log2(OR)"]] < -1000] <- -1000
         ## df <- df[abs(df$estimate) < 1000,] # skip extremes
     }
 
@@ -407,7 +410,7 @@ KYCG_plotMeta <- function(betas, platform = NULL) {
     stopifnot(!is.null(platform))
 
     dbs <- KYCG_getDBs(sprintf("%s.metagene", platform))
-    df = dbStats(betas, dbs, long=TRUE)
+    df <- dbStats(betas, dbs, long=TRUE)
     dflabel <- data.frame(
         ord = as.integer(names(dbs)),
         reg = vapply(dbs, function(x) attr(x, "label"), character(1)))
