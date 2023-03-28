@@ -9,6 +9,7 @@ cnSegmentation(
   sdfs.normal = NULL,
   genomeInfo = NULL,
   probeCoords = NULL,
+  tilewidth = 50000,
   verbose = FALSE
 )
 }
@@ -32,6 +33,8 @@ http://zwdzwd.github.io/InfiniumAnnotation
 and provide the following argument
 ..., probeCoords = sesameAnno_buildManifestGRanges("downloaded_file"),...
 to this function.}
+
+\item{tilewidth}{tile width for smoothing}
 
 \item{verbose}{print more messages}
 }

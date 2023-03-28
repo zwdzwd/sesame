@@ -28,6 +28,8 @@ inferred from the provided platform. (Default: NA).}
 
 \item{alternative}{"two.sided", "greater", or "less"}
 
+\item{include_genes}{include gene link enrichment testing}
+
 \item{platform}{String corresponding to the type of platform to use. Either
 MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 from the query set probeIDs (Default: NA).}

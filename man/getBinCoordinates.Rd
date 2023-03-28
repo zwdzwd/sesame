@@ -4,12 +4,14 @@
 \alias{getBinCoordinates}
 \title{Get bin coordinates}
 \usage{
-getBinCoordinates(seqLength, gapInfo, probeCoords)
+getBinCoordinates(seqLength, gapInfo, tilewidth = 50000, probeCoords)
 }
 \arguments{
 \item{seqLength}{chromosome information object}
 
 \item{gapInfo}{chromosome gap information}
+
+\item{tilewidth}{tile width for smoothing}
 
 \item{probeCoords}{probe coordinates}
 }

@@ -24,6 +24,7 @@
 #' and provide the following argument
 #' ..., probeCoords = sesameAnno_buildManifestGRanges("downloaded_file"),...
 #' to this function.
+#' @param tilewidth tile width for smoothing
 #' @param verbose print more messages
 #' @return an object of \code{CNSegment}
 #' @examples
@@ -37,7 +38,7 @@
 #' @export
 cnSegmentation <- function(
     sdf, sdfs.normal=NULL, genomeInfo=NULL,
-    probeCoords=NULL, verbose = FALSE) {
+    probeCoords=NULL, tilewidth=50000, verbose = FALSE) {
     
     stopifnot(is(sdf, "SigDF"))
     platform <- sdfPlatform(sdf, verbose = verbose)
@@ -67,6 +68,7 @@ cnSegmentation <- function(
         totalIntensities(sdf) }))
 
     ## find overlapping probes
+    target.intens <- na.omit(target.intens)
     pb <- intersect(rownames(normal.intens), names(target.intens))
     pb <- intersect(names(probeCoords), pb)
     target.intens <- target.intens[pb]
@@ -79,7 +81,8 @@ cnSegmentation <- function(
 
     ## bin signals
     ## fix bin coordinates, TODO: this is too time-consuming
-    bin.coords <- getBinCoordinates(seqLength, gapInfo, probeCoords)
+    bin.coords <- getBinCoordinates(seqLength, gapInfo,
+        tilewidth = tilewidth, probeCoords)
     bin.signals <- binSignals(probe.signals, bin.coords, probeCoords)
 
     ## segmentation
@@ -148,11 +151,13 @@ leftRightMerge1 <- function(chrom.windows, min.probes.per.bin=20) {
 #' @param seqLength chromosome information object
 #' @param gapInfo chromosome gap information
 #' @param probeCoords probe coordinates
+#' @param tilewidth tile width for smoothing
 #' @return bin.coords
-getBinCoordinates <- function(seqLength, gapInfo, probeCoords) {
+getBinCoordinates <- function(
+    seqLength, gapInfo, tilewidth=50000, probeCoords) {
 
     tiles <- sort(GenomicRanges::tileGenome(
-        seqLength, tilewidth=50000, cut.last.tile.in.chrom = TRUE))
+        seqLength, tilewidth=tilewidth, cut.last.tile.in.chrom = TRUE))
     
     tiles <- sort(c(
         GenomicRanges::setdiff(tiles[seq(1, length(tiles), 2)], gapInfo), 
@@ -228,9 +233,9 @@ segmentBins <- function(bin.signals, bin.coords) {
         data.type = 'logratio')
 
     seg <- DNAcopy::segment(
-        x=cna, min.width = 5, 
-        nperm= 10000, alpha = 0.001, undo.splits = 'sdundo',
-        undo.SD= 2.2, verbose=0)
+        x = cna, min.width = 5,
+        nperm = 10000, alpha = 0.001, undo.splits = 'sdundo',
+        undo.SD = 2.2, verbose=0)
     
     summary <- DNAcopy::segments.summary(seg)
     pval <- DNAcopy::segments.p(seg)
@@ -300,7 +305,8 @@ visualizeSegments <- function(seg, to.plot=NULL) {
         y = sigs$seg.mean, yend=sigs$seg.mean), size=1.5, color='blue')
 
     ## chromosome boundary
-    p <- p + ggplot2::geom_vline(xintercept=seqstart[-1]/totlen, alpha=I(0.5))
+    p <- p + ggplot2::geom_vline(xintercept=seqstart[-1]/totlen,
+        linetype="dotted", alpha=I(0.5))
 
     ## chromosome label
     p <- p + ggplot2::scale_x_continuous(

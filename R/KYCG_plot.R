@@ -25,9 +25,11 @@ KYCG_plotEnrichAll <- function(
     e1$inc1 <- c(0,ifelse(e1$group[-1] != e1$group[-nrow(e1)], 1, 0))
     e1$inc2 <- cumsum(e1$inc + e1$inc1)
 
-    e1$group <- str_replace(e1$group,"KYCG.","")
-    e1$group <- vapply(strsplit(e1$group, "\\."),
-        function(x) paste0(x[2:(length(x)-1)], collapse="."), character(1))
+    if (length(grep("^KYCG", e1$group))>0) {
+        e1$group <- str_replace(e1$group,"KYCG.","")
+        e1$group <- vapply(strsplit(e1$group, "\\."),
+            function(x) paste0(x[2:(length(x)-1)], collapse="."), character(1))
+    }
     if ("gene_name" %in% colnames(e1)) {
         e1$dbname[e1$group == "gene"] <- e1$gene_name[e1$group == "gene"] }
 

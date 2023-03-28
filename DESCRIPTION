@@ -67,6 +67,7 @@ Collate:
     'cell_composition.R'
     'channel_inference.R'
     'cnv.R'
+    'impute.R'
     'ethnicity.R'
     'deidentify.R'
     'detection.R'
