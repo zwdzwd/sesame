@@ -6,6 +6,9 @@
 \alias{_PACKAGE}
 \alias{sesame}
 \title{Analyze DNA methylation data}
+\value{
+package
+}
 \description{
 SEnsible and step-wise analysis of DNA methylation data
 }
@@ -21,6 +24,9 @@ sdf <- readIDATpair(sub('_Grn.idat','',system.file(
 ## The OpenSesame pipeline
 betas <- openSesame(sdf)
 
+}
+\references{
+Zhou W, Triche TJ, Laird PW, Shen H (2018)
 }
 \seealso{
 Useful links:

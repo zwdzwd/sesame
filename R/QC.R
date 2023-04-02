@@ -1,6 +1,7 @@
 #' An S4 class to hold QC statistics
 #'
 #' @slot stat a list to store qc stats
+#' @return sesameQC object
 setClass("sesameQC", representation(stat="list", group="list"))
 
 setMethod("as.data.frame", signature="sesameQC",
@@ -494,6 +495,7 @@ sesameQC_plotIntensVsBetas <- function(
         intens <- totalIntensities(sdf, mask=mask)
     }
 
+    requireNamespace("KernSmooth")
     smoothScatter(log2(intens), getBetas(sdf, mask=mask)[names(intens)],
         xlab='Total Intensity (Log2(M+U))',
         ylab=expression(paste(beta, " (DNA methylation Level)")),

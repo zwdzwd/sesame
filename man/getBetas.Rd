@@ -4,7 +4,13 @@
 \alias{getBetas}
 \title{Get beta Values}
 \usage{
-getBetas(sdf, mask = TRUE, sum.TypeI = FALSE, collapseToPfx = FALSE)
+getBetas(
+  sdf,
+  mask = TRUE,
+  sum.TypeI = FALSE,
+  collapseToPfx = FALSE,
+  collapseMethod = c("mean", "minPval")
+)
 }
 \arguments{
 \item{sdf}{\code{SigDF}}
@@ -15,6 +21,8 @@ getBetas(sdf, mask = TRUE, sum.TypeI = FALSE, collapseToPfx = FALSE)
 
 \item{collapseToPfx}{remove replicate to prefix (e.g., cg number) and
 remove the suffix}
+
+\item{collapseMethod}{mean or minPval}
 }
 \value{
 a numeric vector, beta values

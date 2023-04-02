@@ -643,8 +643,8 @@ KYCG_annoProbes <- function(query, databases, db_names = NULL,
             platform = platform, silent = silent, type = "categorical")
     } else {
         dbs <- databases
-        names(dbs) <- sapply(dbs, function(db) {
-            paste0(attr(db, "group"), "-", attr(db, "dbname"))})
+        names(dbs) <- vapply(dbs, function(db) {
+            paste0(attr(db, "group"), "-", attr(db, "dbname"))}, character(1))
     }
 
     ind <- do.call(cbind, lapply(dbs, function(db) {

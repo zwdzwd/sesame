@@ -7,7 +7,7 @@
 imputeTo(betas, platform = NULL, probes = NULL, tissue = "Blood")
 }
 \arguments{
-\item{betas}{named vector of beta values}
+\item{betas}{named vector or matrix of beta values}
 
 \item{platform}{platform of target imputation}
 
@@ -15,13 +15,19 @@ imputeTo(betas, platform = NULL, probes = NULL, tissue = "Blood")
 
 \item{tissue}{tissue context of imputation}
 }
+\value{
+imputed data, vector or matrix
+}
 \description{
 Impute to platform
 }
 \examples{
 
 betas <- c("cg04707299"=0.2, "cg13380562"=0.9, "cg00000103"=0.1)
-betas2 <- imputeTo(betas, "EPIC")
-betas2[names(betas)]
-head(betas2)
+betas_imputed <- imputeTo(betas, "HM450")
+
+betas <- setNames(seq(0,1,length.out=3),
+    c("cg00004963_TC21", "cg00004963_TC22", "cg00004747_TC21"))
+betas_imputed <- imputeTo(betas, "HM450")
+
 }
