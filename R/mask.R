@@ -178,16 +178,6 @@ qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL,
     } else {
         addMask(sdf, masks)
     }
-        
-    ## df <- listAvailableMasks(platform, verbose = verbose)
-    ## if(is.null(df)) { return(sdf) }
-    ## mask_names <- df$mask_name[df$mask_name %in% mask_names]
-    ## if (length(mask_names) > 0 && !is.null(mask_names)) {
-    ##     masks <- c(masks, 
-    ##         do.call(c, KYCG_getDBs(sprintf(
-    ##             "%s.Mask", platform),
-    ##             mask_names, silent=!verbose)))
-    ## }
 }
 
 #' Mask SigDF by probe ID prefix

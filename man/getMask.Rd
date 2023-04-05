@@ -22,6 +22,7 @@ get probe masking by mask names
 
 recommendedMaskNames()[["EPIC"]]
 length(getMask("EPIC"))
-length(getMask("MM450"))
+length(getMask("HM450"))
+length(getMask("MM285"))
 
 }

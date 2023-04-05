@@ -14,4 +14,6 @@ The returned name is the db name used in KYCG.mask
 }
 \examples{
 recommendedMaskNames()[["EPIC"]]
+recommendedMaskNames()[["EPICv2"]]
+
 }
