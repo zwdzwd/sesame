@@ -470,19 +470,21 @@ testEnrichmentSpearman <- function(query, database) {
 }
 
 guess_dbnames <- function(nms, platform = NULL,
-    allow_multi = FALSE, type = NULL, silent = FALSE) {
+    allow_multi = FALSE, type = NULL, silent = FALSE,
+    ignore.case = FALSE) {
     
     gps <- KYCG_listDBGroups(type = type)
     nms <- do.call(c, lapply(nms, function(nm) {
         if (nm %in% gps$Title) {
             return(nm)
-        } else if (length(grep(nm, gps$Title)) >= 1) {
-            ret <- grep(nm, gps$Title, value=TRUE)
+        } else if (length(grep(nm, gps$Title, ignore.case=ignore.case)) >= 1) {
+            ret <- grep(nm, gps$Title, value=TRUE, ignore.case=ignore.case)
             if (!allow_multi) { ret <- ret[1]; }
             return(ret)
-        } else if (length(grep(nm, gps$Title)) == 0) {
+        } else if (length(grep(nm, gps$Title, ignore.case=ignore.case)) == 0) {
             res <- gps$Title[apply(do.call(cbind, lapply(
-                strsplit(nm, "\\.")[[1]], function(q1) grepl(q1, gps$Title))),
+                strsplit(nm, "\\.")[[1]],
+                function(q1) grepl(q1, gps$Title, ignore.case=ignore.case))),
                 1, all)]
             if (length(res) == 1) {
                 return(res[1])
@@ -576,6 +578,7 @@ KYCG_loadDBs <- function(in_paths, group_use_filename=FALSE) {
 #' that platform.
 #' @param summary return a summary of database instead of db itself
 #' @param allow_multi allow multiple groups to be returned for
+#' @param ignore.case ignore case or not
 #' @param type numerical, categorical, default: all
 #' @param silent no messages
 #' each query.
@@ -585,14 +588,16 @@ KYCG_loadDBs <- function(in_paths, group_use_filename=FALSE) {
 #' dbs <- KYCG_getDBs(c("MM285.chromHMM", "MM285.probeType"))
 #' @export
 KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
-    summary = FALSE, allow_multi = FALSE, type = NULL, silent = FALSE) {
+    summary = FALSE, allow_multi = FALSE,
+    ignore.case = FALSE, type = NULL, silent = FALSE) {
     
     if (!is.character(group_nms)) {
         return(group_nms)
     }
 
     group_nms <- guess_dbnames(group_nms, platform = platform,
-        allow_multi = TRUE, type = type, silent = silent)
+        allow_multi = TRUE, type = type, silent = silent,
+        ignore.case = ignore.case)
     ## group_nms <- group_nms[sesameDataHas(group_nms)]
     group_nms <- group_nms[group_nms %in% sesameDataList()$Title]
     if (length(group_nms) == 0) {

@@ -30,7 +30,8 @@ sum(sdf$mask)
 sum(qualityMask(sdf)$mask)
 sum(qualityMask(sdf, mask_names = NULL, prefixes = "rs")$mask)
 
-## list available masks, the mask_name column
+## list available masks, the dbname column
 listAvailableMasks(sdfPlatform(sdf))
+listAvailableMasks("EPICv2")
 
 }

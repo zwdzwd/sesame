@@ -65,8 +65,8 @@ resetMask <- function(sdf, verbose = FALSE) {
 #' @export
 listAvailableMasks <- function(platform, verbose = FALSE) {
     stopifnot(is.character(platform))
-    KYCG_getDBs(sprintf(
-        "%s.mask", platform), summary=TRUE, silent=!verbose)
+    KYCG_getDBs(sprintf("%s.Mask", platform),
+        summary=TRUE, silent=!verbose, ignore.case = TRUE)
 }
 
 ## list probes masked by probe nonuniqueness
@@ -74,13 +74,67 @@ nonuniqMask <- function(platform, verbose = FALSE) {
     stopifnot(is.character(platform))
     df <- listAvailableMasks(platform, verbose = verbose)
     if(is.null(df)) { return(NULL) }
-    mask_names <- c("nonunique", "sub35_copy", "multi", "design_issue")
+    mask_names <- c("M_nonuniq", "nonunique",
+        "sub35_copy", "multi", "design_issue")
     mask_names <- df$mask_name[df$mask_name %in% mask_names]
     if (length(mask_names) > 0) {
-        do.call(c, KYCG_getDBs(sprintf("%s.mask", platform),
+        do.call(c, KYCG_getDBs(sprintf("%s.Mask", platform),
             mask_names, silent=!verbose))
     } else {
         NULL
+    }
+}
+
+#' Recommended mask names for each Infinium platform
+#'
+#' The returned name is the db name used in KYCG.mask
+#' @return a named list of mask names
+#' @examples
+#' recommendedMaskNames()[["EPIC"]]
+#' recommendedMaskNames()[["EPICv2"]]
+#' 
+#' @export
+recommendedMaskNames <- function() {
+    list(
+        EPICv2 = c(
+            "M_1baseSwitchSNPcommon_5pt",
+            "M_2extBase_SNPcommon_5pt",
+            "M_mapping", "M_nonuniq", "M_SNPcommon_5pt"),
+        MM285 = c("ref_issue", "nonunique", "design_issue"),
+        EPIC = c(
+            "mapping", "channel_switch", "snp5_GMAF1p",
+            "extension", "sub30_copy"),
+        HM450 = c(
+            "mapping", "channel_switch", "snp5_GMAF1p",
+            "extension", "sub30_copy"),
+        HM27 = c("mask"))
+}
+
+#' get probe masking by mask names
+#' 
+#' @param platform EPICv2, EPIC, HM450, HM27, ...
+#' @param mask_names mask names (see listAvailableMasks), by default:
+#' "recommended" masking will be applied. see recommendedMaskNames() for detail.
+#' @return a vector of probe ID
+#' @examples
+#'
+#' recommendedMaskNames()[["EPIC"]]
+#' length(getMask("EPIC"))
+#' length(getMask("HM450"))
+#' length(getMask("MM285"))
+#' 
+#' @export
+getMask <- function(platform = "EPICv2", mask_names = "recommended") {
+    stopifnot(is.character(platform))
+    if (is.null(mask_names)) {
+        mask_names <- recommendedMaskNames()[[platform]]
+    }
+    masks <- KYCG_getDBs(sprintf("%s.Mask", platform),
+        mask_names, silent=TRUE, ignore.case=TRUE)
+    if (is.null(masks)) {
+        NULL
+    } else {
+        unique(do.call(c, masks))
     }
 }
 
@@ -102,8 +156,9 @@ nonuniqMask <- function(platform, verbose = FALSE) {
 #' sum(qualityMask(sdf)$mask)
 #' sum(qualityMask(sdf, mask_names = NULL, prefixes = "rs")$mask)
 #'
-#' ## list available masks, the mask_name column
+#' ## list available masks, the dbname column
 #' listAvailableMasks(sdfPlatform(sdf))
+#' listAvailableMasks("EPICv2")
 #' 
 #' @export 
 qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL,
@@ -117,17 +172,22 @@ qualityMask <- function(sdf, mask_names = "recommended", prefixes = NULL,
 
     ## mask by predefined sets
     platform <- sdfPlatform(sdf, verbose = verbose)
-    df <- listAvailableMasks(platform, verbose = verbose)
-    if(is.null(df)) { return(sdf) }
-    mask_names <- df$mask_name[df$mask_name %in% mask_names]
-    if (length(mask_names) > 0 && !is.null(mask_names)) {
-        masks <- c(masks, 
-            do.call(c, KYCG_getDBs(sprintf(
-                "%s.mask", platform),
-                mask_names, silent=!verbose)))
+    masks <- c(masks, getMask(platform, mask_names = mask_names))
+    if (is.null(masks)) {
+        return(sdf)
+    } else {
+        addMask(sdf, masks)
     }
-    
-    addMask(sdf, masks)
+        
+    ## df <- listAvailableMasks(platform, verbose = verbose)
+    ## if(is.null(df)) { return(sdf) }
+    ## mask_names <- df$mask_name[df$mask_name %in% mask_names]
+    ## if (length(mask_names) > 0 && !is.null(mask_names)) {
+    ##     masks <- c(masks, 
+    ##         do.call(c, KYCG_getDBs(sprintf(
+    ##             "%s.Mask", platform),
+    ##             mask_names, silent=!verbose)))
+    ## }
 }
 
 #' Mask SigDF by probe ID prefix
