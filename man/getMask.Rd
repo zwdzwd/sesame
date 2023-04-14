@@ -4,13 +4,21 @@
 \alias{getMask}
 \title{get probe masking by mask names}
 \usage{
-getMask(platform = "EPICv2", mask_names = "recommended")
+getMask(platform = "EPICv2", mask_names = NULL, use_recommended = TRUE)
 }
 \arguments{
 \item{platform}{EPICv2, EPIC, HM450, HM27, ...}
 
-\item{mask_names}{mask names (see listAvailableMasks), by default:
-"recommended" masking will be applied. see recommendedMaskNames() for detail.}
+\item{mask_names}{mask names (see listAvailableMasks), by default: NULL
+Note that setting this does not turn off recommended masking
+to turn off recommend masking, you need
+mask_names = "<your mask names>", use_recommended = FALSE
+to turn off all masking, you need
+mask_names = NULL, use_recommended = FALSE}
+
+\item{use_recommended}{whether or not to apply recommmended masking,
+by default: TRUE.
+see recommendedMaskNames() for detail.}
 }
 \value{
 a vector of probe ID
