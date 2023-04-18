@@ -528,6 +528,21 @@ KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
     gps
 }
 
+#' A convenience function for downloading knowledgebase sets
+#'
+#' @param platform EPICv2, EPIC, HM450 etc.
+#' @param fdr directory to which feature files will be downloaded
+#' @param url 1 or 2
+#' @return untarred feature folders
+#' @export
+KYCG_downloadDBs <- function(platform, fdr, url=c(1,2)) {
+
+    fdr <- "~/Downloads/test"
+    dir.create(fdr)
+    download.file("https://zhouserver.research.chop.edu/InfiniumAnnotation/EPICv2/EPICv2.hg38.annotations.tar.gz", paste0(fdr,"/tmp.tar.gz"))
+    untar(paste0(fdr,"/tmp.tar.gz"),exdir=paste0(fdr,"/"))
+}
+
 #' Load database groups
 #'
 #' @param in_paths folder that contains all databases
