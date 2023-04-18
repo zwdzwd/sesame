@@ -129,7 +129,7 @@ natively supported and this extra operation will be come unnecessary. Here is
 an example:
 
 ```{r base13, eval=FALSE}
-addr = sesameAnno_buildAddressFile("EPICv2")
+addr = sesameAnno_buildAddressFile("https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/EPICv2/hg38.tsv.gz")
 betas = openSesame("IDAT_folder", manifest=addr)
 ```
 
