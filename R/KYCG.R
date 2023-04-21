@@ -569,7 +569,7 @@ KYCG_downloadDBs <- function(platform, fdr) {
 #' @export
 KYCG_loadDBs <- function(in_paths, group_use_filename=FALSE) {
     if (length(in_paths)==1 && dir.exists(in_paths)) {
-        groupnms <- list.files(in_paths)
+        groupnms <- list.files(in_paths, recursive=TRUE)
         in_paths <- file.path(in_paths, groupnms)
     } else {
         groupnms <- basename(in_paths)

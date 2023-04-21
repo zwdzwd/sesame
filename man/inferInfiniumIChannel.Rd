@@ -9,6 +9,7 @@ sdf@extra$IGG and sdf@extra$IRR slot.}
 inferInfiniumIChannel(
   sdf,
   switch_failed = FALSE,
+  mask_failed = FALSE,
   verbose = FALSE,
   summary = FALSE
 )
@@ -17,6 +18,8 @@ inferInfiniumIChannel(
 \item{sdf}{a \code{SigDF}}
 
 \item{switch_failed}{whether to switch failed probes (default to FALSE)}
+
+\item{mask_failed}{whether to mask failed probes (default to FALSE)}
 
 \item{verbose}{whether to print correction summary}
 
