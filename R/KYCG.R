@@ -534,24 +534,24 @@ KYCG_listDBGroups <- function(filter = NULL, path = NULL, type = NULL) {
     gps
 }
 
-#' A convenience function for downloading knowledgebase sets
-#'
-#' @param platform EPICv2, EPIC, HM450 etc.
-#' @param fdr directory to which feature files will be downloaded
-#' @return untarred feature folders
-#' @export
-KYCG_downloadDBs <- function(platform, fdr) {
-    fdr <- path.expand(fdr)
-    dir.create(fdr)
-    URL <- paste0("https://zhouserver.research.chop.edu/",
-        sprintf("InfiniumAnnotation/%s/annotations.tar.gz", platform))
-    download.file(URL, paste0(fdr,"/tmp.tar.gz"))
-    untar(paste0(fdr,"/tmp.tar.gz"), exdir=paste0(fdr,"/"))
-    unlink(paste0(fdr,"/tmp.tar.gz"))
-    db_groups <- list.files(fdr, recursive=TRUE)
-    message(sprintf("Downloaded %d knowledgebase groups to %s",
-        length(db_groups), fdr))
-}
+## #' A convenience function for downloading knowledgebase sets
+## #'
+## #' @param platform EPICv2, EPIC, HM450 etc.
+## #' @param fdr directory to which feature files will be downloaded
+## #' @return untarred feature folders
+## #' @export
+## KYCG_downloadDBs <- function(platform, fdr) {
+##     fdr <- path.expand(fdr)
+##     dir.create(fdr)
+##     URL <- paste0("https://zhouserver.research.chop.edu/",
+##         sprintf("InfiniumAnnotation/%s/annotations.tar.gz", platform))
+##     download.file(URL, paste0(fdr,"/tmp.tar.gz"))
+##     untar(paste0(fdr,"/tmp.tar.gz"), exdir=paste0(fdr,"/"))
+##     unlink(paste0(fdr,"/tmp.tar.gz"))
+##     db_groups <- list.files(fdr, recursive=TRUE)
+##     message(sprintf("Downloaded %d knowledgebase groups to %s",
+##         length(db_groups), fdr))
+## }
 
 #' Load database groups
 #'

@@ -48,12 +48,13 @@ MValueToBetaValue <- function(m) {
 #' installation issues.
 #'
 #' @return print the version of sesame, sesameData, biocondcutor and R
+#' @importFrom utils packageVersion
 #' @export
 #' @examples
 #' sesame_checkVersion()
 sesame_checkVersion <- function() {
     rv <- R.Version()
-    cat(paste0(
+    msg <- paste0(
         "SeSAMe requires matched versions of ",
         "R, sesame, sesameData and ExperimentHub.\n",
         "Here is the current versions installed:\n",
@@ -61,5 +62,6 @@ sesame_checkVersion <- function() {
         sprintf("Bioconductor: %s\n", BiocManager::version()),
         sprintf("sesame: %s\n", packageVersion("sesame")),
         sprintf("sesameData: %s\n", packageVersion("sesameData")),
-        sprintf("ExperimentHub: %s\n", packageVersion("ExperimentHub"))))
+        sprintf("ExperimentHub: %s\n", packageVersion("ExperimentHub")))
+    message(msg)
 }

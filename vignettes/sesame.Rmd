@@ -17,11 +17,13 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Preparation
 
-> As sesame and sesameData are under active development, this documentation is
-  specific to the following version of R, sesame, sesameData and ExperimentHub:
-
-```{r message=FALSE}
+```{r message=FALSE, warning=FALSE}
 library(sesame)
+```
+
+```{r}
+## As sesame and sesameData are under active development, this documentation is
+## specific to the following version of R, sesame, sesameData and ExperimentHub:
 sesame_checkVersion()
 ```
 

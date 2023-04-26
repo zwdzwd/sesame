@@ -11,6 +11,7 @@
 #' ..., genome = sesameAnno_buildManifestGRanges("downloaded_file"),...
 #' to this function.
 #' @return when output is null, return a data.frame, otherwise NULL
+#' @importFrom utils write.table
 #' @examples
 #'
 #' betas.tissue <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
