@@ -11,7 +11,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r message=FALSE, results="hide"}
+```{r message=FALSE, warning=FALSE, results="hide"}
 library(sesame)
 sesameDataCache()
 ```

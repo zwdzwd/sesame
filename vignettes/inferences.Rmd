@@ -15,7 +15,7 @@ SeSAMe implements inference of sex, age, ethnicity. These are valuable
 information for checking the integrity of the experiment and detecting sample
 swaps.
 
-```{r inf1, echo=FALSE, message=FALSE}
+```{r inf1, warning=FALSE, echo=FALSE, message=FALSE}
 library(sesame)
 sesameDataCache()
 sdf = sesameDataGet('EPIC.1.SigDF')

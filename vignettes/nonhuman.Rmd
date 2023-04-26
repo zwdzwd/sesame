@@ -29,7 +29,7 @@ Mammal40 array.
 We first load required library and perform sesame data caching (only needed
 at new SeSAMe installation).
 
-```{r nh1, message=FALSE}
+```{r nh1, message=FALSE, warning=FALSE}
 library(sesame)
 sesameDataCache()
 ```
