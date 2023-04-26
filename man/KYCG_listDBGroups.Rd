@@ -4,10 +4,12 @@
 \alias{KYCG_listDBGroups}
 \title{List database group names}
 \usage{
-KYCG_listDBGroups(filter = NULL, type = NULL)
+KYCG_listDBGroups(filter = NULL, path = NULL, type = NULL)
 }
 \arguments{
 \item{filter}{keywords for filtering}
+
+\item{path}{file path to downloaded knowledgebase sets}
 
 \item{type}{categorical, numerical (default: all)}
 }
@@ -19,4 +21,5 @@ List database group names
 }
 \examples{
 head(KYCG_listDBGroups("chromHMM"))
+## or KYCG_listDBGroups(path = "~/Downloads")
 }

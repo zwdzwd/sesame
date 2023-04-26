@@ -235,6 +235,30 @@ KYCG_plotLollipop(results, label="gene_name")
 
 As expected, we recover our targeted gene (Dnmt3a).
 
+# Get more database Sets
+
+Some commonly used database sets are stored in ExperimentHub/sesameData package. 
+But more database sets can be found 
+[here](http://zwdzwd.github.io/InfiniumAnnotation#KYCG). You can use a 
+convenience function to download these database sets to a local folder.
+
+```{r eval=FALSE}
+KYCG_downloadDBs("EPICv2", "~/Downloads/test")
+KYCG_listDBGroups(path = "~/Downloads/test")
+##  [1] "ABCompartment.20220911.gz" "Blacklist.20220304.gz"    
+##  [3] "CGI.20220904.gz"           "ChromHMM.20220303.gz"     
+##  [5] "CTCFbind.20220911.gz"      "HM.20221013.gz"           
+##  [7] "ImprintingDMR.20220818.gz" "MetagenePC.20220911.gz"   
+##  [9] "nFlankCG.20220321.gz"      "PMD.20220911.gz"          
+## [11] "ProbeType.gz"              "REMCChromHMM.20220911.gz" 
+## [13] "rmsk1.20220307.gz"         "rmsk2.20220321.gz"        
+## [15] "Tetranuc2.20220321.gz"     "TFBS.20220921.gz"         
+## [17] "TFBSrm.20221005.gz"       
+dbs <- KYCG_loadDBs("~/Downloads/test/") # all database files in the folder
+## or
+dbs <- KYCG_loadDBs("~/Downloads/test/CGI.20220904.gz") # one database file
+```
+
 # GO/Pathway Enrichment
 
 One can get all the genes associated with a probe set by

@@ -20,15 +20,18 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 > As sesame and sesameData are under active development, this documentation is
   specific to the following version of R, sesame, sesameData and ExperimentHub:
 
-```{r}
-sapply(c("sesame","sesameData","ExperimentHub"),
-    function(x) as.character(packageVersion(x)))
-with(R.Version(), paste0(major, ".", minor))
+```{r message=FALSE}
+library(sesame)
+sesame_checkVersion()
 ```
 
 We recommend updating your R, ExperimentHub, sesameData and sesame to use this
-documentation consistently. If you have installed directly from github, we
-should make sure the compatible ExperimentHub is installed.
+documentation consistently. If you have installed directly from github, please
+make sure the compatible ExperimentHub is installed.
+
+If you use a previous version, please checkout the vignette that corresponds to
+the right version here
+[https://zhou-lab.github.io/sesame/dev/supplemental.html#Versions](https://zhou-lab.github.io/sesame/dev/supplemental.html#Versions)
 
 **CRITICAL:** After a new installation, one must cache the associated
 annotation data using the following command. This needs to be done only once
@@ -36,7 +39,6 @@ per SeSAMe installation/update. Caching data to local guarantees proper data
 retrieval and saves internet traffic.
 
 ```{r message=FALSE}
-library(sesame)
 sesameDataCache()
 ```
 

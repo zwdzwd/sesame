@@ -507,25 +507,50 @@ guess_dbnames <- function(nms, platform = NULL,
 #' List database group names
 #'
 #' @param filter keywords for filtering
+#' @param path file path to downloaded knowledgebase sets
 #' @param type categorical, numerical (default: all)
 #' @return a list of db group names
 #' @examples
 #' head(KYCG_listDBGroups("chromHMM"))
+#' ## or KYCG_listDBGroups(path = "~/Downloads")
 #' @export
-KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
-    
-    gps <- sesameDataList("KYCG", full=TRUE)[,c("Title","Description")]
-    gps$type <- vapply(strsplit(
-        gps$Description, " "), function(x) x[2], character(1))
-    gps$Description <- str_replace(
-        gps$Description, "KYCG categorical database holding ", "")
-    if (!is.null(filter)) {
-        gps <- gps[grepl(filter, gps$Title),]
-    }
-    if (!is.null(type)) {
-        gps <- gps[gps$type %in% type,]
+KYCG_listDBGroups <- function(filter = NULL, path = NULL, type = NULL) {
+
+    if (is.null(path)) {
+        gps <- sesameDataList("KYCG", full=TRUE)[,c("Title","Description")]
+        gps$type <- vapply(strsplit(
+            gps$Description, " "), function(x) x[2], character(1))
+        gps$Description <- str_replace(
+            gps$Description, "KYCG categorical database holding ", "")
+        if (!is.null(filter)) {
+            gps <- gps[grepl(filter, gps$Title),]
+        }
+        if (!is.null(type)) {
+            gps <- gps[gps$type %in% type,]
+        }
+    } else {
+        gps <- basename(list.files(path, recursive = TRUE))
     }
     gps
+}
+
+#' A convenience function for downloading knowledgebase sets
+#'
+#' @param platform EPICv2, EPIC, HM450 etc.
+#' @param fdr directory to which feature files will be downloaded
+#' @return untarred feature folders
+#' @export
+KYCG_downloadDBs <- function(platform, fdr) {
+    fdr <- path.expand(fdr)
+    dir.create(fdr)
+    URL <- paste0("https://zhouserver.research.chop.edu/",
+        sprintf("InfiniumAnnotation/%s/annotations.tar.gz", platform))
+    download.file(URL, paste0(fdr,"/tmp.tar.gz"))
+    untar(paste0(fdr,"/tmp.tar.gz"), exdir=paste0(fdr,"/"))
+    unlink(paste0(fdr,"/tmp.tar.gz"))
+    db_groups <- list.files(fdr, recursive=TRUE)
+    message(sprintf("Downloaded %d knowledgebase groups to %s",
+        length(db_groups), fdr))
 }
 
 #' Load database groups
@@ -544,7 +569,7 @@ KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
 #' @export
 KYCG_loadDBs <- function(in_paths, group_use_filename=FALSE) {
     if (length(in_paths)==1 && dir.exists(in_paths)) {
-        groupnms <- list.files(in_paths)
+        groupnms <- list.files(in_paths, recursive=TRUE)
         in_paths <- file.path(in_paths, groupnms)
     } else {
         groupnms <- basename(in_paths)
