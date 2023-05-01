@@ -86,9 +86,15 @@ plotTranscripts <- function(
 
 plotMapLines <- function(probes, beg, end) {
     nprobes <- length(probes)
-    grid.segments(
-    ((GenomicRanges::start(probes) - beg) / (end - beg)), 1,
-    ((seq_len(nprobes) - 0.5)/nprobes), 0, draw=FALSE)
+    x00 <- ((GenomicRanges::start(probes) - beg) / (end - beg))
+    y0 <- rep(0.5, length.out=length(probes))
+    x1 <- ((seq_len(nprobes) - 0.5)/nprobes)
+    y1 <- rep(0, length.out=nprobes)
+    x0 <- c(x00, x00)
+    x1 <- c(x1, x00)
+    y0 <- c(y0, rep(0.5, length.out=length(probes)))
+    y1 <- c(y1, rep(1, length.out=length(probes)))
+    grid.segments(x0, y0, x1, y1, draw=FALSE)
 }
 
 plotCytoBand <- function(
@@ -114,20 +120,20 @@ plotCytoBand <- function(
     pltx0 <- (c(beg, end)-chromBeg)/chromWid
     gList(
         grid.text( # coordinate name
-            sprintf("%s:%d-%d", chrom, beg, end), 0, 0.6,
+            sprintf("%s:%d-%d", chrom, beg, end), 0, 0.9,
             just = c('left','bottom'), draw = FALSE),
-        grid.rect(
+        ## cytoband box
+        grid.rect(0, 0.35, 1, 0.35, just = c("left", "bottom"),
+            gp = gpar(col = "black", lwd=2, lty="solid"), draw = FALSE),
+        grid.rect( # cytoband
             vapply(cytoBand.target$chromStart,
                 function(x) (x-chromBeg)/chromWid, 1),
             0.35,
             (cytoBand.target$chromEnd - cytoBand.target$chromStart)/chromWid,
-            0.2, gp = gpar(fill = bandColor, col = bandColor),
+            0.35, gp = gpar(fill = bandColor, col = bandColor),
             just = c('left','bottom'), draw = FALSE),
-        grid.rect(0, 0.35, 1, 0.2, just = c("left", "bottom"), draw = FALSE),
-        grid.segments( # projection lines
-            x0 = pltx0, y0 = 0.3, x1 = c(0,1), y1 = 0.1, draw = FALSE),
         grid.segments( # sentinel bar
-            x0 = pltx0, y0 = 0.3, x1 = pltx0, y1 = 0.6,
+            x0 = pltx0, y0 = 0.1, x1 = pltx0, y1 = 0.9,
             gp = gpar(col = "red"), draw = FALSE))
 }
 
@@ -140,6 +146,7 @@ plotCytoBand <- function(
 #' @param plt.mapLines map line plot objects
 #' @param plt.cytoband cytoband plot objects
 #' @param heat.height heatmap height (auto inferred based on rows)
+#' @param mapLine.height height of the map lines
 #' @param show.probeNames whether to show probe names
 #' @param show.samples.n number of samples to show (default: all)
 #' @param show.sampleNames whether to show sample names
@@ -149,7 +156,7 @@ plotCytoBand <- function(
 #' @return a grid object
 assemble_plots <- function(
     betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband,
-    heat.height = NULL, 
+    heat.height = NULL, mapLine.height = 0.2,
     show.probeNames = TRUE, show.samples.n = NULL,
     show.sampleNames = TRUE, sample.name.fontsize = 10,
     dmin = 0, dmax = 1) {
@@ -158,7 +165,7 @@ assemble_plots <- function(
     if (is.null(heat.height) && length(txns) > 0) {
         heat.height <- 10 / length(txns); }
     w <- WGrob(plt.txns, name = 'txn')
-    w <- w + WGrob(plt.mapLines, Beneath(pad=0, height=0.1))
+    w <- w + WGrob(plt.mapLines, Beneath(pad=0, height=mapLine.height))
     w <- w + WHeatmap(
         t(betas), Beneath(height = heat.height),
         name = 'betas',

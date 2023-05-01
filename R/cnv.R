@@ -47,7 +47,8 @@ cnSegmentation <- function(
         if (platform == "EPIC") {
             sdfs.normal <- sesameDataGet("EPIC.5.SigDF.normal")
         } else {
-            stop(sprintf("Please provide the sdfs.normal argument.", platform))
+            stop(sprintf(
+                "Please provide sdfs.normal=. No default for %s", platform))
         }
     }
     
@@ -302,7 +303,7 @@ visualizeSegments <- function(seg, to.plot=NULL) {
     seg.beg <- (seqstart[sigs$chrom] + sigs$loc.start) / totlen
     seg.end <- (seqstart[sigs$chrom] + sigs$loc.end) / totlen
     p <- p + ggplot2::geom_segment(ggplot2::aes(x = seg.beg, xend = seg.end,
-        y = sigs$seg.mean, yend=sigs$seg.mean), size=1.5, color='blue')
+        y = sigs$seg.mean, yend=sigs$seg.mean), size=1.0, color='blue')
 
     ## chromosome boundary
     p <- p + ggplot2::geom_vline(xintercept=seqstart[-1]/totlen,

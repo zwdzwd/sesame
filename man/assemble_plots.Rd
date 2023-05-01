@@ -12,6 +12,7 @@ assemble_plots(
   plt.mapLines,
   plt.cytoband,
   heat.height = NULL,
+  mapLine.height = 0.2,
   show.probeNames = TRUE,
   show.samples.n = NULL,
   show.sampleNames = TRUE,
@@ -34,6 +35,8 @@ assemble_plots(
 \item{plt.cytoband}{cytoband plot objects}
 
 \item{heat.height}{heatmap height (auto inferred based on rows)}
+
+\item{mapLine.height}{height of the map lines}
 
 \item{show.probeNames}{whether to show probe names}
 
