@@ -101,7 +101,7 @@ kable(df, caption="Available Epigenetic Clocks")
 # Copy Number
 
 See [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.16/supplemental.html#cnv)
+Vignette](https://zhou-lab.github.io/sesame/v1.18/supplemental.html#cnv)
 
 # Cell Count Deconvolution
 

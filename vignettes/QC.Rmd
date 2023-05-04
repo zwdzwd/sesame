@@ -130,7 +130,7 @@ plot for each metric calculated.
   swaps.
 
 More about quality control plots can be found in [Supplemental
-Vignette](https://zhou-lab.github.io/sesame/v1.16/supplemental.html#qc).
+Vignette](https://zhou-lab.github.io/sesame/v1.18/supplemental.html#qc).
 
 # Session Info
 
