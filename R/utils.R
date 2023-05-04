@@ -65,3 +65,16 @@ sesame_checkVersion <- function() {
         sprintf("ExperimentHub: %s\n", packageVersion("ExperimentHub")))
     message(msg)
 }
+
+
+#' sesamize function is deprecated.
+#' Please check https://github.com/zwdzwd/sesamize for previous scripts
+#'
+#' @param ... arguments for sesamize
+#' @return a message text for deprecated function
+#' @export
+#' @examples
+#' cat("Deprecated. see https://github.com/zwdzwd/sesamize")
+sesamize <- function(...) {
+    .Deprecated("https://github.com/zwdzwd/sesamize")
+}
