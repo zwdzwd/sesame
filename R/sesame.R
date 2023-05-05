@@ -262,12 +262,13 @@ getAFs <- function(sdf, ...) {
     c(betas[startsWith(names(betas), "rs")], getAFTypeIbySumAlleles(sdf))
 }
 
+## return NULL if failed
 inferPlatformFromTango <- function(res) {
     sig <- sesameDataGet('idatSignature')
     cnts <- vapply(
         sig, function(x) sum(x %in% rownames(res$Quants)), integer(1))
     if (max(cnts) < min(vapply(sig, length, numeric(1)))) {
-        stop("Cannot infer platform. Please provide custom manifest.")
+        return(NULL)
     }
     names(which.max(cnts))
 }
@@ -275,7 +276,7 @@ inferPlatformFromTango <- function(res) {
 ## Import one IDAT file
 ## return a data frame with 2 columns, corresponding to
 ## cy3 (Grn) and cy5 (Red) color channel signal
-readIDAT1 <- function(grn.name, red.name, platform='') {
+readIDAT1 <- function(grn.name, red.name) {
     ida.grn <- suppressWarnings(illuminaio::readIDAT(grn.name))
     ida.red <- suppressWarnings(illuminaio::readIDAT(red.name))
     d <- cbind(
@@ -283,13 +284,10 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
         cy5 = ida.red$Quants[,"Mean"])
     colnames(d) <- c('G', 'R')
 
-    if (platform != '') {
-        attr(d, 'platform') <- platform
-    } else {
-        ## this is not always accurate
-        ## TODO should identify unique tango IDs.
-        attr(d, 'platform') <- inferPlatformFromTango(ida.red)
-    }
+    ## this is not always accurate
+    ## TODO should identify unique tango IDs.
+    attr(d, 'platform') <- inferPlatformFromTango(ida.red)
+
     d
 }
 
@@ -311,7 +309,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
 readIDATpair <- function(
-    prefix.path, platform = '', manifest = NULL,
+    prefix.path, manifest = NULL, platform = '',
     controls = NULL, verbose = FALSE) {
     
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
@@ -334,7 +332,17 @@ readIDATpair <- function(
         message("Reading IDATs for ", basename(prefix.path), "...")
     }
 
-    dm <- readIDAT1(grn.name, red.name, platform=platform)
+    dm <- readIDAT1(grn.name, red.name)
+    if (platform != "") { # override inferred platform
+        attr(dm, "platform") <- platform
+    } else if (is.null(attr(dm, "platform"))) { # cannot infer
+        if (!is.null(manifest)) {               # manifest is provided
+            attr(dm, "platform") <- "custom"
+        } else { # no manifest provided
+            stop("Cannot infer platform. Please provide custom manifest.")
+        }
+    }
+    
     if (is.null(manifest)) { # pre-built platforms, EPIC, HM450, HM27 etc
         df_address <- sesameDataGet(paste0(
             attr(dm, 'platform'), '.address'))

@@ -153,12 +153,12 @@ best preprocessing strategy based on our experience.
 ```{r base10, echo=FALSE, result="asis"}
 library(knitr)
 df <- data.frame(rbind(
-   c("EPIC/HM450", "human", "QCDPB"),
-   c("EPIC/HM450", "non-human organism", "SQCDPB"),
-   c("MM285", "mouse", "TQCDPB"),
-   c("MM285", "non-mouse organism", "SQCDPB"),
-   c("Mammal40", "human", "HCDPB"),
-   c("Mammal40", "non-human organism", "SHCDPB")))
+    c("EPICv2/EPIC/HM450", "human", "QCDPB"),
+    c("EPICv2/EPIC/HM450", "non-human organism", "SQCDPB"),
+    c("MM285", "mouse", "TQCDPB"),
+    c("MM285", "non-mouse organism", "SQCDPB"),
+    c("Mammal40", "human", "HCDPB"),
+    c("Mammal40", "non-human organism", "SHCDPB")))
 colnames(df) <- c("Platform", "Sample Organism", "Prep Code")
 kable(df, caption="Recommended Preprocessing")
 ```
