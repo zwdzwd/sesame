@@ -741,6 +741,9 @@ dbStats <- function(
     }))
     if (!is.null(names(dbs))) {
         colnames(stats) <- names(dbs)
+    } else { # use attributes instead of names
+        colnames(stats) <- vapply(dbs,
+            function(x) attr(x, "dbname"), character(1))
     }
     rownames(stats) <- colnames(betas)
     if (long) {
