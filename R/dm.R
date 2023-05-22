@@ -214,8 +214,14 @@ print.DMLSummary <- function(x, ...) {
 #' sesameDataGet_resetEnv()
 #' @export
 summaryExtractTest <- function(smry) {
+
+    ## exclude the sites with NAs, maybe we we can do better?
+    smrylen <- vapply(smry, function(x) { nrow(x$coefficients); }, numeric(1))
+    smry <- smry[smrylen == max(smrylen)]
+    
     est <- do.call(bind_rows, lapply(smry, function(x) {
         x$coefficients[,'Estimate']; }))
+
     colnames(est) <- paste0("Est_", colnames(est))
     pvals <- do.call(bind_rows, lapply(smry, function(x) {
         x$coefficients[,"Pr(>|t|)"] }))
