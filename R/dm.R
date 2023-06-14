@@ -215,6 +215,7 @@ print.DMLSummary <- function(x, ...) {
 #' @export
 summaryExtractTest <- function(smry) {
 
+    contr2lvs <- attr(smry, "contr2lvs")
     ## exclude the sites with NAs, maybe we we can do better?
     smrylen <- vapply(smry, function(x) { nrow(x$coefficients); }, numeric(1))
     smry <- smry[smrylen == max(smrylen)]
@@ -232,7 +233,7 @@ summaryExtractTest <- function(smry) {
     f_pvals <- do.call(rbind, lapply(smry, function(x) {
         x$Ftest["pval",,drop=FALSE] }))
     colnames(f_pvals) <- paste0("FPval_", colnames(f_pvals))
-    contr2lvs <- attr(smry, "contr2lvs")
+    
     ## this doesn't account for interaction terms
     effsize <- do.call(cbind, lapply(names(contr2lvs), function(cont) {
         lvs <- contr2lvs[[cont]]
