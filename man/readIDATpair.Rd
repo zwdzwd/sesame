@@ -6,8 +6,8 @@
 \usage{
 readIDATpair(
   prefix.path,
-  platform = "",
   manifest = NULL,
+  platform = "",
   controls = NULL,
   verbose = FALSE
 )
@@ -15,9 +15,9 @@ readIDATpair(
 \arguments{
 \item{prefix.path}{sample prefix without _Grn.idat and _Red.idat}
 
-\item{platform}{EPIC, HM450 and HM27 etc.}
-
 \item{manifest}{optional design manifest file}
+
+\item{platform}{EPIC, HM450 and HM27 etc.}
 
 \item{controls}{optional control probe manifest file}
 

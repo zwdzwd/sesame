@@ -31,31 +31,38 @@ vcf_header <- function(genome) {
 #' @param sdf SigDF
 #' @param vcf output VCF file path, if NULL output to console
 #' @param genome genome
-#' @param annoS SNP variant annotation, download if not given
-#' @param annoI Infinium-I variant annotation, download if not given
-#' hg19 and hg38 in human
+#' @param annoS SNP variant annotation, available at
+#' https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
+#' EPIC.hg19.snp_overlap_b151.rds
+#' EPIC.hg38.snp_overlap_b151.rds
+#' @param annoI Infinium-I variant annotation, available at
+#' https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
+#' EPIC.hg19.typeI_overlap_b151.rds
+#' EPIC.hg38.typeI_overlap_b151.rds
 #' @param verbose print more messages
-#'
 #' @return VCF file. If vcf is NULL, a data.frame is output to
 #' console. The data.frame does not contain VCF headers.
 #' 
 #' Note the vcf is not sorted. You can sort with
 #' awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k2,2n"}'
 #' 
+#' @importFrom utils write.table
 #' @examples
 #' sesameDataCacheAll() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #'
+#' \dontrun{
+#' ## download annoS and annoI from
+#' ## https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
 #' ## output to console
-#' head(formatVCF(sdf))
+#' head(formatVCF(sdf, annoS, annoI))
+#' }
 #' 
 #' @export
 formatVCF <- function(
-    sdf, vcf=NULL, genome="hg19", annoS=NULL, annoI=NULL, verbose = FALSE) {
+    sdf, annoS, annoI, vcf=NULL, genome="hg19", verbose = FALSE) {
     
     platform <- sdfPlatform(sdf, verbose = verbose)
-    if (is.null(annoS)) { annoS <- sesameAnno_get(sprintf(
-        "Anno/%s/%s.%s.snp_overlap_b151.rds", platform, platform, genome)) }
     betas <- getBetas(sdf)[names(annoS)]
     vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
     gts <- lapply(vafs, genotyper)
@@ -66,8 +73,6 @@ formatVCF <- function(
         names(annoS), annoS$REF, annoS$ALT, GS, ifelse(GS>20,'PASS','FAIL'),
         sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
 
-    if (is.null(annoI)) { annoI <- sesameAnno_get(sprintf(
-        "Anno/%s/%s.%s.typeI_overlap_b151.rds", platform, platform, genome)) }
     af <- getAFTypeIbySumAlleles(sdf, known.ccs.only=FALSE)
     af <- af[names(annoI)]
     vafs <- ifelse(annoI$In.band == 'REF', af, 1-af)
@@ -91,4 +96,3 @@ formatVCF <- function(
         write.table(out, file=vcf, append=TRUE, sep='\t',
             row.names = FALSE, col.names = FALSE, quote = FALSE) }
 }
-

@@ -23,14 +23,15 @@ a tibble/data.frame object}
 }
 \value{
 GRanges
-
-## genome <- sesameAnno_buildManifestGRanges("HM450", "hg38")
-## or
-## download tsv directly from
-## http://zwdzwd.github.io/InfiniumAnnotation or
-## genome <- sesameAnno_buildManifestGRanges("downloaded_file")
-## genome <- sesameAnno_buildManifestGRanges("url")
 }
 \description{
-Build manifest GRanges from tsv
+manifest tsv files can be downloaded from
+http://zwdzwd.github.io/InfiniumAnnotation
+}
+\examples{
+\dontrun{
+## download tsv from
+## http://zwdzwd.github.io/InfiniumAnnotation
+gr <- sesameAnno_buildManifestGRanges("downloaded_file")
+}
 }

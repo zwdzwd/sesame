@@ -10,6 +10,7 @@ testEnrichment(
   databases = NULL,
   universe = NULL,
   alternative = "greater",
+  include_genes = FALSE,
   platform = NULL,
   silent = FALSE
 )
@@ -27,6 +28,8 @@ inferred from the provided platform. (Default: NA).}
 
 \item{alternative}{"two.sided", "greater", or "less"}
 
+\item{include_genes}{include gene link enrichment testing}
+
 \item{platform}{String corresponding to the type of platform to use. Either
 MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 from the query set probeIDs (Default: NA).}
@@ -34,7 +37,7 @@ from the query set probeIDs (Default: NA).}
 \item{silent}{output message? (Default: FALSE)}
 }
 \value{
-One list containing features corresponding the test estimate,
+A data frame containing features corresponding to the test estimate,
 p-value, and type of test.
 }
 \description{

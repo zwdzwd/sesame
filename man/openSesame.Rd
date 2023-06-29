@@ -40,6 +40,8 @@ This function is a simple wrapper of noob + nonlinear dye bias
 correction + pOOBAH masking.
 }
 \details{
+Please use mask=FALSE to turn off masking.
+
 If the input is an IDAT prefix or a \code{SigDF}, the output is
 the beta value numerics.
 }

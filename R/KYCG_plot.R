@@ -4,6 +4,7 @@
 #' @param fdr_max maximum fdr for capping
 #' @param n_label number of database to label
 #' @param min_estimate minimum estimate
+#' @param short_label use short label
 #' @return grid object
 #' @importFrom stringr str_replace
 #' @importFrom tibble rownames_to_column
@@ -15,7 +16,7 @@
 #' 
 #' @export
 KYCG_plotEnrichAll <- function(
-    df, fdr_max = 25, n_label = 15, min_estimate = 0) {
+    df, fdr_max = 25, n_label = 15, min_estimate = 0, short_label = TRUE) {
 
     gp_size <- sort(table(df$group))
     gp_width <- log(2+gp_size)
@@ -24,9 +25,11 @@ KYCG_plotEnrichAll <- function(
     e1$inc1 <- c(0,ifelse(e1$group[-1] != e1$group[-nrow(e1)], 1, 0))
     e1$inc2 <- cumsum(e1$inc + e1$inc1)
 
-    e1$group <- str_replace(e1$group,"KYCG.","")
-    e1$group <- vapply(strsplit(e1$group, "\\."),
-        function(x) paste0(x[2:(length(x)-1)], collapse="."), character(1))
+    if (length(grep("^KYCG", e1$group))>0) {
+        e1$group <- str_replace(e1$group,"KYCG.","")
+        e1$group <- vapply(strsplit(e1$group, "\\."),
+            function(x) paste0(x[2:(length(x)-1)], collapse="."), character(1))
+    }
     if ("gene_name" %in% colnames(e1)) {
         e1$dbname[e1$group == "gene"] <- e1$gene_name[e1$group == "gene"] }
 
@@ -38,6 +41,10 @@ KYCG_plotEnrichAll <- function(
             c(beg=min(x), middle=mean(x), end=max(x))))), "group")
 
     inc2 <- FDR <- estimate <- group <- dbname <- beg <- middle <- NULL
+    if (short_label) {
+        e2$dbname <- vapply(
+            strsplit(e2$dbname, ";"), function(x) {
+                if(length(x)>1) { x[[2]]; } else { x[[1]]; }}, character(1)) }
     requireNamespace("ggrepel")
     ggplot(e2, aes(inc2, -log10(FDR))) +
         geom_point(aes(size=estimate, color=group), alpha=0.5) +
@@ -63,27 +70,40 @@ KYCG_plotEnrichAll <- function(
             panel.grid.minor.x = element_blank())
 }
 
-preparePlotDF <- function(df, n, order_by) {
+#' @importFrom dplyr slice_min
+#' @importFrom dplyr ungroup
+preparePlotDF <- function(
+    df, n, order_by, short_label = FALSE, label_by = "dbname") {
+    ## suppress R CMD CHECK no visible binding warning
+    db1 <- FDR <- NULL
+    
     stopifnot("estimate" %in% colnames(df) && "FDR" %in% colnames(df))
-    df <- df[df$nD >0,]
-    df$FDR[df$FDR==0] <- .Machine$double.xmin # cap FDR
-    ord <- df[[order_by]]
-    if (order_by == "estimate") { ord <- -ord; }
-    df <- df[order(ord, -df$estimate),]
-    df1 <- head(df, n=n)
+    df1 <- df[df$nD >0,]
+    df1$FDR[df1$FDR==0] <- .Machine$double.xmin # cap FDR
 
-    if ("group" %in% colnames(df1)) {
+    if ("group" %in% colnames(df1) && !short_label) {
         gp <- sprintf("%s~", vapply(str_split(
-            df1$group, "\\."), function(x) x[3], character(1)))
+            df1$group, "\\."), function(x) {
+                if(length(x)>3) {x[3]} else {x[1]}}, character(1)))
     } else {
         gp <- ""
     }
     ## TODO: make everything use dbname
-    if ("dbname" %in% colnames(df1)) {
-        df1$db1 <- paste0(gp, df1$dbname)
+    if (label_by %in% colnames(df1)) {
+        df1$db1 <- paste0(gp, df1[[label_by]])
     } else if ("feat" %in% colnames(df1)) { # genome-wide data
         df1$db1 <- paste0(gp, df1$feat)
     }
+    if (length(unique(df1$db1)) != nrow(df1)) {
+        df1 <- df1 %>% group_by(db1) %>% slice_min(
+            order_by=FDR, n=1, with_ties=FALSE) %>% ungroup()
+    }
+
+    ord <- df1[[order_by]]
+    if (order_by == "estimate") { ord <- -ord; }
+    df1 <- df1[order(ord, -df1$estimate),]
+    df1 <- head(df1, n=n)
+
     df1$db1 <- factor(df1$db1, levels=rev(df1$db1))
     df1
 }
@@ -153,6 +173,9 @@ KYCG_plotBar <- function(df, y = "-log10(FDR)",
 #' @param order_by the column by which CG groups are ordered
 #' @param size_by the column by which CG group size plot
 #' @param color_by the column by which CG groups are colored
+#' @param label_by the column for label
+#' @param short_label omit group in label
+#' @param title plot title
 #' @return grid plot object (by ggplot)
 #'
 #' @import ggplot2
@@ -162,16 +185,20 @@ KYCG_plotBar <- function(df, y = "-log10(FDR)",
 #'   overlap=as.integer(runif(10,0,30)), group="g", dbname=seq_len(10)))
 #' @export
 KYCG_plotDot <- function(df, y = "-log10(FDR)",
-    n = 20, order_by = "FDR",
-    size_by = "overlap", color_by = "estimate") {
+    n = 20, order_by = "FDR", title = "Enriched Databases",
+    label_by = "dbname", size_by = "overlap", color_by = "estimate",
+    short_label = FALSE) {
 
-    df1 <- preparePlotDF(df, n, order_by)
+    df1 <- preparePlotDF(
+        df, n, order_by, short_label = short_label, label_by = label_by)
+
     if (y == "-log10(FDR)") {
         df1[["-log10(FDR)"]] <- -log10(df1$FDR)
     }
     ggplot(df1) +
-        geom_point(aes_string("db1", y, size=size_by, color=color_by)) +
-        coord_flip() + ggtitle("Enriched Databases") +
+        geom_point(aes(.data[["db1"]], .data[[y]],
+            size = .data[[size_by]], color = .data[[color_by]])) +
+        coord_flip() + ggtitle(title) +
         scale_color_gradient(low="blue",high="red") +
         ylab(y) + xlab("")
 }
@@ -290,31 +317,40 @@ KYCG_plotLollipop <- function(df, label_column="dbname", n=20) {
 #' 
 #' @export
 KYCG_plotWaterfall <- function(df,
-    order_by="estimate", size_by="-log10(FDR)",
+    order_by="Log2(OR)", size_by="-log10(FDR)",
     label_by="dbname", n_label=10) {
 
     df$label <- df[[label_by]]
-    if (size_by == "-log10(FDR)") {
+    if (size_by == "-log10(FDR)" ||
+        order_by == "-log10(FDR)" ||
+        label_by == "-log10(FDR)") {
         df[["-log10(FDR)"]] <- -log10(df$FDR)
     }
-    if (order_by == "estimate") {
-        message(sprintf("%d extremes are excluded.",
-            sum(abs(df$estimate) > 1000)))
-        df <- df[abs(df$estimate) < 1000,] # skip extremes
+    if (df$test[[1]] == "Log2(OR)" && (
+        size_by == "Log2(OR)" || order_by == "Log2(OR)" ||
+        label_by == "Log2(OR)")) {
+        df[["Log2(OR)"]] <- df$estimate
+        message(sprintf("%d extremes are capped.",
+            sum(abs(df[["Log2(OR)"]]) > 1000)))
+        ## cap extremes
+        df[["Log2(OR)"]][df[["Log2(OR)"]] > 1000] <- 1000
+        df[["Log2(OR)"]][df[["Log2(OR)"]] < -1000] <- -1000
+        ## df <- df[abs(df$estimate) < 1000,] # skip extremes
     }
 
     df <- df[order(df[[order_by]]),]
     df$index <- seq_len(nrow(df))
     
     requireNamespace("ggrepel")
-    ggplot(df, aes_string("index", order_by)) +
-        geom_point(aes_string(size=size_by), alpha=0.6) +
+    ggplot(df, aes(.data[["index"]], .data[[order_by]])) +
+        geom_point(aes(size=.data[[size_by]]), alpha=0.6) +
         geom_hline(yintercept=0, linetype="dashed", color="grey60") +
-        theme_minimal() + ylab("Log2(OR)") + xlab("Databases") +
+        theme_minimal() + ylab(order_by) + xlab("Databases") +
         ggrepel::geom_text_repel(
             data = df[head(order(df$log10.p.value),
                 n = min(n_label, nrow(df)*0.5)),],
-            aes_string(label="label"), nudge_x=-nrow(df)/10)
+            aes_string(label="label"), nudge_x=-nrow(df)/10,
+            max.overlaps=999)
 }
 
 #' Plot meta gene or other meta genomic features
@@ -375,18 +411,16 @@ KYCG_plotMeta <- function(betas, platform = NULL) {
     }
     stopifnot(!is.null(platform))
 
-    meta <- KYCG_getDBs(sprintf("%s.metagene", platform))
-    mb <- do.call(cbind, lapply(
-        meta, function(m1) apply(betas[m1,,drop=FALSE],2, mean, na.rm=TRUE)))
-    df <- melt(mb, varnames=c("query","db"), value.name="mean_betas")
+    dbs <- KYCG_getDBs(sprintf("%s.metagene", platform))
+    df <- dbStats(betas, dbs, long=TRUE)
     dflabel <- data.frame(
-        ord = as.integer(names(meta)),
-        reg = vapply(meta, function(x) attr(x, "label"), character(1)))
+        ord = as.integer(names(dbs)),
+        reg = vapply(dbs, function(x) attr(x, "label"), character(1)))
     
     ggplot(df) +
         annotate("rect", xmin = -1, xmax = 10, ymin = -Inf,
             ymax = Inf, fill = "grey80", alpha = .5, color = NA) +
-        geom_line(aes_string("db", "mean_betas")) +
+        geom_line(aes_string("db", "value", group="query")) +
         scale_x_continuous(breaks=dflabel$ord, labels=dflabel$reg) +
         ylab("Mean DNA Methylation Level") + xlab("") +
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))

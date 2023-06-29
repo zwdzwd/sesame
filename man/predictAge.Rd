@@ -40,7 +40,10 @@ see vignette inferences.html#Age__Epigenetic_Clock for details
 }
 \examples{
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-## model <- sesameAnno_get("Anno/HM450/Clock_Horvath353.rds")
-## predictAge(betas, model)
-
+\dontrun{
+## download age models from
+## https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno
+## e.g., Anno/HM450/Clock_Horvath353.rds
+predictAge(betas, model)
+}
 }

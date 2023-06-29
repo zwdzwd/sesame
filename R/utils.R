@@ -42,4 +42,39 @@ MValueToBetaValue <- function(m) {
     2^m/(1+2^m)
 }
 
+#' Check SeSAMe versions
+#'
+#' print package verison of sesame and depended packages to help troubleshoot
+#' installation issues.
+#'
+#' @return print the version of sesame, sesameData, biocondcutor and R
+#' @importFrom utils packageVersion
+#' @export
+#' @examples
+#' sesame_checkVersion()
+sesame_checkVersion <- function() {
+    rv <- R.Version()
+    msg <- paste0(
+        "SeSAMe requires matched versions of ",
+        "R, sesame, sesameData and ExperimentHub.\n",
+        "Here is the current versions installed:\n",
+        sprintf("R: %s.%s\n", rv$major, rv$minor),
+        sprintf("Bioconductor: %s\n", BiocManager::version()),
+        sprintf("sesame: %s\n", packageVersion("sesame")),
+        sprintf("sesameData: %s\n", packageVersion("sesameData")),
+        sprintf("ExperimentHub: %s\n", packageVersion("ExperimentHub")))
+    message(msg)
+}
 
+
+#' sesamize function is deprecated.
+#' Please check https://github.com/zwdzwd/sesamize for previous scripts
+#'
+#' @param ... arguments for sesamize
+#' @return a message text for deprecated function
+#' @export
+#' @examples
+#' cat("Deprecated. see https://github.com/zwdzwd/sesamize")
+sesamize <- function(...) {
+    .Deprecated("https://github.com/zwdzwd/sesamize")
+}

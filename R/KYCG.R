@@ -32,10 +32,13 @@ queryCheckPlatform <- function(platform, query = NULL, silent = FALSE) {
 
 inferUniverse <- function(platform) {
     mfts <- c(
-        "MM285.address", "EPIC.address",
+        "MM285.address", "EPIC.address", "EPICv2.address",
         "Mammal40.address", "HM450.address", "HM27.address")
-    mft <- mfts[grepl(platform, mfts)]
-    stopifnot(length(mft) == 1 && all(mft %in% mfts))
+    mft <- paste0(platform, ".address")
+    if (!(mft %in% mfts)) {
+        stop("Platform unsupported. Please provide universe set explicitly.")
+    }
+    stopifnot()
     sesameDataGet(mft)$ordering$Probe_ID
 }
 
@@ -59,11 +62,12 @@ subsetDBs <- function(dbs, universe) {
 #' the probes to be considered in the test. If it is not provided, it will be
 #' inferred from the provided platform. (Default: NA).
 #' @param alternative "two.sided", "greater", or "less"
+#' @param include_genes include gene link enrichment testing
 #' @param platform String corresponding to the type of platform to use. Either
 #' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
 #' from the query set probeIDs (Default: NA).
 #' @param silent output message? (Default: FALSE)
-#' @return One list containing features corresponding the test estimate,
+#' @return A data frame containing features corresponding to the test estimate,
 #' p-value, and type of test.
 #' @importFrom dplyr bind_rows
 #' @examples
@@ -77,19 +81,23 @@ subsetDBs <- function(dbs, universe) {
 #' @export
 testEnrichment <- function(
     query, databases = NULL, universe = NULL, alternative = "greater",
-    platform = NULL, silent = FALSE) {
+    include_genes = FALSE, platform = NULL, silent = FALSE) {
 
     platform <- queryCheckPlatform(platform, query, silent = silent)
     
     if (is.null(databases)) {
         dbs <- c(KYCG_getDBs(KYCG_listDBGroups( # by default, all dbs + gene
-            platform, type="categorical")$Title, silent = silent),
-            KYCG_buildGeneDBs(query, platform, silent = silent))
+            platform, type="categorical")$Title, silent = silent))
     } else if (is.character(databases)) {
         dbs <- KYCG_getDBs(databases, platform = platform, silent = silent)
     } else {
         dbs <- databases
     }
+
+    if (include_genes) {
+        dbs <- c(dbs, KYCG_buildGeneDBs(query, platform, silent = silent))
+    }
+    
     ## there shouldn't be empty databases, but just in case
     dbs <- dbs[vapply(dbs, length, integer(1)) > 0]
     if (!silent) {
@@ -112,6 +120,26 @@ testEnrichment <- function(
     ## bind meta data
     res <- cbind(res, databases_getMeta(dbs))
     res[order(res$log10.p.value, -abs(res$estimate)), ]
+}
+
+#' Convenient function for testing enrichment of gene linkage
+#'
+#' @param query probe set of interest
+#' @param platform string corresponding to the type of platform to use. Either
+#' MM285, EPIC, HM450, or HM27. If it is not provided, it will be inferred
+#' from the query set probe IDs.
+#' @param silent whether to output message
+#' @param ... addition argument provided to testEnrichment
+#' @return A data frame containing features corresponding to the test estimate,
+#' p-value, and type of test etc.
+#' @examples
+#' query <- c("cg04707299", "cg13380562", "cg00480749")
+#' testEnrichment(query, platform = "EPIC")
+#' @export
+testEnrichmentGene <- function(query, platform = NULL, silent = FALSE, ...) {
+    platform <- queryCheckPlatform(platform, query, silent = silent)
+    dbs_gene <- KYCG_buildGeneDBs(query, platform)
+    testEnrichment(query, databases = dbs_gene, platform = platform, ...)
 }
 
 #' Aggregate test enrichment results
@@ -447,19 +475,21 @@ testEnrichmentSpearman <- function(query, database) {
 }
 
 guess_dbnames <- function(nms, platform = NULL,
-    allow_multi = FALSE, type = NULL, silent = FALSE) {
+    allow_multi = FALSE, type = NULL, silent = FALSE,
+    ignore.case = FALSE) {
     
     gps <- KYCG_listDBGroups(type = type)
     nms <- do.call(c, lapply(nms, function(nm) {
         if (nm %in% gps$Title) {
             return(nm)
-        } else if (length(grep(nm, gps$Title)) >= 1) {
-            ret <- grep(nm, gps$Title, value=TRUE)
+        } else if (length(grep(nm, gps$Title, ignore.case=ignore.case)) >= 1) {
+            ret <- grep(nm, gps$Title, value=TRUE, ignore.case=ignore.case)
             if (!allow_multi) { ret <- ret[1]; }
             return(ret)
-        } else if (length(grep(nm, gps$Title)) == 0) {
+        } else if (length(grep(nm, gps$Title, ignore.case=ignore.case)) == 0) {
             res <- gps$Title[apply(do.call(cbind, lapply(
-                strsplit(nm, "\\.")[[1]], function(q1) grepl(q1, gps$Title))),
+                strsplit(nm, "\\.")[[1]],
+                function(q1) grepl(q1, gps$Title, ignore.case=ignore.case))),
                 1, all)]
             if (length(res) == 1) {
                 return(res[1])
@@ -482,30 +512,56 @@ guess_dbnames <- function(nms, platform = NULL,
 #' List database group names
 #'
 #' @param filter keywords for filtering
+#' @param path file path to downloaded knowledgebase sets
 #' @param type categorical, numerical (default: all)
 #' @return a list of db group names
 #' @examples
 #' head(KYCG_listDBGroups("chromHMM"))
+#' ## or KYCG_listDBGroups(path = "~/Downloads")
 #' @export
-KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
-    
-    gps <- sesameDataList("KYCG", full=TRUE)[,c("Title","Description")]
-    gps$type <- vapply(strsplit(
-        gps$Description, " "), function(x) x[2], character(1))
-    gps$Description <- str_replace(
-        gps$Description, "KYCG categorical database holding ", "")
-    if (!is.null(filter)) {
-        gps <- gps[grepl(filter, gps$Title),]
-    }
-    if (!is.null(type)) {
-        gps <- gps[gps$type %in% type,]
+KYCG_listDBGroups <- function(filter = NULL, path = NULL, type = NULL) {
+
+    if (is.null(path)) {
+        gps <- sesameDataList("KYCG", full=TRUE)[,c("Title","Description")]
+        gps$type <- vapply(strsplit(
+            gps$Description, " "), function(x) x[2], character(1))
+        gps$Description <- str_replace(
+            gps$Description, "KYCG categorical database holding ", "")
+        if (!is.null(filter)) {
+            gps <- gps[grepl(filter, gps$Title),]
+        }
+        if (!is.null(type)) {
+            gps <- gps[gps$type %in% type,]
+        }
+    } else {
+        gps <- basename(list.files(path, recursive = TRUE))
     }
     gps
 }
 
+## #' A convenience function for downloading knowledgebase sets
+## #'
+## #' @param platform EPICv2, EPIC, HM450 etc.
+## #' @param fdr directory to which feature files will be downloaded
+## #' @return untarred feature folders
+## #' @export
+## KYCG_downloadDBs <- function(platform, fdr) {
+##     fdr <- path.expand(fdr)
+##     dir.create(fdr)
+##     URL <- paste0("https://zhouserver.research.chop.edu/",
+##         sprintf("InfiniumAnnotation/%s/annotations.tar.gz", platform))
+##     download.file(URL, paste0(fdr,"/tmp.tar.gz"))
+##     untar(paste0(fdr,"/tmp.tar.gz"), exdir=paste0(fdr,"/"))
+##     unlink(paste0(fdr,"/tmp.tar.gz"))
+##     db_groups <- list.files(fdr, recursive=TRUE)
+##     message(sprintf("Downloaded %d knowledgebase groups to %s",
+##         length(db_groups), fdr))
+## }
+
 #' Load database groups
 #'
 #' @param in_paths folder that contains all databases
+#' @param group_use_filename whether to use file name for groups
 #' @return a list of db group names
 #' @examples
 #'
@@ -516,9 +572,10 @@ KYCG_listDBGroups <- function(filter = NULL, type = NULL) {
 #' dbs <- KYCG_loadDBs(path_to_unzipped_folder)
 #' }
 #' @export
-KYCG_loadDBs <- function(in_paths) {
+KYCG_loadDBs <- function(in_paths, group_use_filename=FALSE) {
     if (length(in_paths)==1 && dir.exists(in_paths)) {
-        groupnms <- list.files(in_paths)
+        groupnms <- grep(".gz$",
+            list.files(in_paths, recursive=TRUE), value=TRUE)
         in_paths <- file.path(in_paths, groupnms)
     } else {
         groupnms <- basename(in_paths)
@@ -526,10 +583,20 @@ KYCG_loadDBs <- function(in_paths) {
     db_list <- do.call(c, lapply(seq_along(groupnms), function(i) {
         tbl <- read.table(in_paths[i],sep="\t",header=TRUE)
         dbs <- split(tbl$Probe_ID, tbl$Knowledgebase)
-        lapply(names(dbs), function(dbname) {
-            db1 <- dbs[[dbname]];
-            attr(db1, "group") <- sub(".gz$","",groupnms[i]);
-            attr(db1, "dbname") <- dbname;
+        lapply(names(dbs), function(gp_dbname) {
+            gp_dbname_lst <- str_split(gp_dbname, ";", n=2)[[1]]
+            db1 <- dbs[[gp_dbname]];
+            ## group names come from file instead of file name
+            if (group_use_filename) {
+                attr(db1, "group") <- sub(".gz$","",groupnms[i])
+            } else {
+                attr(db1, "group") <- gp_dbname_lst[[1]]
+            }
+            if (length(gp_dbname_lst) > 1) {
+                attr(db1, "dbname") <- gp_dbname_lst[[2]]
+            } else {
+                attr(db1, "dbname") <- attr(db1, "group")
+            }
             db1;})
     }))
     names(db_list) <- vapply(db_list, function(x) attributes(x)$dbname, character(1))
@@ -544,6 +611,7 @@ KYCG_loadDBs <- function(in_paths) {
 #' that platform.
 #' @param summary return a summary of database instead of db itself
 #' @param allow_multi allow multiple groups to be returned for
+#' @param ignore.case ignore case or not
 #' @param type numerical, categorical, default: all
 #' @param silent no messages
 #' each query.
@@ -553,14 +621,16 @@ KYCG_loadDBs <- function(in_paths) {
 #' dbs <- KYCG_getDBs(c("MM285.chromHMM", "MM285.probeType"))
 #' @export
 KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
-    summary = FALSE, allow_multi = FALSE, type = NULL, silent = FALSE) {
+    summary = FALSE, allow_multi = FALSE,
+    ignore.case = FALSE, type = NULL, silent = FALSE) {
     
     if (!is.character(group_nms)) {
         return(group_nms)
     }
 
     group_nms <- guess_dbnames(group_nms, platform = platform,
-        allow_multi = TRUE, type = type, silent = silent)
+        allow_multi = TRUE, type = type, silent = silent,
+        ignore.case = ignore.case)
     ## group_nms <- group_nms[sesameDataHas(group_nms)]
     group_nms <- group_nms[group_nms %in% sesameDataList()$Title]
     if (length(group_nms) == 0) {
@@ -611,10 +681,11 @@ KYCG_annoProbes <- function(query, databases, db_names = NULL,
             platform = platform, silent = silent, type = "categorical")
     } else {
         dbs <- databases
+        names(dbs) <- vapply(dbs, function(db) {
+            paste0(attr(db, "group"), "-", attr(db, "dbname"))}, character(1))
     }
 
-    ind <- do.call(cbind, lapply(names(dbs), function(db_nm) {
-        db <- dbs[[db_nm]]
+    ind <- do.call(cbind, lapply(dbs, function(db) {
         query %in% db
     }))
     if (indicator) {
@@ -641,17 +712,20 @@ KYCG_annoProbes <- function(query, databases, db_names = NULL,
 #' @param f_min min fraction of non-NA for aggregation function to apply
 #' @param n_min min number of non-NA for aggregation function to apply,
 #' overrides f_min
+#' @param long produce long-form result
 #' @return matrix with samples on the rows and database set on the columns
 #' @examples
 #' 
 #' library(SummarizedExperiment)
 #' se <- sesameDataGet('MM285.467.SE.tissue20Kprobes')
-#' head(dbStats(assay(se), "MM285.probeType")[,1:3])
+#' head(dbStats(assay(se), "MM285.chromHMM")[,1:3])
 #' sesameDataGet_resetEnv()
 #' 
+#' @importFrom reshape2 melt
 #' @export
 dbStats <- function(
-    betas, databases, fun = mean, na.rm = TRUE, n_min = NULL, f_min = 0.1) {
+    betas, databases, fun = mean, na.rm = TRUE, n_min = NULL,
+    f_min = 0.1, long = FALSE) {
 
     if (is(betas, "numeric")) { betas <- cbind(sample = betas); }
     if (is.character(databases)) {
@@ -659,8 +733,7 @@ dbStats <- function(
     } else {
         dbs <- databases
     }
-    stats <- do.call(cbind, lapply(names(dbs), function(db_nm) {
-        db <- dbs[[db_nm]]
+    stats <- do.call(cbind, lapply(dbs, function(db) {
         betas1 <- betas[db[db %in% rownames(betas)],,drop=FALSE]
         n_probes <- nrow(betas1)
         if (n_probes == 0) { return(rep(NA, ncol(betas))); }
@@ -674,8 +747,16 @@ dbStats <- function(
         stat1[nacnt < n_min1] <- NA
         stat1
     }))
-    colnames(stats) <- names(dbs)
+    if (!is.null(names(dbs))) {
+        colnames(stats) <- names(dbs)
+    } else { # use attributes instead of names
+        colnames(stats) <- vapply(dbs,
+            function(x) attr(x, "dbname"), character(1))
+    }
     rownames(stats) <- colnames(betas)
+    if (long) {
+        stats <- melt(stats, varnames = c("query", "db"), value.name = "value")
+    }
     stats
 }
 

@@ -4,10 +4,12 @@
 \alias{KYCG_loadDBs}
 \title{Load database groups}
 \usage{
-KYCG_loadDBs(in_paths)
+KYCG_loadDBs(in_paths, group_use_filename = FALSE)
 }
 \arguments{
 \item{in_paths}{folder that contains all databases}
+
+\item{group_use_filename}{whether to use file name for groups}
 }
 \value{
 a list of db group names

@@ -6,7 +6,7 @@
 \usage{
 KYCG_plotWaterfall(
   df,
-  order_by = "estimate",
+  order_by = "Log2(OR)",
   size_by = "-log10(FDR)",
   label_by = "dbname",
   n_label = 10

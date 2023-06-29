@@ -44,7 +44,8 @@ model_contrasts <- function(mm, meta) {
 #' are predictor variables (e.g., sex, age, treatment, tumor/normal etc)
 #' and are referenced in formula. Rows are samples.
 #' When the betas argument is a SummarizedExperiment object, this
-#' is ignored. colData(betas) will be used instead.
+#' is ignored. colData(betas) will be used instead. The row order of the
+#' data frame must match the column order of the beta value matrix.
 #' @param BPPARAM number of cores for parallel processing, default to
 #' SerialParam()
 #' Use MulticoreParam(mc.cores) for parallel processing.
@@ -69,6 +70,7 @@ DML <- function(betas, fm, meta=NULL, BPPARAM=SerialParam()) {
         betas <- assay(betas0)
         meta <- colData(betas0)
     }
+    stopifnot(nrow(meta) == ncol(betas))
 
     mm <- model.matrix(fm, meta)
     colnames(mm) <- make.names(colnames(mm))
@@ -212,8 +214,15 @@ print.DMLSummary <- function(x, ...) {
 #' sesameDataGet_resetEnv()
 #' @export
 summaryExtractTest <- function(smry) {
+
+    contr2lvs <- attr(smry, "contr2lvs")
+    ## exclude the sites with NAs, maybe we we can do better?
+    smrylen <- vapply(smry, function(x) { nrow(x$coefficients); }, numeric(1))
+    smry <- smry[smrylen == max(smrylen)]
+    
     est <- do.call(bind_rows, lapply(smry, function(x) {
         x$coefficients[,'Estimate']; }))
+
     colnames(est) <- paste0("Est_", colnames(est))
     pvals <- do.call(bind_rows, lapply(smry, function(x) {
         x$coefficients[,"Pr(>|t|)"] }))
@@ -224,7 +233,7 @@ summaryExtractTest <- function(smry) {
     f_pvals <- do.call(rbind, lapply(smry, function(x) {
         x$Ftest["pval",,drop=FALSE] }))
     colnames(f_pvals) <- paste0("FPval_", colnames(f_pvals))
-    contr2lvs <- attr(smry, "contr2lvs")
+    
     ## this doesn't account for interaction terms
     effsize <- do.call(cbind, lapply(names(contr2lvs), function(cont) {
         lvs <- contr2lvs[[cont]]

@@ -8,6 +8,7 @@
 #' @param sdf a \code{SigDF}
 #' @param verbose whether to print correction summary
 #' @param switch_failed whether to switch failed probes (default to FALSE)
+#' @param mask_failed whether to mask failed probes (default to FALSE)
 #' @param summary return summarized numbers only.
 #' @return a \code{SigDF}, or numerics if summary == TRUE
 #' @examples
@@ -17,7 +18,8 @@
 #' 
 #' @export
 inferInfiniumIChannel <- function(
-    sdf, switch_failed = FALSE, verbose = FALSE, summary = FALSE) {
+    sdf, switch_failed = FALSE, mask_failed = FALSE,
+    verbose = FALSE, summary = FALSE) {
     
     inf1_idx <- which(sdf$col != "2")
     sdf1 <- sdf[inf1_idx,]
@@ -30,10 +32,12 @@ inferInfiniumIChannel <- function(
     bg_max <- quantile(c(d1R$MG,d1R$UG,d1G$MR,d1G$UR), 0.95, na.rm=TRUE)
 
     ## revert to the original for failed probes if so desire
+    idx <- (is.na(red_max) | is.na(grn_max) | pmax(red_max, grn_max) < bg_max)
     if (!switch_failed) {
-        idx <- (is.na(red_max) | is.na(grn_max) |
-                    pmax(red_max, grn_max) < bg_max)
         new_col[idx] <- sdf1$col[idx]
+    }
+    if (mask_failed) {
+        sdf$mask[inf1_idx[idx]] <- TRUE
     }
     sdf$col[inf1_idx] <- factor(new_col, levels=c("G","R","2"))
 

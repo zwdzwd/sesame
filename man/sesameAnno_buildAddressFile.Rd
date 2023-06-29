@@ -11,13 +11,14 @@ sesameAnno_buildAddressFile(tsv)
 }
 \value{
 a list of ordering and controls
-
-## addr <- sesameAnno_buildAddressFile("HM450")
-## or
-## download tsv directly from
-## http://zwdzwd.github.io/InfiniumAnnotation or
-## addr <- sesameAnno_buildAddressFile("downloaded_file")
 }
 \description{
 Build sesame ordering address file from tsv
+}
+\examples{
+\dontrun{
+## download manifest from
+## http://zwdzwd.github.io/InfiniumAnnotation
+addr <- sesameAnno_buildAddressFile("downloaded_file")
+}
 }

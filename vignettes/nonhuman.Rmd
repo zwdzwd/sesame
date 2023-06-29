@@ -29,7 +29,7 @@ Mammal40 array.
 We first load required library and perform sesame data caching (only needed
 at new SeSAMe installation).
 
-```{r nh1, message=FALSE}
+```{r nh1, message=FALSE, warning=FALSE}
 library(sesame)
 sesameDataCache()
 ```
@@ -46,11 +46,13 @@ The following example downloads an example Mammal40 array IDAT pair and call
 `openSesame` function with species inference (note the `S` in the `prep=`
 argument).
 
+Download test IDATs 
+`GSM4411982_Grn.idat.gz` and `GSM4411982_Red.idat.gz`
+from
+https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Test
+
 ```{r nh3, message=FALSE, eval=FALSE}
-tmp = tempdir()
-sesameAnno_download("Test/GSM4411982_Grn.idat.gz", dest_dir=tmp)
-sesameAnno_download("Test/GSM4411982_Red.idat.gz", dest_dir=tmp)
-betas = openSesame(sprintf("%s/Test/GSM4411982", tmp), prep="SHCDPM")
+betas = openSesame(sprintf("~/Downloads/GSM4411982", tmp), prep="SHCDPM")
 ```
 
 The above code is equivalent to
@@ -59,7 +61,7 @@ The above code is equivalent to
 ## equivalent to the above openSesame call
 betas = getBetas(matchDesign(pOOBAH(dyeBiasNL(inferInfiniumIChannel(
     prefixMaskButC(inferSpecies(readIDATpair(
-        sprintf("%s/Test/GSM4411982", tmp)))))))))
+        "~/Downloads/GSM4411982"))))))))
 ```
 
 As can be seen, `inferSpecies` takes a SigDF as input and outputs an updated
@@ -112,11 +114,13 @@ function is represented by the `T` code in `openSesame`/`prepSesame`. The
 following example shows how to use `inferStrain` in `openSesame`. Note the use
 of `T` in the prep code.
 
+Download test IDATs 
+`204637490002_R05C01_Grn.idat` and `204637490002_R05C01_Red.idat`
+from
+https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Test
+
 ```{r nh2, message=FALSE, eval=FALSE}
-tmp = tempdir()
-sesameAnno_download("Test/204637490002_R05C01_Grn.idat", dest_dir=tmp)
-sesameAnno_download("Test/204637490002_R05C01_Red.idat", dest_dir=tmp)
-betas = openSesame(sprintf("%s/Test/204637490002_R05C01", tmp), prep="TQCDPB")
+betas = openSesame("~/Downloads/204637490002_R05C01", prep="TQCDPB")
 ```
 
 Like `inferSpecies`, one need to call the `inferStrain` function before calling

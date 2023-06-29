@@ -2,7 +2,7 @@ Package: sesame
 Type: Package
 Title: SEnsible Step-wise Analysis of DNA MEthylation BeadChips
 Description: Tools For analyzing Illumina Infinium DNA methylation arrays. SeSAMe provides utilities to support analyses of multiple generations of Infinium DNA methylation BeadChips, including preprocessing, quality control, visualization and inference. SeSAMe features accurate detection calling, intelligent inference of ethnicity, sex and advanced quality control routines.
-Version: 1.17.7
+Version: 1.19.5
 Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"), email = "zhouwanding@gmail.com", comment = c(ORCID = "0000-0001-9126-1932")),
              person("Wubin", "Ding", role = "ctb"),
              person("David", "Goldberg", role = "ctb"),
@@ -10,10 +10,10 @@ Authors@R: c(person("Wanding", "Zhou", role = c("aut","cre"), email = "zhouwandi
              person("Bret", "Barnes", role = "ctb"),
              person("Timothy", "Triche", role = "ctb"),
              person("Hui", "Shen", role = c("aut"), email = "Hui.Shen@vai.org"))
-Depends: R (>= 4.2.0),
+Depends: R (>= 4.3.0),
           sesameData
 License: MIT + file LICENSE
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
 Imports:
     graphics,
     BiocParallel,
@@ -38,6 +38,7 @@ Imports:
     dplyr,
     reshape2
 Suggests: scales,
+          BiocManager,
           knitr,
           DNAcopy,
           e1071,
@@ -49,6 +50,7 @@ Suggests: scales,
           BiocStyle,
           ggrepel,
           grDevices,
+          KernSmooth,
           pals
 Encoding: UTF-8
 VignetteBuilder: knitr
@@ -67,6 +69,7 @@ Collate:
     'cell_composition.R'
     'channel_inference.R'
     'cnv.R'
+    'impute.R'
     'ethnicity.R'
     'deidentify.R'
     'detection.R'

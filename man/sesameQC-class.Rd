@@ -4,6 +4,9 @@
 \name{sesameQC-class}
 \alias{sesameQC-class}
 \title{An S4 class to hold QC statistics}
+\value{
+sesameQC object
+}
 \description{
 An S4 class to hold QC statistics
 }

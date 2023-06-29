@@ -17,18 +17,23 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 # Preparation
 
-> As sesame and sesameData are under active development, this documentation is
-  specific to the following version of R, sesame, sesameData and ExperimentHub:
+```{r message=FALSE, warning=FALSE}
+library(sesame)
+```
 
 ```{r}
-sapply(c("sesame","sesameData","ExperimentHub"),
-    function(x) as.character(packageVersion(x)))
-with(R.Version(), paste0(major, ".", minor))
+## As sesame and sesameData are under active development, this documentation is
+## specific to the following version of R, sesame, sesameData and ExperimentHub:
+sesame_checkVersion()
 ```
 
 We recommend updating your R, ExperimentHub, sesameData and sesame to use this
-documentation consistently. If you have installed directly from github, we
-should make sure the compatible ExperimentHub is installed.
+documentation consistently. If you have installed directly from github, please
+make sure the compatible ExperimentHub is installed.
+
+If you use a previous version, please checkout the vignette that corresponds to
+the right version here
+[https://zhou-lab.github.io/sesame/dev/supplemental.html#Versions](https://zhou-lab.github.io/sesame/dev/supplemental.html#Versions)
 
 **CRITICAL:** After a new installation, one must cache the associated
 annotation data using the following command. This needs to be done only once
@@ -36,7 +41,6 @@ per SeSAMe installation/update. Caching data to local guarantees proper data
 retrieval and saves internet traffic.
 
 ```{r message=FALSE}
-library(sesame)
 sesameDataCache()
 ```
 
@@ -149,12 +153,12 @@ best preprocessing strategy based on our experience.
 ```{r base10, echo=FALSE, result="asis"}
 library(knitr)
 df <- data.frame(rbind(
-   c("EPIC/HM450", "human", "QCDPB"),
-   c("EPIC/HM450", "non-human organism", "SQCDPB"),
-   c("MM285", "mouse", "TQCDPB"),
-   c("MM285", "non-mouse organism", "SQCDPB"),
-   c("Mammal40", "human", "HCDPB"),
-   c("Mammal40", "non-human organism", "SHCDPB")))
+    c("EPICv2/EPIC/HM450", "human", "QCDPB"),
+    c("EPICv2/EPIC/HM450", "non-human organism", "SQCDPB"),
+    c("MM285", "mouse", "TQCDPB"),
+    c("MM285", "non-mouse organism", "SQCDPB"),
+    c("Mammal40", "human", "HCDPB"),
+    c("Mammal40", "non-human organism", "SHCDPB")))
 colnames(df) <- c("Platform", "Sample Organism", "Prep Code")
 kable(df, caption="Recommended Preprocessing")
 ```

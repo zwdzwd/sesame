@@ -177,6 +177,7 @@ controls <- function(sdf, verbose = FALSE) {
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf_write_table(sdf, file=sprintf("%s/sigdf.txt", tempdir()))
+#' @importFrom utils write.table
 #' @export
 sdf_write_table <- function(sdf, ...) {
     write.table(sdf, row.names=FALSE, ...)
@@ -195,6 +196,7 @@ sdf_write_table <- function(sdf, ...) {
 #' fname <- sprintf("%s/sigdf.txt", tempdir())
 #' sdf_write_table(sdf, file=fname)
 #' sdf2 <- sdf_read_table(fname)
+#' @importFrom utils read.table
 #' @export
 sdf_read_table <- function(fname, platform = NULL, verbose=FALSE, ...) {
     df <- read.table(fname, header=TRUE, ...)

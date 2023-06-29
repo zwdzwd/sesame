@@ -13,7 +13,7 @@
 #' Hui Shen \email{Hui.Shen@vai.org}
 #' Timothy J Triche Jr \email{Tim.Triche@vai.org}
 #'
-## @references To appear
+#' @references Zhou W, Triche TJ, Laird PW, Shen H (2018)
 ## @seealso To appear
 #' @examples
 #'
@@ -24,6 +24,7 @@
 #' betas <- openSesame(sdf)
 #'
 #' @keywords DNAMethylation Microarray QualityControl
+#' @return package
 #'
 "_PACKAGE"
 
@@ -125,7 +126,40 @@ SDFcollapseToPfx <- function(sdf) {
         function(x) x[1], character(1))
     sdf$pval <- pOOBAH(sdf, return.pval = TRUE)
     ## take the best by p-value
-    slice_min(group_by(sdf, Probe_ID), pval,n=1, with_ties = FALSE)
+    slice_min(group_by(sdf, Probe_ID), pval, n=1, with_ties = FALSE)
+}
+
+#' Collapse betas by averagng probes with common probe ID prefix
+#'
+#' @param betas either a named numeric vector or a numeric matrix
+#' (row: probes, column: samples)
+#' @return either named numeric vector or a numeric matrix of collapsed
+#' beta value matrix
+#' @examples
+#'
+#' ## input is a matrix
+#' m <- matrix(seq(0,1,length.out=9), nrow=3)
+#' rownames(m) <- c("cg00004963_TC21", "cg00004963_TC22", "cg00004747_TC21")
+#' colnames(m) <- c("A","B","C")
+#' betasCollapseToPfx(m)
+#'
+#' ## input is a vector
+#' m <- setNames(seq(0,1,length.out=3),
+#'     c("cg00004963_TC21", "cg00004963_TC22", "cg00004747_TC21"))
+#' betasCollapseToPfx(m)
+#' @export
+betasCollapseToPfx <- function(betas) {
+    if (is.matrix(betas)) {
+        pfxes <- vapply(strsplit(rownames(betas), "_"),
+            function(x) x[1], character(1))
+        apply(betas, 2, function(x) {
+            vapply(split(x, pfxes), mean, numeric(1), na.rm=TRUE)
+        })
+    } else {
+        pfxes <- vapply(strsplit(names(betas), "_"),
+            function(x) x[1], character(1))
+        vapply(split(betas, pfxes), mean, numeric(1), na.rm=TRUE)
+    }
 }
 
 #' Get beta Values
@@ -140,6 +174,7 @@ SDFcollapseToPfx <- function(sdf) {
 #' @param mask whether to use mask
 #' @param collapseToPfx remove replicate to prefix (e.g., cg number) and
 #' remove the suffix
+#' @param collapseMethod mean or minPval
 #' @return a numeric vector, beta values
 #' @examples
 #' sesameDataCache() # if not done yet
@@ -147,12 +182,14 @@ SDFcollapseToPfx <- function(sdf) {
 #' betas <- getBetas(sdf)
 #' @export
 getBetas <- function(
-    sdf, mask=TRUE, sum.TypeI = FALSE, collapseToPfx = FALSE) {
+    sdf, mask=TRUE, sum.TypeI = FALSE, collapseToPfx = FALSE,
+    collapseMethod = c("mean", "minPval")) {
+
     ## TODO: document collapseToPfx = T feature
-
     stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
-
-    if (collapseToPfx) { sdf <- SDFcollapseToPfx(sdf); }
+    collapseMethod <- match.arg(collapseMethod)
+    if (collapseToPfx && collapseMethod == "minPval") {
+        sdf <- SDFcollapseToPfx(sdf) }
 
     if (sum.TypeI) {
         d1 <- InfI(sdf); d2 <- InfII(sdf)
@@ -169,9 +206,10 @@ getBetas <- function(
     
     ## always use the original order
     betas <- setNames(betas[match(sdf$Probe_ID, names(betas))], sdf$Probe_ID)
-    if (mask) {
-        betas[sdf$mask] <- NA
-    }
+    if (mask) { betas[sdf$mask] <- NA }
+
+    if (collapseToPfx && collapseMethod == "mean") {
+        betas <- betasCollapseToPfx(betas) }
 
     betas
 }
@@ -224,12 +262,13 @@ getAFs <- function(sdf, ...) {
     c(betas[startsWith(names(betas), "rs")], getAFTypeIbySumAlleles(sdf))
 }
 
+## return NULL if failed
 inferPlatformFromTango <- function(res) {
     sig <- sesameDataGet('idatSignature')
     cnts <- vapply(
         sig, function(x) sum(x %in% rownames(res$Quants)), integer(1))
     if (max(cnts) < min(vapply(sig, length, numeric(1)))) {
-        stop("Cannot infer platform. Please provide custom manifest.")
+        return(NULL)
     }
     names(which.max(cnts))
 }
@@ -237,7 +276,7 @@ inferPlatformFromTango <- function(res) {
 ## Import one IDAT file
 ## return a data frame with 2 columns, corresponding to
 ## cy3 (Grn) and cy5 (Red) color channel signal
-readIDAT1 <- function(grn.name, red.name, platform='') {
+readIDAT1 <- function(grn.name, red.name) {
     ida.grn <- suppressWarnings(illuminaio::readIDAT(grn.name))
     ida.red <- suppressWarnings(illuminaio::readIDAT(red.name))
     d <- cbind(
@@ -245,13 +284,10 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
         cy5 = ida.red$Quants[,"Mean"])
     colnames(d) <- c('G', 'R')
 
-    if (platform != '') {
-        attr(d, 'platform') <- platform
-    } else {
-        ## this is not always accurate
-        ## TODO should identify unique tango IDs.
-        attr(d, 'platform') <- inferPlatformFromTango(ida.red)
-    }
+    ## this is not always accurate
+    ## TODO should identify unique tango IDs.
+    attr(d, 'platform') <- inferPlatformFromTango(ida.red)
+
     d
 }
 
@@ -273,7 +309,7 @@ readIDAT1 <- function(grn.name, red.name, platform='') {
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
 readIDATpair <- function(
-    prefix.path, platform = '', manifest = NULL,
+    prefix.path, manifest = NULL, platform = '',
     controls = NULL, verbose = FALSE) {
     
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
@@ -296,7 +332,17 @@ readIDATpair <- function(
         message("Reading IDATs for ", basename(prefix.path), "...")
     }
 
-    dm <- readIDAT1(grn.name, red.name, platform=platform)
+    dm <- readIDAT1(grn.name, red.name)
+    if (platform != "") { # override inferred platform
+        attr(dm, "platform") <- platform
+    } else if (is.null(attr(dm, "platform"))) { # cannot infer
+        if (!is.null(manifest)) {               # manifest is provided
+            attr(dm, "platform") <- "custom"
+        } else { # no manifest provided
+            stop("Cannot infer platform. Please provide custom manifest.")
+        }
+    }
+    
     if (is.null(manifest)) { # pre-built platforms, EPIC, HM450, HM27 etc
         df_address <- sesameDataGet(paste0(
             attr(dm, 'platform'), '.address'))

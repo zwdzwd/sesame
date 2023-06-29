@@ -15,7 +15,7 @@ SeSAMe implements inference of sex, age, ethnicity. These are valuable
 information for checking the integrity of the experiment and detecting sample
 swaps.
 
-```{r inf1, echo=FALSE, message=FALSE}
+```{r inf1, echo=FALSE, message=FALSE, warning=FALSE}
 library(sesame)
 sesameDataCache()
 sdf = sesameDataGet('EPIC.1.SigDF')
@@ -59,7 +59,8 @@ chronological age in the number of years. Here is an example:
 
 ```{r inf4, eval=FALSE}
 betas <- sesameDataGet('HM450.1.TCGA.PAAD')$betas
-model <- sesameAnno_get("Anno/HM450/Clock_Horvath353.rds")
+## download clock file from http://zwdzwd.github.io/InfiniumAnnotation
+model <- readRDS("~/Downloads/Clock_Horvath353.rds")
 predictAge(betas, model)
 ```
 
@@ -71,32 +72,33 @@ preprocessed data as input to the function. Here’s an example:
 ```{r inf18, message=FALSE, eval=FALSE}
 library(SummarizedExperiment)
 betas <- assay(sesameDataGet("MM285.10.SE.tissue"))[,1]
-model <- sesameAnno_get("Anno/MM285/Clock_Zhou347.rds")
+## download clock file from http://zwdzwd.github.io/InfiniumAnnotation
+model <- readRDS("~/Downloads/Clock_Zhou347.rds")
 predictAge(betas, model)
 ```
 
 This indicates that this mouse is approximately 1.41 months old. The function
 looks for overlapping probes and estimates age using the corresponding clock
-models. Other available epigenetic clocks are
+models. 
 
-```{r inf20, echo=FALSE, result="asis"}
-library(knitr)
-df <- data.frame(rbind(
-    c("Anno/HM450/Clock_Horvath353.rds", 353,
-        "HM450/EPIC", "Horvath 2013 (24138928)"),
-    c("Anno/HM450/Clock_Hannum.rds", 71,
-        "HM450", "Hannum 2013 (23177740)"),
-    c("Anno/HM450/Clock_SkinBlood.rds", 391,
-        "HM450/EPIC", "Horath 2018 (30048243)"),
-    c("Anno/EPIC/Clock_PhenoAge.rds", 514,
-        "HM450/EPIC", "Levine 2018 (29676998)"),
-    c("Anno/MM285/Clock_Zhou347.rds", 347,
-        "MM285", "Zhou 2022")
-))
-colnames(df) <- c("RDS Key", "Platform", "N", "Reference (PMID)")
-kable(df, caption="Available Epigenetic Clocks")
-```
-
+<!-- Other available epigenetic clocks are -->
+<!-- ```{r inf20, echo=FALSE, result="asis"} -->
+<!-- library(knitr) -->
+<!-- df <- data.frame(rbind( -->
+<!--     c("Anno/HM450/Clock_Horvath353.rds", 353, -->
+<!--         "HM450/EPIC", "Horvath 2013 (24138928)"), -->
+<!--     c("Anno/HM450/Clock_Hannum.rds", 71, -->
+<!--         "HM450", "Hannum 2013 (23177740)"), -->
+<!--     c("Anno/HM450/Clock_SkinBlood.rds", 391, -->
+<!--         "HM450/EPIC", "Horath 2018 (30048243)"), -->
+<!--     c("Anno/EPIC/Clock_PhenoAge.rds", 514, -->
+<!--         "HM450/EPIC", "Levine 2018 (29676998)"), -->
+<!--     c("Anno/MM285/Clock_Zhou347.rds", 347, -->
+<!--         "MM285", "Zhou 2022") -->
+<!-- )) -->
+<!-- colnames(df) <- c("RDS Key", "Platform", "N", "Reference (PMID)") -->
+<!-- kable(df, caption="Available Epigenetic Clocks") -->
+<!-- ``` -->
 
 # Copy Number
 
@@ -126,11 +128,8 @@ sesameDataCacheAll()
 ```
 
 Let's take DNA methylation data from the HM450 platform for example.
-```{r inf9, eval=FALSE}
-tmp = tempdir()
-res_grn = sesameAnno_download("Test/3999492009_R01C01_Grn.idat", dest_dir=tmp)
-res_red = sesameAnno_download("Test/3999492009_R01C01_Red.idat", dest_dir=tmp)
-```
+First, let's download test IDATs from
+https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Test
                                                    
 ## De-identify by Masking
 
@@ -139,11 +138,13 @@ As a consequence, the allele frequency will be 0.5.
 
 ```{r inf10, eval=FALSE}
 
-deIdentify(res_grn$dest_file, sprintf("%s/deidentified_Grn.idat", tmp))
-deIdentify(res_red$dest_file, sprintf("%s/deidentified_Red.idat", tmp))
+deIdentify("~/Downloads/3999492009_R01C01_Grn.idat",
+    "~/Downloads/deidentified_Grn.idat")
+deIdentify("~/Downloads/3999492009_R01C01_Red.idat",
+    "~/Downloads/deidentified_Red.idat")
 
-betas1 = getBetas(readIDATpair(sprintf("%s/Test/3999492009_R01C01", tmp)))
-betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", tmp)))
+betas1 = getBetas(readIDATpair("~/Downloads/3999492009_R01C01"))
+betas2 = getBetas(readIDATpair("~/Downloads/deidentified"))
 
 head(betas1[grep('rs',names(betas1))]) 
 head(betas2[grep('rs',names(betas2))])
@@ -163,22 +164,22 @@ to be set to TRUE.
 my_secret <- 13412084
 set.seed(my_secret)
 
-deIdentify(res_grn$dest_file,
-    sprintf("%s/deidentified_Grn.idat", tmp), randomize=TRUE)
+deIdentify("~/Downloads/3999492009_R01C01_Grn.idat",
+    "~/Downloads/deidentified_Grn.idat", randomize=TRUE)
 
 my_secret <- 13412084
 set.seed(my_secret)
-deIdentify(res_red$dest_file,
-    sprintf("%s/deidentified_Red.idat", tmp), randomize=TRUE)
+deIdentify("~/Downloads/3999492009_R01C01_Red.idat",
+    "~/Downloads/deidentified_Red.idat", randomize=TRUE)
 
-betas1 = getBetas(readIDATpair(sprintf("%s/Test/3999492009_R01C01", tmp)))
-betas2 = getBetas(readIDATpair(sprintf("%s/deidentified", tmp)))
+betas1 = getBetas(readIDATpair("~/Downloads/3999492009_R01C01"))
+betas2 = getBetas(readIDATpair("~/Downloads/deidentified"))
 
 head(betas1[grep('rs',names(betas1))]) 
 head(betas2[grep('rs',names(betas2))]) 
 
 ```
-Note that the rs values are scrambled after deIdentify.  
+Note that the rs values are scrambled after deIdentify.
 
 ## Re-identify
 
@@ -195,11 +196,11 @@ reIdentify(sprintf("%s/deidentified_Grn.idat", tmp),
 
 my_secret <- 13412084
 set.seed(my_secret)
-reIdentify(sprintf("%s/deidentified_Red.idat", tmp),
-    sprintf("%s/reidentified_Red.idat", tmp))
+reIdentify("~/Downloads/deidentified_Red.idat",
+    "~/Downloads/reidentified_Red.idat")
 
-betas1 = getBetas(readIDATpair(sprintf("%s/Test/3999492009_R01C01", tmp)))
-betas2 = getBetas(readIDATpair(sprintf("%s/reidentified", tmp)))
+betas1 = getBetas(readIDATpair("~/Downloads/3999492009_R01C01"))
+betas2 = getBetas(readIDATpair("~/Downloads/reidentified"))
 
 head(betas1[grep('rs',names(betas1))]) 
 head(betas2[grep('rs',names(betas2))]) 
