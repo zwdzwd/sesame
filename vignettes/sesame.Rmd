@@ -126,6 +126,13 @@ allele_freqs = openSesame(idat_dir, func = getAFs) # SNP allele frequencies
 sdfs = openSesame(sdfs, prep = "Q", func = NULL)   # take and return SigDFs
 ```
 
+One can also generate the detection p-values (e.g., for GEO upload) by feeding
+openSesame with `func = pOOBAH` (or other detection p-value calculators).
+
+```{r base14, eval=FALSE}
+pvals = openSesame(idat_dir, func = pOOBAH, return.pval=TRUE)
+```
+
 # Data Preprocessing {#dataprep}
 
 The `prep=` argument instructs the `openSesame` function to call the
