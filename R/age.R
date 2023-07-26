@@ -33,15 +33,21 @@
 #' predictAge(betas, model)
 #' }
 #' @export
-predictAge <- function(betas, model, na_fallback=TRUE, min_nonna = 10) {
+predictAge <- function(betas, model, na_fallback=FALSE, min_nonna = 10) {
 
     betas <- betas[model$param$Probe_ID]
     if (sum(!is.na(betas)) < min_nonna) {
         stop("Fewer than 10 matching probes left. Age prediction abort.")
     }
-    if (sum(is.na(betas)) > 0 && na_fallback) {
-        k <- is.na(betas)
-        betas[k] <- model$param$na_fallback[k]
+    if (sum(is.na(betas)) > 0) {
+        if (na_fallback) {
+            k <- is.na(betas)
+            betas[k] <- model$param$na_fallback[k]
+        } else {
+            probes <- intersect(names(na.omit(betas)), model$param$Probe_ID)
+            betas <- betas[probes]
+            model$param <- model$param[match(probes, model$param$Probe_ID),]
+        }
     }
     drop(model$response2age(betas %*% model$param$slope + model$intercept))
 }

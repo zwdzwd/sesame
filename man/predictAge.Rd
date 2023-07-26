@@ -4,7 +4,7 @@
 \alias{predictAge}
 \title{Predict age using linear models}
 \usage{
-predictAge(betas, model, na_fallback = TRUE, min_nonna = 10)
+predictAge(betas, model, na_fallback = FALSE, min_nonna = 10)
 }
 \arguments{
 \item{betas}{a probeID-named vector of beta values}
