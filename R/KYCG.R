@@ -298,21 +298,26 @@ testEnrichmentFisherN <- function(
 
 calcES_Significance <- function(dCont, dDisc, permut=100, precise=FALSE) {
 
-    dCont <- sort(dCont)
+    #dCont <- sort(dCont)
+    dCont <- sort(dCont,decreasing=TRUE)
     dContName <- names(dCont)
-    dDiscN <- length(dDisc)
-    dContN <- length(dCont)
-    s <- rep(-1/(dContN-dDiscN), dContN)
-
+    dDiscN <- length(dDisc) 
+    dContN <- length(dCont) 
+    #s <- rep(-1/(dContN-dDiscN), dContN)
+    miss <- -1/(dContN-dDiscN)
+    s <- rep(miss, dContN)
     ess <- do.call(rbind, lapply(seq_len(permut), function(i) {
-        s[sample.int(dContN, dDiscN)] <- 1/dDiscN
+        #s[sample.int(dContN, dDiscN)] <- 1/dDiscN
+        ind <- sample.int(dContN, dDiscN)
+        s[ind] <- abs(dCont[ind]) / sum(abs(dCont[ind]))
         cs <- cumsum(s)
         data.frame(es_max = max(cs), es_min = min(cs))
     }))
 
     ## es <- calcES(dCont, dDisc)
     presence <- names(dCont) %in% dDisc
-    s <- ifelse(presence, 1/sum(presence), -1/sum(!presence))
+    s[presence] <- abs(dCont[presence]) / sum(abs(dCont[presence]))
+    #s <- ifelse(presence, 1/sum(presence), -1/sum(!presence))
     cs <- cumsum(s)
     es_max <- max(cs)
     es_min <- min(cs)
@@ -575,7 +580,7 @@ KYCG_loadDBs <- function(in_paths, group_use_filename=FALSE) {
     } else {
         groupnms <- basename(in_paths)
     }
-    do.call(c, lapply(seq_along(groupnms), function(i) {
+    db_list <- do.call(c, lapply(seq_along(groupnms), function(i) {
         tbl <- read.table(in_paths[i],sep="\t",header=TRUE)
         dbs <- split(tbl$Probe_ID, tbl$Knowledgebase)
         lapply(names(dbs), function(gp_dbname) {
@@ -594,6 +599,8 @@ KYCG_loadDBs <- function(in_paths, group_use_filename=FALSE) {
             }
             db1;})
     }))
+    names(db_list) <- vapply(db_list, function(x) attributes(x)$dbname, character(1))
+    db_list
 }
 
 #' Get databases by full or partial names of the database group(s)
