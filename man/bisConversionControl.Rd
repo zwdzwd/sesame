@@ -4,10 +4,16 @@
 \alias{bisConversionControl}
 \title{Compute internal bisulfite conversion control}
 \usage{
-bisConversionControl(sdf, verbose = FALSE)
+bisConversionControl(sdf, extR = NULL, extA = NULL, verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a SigDF}
+
+\item{extR}{a vector of probe IDs for Infinium-I probes that extend to
+converted A}
+
+\item{extA}{a vector of probe IDs for Infinium-I probes that extend to
+original A}
 
 \item{verbose}{print more messages}
 }
@@ -23,5 +29,13 @@ the incomplete conversion.
 sesameDataCache() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 bisConversionControl(sdf)
+
+## One can get extR and extA of other arrays using the sesameAnno
+## mft = sesameAnno_buildManifestGRanges(sprintf(
+##  "\%s/EPIC/EPIC.hg38.manifest.tsv.gz",
+##  "https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/Anno/"),
+##  columns="nextBase")
+## extR = names(mft)[!is.na(mft$nextBase) & mft$nextBase=="R"]
+## extA = names(mft)[!is.na(mft$nextBase) & mft$nextBase=="A"]
 
 }

@@ -4,20 +4,14 @@
 \alias{formatVCF}
 \title{Convert SNP from Infinium array to VCF file}
 \usage{
-formatVCF(sdf, annoS, annoI, vcf = NULL, genome = "hg19", verbose = FALSE)
+formatVCF(sdf, anno, vcf = NULL, genome = "hg38", verbose = FALSE)
 }
 \arguments{
 \item{sdf}{SigDF}
 
-\item{annoS}{SNP variant annotation, available at
+\item{anno}{SNP variant annotation, available at
 https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
-EPIC.hg19.snp_overlap_b151.rds
-EPIC.hg38.snp_overlap_b151.rds}
-
-\item{annoI}{Infinium-I variant annotation, available at
-https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
-EPIC.hg19.typeI_overlap_b151.rds
-EPIC.hg38.typeI_overlap_b151.rds}
+EPIC.hg38.snp.tsv.gz}
 
 \item{vcf}{output VCF file path, if NULL output to console}
 
@@ -40,10 +34,13 @@ sesameDataCacheAll() # if not done yet
 sdf <- sesameDataGet('EPIC.1.SigDF')
 
 \dontrun{
-## download annoS and annoI from
+## download anno from
 ## https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
 ## output to console
-head(formatVCF(sdf, annoS, annoI))
+anno = read_tsv(gzcon(url(sprintf(
+"\%s/EPICv2/EPICv2.hg38.snp.tsv.gz",
+"https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/Anno"))))
+head(formatVCF(sdf, anno))
 }
 
 }

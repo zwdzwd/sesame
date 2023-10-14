@@ -23,22 +23,21 @@ vcf_header <- function(genome) {
         paste0('##INFO=<ID=GT,Number=1,Type=String,',
             'Description="Genotype">'),
         paste0('##INFO=<ID=GS,Number=1,Type=Integer,',
-            'Description="Genotyping score from 7 to 85">'))
+            'Description="Genotyping score from 7 to 85">'),
+        paste0('##INFO=<ID=Probe_ID,Number=1,Type=String,',
+            'Description="Infinium Probe ID">'),
+        paste0('##INFO=<ID=rs_ID,Number=1,Type=String,',
+            'Description="Overlapping rs ID from dbSNP">'))
 }
 
 #' Convert SNP from Infinium array to VCF file
 #'
 #' @param sdf SigDF
+#' @param anno SNP variant annotation, available at
+#' https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
+#' EPIC.hg38.snp.tsv.gz
 #' @param vcf output VCF file path, if NULL output to console
 #' @param genome genome
-#' @param annoS SNP variant annotation, available at
-#' https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
-#' EPIC.hg19.snp_overlap_b151.rds
-#' EPIC.hg38.snp_overlap_b151.rds
-#' @param annoI Infinium-I variant annotation, available at
-#' https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
-#' EPIC.hg19.typeI_overlap_b151.rds
-#' EPIC.hg38.typeI_overlap_b151.rds
 #' @param verbose print more messages
 #' @return VCF file. If vcf is NULL, a data.frame is output to
 #' console. The data.frame does not contain VCF headers.
@@ -52,42 +51,42 @@ vcf_header <- function(genome) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #'
 #' \dontrun{
-#' ## download annoS and annoI from
+#' ## download anno from
 #' ## https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
 #' ## output to console
-#' head(formatVCF(sdf, annoS, annoI))
+#' anno = read_tsv(gzcon(url(sprintf(
+#' "%s/EPICv2/EPICv2.hg38.snp.tsv.gz",
+#' "https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/Anno"))))
+#' head(formatVCF(sdf, anno))
 #' }
 #' 
 #' @export
 formatVCF <- function(
-    sdf, annoS, annoI, vcf=NULL, genome="hg19", verbose = FALSE) {
+    sdf, anno, vcf=NULL, genome="hg38", verbose = FALSE) {
     
     platform <- sdfPlatform(sdf, verbose = verbose)
-    betas <- getBetas(sdf)[names(annoS)]
-    vafs <- ifelse(annoS$U == 'REF', betas, 1-betas)
-    gts <- lapply(vafs, genotyper)
-    GT <- vapply(gts, function(g) g$GT, character(1))
-    GS <- vapply(gts, function(g) g$GS, numeric(1))
-    vcflines_snp <- cbind(as.character(GenomicRanges::seqnames(annoS)),
-        as.character(GenomicRanges::end(annoS)),
-        names(annoS), annoS$REF, annoS$ALT, GS, ifelse(GS>20,'PASS','FAIL'),
-        sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
-
+    betas <- getBetas(sdf)[anno$Probe_ID]
     af <- getAFTypeIbySumAlleles(sdf, known.ccs.only=FALSE)
-    af <- af[names(annoI)]
-    vafs <- ifelse(annoI$In.band == 'REF', af, 1-af)
+    vafs <- ifelse(anno$U == "ALT", 1-betas, betas)
+    vafs <- ifelse(anno$U == "REF_InfI", af[anno$Probe_ID], vafs)
+    
     gts <- lapply(vafs, genotyper)
     GT <- vapply(gts, function(g) g$GT, character(1))
     GS <- vapply(gts, function(g) g$GS, numeric(1))
-    vcflines_typeI <- cbind(as.character(GenomicRanges::seqnames(annoI)),
-        as.character(GenomicRanges::end(annoI)),
-        annoI$rs, annoI$REF, annoI$ALT, GS, ifelse(GS>20,'PASS','FAIL'),
-        sprintf("PVF=%1.3f;GT=%s;GS=%d", vafs, GT, GS))
+    anno$REF[anno$REF == "ACT"] <- "H"
+    anno$REF[anno$REF == "AGT"] <- "D"
+    anno$ALT[anno$ALT == "ACT"] <- "H"
+    anno$ALT[anno$ALT == "AGT"] <- "D"
+    vcflines <- cbind(anno$chrm, anno$end,
+        ".", anno$REF, anno$ALT, GS, ifelse(GS>20,'PASS','FAIL'),
+        paste0(sprintf(
+            "PVF=%1.3f;GT=%s;GS=%d;Probe_ID=%s",
+            vafs, GT, GS, anno$Probe_ID),
+        ifelse(is.na(anno$rs), "", paste0(";rs_ID=", anno$rs))))
 
     header <- vcf_header(genome)    
-    out <- data.frame(rbind(vcflines_snp, vcflines_typeI))
+    out <- data.frame(vcflines)
     colnames(out) <- c("#CHROM","POS","ID","REF","ALT","QUAL","FILTER","INFO")
-    rownames(out) <- out$ID
     out <- out[order(out[['#CHROM']], as.numeric(out[['POS']])),]
     
     if(is.null(vcf)) { return(out);

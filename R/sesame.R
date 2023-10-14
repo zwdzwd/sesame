@@ -506,6 +506,10 @@ SigSetToSigDF <- function(sset) {
 #' the incomplete conversion.
 #'
 #' @param sdf a SigDF
+#' @param extR a vector of probe IDs for Infinium-I probes that extend to
+#' converted A
+#' @param extA a vector of probe IDs for Infinium-I probes that extend to
+#' original A
 #' @param verbose print more messages
 #' @return GCT score (the higher, the more incomplete conversion)
 #' @examples
@@ -513,20 +517,29 @@ SigSetToSigDF <- function(sset) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' bisConversionControl(sdf)
 #'
+#' ## One can get extR and extA of other arrays using the sesameAnno
+#' ## mft = sesameAnno_buildManifestGRanges(sprintf(
+#' ##  "%s/EPIC/EPIC.hg38.manifest.tsv.gz",
+#' ##  "https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/Anno/"),
+#' ##  columns="nextBase")
+#' ## extR = names(mft)[!is.na(mft$nextBase) & mft$nextBase=="R"]
+#' ## extA = names(mft)[!is.na(mft$nextBase) & mft$nextBase=="A"]
+#'
 #' @export
-bisConversionControl <- function(sdf, verbose = FALSE) {
+bisConversionControl <- function(sdf, extR=NULL, extA=NULL, verbose = FALSE) {
 
     platform <- sdfPlatform(sdf, verbose = verbose)
     stopifnot(platform %in% c('EPICplus','EPIC','HM450'))
-    extC <- sesameDataGet(paste0(platform, '.probeInfo'))$typeI.extC
-    extT <- sesameDataGet(paste0(platform, '.probeInfo'))$typeI.extT
-    ## prbs <- rownames(oobG(sset))
+    if (is.null(extR) || is.null(extA)) {
+        extR <- sesameDataGet(paste0(platform, '.probeInfo'))$typeI.extC
+        extA <- sesameDataGet(paste0(platform, '.probeInfo'))$typeI.extT
+    }
     df <- InfIR(sdf)
-    extC <- intersect(df$Probe_ID, extC)
-    extT <- intersect(df$Probe_ID, extT)
-    dC <- df[match(extC, df$Probe_ID),]
-    dT <- df[match(extT, df$Probe_ID),]
-    mean(c(dC$MG, dC$UG), na.rm=TRUE) / mean(c(dT$MG, dT$UG), na.rm=TRUE)
+    extR <- intersect(df$Probe_ID, extR)
+    extA <- intersect(df$Probe_ID, extA)
+    dR <- df[match(extR, df$Probe_ID),]
+    dA <- df[match(extA, df$Probe_ID),]
+    mean(c(dR$MG, dR$UG), na.rm=TRUE) / mean(c(dA$MG, dA$UG), na.rm=TRUE)
 }
 
 ## retired functions:
