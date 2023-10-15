@@ -2,19 +2,23 @@
 % Please edit documentation in R/sesameAnno.R
 \name{sesameAnno_download}
 \alias{sesameAnno_download}
-\title{Download additional annotation files}
+\title{Download SeSAMe annotation files}
 \usage{
-sesameAnno_download(title, dest_dir, version = 1)
+sesameAnno_download(
+  url,
+  destfile = tempfile(basename(url)),
+  base = "https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/"
+)
 }
 \arguments{
-\item{title}{title of the annotation file}
+\item{url}{url or title of the annotation file}
 
-\item{dest_dir}{download to this directory}
+\item{destfile}{download to this file, a temp file if unspecified}
 
-\item{version}{version number}
+\item{base}{base url, usually fixed.}
 }
 \value{
-annotation file
+the path to downloaded file
 }
 \description{
 see also
@@ -31,7 +35,9 @@ files in a cleaner way without routing through BiocFileCache
 
 ## avoid testing as this function uses external host
 if (FALSE) {
-sesameAnno_download("Test/3999492009_R01C01_Grn.idat", tempdir())
+sesameAnno_download("Test/3999492009_R01C01_Grn.idat")
+sesameAnno_download("EPIC.hg38.manifest.tsv.gz")
+sesameAnno_download("EPIC.hg38.snp.tsv.gz")
 }
 
 }

@@ -52,11 +52,9 @@ vcf_header <- function(genome) {
 #'
 #' \dontrun{
 #' ## download anno from
-#' ## https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
+#' ## http://zwdzwd.github.io/InfiniumAnnotation
 #' ## output to console
-#' anno = read_tsv(gzcon(url(sprintf(
-#' "%s/EPICv2/EPICv2.hg38.snp.tsv.gz",
-#' "https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/Anno"))))
+#' anno = read_tsv(sesameAnno_download("EPICv2.hg38.snp.tsv.gz"))
 #' head(formatVCF(sdf, anno))
 #' }
 #' 

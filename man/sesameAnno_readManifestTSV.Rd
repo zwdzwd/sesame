@@ -19,6 +19,7 @@ Read manifest file to a tsv format
 \dontrun{
 ## download manifest from
 ## http://zwdzwd.github.io/InfiniumAnnotation
-mft <- sesameAnno_readManifestTSV("downloaded_file")
+tsv_path = sesameAnno_download("HM450.hg38.manifest.tsv.gz")
+mft <- sesameAnno_readManifestTSV(tsv_path)
 }
 }

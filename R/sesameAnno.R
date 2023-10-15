@@ -21,7 +21,8 @@ guess_chrmorder <- function(chrms) {
 #' \dontrun{
 #' ## download tsv from
 #' ## http://zwdzwd.github.io/InfiniumAnnotation
-#' gr <- sesameAnno_buildManifestGRanges("downloaded_file")
+#' tsv_path = sesameAnno_download("HM450.hg38.manifest.tsv.gz")
+#' gr <- sesameAnno_buildManifestGRanges(tsv_path)
 #' }
 #' @export
 sesameAnno_buildManifestGRanges <- function(
@@ -101,7 +102,8 @@ create_mask <- function(df) {
 #' \dontrun{
 #' ## download manifest from
 #' ## http://zwdzwd.github.io/InfiniumAnnotation
-#' mft <- sesameAnno_readManifestTSV("downloaded_file")
+#' tsv_path = sesameAnno_download("HM450.hg38.manifest.tsv.gz")
+#' mft <- sesameAnno_readManifestTSV(tsv_path)
 #' }
 #' @export
 sesameAnno_readManifestTSV <- function(tsv_fn) {
@@ -136,7 +138,8 @@ sesameAnno_readManifestTSV <- function(tsv_fn) {
 #' \dontrun{
 #' ## download manifest from
 #' ## http://zwdzwd.github.io/InfiniumAnnotation
-#' addr <- sesameAnno_buildAddressFile("downloaded_file")
+#' tsv_path = sesameAnno_download("HM450.hg38.manifest.tsv.gz")
+#' addr <- sesameAnno_buildAddressFile(tsv_path)
 #' }
 #' @export
 sesameAnno_buildAddressFile <- function(tsv) {
@@ -238,7 +241,7 @@ from http://zwdzwd.github.io/InfiniumAnnotation
 ##     ifelse(is.null(check),TRUE,FALSE)
 ## }
 
-#' Download additional annotation files
+#' Download SeSAMe annotation files
 #'
 #' see also
 #' http://zwdzwd.github.io/InfiniumAnnotation
@@ -249,22 +252,30 @@ from http://zwdzwd.github.io/InfiniumAnnotation
 #' program may depend on the correct file names. It also lets you download
 #' files in a cleaner way without routing through BiocFileCache
 #'
-#' @param title title of the annotation file
-#' @param dest_dir download to this directory
-#' @param version version number
-#' @return annotation file
+#' @param url url or title of the annotation file
+#' @param destfile download to this file, a temp file if unspecified
+#' @param base base url, usually fixed.
+#' @return the path to downloaded file
 #' @importFrom utils download.file
 #' @examples
 #'
 #' ## avoid testing as this function uses external host
 #' if (FALSE) {
-#' sesameAnno_download("Test/3999492009_R01C01_Grn.idat", tempdir())
+#' sesameAnno_download("Test/3999492009_R01C01_Grn.idat")
+#' sesameAnno_download("EPIC.hg38.manifest.tsv.gz")
+#' sesameAnno_download("EPIC.hg38.snp.tsv.gz")
 #' }
 #' 
 #' @export
 sesameAnno_download <- function(
-    title, dest_dir, version = 1) {
-    message("The function is deprecated. Please download files directly from
-http://zwdzwd.github.io/InfiniumAnnotation
-")
+    url, destfile = tempfile(basename(url)),
+    base="https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/") {
+    if (!grepl("http", url)) {
+        if (!grepl("/", url)) {
+            url <- paste0("Anno","/",strsplit(url, "\\.")[[1]][1],"/",url);
+        }
+        url <- paste0(base,"/",url)
+    }
+    download.file(url, destfile=destfile)
+    destfile
 }

@@ -237,9 +237,9 @@ As expected, we recover our targeted gene (Dnmt3a).
 
 # Get more database Sets
 
-Some commonly used database sets are stored in ExperimentHub/sesameData package. 
-But more database sets can be found 
-[here](https://github.com/zhou-lab/KYCG_knowledgebase_EPICv2). You can use a 
+Some commonly used database sets are stored in ExperimentHub/sesameData
+package.  But more database sets can be found
+[here](https://github.com/zhou-lab/KYCG_knowledgebase_EPICv2). You can use a
 convenience function to download these database sets to a local folder.
 
 ```{r eval=FALSE}

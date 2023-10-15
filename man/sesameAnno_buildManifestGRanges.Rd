@@ -32,6 +32,7 @@ http://zwdzwd.github.io/InfiniumAnnotation
 \dontrun{
 ## download tsv from
 ## http://zwdzwd.github.io/InfiniumAnnotation
-gr <- sesameAnno_buildManifestGRanges("downloaded_file")
+tsv_path = sesameAnno_download("HM450.hg38.manifest.tsv.gz")
+gr <- sesameAnno_buildManifestGRanges(tsv_path)
 }
 }
