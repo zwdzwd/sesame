@@ -4,11 +4,13 @@
 \alias{betasCollapseToPfx}
 \title{Collapse betas by averagng probes with common probe ID prefix}
 \usage{
-betasCollapseToPfx(betas)
+betasCollapseToPfx(betas, BPPARAM = SerialParam())
 }
 \arguments{
 \item{betas}{either a named numeric vector or a numeric matrix
 (row: probes, column: samples)}
+
+\item{BPPARAM}{use MulticoreParam(n) for parallel processing}
 }
 \value{
 either named numeric vector or a numeric matrix of collapsed

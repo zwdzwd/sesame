@@ -133,6 +133,7 @@ SDFcollapseToPfx <- function(sdf) {
 #'
 #' @param betas either a named numeric vector or a numeric matrix
 #' (row: probes, column: samples)
+#' @param BPPARAM use MulticoreParam(n) for parallel processing
 #' @return either named numeric vector or a numeric matrix of collapsed
 #' beta value matrix
 #' @examples
@@ -148,13 +149,21 @@ SDFcollapseToPfx <- function(sdf) {
 #'     c("cg00004963_TC21", "cg00004963_TC22", "cg00004747_TC21"))
 #' betasCollapseToPfx(m)
 #' @export
-betasCollapseToPfx <- function(betas) {
+betasCollapseToPfx <- function(betas, BPPARAM=SerialParam()) {
     if (is.matrix(betas)) {
         pfxes <- vapply(strsplit(rownames(betas), "_"),
             function(x) x[1], character(1))
-        apply(betas, 2, function(x) {
-            vapply(split(x, pfxes), mean, numeric(1), na.rm=TRUE)
-        })
+        if (mc.cores == 1) {
+            apply(betas, 2, function(x) {
+                vapply(split(x, pfxes), mean, numeric(1), na.rm=TRUE)
+            })
+        } else if (mc.cores > 1) {
+            out <- do.call(cbind, bplapply(
+                seq_len(ncol(betas)), function(i) {
+                    vapply(split(betas[,i], pfxes), mean, numeric(1), na.rm=T)
+                }, BPPARAM=BPPARAM))
+            colnames(out) <- colnames(betas)
+        }
     } else {
         pfxes <- vapply(strsplit(names(betas), "_"),
             function(x) x[1], character(1))

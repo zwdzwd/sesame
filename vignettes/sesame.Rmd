@@ -57,10 +57,10 @@ tools::R_user_dir("ExperimentHub", which="cache")
 # The openSesame Pipeline
 
 The `openSesame` function provides end-to-end processing that converts IDATs to
-DNA methylation level (aka $\beta$ value) matrices in R. The function can take
-either one of the following input:
+DNA methylation level (aka $\beta$ value) matrices in R. The function input
+`path_to_idats` can be one of the following input:
 
-- A path to a directory where the IDAT files live
+- A path to a directory where the IDAT files will be recursively search
 - Specific path(s) of IDAT file prefix, one for each IDAT pair
 - One or a list of SigDF objects
 
@@ -68,10 +68,7 @@ The following code uses a directory that contains built-in two HM27 IDAT pairs
 to demonstrates the use of `openSesame`:
 
 ```{r base1, eval=FALSE}
-## The following use the idat_dir in system.file,
-## Replace it with your actual IDAT path
-idat_dir = system.file("extdata/", package = "sesameData")
-betas = openSesame(idat_dir, BPPARAM = BiocParallel::MulticoreParam(2))
+betas = openSesame("path_to_idats", BPPARAM = BiocParallel::MulticoreParam(2))
 ```
 
 The `BPPARAM=` option is from the `BiocParallel` package and controls parallel
@@ -213,6 +210,25 @@ modifies signal and may affect out-of-band signal assumption used in
 See [Supplemental
 Vignette](https://zhou-lab.github.io/sesame/v1.16/supplemental.html#prepfuns)
 for details of preprocessing functions.
+
+# Collapse measurements to cg prefixes
+
+The more recent Infinium arrays (the mouse and EPICv2 arrays) have suffixes to
+uniquely identify the probe design. If one prefers to collapse methylation
+readings to the cg prefix so they are comparable to the previous array
+generations, this can be done with `getBetas(..., collapseToPfx = TRUE)`. The
+same argument can be passed to `openSesame(..., func=getBetas,
+collapseToPfx=TRUE)`
+
+```{r eval=FALSE}
+betas = getBetas(sdf_from_EPICv2, collapseToPfx = TRUE)
+## or
+betas = openSesame("path_to_idats", collapseToPfx = TRUE)
+## by default the method for collapsing is to make means
+betas = openSesame("path_to_idats", collapseToPfx = TRUE, collapseMethod = "mean")
+## one can also switch to min detection p-value
+betas = openSesame("path_to_idats", collapseToPfx = TRUE, collapseMethod = "minPval")
+```
 
 # Session Info
 
