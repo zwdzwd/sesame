@@ -153,17 +153,11 @@ betasCollapseToPfx <- function(betas, BPPARAM=SerialParam()) {
     if (is.matrix(betas)) {
         pfxes <- vapply(strsplit(rownames(betas), "_"),
             function(x) x[1], character(1))
-        if (mc.cores == 1) {
-            apply(betas, 2, function(x) {
-                vapply(split(x, pfxes), mean, numeric(1), na.rm=TRUE)
-            })
-        } else if (mc.cores > 1) {
-            out <- do.call(cbind, bplapply(
-                seq_len(ncol(betas)), function(i) {
-                    vapply(split(betas[,i], pfxes), mean, numeric(1), na.rm=T)
-                }, BPPARAM=BPPARAM))
-            colnames(out) <- colnames(betas)
-        }
+        out <- do.call(cbind, bplapply(
+            seq_len(ncol(betas)), function(i) {
+                vapply(split(betas[,i], pfxes), mean, numeric(1), na.rm=TRUE)
+            }, BPPARAM=BPPARAM))
+        colnames(out) <- colnames(betas)
     } else {
         pfxes <- vapply(strsplit(names(betas), "_"),
             function(x) x[1], character(1))

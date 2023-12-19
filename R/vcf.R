@@ -41,9 +41,7 @@ vcf_header <- function(genome) {
 #' @param verbose print more messages
 #' @return VCF file. If vcf is NULL, a data.frame is output to
 #' console. The data.frame does not contain VCF headers.
-#' 
-#' Note the vcf is not sorted. You can sort with
-#' awk '$1 ~ /^#/ {print $0;next} {print $0 | "sort -k1,1 -k2,2n"}'
+#' Note the output vcf is not sorted.
 #' 
 #' @importFrom utils write.table
 #' @examples

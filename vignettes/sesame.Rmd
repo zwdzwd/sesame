@@ -230,6 +230,15 @@ betas = openSesame("path_to_idats", collapseToPfx = TRUE, collapseMethod = "mean
 betas = openSesame("path_to_idats", collapseToPfx = TRUE, collapseMethod = "minPval")
 ```
 
+One may also use the `betasCollapseToPfx` function to generate the traditional
+cg number readings.
+```{r eval=FALSE}
+betas = betasCollapseToPfx(betas, BPPARAM=BiocParallel::MulticoreParam(2))
+```
+
+Please find more info at the Supplemental documentation at the following [link]
+(https://zhou-lab.github.io/sesame/dev/supplemental.html#Replicate_Probes)
+
 # Session Info
 
 ```{r}
