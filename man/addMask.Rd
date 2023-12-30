@@ -17,7 +17,7 @@ a \code{SigDF} with added mask
 }
 \description{
 This function essentially merge existing probe masking
-with new prboes to mask
+with new probes to mask
 }
 \examples{
 sdf <- sesameDataGet('EPIC.1.SigDF')
