@@ -1,8 +1,8 @@
 #' Add probes to mask
 #'
 #' This function essentially merge existing probe masking
-#' with new prboes to mask
-#' 
+#' with new probes to mask
+#'
 #' @param sdf a \code{SigDF}
 #' @param probes a vector of probe IDs or a logical vector with TRUE
 #' representing masked probes
