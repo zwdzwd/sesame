@@ -25,6 +25,7 @@
 #' ..., probeCoords = sesameAnno_buildManifestGRanges("downloaded_file"),...
 #' to this function.
 #' @param tilewidth tile width for smoothing
+#' @param return.probe.signals return probe-level instead of bin-level signal
 #' @param verbose print more messages
 #' @return an object of \code{CNSegment}
 #' @examples
@@ -34,11 +35,13 @@
 #' ## sdf <- sesameDataGet('EPIC.1.SigDF')
 #' ## sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 #' ## seg <- cnSegmentation(sdf, sdfs.normal)
+#' ## probeSignal <- cnSegmentation(sdf, return.probe.signals=TRUE)
 #'
 #' @export
 cnSegmentation <- function(
     sdf, sdfs.normal=NULL, genomeInfo=NULL,
-    probeCoords=NULL, tilewidth=50000, verbose = FALSE) {
+    probeCoords=NULL, tilewidth=50000, verbose = FALSE,
+    return.probe.signals = FALSE) {
     
     stopifnot(is(sdf, "SigDF"))
     platform <- sdfPlatform(sdf, verbose = verbose)
@@ -79,6 +82,7 @@ cnSegmentation <- function(
     ## normalize probes intensities
     fit <- lm(y~., data=data.frame(y=target.intens, X=normal.intens))
     probe.signals <- setNames(log2(target.intens / pmax(predict(fit), 1)), pb)
+    if (return.probe.signals) { return(probe.signals); }
 
     ## bin signals
     ## fix bin coordinates, TODO: this is too time-consuming

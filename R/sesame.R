@@ -158,6 +158,7 @@ betasCollapseToPfx <- function(betas, BPPARAM=SerialParam()) {
                 vapply(split(betas[,i], pfxes), mean, numeric(1), na.rm=TRUE)
             }, BPPARAM=BPPARAM))
         colnames(out) <- colnames(betas)
+        out
     } else {
         pfxes <- vapply(strsplit(names(betas), "_"),
             function(x) x[1], character(1))

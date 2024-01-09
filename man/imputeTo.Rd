@@ -4,16 +4,26 @@
 \alias{imputeTo}
 \title{Impute to platform}
 \usage{
-imputeTo(betas, platform = NULL, probes = NULL, tissue = "Blood")
+imputeTo(
+  betas,
+  target_platform = NULL,
+  mapping = NULL,
+  impute = FALSE,
+  celltype = "Blood"
+)
 }
 \arguments{
 \item{betas}{named vector or matrix of beta values}
 
-\item{platform}{platform of target imputation}
+\item{target_platform}{platform of target imputation}
 
-\item{probes}{Probe ID if not set to vector names}
+\item{mapping}{a liftOver mapping file, if given, probe ID-based
+mapping will be skipped.}
 
-\item{tissue}{tissue context of imputation}
+\item{impute}{whether to impute or not, default is no}
+
+\item{celltype}{celltype/tissue context of imputation, if not given, will
+use nearest neighbor to determine.}
 }
 \value{
 imputed data, vector or matrix

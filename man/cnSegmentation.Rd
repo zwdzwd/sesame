@@ -10,7 +10,8 @@ cnSegmentation(
   genomeInfo = NULL,
   probeCoords = NULL,
   tilewidth = 50000,
-  verbose = FALSE
+  verbose = FALSE,
+  return.probe.signals = FALSE
 )
 }
 \arguments{
@@ -37,6 +38,8 @@ to this function.}
 \item{tilewidth}{tile width for smoothing}
 
 \item{verbose}{print more messages}
+
+\item{return.probe.signals}{return probe-level instead of bin-level signal}
 }
 \value{
 an object of \code{CNSegment}
@@ -57,5 +60,6 @@ sesameDataCache()
 ## sdf <- sesameDataGet('EPIC.1.SigDF')
 ## sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
 ## seg <- cnSegmentation(sdf, sdfs.normal)
+## probeSignal <- cnSegmentation(sdf, return.probe.signals=TRUE)
 
 }

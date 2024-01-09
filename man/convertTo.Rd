@@ -5,12 +5,12 @@
 \title{Convert human arrays to previous platforms
 Missing probes are replaced using NAs.}
 \usage{
-convertTo(sdf, platform = c("HM450", "EPIC"))
+convertTo(sdf, target_platform = c("HM450", "EPIC"))
 }
 \arguments{
 \item{sdf}{SigDF data frame}
 
-\item{platform}{HM450 or EPIC}
+\item{target_platform}{HM450 or EPIC}
 }
 \value{
 a new SigDF for the older platform
