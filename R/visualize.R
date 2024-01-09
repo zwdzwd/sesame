@@ -156,9 +156,8 @@ visualizeProbes <- function(
     if (is.null(dim(betas))) { betas <- as.matrix(betas); }
     platform <- sesameData_check_platform(platform, rownames(betas))
     genome <- sesameData_check_genome(genome, platform)
-    
-    probes <- sesameDataGet(paste0(
-        platform, '.probeInfo'))[[paste0('mapped.probes.',genome)]]
+
+    probes <- sesameData_getManifestGRanges(platform, genome)
     probeNames <- probeNames[probeNames %in% names(probes)]
 
     if (length(probeNames)==0)

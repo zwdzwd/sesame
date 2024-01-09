@@ -521,23 +521,26 @@ SigSetToSigDF <- function(sset) {
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' bisConversionControl(sdf)
 #'
-#' ## One can get extR and extA of other arrays using the sesameAnno
-#' ## mft = sesameAnno_buildManifestGRanges(sprintf(
-#' ##  "%s/EPIC/EPIC.hg38.manifest.tsv.gz",
-#' ##  "https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/Anno/"),
-#' ##  columns="nextBase")
-#' ## extR = names(mft)[!is.na(mft$nextBase) & mft$nextBase=="R"]
-#' ## extA = names(mft)[!is.na(mft$nextBase) & mft$nextBase=="A"]
+#' ## For more recent platforms like EPICv2, MSA:
+#' ## One need extR and extA of other arrays using the sesameAnno
+#' \dontrun{
+#' mft = sesameAnno_buildManifestGRanges(sprintf(
+#'   "%s/EPICv2/EPICv2.hg38.manifest.tsv.gz",
+#'   "https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/Anno/"),
+#'   columns="nextBase")
+#' extR = names(mft)[!is.na(mft$nextBase) & mft$nextBase=="R"]
+#' extA = names(mft)[!is.na(mft$nextBase) & mft$nextBase=="A"]
+#' }
 #'
 #' @export
 bisConversionControl <- function(sdf, extR=NULL, extA=NULL, verbose = FALSE) {
 
     platform <- sdfPlatform(sdf, verbose = verbose)
-    stopifnot(platform %in% c('EPICplus','EPIC','HM450'))
-    if (is.null(extR) || is.null(extA)) {
+    if (platform %in% c('EPICplus','EPIC','HM450')) {
         extR <- sesameDataGet(paste0(platform, '.probeInfo'))$typeI.extC
         extA <- sesameDataGet(paste0(platform, '.probeInfo'))$typeI.extT
     }
+    stopifnot(!is.null(extR) && !is.null(extA))
     df <- InfIR(sdf)
     extR <- intersect(df$Probe_ID, extR)
     extA <- intersect(df$Probe_ID, extA)
