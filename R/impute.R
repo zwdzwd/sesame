@@ -111,14 +111,15 @@ imputeTo <- function(betas, target_platform=NULL, mapping=NULL,
     rownames(betas) <- probes2
     
     if (impute) {
-        dd <- sesameDataGet(sprintf(
-            "%s.imputationDefault", target_platform))[[celltype]]
-        idx <- match(dd$Probe_ID, rownames(betas))
+        dd0 <- sesameDataGet(sprintf(
+            "%s.imputationDefault", target_platform))
+        dd <- dd0$data[[celltype]]
+        idx <- match(dd0$Probe_ID, rownames(betas))
         betas <- apply(betas[idx,,drop=FALSE], 2, function(x) {
             idx1 <- (is.na(idx) | is.na(x))
             x[idx1] <- dd$median[idx1]
             x })
-        rownames(betas) <- dd$Probe_ID
+        rownames(betas) <- dd0$Probe_ID
     }
     betas
 }
