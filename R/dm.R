@@ -24,7 +24,7 @@ checkLevels <- function(betas, fc) {
 
 model_contrasts <- function(mm, meta) {
     contrs <- names(attr(mm, "contrasts"))
-    contr2lvs <- setNames(lapply(contrs, function(cont) {
+    setNames(lapply(contrs, function(cont) {
         ## avoid X-prepended to levels that start with number
         x <- make.names(paste0("X",levels(factor(meta[[cont]]))))
         substr(x,2,nchar(x)) # remove the added X
@@ -219,7 +219,7 @@ summaryExtractTest <- function(smry) {
     ## exclude the sites with NAs, maybe we we can do better?
     smrylen <- vapply(smry, function(x) { nrow(x$coefficients); }, numeric(1))
     smry <- smry[smrylen == max(smrylen)]
-    
+
     est <- do.call(bind_rows, lapply(smry, function(x) {
         x$coefficients[,'Estimate']; }))
 
@@ -233,15 +233,20 @@ summaryExtractTest <- function(smry) {
     f_pvals <- do.call(rbind, lapply(smry, function(x) {
         x$Ftest["pval",,drop=FALSE] }))
     colnames(f_pvals) <- paste0("FPval_", colnames(f_pvals))
-    
-    ## this doesn't account for interaction terms
-    effsize <- do.call(cbind, lapply(names(contr2lvs), function(cont) {
-        lvs <- contr2lvs[[cont]]
-        lvs <- lvs[2:length(lvs)]
-        lvs <- lvs[paste0("Est_", cont, lvs) %in% colnames(est)]
-        apply(est[, paste0("Est_", cont, lvs),drop=FALSE], 1, function(x) {
-            max(x,0) - min(x,0) }) }))
-    colnames(effsize) <- paste0("Eff_", names(contr2lvs))
+
+    contr2lvs <- contr2lvs[vapply(
+        contr2lvs, function(x) nchar(x[[1]]), numeric(1)) > 0]
+    if (length(contr2lvs)>0) {
+        ## this doesn't account for interaction terms
+        effsize <- do.call(cbind, lapply(names(contr2lvs), function(cont) {
+            lvs <- contr2lvs[[cont]]
+            lvs <- lvs[2:length(lvs)]
+            lvs <- lvs[paste0("Est_", cont, lvs) %in% colnames(est)]
+            apply(est[, paste0("Est_", cont, lvs),drop=FALSE], 1, function(x) {
+                max(x,0) - min(x,0) }) }))
+        
+        colnames(effsize) <- paste0("Eff_", names(contr2lvs))
+    } else { effsize <- NULL; }
     bind_cols(Probe_ID=names(smry), est, pvals, f_pvals, effsize)
 }
 

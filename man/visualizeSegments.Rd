@@ -4,12 +4,14 @@
 \alias{visualizeSegments}
 \title{Visualize segments}
 \usage{
-visualizeSegments(seg, to.plot = NULL)
+visualizeSegments(seg, to.plot = NULL, genes.to.label = NULL)
 }
 \arguments{
 \item{seg}{a \code{CNSegment} object}
 
 \item{to.plot}{chromosome to plot (by default plot all chromosomes)}
+
+\item{genes.to.label}{gene(s) to label}
 }
 \value{
 plot graphics
@@ -24,10 +26,15 @@ require ggplot2, scales
 \examples{
 
 sesameDataCache()
-## sdf <- sesameDataGet('EPIC.1.SigDF')
-## sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
-## seg <- cnSegmentation(sdf, sdfs.normal)
-## visualizeSegments(seg)
+\dontrun{
+sdfs <- sesameDataGet('EPICv2.8.SigDF')
+sdf <- sdfs[["K562_206909630040_R01C01"]]
+seg <- cnSegmentation(sdf)
+seg <- cnSegmentation(sdf, return.probe.signals=TRUE)
+visualizeSegments(seg)
+visualizeSegments(seg, to.plot=c("chr9","chr22"))
+visualizeSegments(seg, genes.to.label=c("ABL1","BCR"))
+}
 
 sesameDataGet_resetEnv()
 

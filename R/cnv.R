@@ -43,12 +43,15 @@ cnv_normal_default <- function(platform) {
 #' @examples
 #'
 #' sesameDataCache()
-#' 
-#' ## sdf <- sesameDataGet('EPIC.1.SigDF')
-#' ## sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
-#' ## seg <- cnSegmentation(sdf, sdfs.normal)
-#' ## probeSignal <- cnSegmentation(sdf, return.probe.signals=TRUE)
 #'
+#' \dontrun{
+#' sdfs <- sesameDataGet('EPICv2.8.SigDF')
+#' sdf <- sdfs[["K562_206909630040_R01C01"]]
+#' seg <- cnSegmentation(sdf)
+#' seg <- cnSegmentation(sdf, return.probe.signals=TRUE)
+#' visualizeSegments(seg)
+#' }
+#' 
 #' @export
 cnSegmentation <- function(
     sdf, sdfs.normal=NULL, genomeInfo=NULL,
@@ -59,7 +62,7 @@ cnSegmentation <- function(
     platform <- sdfPlatform(sdf, verbose = verbose)
     
     if (is.null(sdfs.normal)) {
-        sdfs.normal = cnv_normal_default(platform)
+        sdfs.normal <- cnv_normal_default(platform)
     }
     
     if (is.null(genomeInfo)) { # genome/chromosome info
@@ -103,7 +106,8 @@ cnSegmentation <- function(
     structure(list(
         seg.signals = segmentBins(bin.signals, bin.coords),
         bin.coords = bin.coords,
-        bin.signals = bin.signals), class='CNSegment')
+        bin.signals = bin.signals,
+        genomeInfo = genomeInfo), class='CNSegment')
 }
 
 ## Left-right merge bins
@@ -258,6 +262,56 @@ segmentBins <- function(bin.signals, bin.coords) {
     seg.signals
 }
 
+cnv_plot_extra <- function(
+    seg, genes.to.label, seq.names, seqstart, totlen, p) {
+
+    ## cytoband
+    cband <- seg$genomeInfo$cytoBand
+    cband <- cband[cband$chrom %in% seq.names,]
+    xmins <- (cband$chromStart + seqstart[as.character(cband$chrom)]) / totlen
+    xmaxs <- (cband$chromEnd + seqstart[as.character(cband$chrom)]) / totlen
+    requireNamespace("pals")
+    cband2col <- setNames(
+        pals::ocean.gray(10)[seq(9,3)],
+        c('stalk', 'gneg', 'gpos25', 'gpos50', 'gpos75', 'gpos100'))
+    cband2col['acen'] <- 'red'
+    cband2col['gvar'] <- cband2col['gpos75']
+    band_color <- cband2col[as.character(cband$gieStain)]
+    band_loc <- min(-2, min(seg$bin.signals, na.rm=TRUE)) - 0.6
+    p <- p + ggplot2::geom_rect(ggplot2::aes(
+        xmin = xmins, xmax = xmaxs, ymin = band_loc-0.5, ymax = band_loc,
+        fill=names(band_color))) +
+        ggplot2::scale_fill_manual(values=band_color, guide="none")
+    
+    ## chromosome boundary
+    p <- p + ggplot2::geom_vline(xintercept = c(0,seqstart[-1]/totlen, 1),
+        linetype="dotted", alpha=I(0.5))
+    p <- p + ggplot2::geom_segment(ggplot2::aes(
+        x = c(0,seqstart[-1]/totlen, 1), xend = c(0,seqstart[-1]/totlen, 1),
+        y = band_loc-0.7, yend = band_loc+0.2), linewidth=0.6, color="black")
+    
+    ## gene labels
+    merged.exons <- lapply(genes.to.label, function(x) {
+        target.txns <- seg$genomeInfo$txns[GenomicRanges::mcols(
+            seg$genomeInfo$txns)$gene_name == x]
+        GenomicRanges::reduce(unlist(target.txns))
+    })
+    chrm <- vapply(merged.exons, function(x) as.character(
+        GenomicRanges::seqnames(x)[1]), character(1))
+    pos <- vapply(merged.exons, function(x)
+        min(GenomicRanges::start(x)), numeric(1))
+    label_xpos <- (seqstart[chrm] + pos) / totlen
+    label_ypos <- max(seg$bin.signals, na.rm=TRUE) * 1.1
+    p <- p + ggplot2::geom_text(aes(
+        label_xpos, label_ypos+0.6, label=genes.to.label), vjust=0)
+    p <- p + annotate('point', x = label_xpos, y = label_ypos,
+        shape = 25, size = 6, color = '#F2AE30', fill = '#F2AE30')
+    p <- p + ggplot2::geom_segment(ggplot2::aes(
+        x = label_xpos, xend = label_xpos,
+        y = band_loc, yend = label_ypos), color="#F2AE30")
+    p
+}
+
 #' Visualize segments
 #'
 #' The function takes a \code{CNSegment} object obtained from cnSegmentation
@@ -266,6 +320,7 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' require ggplot2, scales
 #' @param seg a \code{CNSegment} object
 #' @param to.plot chromosome to plot (by default plot all chromosomes)
+#' @param genes.to.label gene(s) to label
 #' @importFrom GenomicRanges start
 #' @importFrom GenomicRanges end
 #' @importFrom GenomicRanges seqnames
@@ -274,15 +329,20 @@ segmentBins <- function(bin.signals, bin.coords) {
 #' @examples
 #'
 #' sesameDataCache()
-#' ## sdf <- sesameDataGet('EPIC.1.SigDF')
-#' ## sdfs.normal <- sesameDataGet('EPIC.5.SigDF.normal')
-#' ## seg <- cnSegmentation(sdf, sdfs.normal)
-#' ## visualizeSegments(seg)
+#' \dontrun{
+#' sdfs <- sesameDataGet('EPICv2.8.SigDF')
+#' sdf <- sdfs[["K562_206909630040_R01C01"]]
+#' seg <- cnSegmentation(sdf)
+#' seg <- cnSegmentation(sdf, return.probe.signals=TRUE)
+#' visualizeSegments(seg)
+#' visualizeSegments(seg, to.plot=c("chr9","chr22"))
+#' visualizeSegments(seg, genes.to.label=c("ABL1","BCR"))
+#' }
 #'
 #' sesameDataGet_resetEnv()
 #' 
 #' @export
-visualizeSegments <- function(seg, to.plot=NULL) {
+visualizeSegments <- function(seg, to.plot=NULL, genes.to.label = NULL) {
 
     stopifnot(is(seg, "CNSegment"))
     bin.coords <- seg$bin.coords
@@ -293,8 +353,10 @@ visualizeSegments <- function(seg, to.plot=NULL) {
     
     ## skip chromosome too small (e.g, chrM)
     if (is.null(to.plot)) {
-        to.plot <- (bin.seqinfo@seqlengths > total.length*0.01) }
-
+        to.plot <- (bin.seqinfo@seqlengths > total.length*0.01)
+    } else {
+        to.plot <- seqnames(bin.seqinfo) %in% to.plot
+    }
     seqlen <- as.numeric(bin.seqinfo@seqlengths[to.plot])
     seq.names <- bin.seqinfo@seqnames[to.plot]
     totlen <- sum(seqlen, na.rm=TRUE)
@@ -309,27 +371,29 @@ visualizeSegments <- function(seg, to.plot=NULL) {
         seqstart[as.character(seqnames(bin.coords))] + bin.coords$bin.mids
 
     ## plot bin
-    p <- ggplot2::qplot(bin.coords$bin.x / totlen,
-        bin.signals, color=bin.signals, alpha=I(0.8))
+    p <- ggplot2::ggplot() + ggplot2::geom_point(
+        ggplot2::aes(bin.coords$bin.x / totlen,
+            bin.signals, color = bin.signals, alpha = I(0.8)))
 
     ## plot segment
     seg.beg <- (seqstart[sigs$chrom] + sigs$loc.start) / totlen
     seg.end <- (seqstart[sigs$chrom] + sigs$loc.end) / totlen
     p <- p + ggplot2::geom_segment(ggplot2::aes(x = seg.beg, xend = seg.end,
-        y = sigs$seg.mean, yend=sigs$seg.mean), size=1.0, color='blue')
-
-    ## chromosome boundary
-    p <- p + ggplot2::geom_vline(xintercept=seqstart[-1]/totlen,
-        linetype="dotted", alpha=I(0.5))
+        y = sigs$seg.mean, yend=sigs$seg.mean), linewidth=1.0, color='blue')
 
     ## chromosome label
     p <- p + ggplot2::scale_x_continuous(
         labels=seq.names, breaks=(seqstart+seqlen/2)/totlen) +
         ggplot2::theme(axis.text.x=ggplot2::element_text(angle=90, hjust=0.5))
 
+    ## color legend
     p <- p + ggplot2::scale_colour_gradient2(
         limits=c(-0.3,0.3), low='red', mid='grey', high='green',
-        oob=scales::squish) + ggplot2::xlab('') + ggplot2::ylab('') +
-        ggplot2::theme(legend.position="none")
-    p
+        oob=scales::squish, guide=guide_legend(title="Log2 Signal Ratio")) +
+        ggplot2::xlab('') + ggplot2::ylab('')
+
+    p <- cnv_plot_extra(seg, genes.to.label, seq.names, seqstart, totlen, p)
+    
+    p + ggplot2::theme(panel.grid.major.x = element_blank(),
+        panel.grid.minor.x = element_blank())
 }
