@@ -1,3 +1,15 @@
+cnv_normal_default <- function(platform) {
+    if (platform == "EPICv2") {
+        sdfs.normal <- sesameDataGet("EPICv2.8.SigDF")
+        sdfs.normal[c("GM12878_206909630042_R08C01","GM12878_206909630040_R03C01")]
+    } else if (platform == "EPIC") {
+        sdfs.normal <- sesameDataGet("EPIC.5.SigDF.normal")
+    } else {
+        stop(sprintf(
+            "Please provide sdfs.normal=. No default for %s", platform))
+    }
+}
+
 #' Perform copy number segmentation
 #'
 #' Perform copy number segmentation using the signals in the signal set.
@@ -47,12 +59,7 @@ cnSegmentation <- function(
     platform <- sdfPlatform(sdf, verbose = verbose)
     
     if (is.null(sdfs.normal)) {
-        if (platform == "EPIC") {
-            sdfs.normal <- sesameDataGet("EPIC.5.SigDF.normal")
-        } else {
-            stop(sprintf(
-                "Please provide sdfs.normal=. No default for %s", platform))
-        }
+        sdfs.normal = cnv_normal_default(platform)
     }
     
     if (is.null(genomeInfo)) { # genome/chromosome info
@@ -84,7 +91,7 @@ cnSegmentation <- function(
     probe.signals <- setNames(log2(target.intens / pmax(predict(fit), 1)), pb)
     if (return.probe.signals) {
         probeCoords$cnv <- probe.signals;
-        return(probeCoords); }
+        return(probeCoords[seqnames(probeCoords) != "*"]); }
 
     ## bin signals
     ## fix bin coordinates, TODO: this is too time-consuming
