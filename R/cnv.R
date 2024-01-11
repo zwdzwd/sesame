@@ -82,7 +82,9 @@ cnSegmentation <- function(
     ## normalize probes intensities
     fit <- lm(y~., data=data.frame(y=target.intens, X=normal.intens))
     probe.signals <- setNames(log2(target.intens / pmax(predict(fit), 1)), pb)
-    if (return.probe.signals) { return(probe.signals); }
+    if (return.probe.signals) {
+        probeCoords$cnv <- probe.signals;
+        return(probeCoords); }
 
     ## bin signals
     ## fix bin coordinates, TODO: this is too time-consuming
