@@ -29,16 +29,15 @@ excluding pseudo-autosomal regions and XCI escapes.
 Human:
 
 ```{r inf2, message=FALSE}
-sdf = sesameDataGet('EPIC.1.SigDF')
-inferSex(sdf)
-inferSexKaryotypes(sdf)
+betas = openSesame(sesameDataGet("EPICv2.8.SigDF")[[1]])
+inferSex(betas)
 ```
 
 Mouse:
 
 ```{r nh16, message=FALSE}
-sdf = sesameDataGet("MM285.1.SigDF")
-inferSex(sdf)
+betas = openSesame(sesameDataGet("MM285.1.SigDF"))
+inferSex(betas)
 ```
 
 # Ethnicity

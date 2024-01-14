@@ -2,37 +2,46 @@
 % Please edit documentation in R/sex.R
 \name{inferSex}
 \alias{inferSex}
-\title{Infer Sex}
+\title{Infer sex.}
 \usage{
-inferSex(x, platform = NULL, verbose = FALSE)
+inferSex(betas, platform = NULL)
 }
 \arguments{
-\item{x}{either a raw \code{SigDF} or a beta value vector named by probe ID
-SigDF is preferred over beta values.}
+\item{betas}{DNA methylation beta}
 
-\item{platform}{Only MM285, EPIC and HM450 are supported.}
-
-\item{verbose}{print more messages}
+\item{platform}{EPICv2, EPIC, HM450, MM285, etc.}
 }
 \value{
-'F' or 'M'
+Inferred sex of sample
+}
+\description{
 We established our sex calling based on the CpGs hypermethylated in
-inactive X (XiH), CpGs hypomethylated in inactive X (XiL) and signal
-intensity ratio of Y-chromosome over autosomes. Currently human inference
-uses a random forest and mouse inference uses a support vector machine.
-
-The function checks the sample quality. If the sample is of poor quality
-the inference return NA.
-
-Note many factors such as Dnmt genotype, XXY male (Klinefelter's),
+inactive X (XiH), CpGs hypomethylated in inactive X (XiL).
+}
+\details{
+Note genotype abnormalities such as Dnmt genotype,
+XXY male (Klinefelter's),
 45,X female (Turner's) can confuse the model sometimes.
 This function works on a single sample.
 }
-\description{
-Infer Sex
-}
 \examples{
-sesameDataCache() # if not done yet
-sdf <- sesameDataGet('EPIC.1.SigDF')
-inferSex(sdf)
+
+## EPICv2 example
+betas = openSesame(sesameDataGet("EPICv2.8.SigDF")[[1]])
+inferSex(betas)
+
+\dontrun{
+## MM285 example
+betas = openSesame(sesameDataGet("MM285.1.SigDF"))
+inferSex(betas)
+
+## EPIC example
+betas = openSesame(sesameDataGet('EPIC.1.SigDF'))
+inferSex(betas)
+
+## HM450 example
+betas = openSesame(sesameDataGet("HM450.10.SigDF")[[1]])
+inferSex(betas)
+}
+
 }

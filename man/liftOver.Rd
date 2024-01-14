@@ -9,13 +9,20 @@ imputation functionality.}
 liftOver(
   x,
   target_platform,
+  source_platform = NULL,
   mapping = NULL,
   impute = FALSE,
   celltype = "Blood"
 )
 }
 \arguments{
-\item{x}{either beta value (vector or matrix) or SigDF(s)}
+\item{x}{either named beta value (vector or matrix), probe IDs
+or SigDF(s)
+if input is a matrix, probe IDs should be in the row names
+if input is a numeric vector, probe IDs should be in the vector
+names.
+If input is a character vector, the input will be
+considered probe IDs.}
 
 \item{target_platform}{the platform to take the data to}
 
@@ -39,8 +46,21 @@ imputation functionality.
 }
 \examples{
 
+\dontrun{
 sesameDataCache()
-## sdf = sesameDataGet("EPICv2.8.SigDF")[["GM12878_206909630042_R08C01"]]
-## betas = openSesame(sdf)
-## betas_HM450 = liftOver(betas, "HM450", impute=TRUE)
+sdf = sesameDataGet("EPICv2.8.SigDF")[["GM12878_206909630042_R08C01"]]
+betas = openSesame(sdf)
+betas_HM450 = liftOver(betas, "HM450", impute=TRUE)
+
+## directly map probes
+cg_epic2 = grep("cg", names(sesameData_getManifestGRanges("EPICv2")), value=T)
+head(liftOver(cg_epic2, "HM450"))
+
+cg_hm450 = grep("cg", names(sesameData_getManifestGRanges("HM450")), value=T)
+head(liftOver(cg_hm450, "EPICv2"))
+
+rs_epic2 = grep("rs", names(sesameData_getManifestGRanges("EPICv2")), value=T)
+head(liftOver(rs_epic2, "HM450", source_platform="EPICv2"))
+
+}
 }

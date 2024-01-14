@@ -199,9 +199,8 @@ KYCG_buildGeneDBs <- function(
     genome = NULL, max_distance = 10000, silent = FALSE) {
     
     platform <- queryCheckPlatform(platform, query, silent = silent)
-    genes <- sesameData_txnToGeneGRanges(
-        sesameData_getTxnGRanges(
-            sesameData_check_genome(NULL, platform)))
+    genes <- sesameData_getTxnGRanges(
+        sesameData_check_genome(NULL, platform), merge2gene=TRUE)
     all_probes <- sesameData_getManifestGRanges(platform, genome = genome)
     if (!is.null(query)) {
         probes <- all_probes[names(all_probes) %in% query] }

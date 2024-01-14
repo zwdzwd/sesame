@@ -20,7 +20,8 @@
 inferEthnicity <- function(sdf, verbose = FALSE) {
 
     stopifnot(is(sdf, 'SigDF'))
-    stopifnot(sdfPlatform(sdf, verbose = verbose) %in% c('EPIC','HM450'))
+    stopifnot(sdfPlatform(sdf, verbose = verbose) %in% c(
+        "EPICv2", "EPIC", "HM450"))
 
     ethnicity.inference <- sesameDataGet('ethnicity.inference')
     ccsprobes <- ethnicity.inference$ccs.probes

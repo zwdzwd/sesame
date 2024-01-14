@@ -106,7 +106,7 @@ visualizeGene <- function(gene_name, betas,
     platform <- sesameData_check_platform(platform, rownames(betas))
     genome <- sesameData_check_genome(genome, platform)
 
-    txns <- sesameDataGet(paste0("genomeInfo.", genome))$txns
+    txns <- sesameData_getGenomeInfo(genome)$txns
     target.txns <- txns[GenomicRanges::mcols(txns)$gene_name == gene_name]
     stopifnot(length(target.txns) > 0)
     target.strand <- as.character(GenomicRanges::strand(target.txns[[1]][1]))

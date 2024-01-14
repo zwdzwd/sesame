@@ -266,7 +266,8 @@ One can get all the genes associated with a probe set by
 ```{r ky18, message=FALSE}
 df <- rowData(sesameDataGet('MM285.tissueSignature'))
 query <- df$Probe_ID[df$branch == "fetal_liver" & df$type == "Hypo"]
-genes <- sesameData_getGenesByProbes(query, platform="MM285")
+regs <- sesameData_getTxnGRanges("mm10", merge2gene = TRUE)
+genes <- sesameData_annoProbes(query, regs, platform="MM285", return_ov_features=TRUE)
 genes
 ```
 

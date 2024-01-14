@@ -2,8 +2,14 @@
 #' lift over beta values or SigDFs to another Infinium platform
 #' This function wraps ID conversion and provide optional
 #' imputation functionality.
-#' 
-#' @param x either beta value (vector or matrix) or SigDF(s)
+#'
+#' @param x either named beta value (vector or matrix), probe IDs
+#' or SigDF(s)
+#' if input is a matrix, probe IDs should be in the row names
+#' if input is a numeric vector, probe IDs should be in the vector
+#' names.
+#' If input is a character vector, the input will be
+#' considered probe IDs.
 #' @param target_platform the platform to take the data to
 #' @param mapping a liftOver mapping file. Typically this file
 #' contains empirical evidence whether a probe mapping is reliable.
@@ -15,19 +21,52 @@
 #' @return imputed data, vector, matrix, SigDF(s)
 #' @examples
 #'
+#' \dontrun{
 #' sesameDataCache()
-#' ## sdf = sesameDataGet("EPICv2.8.SigDF")[["GM12878_206909630042_R08C01"]]
-#' ## betas = openSesame(sdf)
-#' ## betas_HM450 = liftOver(betas, "HM450", impute=TRUE)
+#' sdf = sesameDataGet("EPICv2.8.SigDF")[["GM12878_206909630042_R08C01"]]
+#' betas = openSesame(sdf)
+#' betas_HM450 = liftOver(betas, "HM450", impute=TRUE)
+#'
+#' ## directly map probes
+#' cg_epic2 = grep("cg", names(sesameData_getManifestGRanges("EPICv2")), value=T)
+#' head(liftOver(cg_epic2, "HM450"))
+#'
+#' cg_hm450 = grep("cg", names(sesameData_getManifestGRanges("HM450")), value=T)
+#' head(liftOver(cg_hm450, "EPICv2"))
+#'
+#' rs_epic2 = grep("rs", names(sesameData_getManifestGRanges("EPICv2")), value=T)
+#' head(liftOver(rs_epic2, "HM450", source_platform="EPICv2"))
+#' 
+#' }
 #' @export
 liftOver <- function(x,
-    target_platform, mapping=NULL, impute=FALSE, celltype="Blood") {
+    target_platform, source_platform=NULL,
+    mapping=NULL, impute=FALSE, celltype="Blood") {
     
     if (is.numeric(x) || is.matrix(x)) {
         imputeTo(x, target_platform, mapping=mapping, impute=impute,
             celltype=celltype)
     } else if (is(x, "SigDF")) {
         convertTo(x, target_platform)
+    } else if (is.character(x)) {
+        source_platform <- sesameData_check_platform(source_platform, x)
+        y <- names(sesameData_getManifestGRanges(target_platform))
+        if (target_platform %in% c("EPIC", "HM450", "HM27") &&
+            source_platform %in% c("EPICv2", "MSA")) {
+            x2 <- vapply(strsplit(x, "_"), function(xx) xx[1], character(1))
+            y2 <- y
+        } else if (target_platform %in% c("EPICv2", "MSA") &&
+                   source_platform %in% c("EPIC", "HM450", "HM27")) {
+            x2 <- x
+            y2 <- vapply(strsplit(y, "_"), function(xx) xx[1], character(1))
+        } else {
+            x2 <- x
+            y2 <- y
+        }
+        idx <- match(y2, x2)
+        y <- y[!is.na(idx)]
+        names(y) <- x[idx[!is.na(idx)]]
+        y
     } else if (is.list(x) && is(x[[1]], "SigDF")) {
         lapply(x, convertTo, platform = target_platform)
     }
@@ -92,34 +131,36 @@ imputeTo <- function(betas, target_platform=NULL, mapping=NULL,
     impute=FALSE, celltype="Blood") {
     
     if (!is.matrix(betas)) {
-        betas <- cbind(betas)
+        btm <- cbind(betas)
     }
     target_platform <- sesameData_check_platform(target_platform)
 
     if (!is.null(mapping)) { # use liftOver file
-        betas <- betas[mapping$ID_source,,drop=FALSE]
-        rownames(betas) <- mapping$ID_target
+        btm <- btm[mapping$ID_source,,drop=FALSE]
+        rownames(btm) <- mapping$ID_target
     } else if ( # convert by mapping prefixes
         target_platform %in% c("HM450", "EPIC") &&
-        any(grepl("_", grep("^cg", rownames(betas), value=TRUE)))) {
-        betas <- betasCollapseToPfx(betas)
+        any(grepl("_", grep("^cg", rownames(btm), value=TRUE)))) {
+        btm <- betasCollapseToPfx(btm)
     }
 
     probes2 <- sesameDataGet(sprintf(
         "%s.address", target_platform))$ordering$Probe_ID
-    betas <- betas[match(probes2, rownames(betas)),,drop=FALSE]
-    rownames(betas) <- probes2
+    btm <- btm[match(probes2, rownames(btm)),,drop=FALSE]
+    rownames(btm) <- probes2
     
     if (impute) {
         dd0 <- sesameDataGet(sprintf(
             "%s.imputationDefault", target_platform))
         dd <- dd0$data[[celltype]]
-        idx <- match(dd0$Probe_ID, rownames(betas))
-        betas <- apply(betas[idx,,drop=FALSE], 2, function(x) {
+        idx <- match(dd0$Probe_ID, rownames(btm))
+        btm <- apply(btm[idx,,drop=FALSE], 2, function(x) {
             idx1 <- (is.na(idx) | is.na(x))
             x[idx1] <- dd$median[idx1]
             x })
-        rownames(betas) <- dd0$Probe_ID
+        rownames(btm) <- dd0$Probe_ID
     }
-    betas
+
+    if (!is.matrix(betas)) { btm <- btm[,1] }
+    btm
 }
