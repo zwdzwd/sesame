@@ -27,5 +27,5 @@ channel inference.
 }
 \examples{
 sdf <- sesameDataGet('EPIC.1.SigDF')
-inferEthnicity(sdf)
+## inferEthnicity(sdf)
 }

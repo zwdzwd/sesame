@@ -13,20 +13,20 @@
 #' @return Inferred sex of sample
 #' @examples
 #'
-#' ## EPICv2 example
+#' ## EPICv2 input
 #' betas = openSesame(sesameDataGet("EPICv2.8.SigDF")[[1]])
 #' inferSex(betas)
 #'
 #' \dontrun{
-#' ## MM285 example
+#' ## MM285 input
 #' betas = openSesame(sesameDataGet("MM285.1.SigDF"))
 #' inferSex(betas)
 #' 
-#' ## EPIC example
+#' ## EPIC input
 #' betas = openSesame(sesameDataGet('EPIC.1.SigDF'))
 #' inferSex(betas)
 #'
-#' ## HM450 example
+#' ## HM450 input
 #' betas = openSesame(sesameDataGet("HM450.10.SigDF")[[1]])
 #' inferSex(betas)
 #' }

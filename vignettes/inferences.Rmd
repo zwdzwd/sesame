@@ -40,14 +40,14 @@ betas = openSesame(sesameDataGet("MM285.1.SigDF"))
 inferSex(betas)
 ```
 
-# Ethnicity
+<!-- # Ethnicity -->
 
-Ethnicity is inferred using a random forest model trained based on both the
-built-in SNPs (`rs` probes) and channel-switching Type-I probes.
-```{r inf3}
-sdf = sesameDataGet('EPIC.1.SigDF')
-inferEthnicity(sdf)
-```
+<!-- Ethnicity is inferred using a random forest model trained based on both the -->
+<!-- built-in SNPs (`rs` probes) and channel-switching Type-I probes. -->
+<!-- ```{r inf3} -->
+<!-- sdf = sesameDataGet('EPIC.1.SigDF') -->
+<!-- inferEthnicity(sdf) -->
+<!-- ``` -->
 
 # Age & Epigenetic Clock
 

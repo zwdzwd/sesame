@@ -26,6 +26,9 @@ considered probe IDs.}
 
 \item{target_platform}{the platform to take the data to}
 
+\item{source_platform}{optional information of the source data
+platform (when there might be ambiguity).}
+
 \item{mapping}{a liftOver mapping file. Typically this file
 contains empirical evidence whether a probe mapping is reliable.
 If given, probe ID-based mapping will be skipped. This is to

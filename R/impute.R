@@ -11,6 +11,8 @@
 #' If input is a character vector, the input will be
 #' considered probe IDs.
 #' @param target_platform the platform to take the data to
+#' @param source_platform optional information of the source data
+#' platform (when there might be ambiguity).
 #' @param mapping a liftOver mapping file. Typically this file
 #' contains empirical evidence whether a probe mapping is reliable.
 #' If given, probe ID-based mapping will be skipped. This is to
@@ -129,10 +131,9 @@ convertTo <- function(sdf, target_platform=c("HM450", "EPIC")) {
 #' @export
 imputeTo <- function(betas, target_platform=NULL, mapping=NULL,
     impute=FALSE, celltype="Blood") {
-    
-    if (!is.matrix(betas)) {
-        btm <- cbind(betas)
-    }
+
+    btm <- betas
+    if (!is.matrix(btm)) { btm <- cbind(btm) }
     target_platform <- sesameData_check_platform(target_platform)
 
     if (!is.null(mapping)) { # use liftOver file

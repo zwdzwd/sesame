@@ -15,22 +15,8 @@
 #' @import sesameData
 #' @examples
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
-#' inferEthnicity(sdf)
+#' ## inferEthnicity(sdf)
 #' @export
 inferEthnicity <- function(sdf, verbose = FALSE) {
-
-    stopifnot(is(sdf, 'SigDF'))
-    stopifnot(sdfPlatform(sdf, verbose = verbose) %in% c(
-        "EPICv2", "EPIC", "HM450"))
-
-    ethnicity.inference <- sesameDataGet('ethnicity.inference')
-    ccsprobes <- ethnicity.inference$ccs.probes
-    rsprobes <- ethnicity.inference$rs.probes
-    ethnicity.model <- ethnicity.inference$model
-    af <- c(
-        getBetas(sdf, mask=FALSE)[rsprobes],
-        getAFTypeIbySumAlleles(sdf, known.ccs.only = FALSE)[ccsprobes])
-
-    requireNamespace("randomForest")
-    as.character(predict(ethnicity.model, af))
+    .Deprecated("Please use CytoMethIC::cmi_classify.")
 }
