@@ -2,7 +2,7 @@
 % Please edit documentation in R/impute.R
 \name{liftOver}
 \alias{liftOver}
-\title{lift over beta values or SigDFs to another Infinium platform
+\title{Lift over beta values or SigDFs to another Infinium platform
 This function wraps ID conversion and provide optional
 imputation functionality.}
 \usage{
@@ -12,7 +12,8 @@ liftOver(
   source_platform = NULL,
   mapping = NULL,
   impute = FALSE,
-  celltype = "Blood"
+  celltype = "Blood",
+  ...
 )
 }
 \arguments{
@@ -38,12 +39,14 @@ perform more stringent probe ID mapping.}
 
 \item{celltype}{the cell type / tissue context of imputation,
 if not given, will use nearest neighbor to find out.}
+
+\item{...}{extra arguments, see ?convertProbeID}
 }
 \value{
 imputed data, vector, matrix, SigDF(s)
 }
 \description{
-lift over beta values or SigDFs to another Infinium platform
+Lift over beta values or SigDFs to another Infinium platform
 This function wraps ID conversion and provide optional
 imputation functionality.
 }
@@ -51,11 +54,60 @@ imputation functionality.
 
 \dontrun{
 sesameDataCache()
-sdf = sesameDataGet("EPICv2.8.SigDF")[["GM12878_206909630042_R08C01"]]
-betas = openSesame(sdf)
-betas_HM450 = liftOver(betas, "HM450", impute=TRUE)
 
-## directly map probes
+## lift SigDF
+
+sdf = sesameDataGet("EPICv2.8.SigDF")[["GM12878_206909630042_R08C01"]]
+dim(liftOver(sdf, "EPICv2"))
+dim(liftOver(sdf, "EPIC"))
+dim(liftOver(sdf, "HM450"))
+
+sdfs = sesameDataGet("EPICv2.8.SigDF")[1:2]
+sdfs_hm450 = liftOver(sdfs, "HM450")
+
+sdf = sesameDataGet("EPIC.5.SigDF.normal")[[1]]
+dim(liftOver(sdf, "EPICv2"))
+dim(liftOver(sdf, "EPIC"))
+dim(liftOver(sdf, "HM450"))
+
+sdf = sesameDataGet("HM450.10.SigDF")[[1]]
+dim(liftOver(sdf, "EPICv2"))
+dim(liftOver(sdf, "EPIC"))
+dim(liftOver(sdf, "HM450"))
+
+## lift beta values
+
+betas = openSesame(sesameDataGet("EPICv2.8.SigDF")[[1]])
+betas_hm450 = liftOver(betas, "HM450", impute=TRUE)
+length(betas_hm450)
+sum(is.na(betas_hm450))
+betas_hm450 <- liftOver(betas, "HM450", impute=FALSE)
+length(betas_hm450)
+sum(is.na(betas_hm450))
+betas_epic1 <- liftOver(betas, "EPIC", impute=TRUE)
+length(betas_epic1)
+sum(is.na(betas_epic1))
+betas_epic1 <- liftOver(betas, "EPIC", impute=FALSE)
+length(betas_epic1)
+sum(is.na(betas_epic1))
+
+betas_matrix = openSesame(sesameDataGet("EPICv2.8.SigDF")[1:4])
+dim(betas_matrix)
+betas_matrix_hm450 = liftOver(betas_matrix, "HM450", impute=T)
+dim(betas_matrix_hm450)
+
+betas <- c("cg04707299"=0.2, "cg13380562"=0.9, "cg00000103"=0.1)
+head(liftOver(betas, "HM450", impute=TRUE))
+
+betas <- c("cg00004963_TC21"=0, "cg00004963_TC22"=0.5, "cg00004747_TC21"=1.0)
+betas_hm450 <- liftOver(betas, "HM450", impute=TRUE)
+head(na.omit(liftOver(betas, "HM450", impute=FALSE)))
+
+## lift probe IDs
+
+cg_epic2 = names(sesameData_getManifestGRanges("EPICv2"))
+head(liftOver(cg_epic2, "HM450"))
+
 cg_epic2 = grep("cg", names(sesameData_getManifestGRanges("EPICv2")), value=T)
 head(liftOver(cg_epic2, "HM450"))
 
@@ -64,6 +116,13 @@ head(liftOver(cg_hm450, "EPICv2"))
 
 rs_epic2 = grep("rs", names(sesameData_getManifestGRanges("EPICv2")), value=T)
 head(liftOver(rs_epic2, "HM450", source_platform="EPICv2"))
+
+probes_epic2 = names(sesameData_getManifestGRanges("EPICv2"))
+head(liftOver(probes_epic2, "EPIC"))
+head(liftOver(probes_epic2, "EPIC", target_uniq = TRUE))
+head(liftOver(probes_epic2, "EPIC", include_new = FALSE))
+head(liftOver(probes_epic2, "EPIC", include_old = FALSE))
+head(liftOver(probes_epic2, "EPIC", return_mapping=TRUE))
 
 }
 }
