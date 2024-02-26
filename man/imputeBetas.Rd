@@ -4,7 +4,7 @@
 \alias{imputeBetas}
 \title{Impute of missing data of specific platform}
 \usage{
-imputeBetas(betas, platform = NULL, celltype = NULL)
+imputeBetas(betas, platform = NULL, celltype = NULL, sd_max = 999)
 }
 \arguments{
 \item{betas}{named vector of beta values}
@@ -13,6 +13,8 @@ imputeBetas(betas, platform = NULL, celltype = NULL)
 
 \item{celltype}{celltype/tissue context of imputation, if not given, will
 use nearest neighbor to determine.}
+
+\item{sd_max}{maximum standard deviation in imputation confidence}
 }
 \value{
 imputed data, vector or matrix

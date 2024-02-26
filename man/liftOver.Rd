@@ -12,6 +12,7 @@ liftOver(
   source_platform = NULL,
   mapping = NULL,
   impute = FALSE,
+  sd_max = 999,
   celltype = "Blood",
   ...
 )
@@ -36,6 +37,9 @@ If given, probe ID-based mapping will be skipped. This is to
 perform more stringent probe ID mapping.}
 
 \item{impute}{whether to impute or not, default is FALSE}
+
+\item{sd_max}{the maximum standard deviation for filtering low
+confidence imputation.}
 
 \item{celltype}{the cell type / tissue context of imputation,
 if not given, will use nearest neighbor to find out.}

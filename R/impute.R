@@ -17,6 +17,8 @@
 #' If given, probe ID-based mapping will be skipped. This is to
 #' perform more stringent probe ID mapping.
 #' @param impute whether to impute or not, default is FALSE
+#' @param sd_max the maximum standard deviation for filtering low
+#' confidence imputation.
 #' @param celltype the cell type / tissue context of imputation,
 #' if not given, will use nearest neighbor to find out.
 #' @param ... extra arguments, see ?convertProbeID
@@ -106,19 +108,21 @@
 #' @export
 liftOver <- function(x,
     target_platform, source_platform=NULL,
-    mapping=NULL, impute=FALSE, celltype="Blood", ...) {
+    mapping=NULL, impute=FALSE, sd_max = 999, celltype="Blood", ...) {
 
     if (is.numeric(x)) {
         if (is.matrix(x)) {
             betas <- apply(x, 2, function(xx) liftOver(
                 xx, target_platform, source_platform = NULL,
-                mapping = mapping, impute = impute, celltype = celltype))
+                mapping = mapping, impute = impute,
+                sd_max = sd_max, celltype = celltype))
         } else {
             mapping <- convertProbeID(names(x), target_platform,
                 mapping = mapping, return_mapping = TRUE, include_new = TRUE)
             betas <- setNames(x[mapping$ID_source], mapping$ID_target)
             if (impute) {
-                betas <- imputeBetas(betas, target_platform, celltype = celltype)
+                betas <- imputeBetas(betas, target_platform,
+                    celltype = celltype, sd_max = sd_max)
             }
         }
         betas
@@ -135,8 +139,9 @@ liftOver <- function(x,
     } else if (is.character(x)) {
         convertProbeID(x, target_platform, source_platform, ...)
     } else if (is.list(x) && is(x[[1]], "SigDF")) {
-        lapply(x, liftOver, target_platform, source_platform = source_platform,
-            mapping = mapping, impute = impute, celltype = celltype, ...)
+        lapply(x, liftOver, target_platform,
+            source_platform = source_platform, mapping = mapping,
+            impute = impute, sd_max = sd_max, celltype = celltype, ...)
     }
 }
 
@@ -207,8 +212,10 @@ convertProbeID <- function(
 #' @param platform platform
 #' @param celltype celltype/tissue context of imputation, if not given, will
 #' use nearest neighbor to determine.
+#' @param sd_max maximum standard deviation in imputation confidence
 #' @return imputed data, vector or matrix
-imputeBetas <- function(betas, platform=NULL, celltype=NULL) {
+imputeBetas <- function(betas, platform = NULL,
+    celltype = NULL, sd_max = 999) {
 
     df <- sesameDataGet(sprintf("%s.imputationDefault", platform))
     d2q <- match(names(betas), df$Probe_ID)
@@ -218,6 +225,9 @@ imputeBetas <- function(betas, platform=NULL, celltype=NULL) {
         celltype <- "Blood"
     }
     idx <- is.na(betas)
-    betas[idx] <- df$data[[celltype]]$median[d2q][idx]
+    mn <- df$data[[celltype]]$median[d2q][idx]
+    sd <- df$data[[celltype]]$sd[d2q][idx]
+    mn[sd > sd_max] <- NA
+    betas[idx] <- mn
     betas
 }
