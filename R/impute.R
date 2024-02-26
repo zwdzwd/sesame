@@ -159,7 +159,8 @@ convertProbeID <- function(
         source_platform <- sesameData_check_platform(source_platform, x)
         dfs <- tibble(source = x)
         dft <- tibble(
-            target = names(sesameData_getManifestGRanges(target_platform)))
+            target = sesameDataGet(sprintf(
+                "%s.address", target_platform))$ordering$Probe_ID)
         if (target_platform %in% c("EPIC", "HM450", "HM27") &&
             source_platform %in% c("EPICv2", "MSA")) {
             dfs$prefix <- vapply(
