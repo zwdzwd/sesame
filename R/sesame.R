@@ -121,12 +121,13 @@ totalIntensities <- function(sdf, mask = FALSE) {
 #' @importFrom dplyr slice_min
 #' @importFrom dplyr group_by
 SDFcollapseToPfx <- function(sdf) {
-    Probe_ID <- pval <- NULL
     sdf$Probe_ID <- vapply(strsplit(sdf$Probe_ID, '_'),
         function(x) x[1], character(1))
     sdf$pval <- pOOBAH(sdf, return.pval = TRUE)
     ## take the best by p-value
-    slice_min(group_by(sdf, Probe_ID), pval, n=1, with_ties = FALSE)
+    ## Note that mask = FALSE will override p-value
+    slice_min(group_by(sdf, .data[['Probe_ID']]),
+        .data[['mask']] + .data[['pval']], n=1, with_ties = FALSE)
 }
 
 #' Collapse betas by averagng probes with common probe ID prefix
@@ -193,7 +194,8 @@ getBetas <- function(
     stopifnot(all(c("MG","UG","MR","UR") %in% colnames(sdf)))
     collapseMethod <- match.arg(collapseMethod)
     if (collapseToPfx && collapseMethod == "minPval") {
-        sdf <- SDFcollapseToPfx(sdf) }
+        sdf <- SDFcollapseToPfx(sdf)
+    }
 
     if (sum.TypeI) {
         d1 <- InfI(sdf); d2 <- InfII(sdf)
@@ -213,7 +215,8 @@ getBetas <- function(
     if (mask) { betas[sdf$mask] <- NA }
 
     if (collapseToPfx && collapseMethod == "mean") {
-        betas <- betasCollapseToPfx(betas) }
+        betas <- betasCollapseToPfx(betas)
+    }
 
     betas
 }
