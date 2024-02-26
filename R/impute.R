@@ -66,6 +66,13 @@
 #' dim(betas_matrix)
 #' betas_matrix_hm450 = liftOver(betas_matrix, "HM450", impute=T)
 #' dim(betas_matrix_hm450)
+#'
+#' ## use empirical evidence in liftOver
+#' mapping = sesameDataGet("liftOver.EPICv2ToEPIC")
+#' betas_matrix = openSesame(sesameDataGet("EPICv2.8.SigDF")[1:4])
+#' dim(liftOver(betas_matrix, "EPIC", mapping = mapping))
+#' ## compare to without using empirical evidence
+#' dim(liftOver(betas_matrix, "EPIC"))
 #' 
 #' betas <- c("cg04707299"=0.2, "cg13380562"=0.9, "cg00000103"=0.1)
 #' head(liftOver(betas, "HM450", impute=TRUE))
@@ -109,7 +116,7 @@ liftOver <- function(x,
         } else {
             mapping <- convertProbeID(names(x), target_platform,
                 mapping = mapping, return_mapping = TRUE, include_new = TRUE)
-            betas <- setNames(x[mapping$source], mapping$target)
+            betas <- setNames(x[mapping$ID_source], mapping$ID_target)
             if (impute) {
                 betas <- imputeBetas(betas, target_platform, celltype = celltype)
             }
@@ -119,8 +126,8 @@ liftOver <- function(x,
         mapping <- convertProbeID(
             x$Probe_ID, target_platform, return_mapping = TRUE,
             target_uniq = TRUE, include_new = TRUE)
-        x2 <- x[match(mapping$source, x$Probe_ID),]
-        x2$Probe_ID <- mapping$target
+        x2 <- x[match(mapping$ID_source, x$Probe_ID),]
+        x2$Probe_ID <- mapping$ID_target
         x2 <- x2[order(x2$Probe_ID),]
         x2$mask[is.na(x2$mask)] <- TRUE
         rownames(x2) <- NULL
@@ -157,38 +164,40 @@ convertProbeID <- function(
 
     if (is.null(mapping)) {
         source_platform <- sesameData_check_platform(source_platform, x)
-        dfs <- tibble(source = x)
+        dfs <- tibble(ID_source = x)
         dft <- tibble(
-            target = sesameDataGet(sprintf(
+            ID_target = sesameDataGet(sprintf(
                 "%s.address", target_platform))$ordering$Probe_ID)
         if (target_platform %in% c("EPIC", "HM450", "HM27") &&
             source_platform %in% c("EPICv2", "MSA")) {
             dfs$prefix <- vapply(
-                strsplit(dfs$source, "_"), function(xx) xx[1], character(1))
-            dft$prefix <- dft$target
+                strsplit(dfs$ID_source, "_"), function(xx) xx[1], character(1))
+            dft$prefix <- dft$ID_target
         } else if (target_platform %in% c("EPICv2", "MSA") &&
                    source_platform %in% c("EPIC", "HM450", "HM27")) {
-            dfs$prefix <- dfs$source
+            dfs$prefix <- dfs$ID_source
             dft$prefix <- vapply(
-                strsplit(dft$target, "_"), function(xx) xx[1], character(1))
+                strsplit(dft$ID_target, "_"), function(xx) xx[1], character(1))
         } else {
-            dfs$prefix <- dfs$source
-            dft$prefix <- dft$target
+            dfs$prefix <- dfs$ID_source
+            dft$prefix <- dft$ID_target
         }
         mapping <- dplyr::full_join(dfs, dft, by="prefix")
     }
     
     if (target_uniq) {
-        m <- dplyr::distinct(mapping, .data[["target"]], .keep_all = TRUE)
-        mapping <- rbind(m[!is.na(m$target),], mapping[is.na(mapping$target),])
+        m <- dplyr::distinct(mapping, .data[["ID_target"]], .keep_all = TRUE)
+        mapping <- rbind(
+            m[!is.na(m$ID_target),],
+            mapping[is.na(mapping$ID_target),])
     }
 
-    if (!include_new) { mapping <- mapping[!is.na(mapping$source),] }
-    if (!include_old) { mapping <- mapping[!is.na(mapping$target),] }
+    if (!include_new) { mapping <- mapping[!is.na(mapping$ID_source),] }
+    if (!include_old) { mapping <- mapping[!is.na(mapping$ID_target),] }
     if (return_mapping) {
         mapping
     } else {
-        stats::setNames(mapping$target, mapping$source)
+        stats::setNames(mapping$ID_target, mapping$ID_source)
     }
 }
 

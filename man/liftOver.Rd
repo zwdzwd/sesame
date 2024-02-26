@@ -96,6 +96,13 @@ dim(betas_matrix)
 betas_matrix_hm450 = liftOver(betas_matrix, "HM450", impute=T)
 dim(betas_matrix_hm450)
 
+## use empirical evidence in liftOver
+mapping = sesameDataGet("liftOver.EPICv2ToEPIC")
+betas_matrix = openSesame(sesameDataGet("EPICv2.8.SigDF")[1:4])
+dim(liftOver(betas_matrix, "EPIC", mapping = mapping))
+## compare to without using empirical evidence
+dim(liftOver(betas_matrix, "EPIC"))
+
 betas <- c("cg04707299"=0.2, "cg13380562"=0.9, "cg00000103"=0.1)
 head(liftOver(betas, "HM450", impute=TRUE))
 
