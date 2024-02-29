@@ -1,5 +1,21 @@
 c(
     bibentry(bibtype = "Article",
+        key = "lee2024input",
+        title = "Low-input and single-cell methods for Infinium DNA methylation BeadChips",
+        author = c(
+            person(given = "Sol Moe", family = "Lee"),
+            person(given = "Christian", family = "Loo"),
+            person(given = "Rexxi", family = "Prasasya"),
+            person(given = "Marisa", family = "Bartolomei"),
+            person(given = "Rahul", family = "Kohli"),
+            person(given = "Wanding", family = "Zhou")),
+        year = "2024", month = "Feb", journal = "Nucleic acids research",
+        ## volume = "24", number = "1",
+        doi = "10.1093/nar/gkae127",
+        language = "eng", issn = "1362-4962",
+        header = "The ELBAR detection calling is described in:"),
+    
+    bibentry(bibtype = "Article",
         key = "BIB",
         title = "Comparative epigenome analysis using Infinium DNA methylation BeadChips",
         author = c(

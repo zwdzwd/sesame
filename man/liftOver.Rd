@@ -10,6 +10,7 @@ liftOver(
   x,
   target_platform,
   source_platform = NULL,
+  BPPARAM = SerialParam(),
   mapping = NULL,
   impute = FALSE,
   sd_max = 999,
@@ -30,6 +31,8 @@ considered probe IDs.}
 
 \item{source_platform}{optional information of the source data
 platform (when there might be ambiguity).}
+
+\item{BPPARAM}{use MulticoreParam(n) for parallel processing}
 
 \item{mapping}{a liftOver mapping file. Typically this file
 contains empirical evidence whether a probe mapping is reliable.
@@ -68,6 +71,8 @@ dim(liftOver(sdf, "HM450"))
 
 sdfs = sesameDataGet("EPICv2.8.SigDF")[1:2]
 sdfs_hm450 = liftOver(sdfs, "HM450")
+## parallel processing
+sdfs_hm450 = liftOver(sdfs, "HM450", BPPARAM=BiocParallel::MulticoreParam(2))
 
 sdf = sesameDataGet("EPIC.5.SigDF.normal")[[1]]
 dim(liftOver(sdf, "EPICv2"))
@@ -99,6 +104,9 @@ betas_matrix = openSesame(sesameDataGet("EPICv2.8.SigDF")[1:4])
 dim(betas_matrix)
 betas_matrix_hm450 = liftOver(betas_matrix, "HM450", impute=T)
 dim(betas_matrix_hm450)
+## parallel processing
+betas_matrix_hm450 = liftOver(betas_matrix, "HM450", impute=T,
+BPPARAM=BiocParallel::MulticoreParam(4))
 
 ## use empirical evidence in liftOver
 mapping = sesameDataGet("liftOver.EPICv2ToEPIC")

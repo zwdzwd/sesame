@@ -9,3 +9,4 @@
 ^inst/data$
 .DS_Store
 ^.Renv-version$
+^LICENSE\.md$

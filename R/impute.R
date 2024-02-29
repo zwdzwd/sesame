@@ -12,6 +12,7 @@
 #' @param target_platform the platform to take the data to
 #' @param source_platform optional information of the source data
 #' platform (when there might be ambiguity).
+#' @param BPPARAM use MulticoreParam(n) for parallel processing
 #' @param mapping a liftOver mapping file. Typically this file
 #' contains empirical evidence whether a probe mapping is reliable.
 #' If given, probe ID-based mapping will be skipped. This is to
@@ -37,6 +38,8 @@
 #'
 #' sdfs = sesameDataGet("EPICv2.8.SigDF")[1:2]
 #' sdfs_hm450 = liftOver(sdfs, "HM450")
+#' ## parallel processing
+#' sdfs_hm450 = liftOver(sdfs, "HM450", BPPARAM=BiocParallel::MulticoreParam(2))
 #'
 #' sdf = sesameDataGet("EPIC.5.SigDF.normal")[[1]]
 #' dim(liftOver(sdf, "EPICv2"))
@@ -68,6 +71,9 @@
 #' dim(betas_matrix)
 #' betas_matrix_hm450 = liftOver(betas_matrix, "HM450", impute=T)
 #' dim(betas_matrix_hm450)
+#' ## parallel processing
+#' betas_matrix_hm450 = liftOver(betas_matrix, "HM450", impute=T,
+#' BPPARAM=BiocParallel::MulticoreParam(4))
 #'
 #' ## use empirical evidence in liftOver
 #' mapping = sesameDataGet("liftOver.EPICv2ToEPIC")
@@ -107,15 +113,16 @@
 #' }
 #' @export
 liftOver <- function(x,
-    target_platform, source_platform=NULL,
+    target_platform, source_platform=NULL, BPPARAM=SerialParam(), 
     mapping=NULL, impute=FALSE, sd_max = 999, celltype="Blood", ...) {
 
     if (is.numeric(x)) {
         if (is.matrix(x)) {
-            betas <- apply(x, 2, function(xx) liftOver(
-                xx, target_platform, source_platform = NULL,
-                mapping = mapping, impute = impute,
-                sd_max = sd_max, celltype = celltype))
+            betas <- do.call(cbind, bplapply(seq_len(ncol(x)), function(i) {
+                liftOver(x[,i], target_platform, source_platform = NULL,
+                    mapping = mapping, impute = impute,
+                    sd_max = sd_max, celltype = celltype)}, BPPARAM=BPPARAM))
+            colnames(betas) <- colnames(x)
         } else {
             mapping <- convertProbeID(names(x), target_platform,
                 mapping = mapping, return_mapping = TRUE, include_new = TRUE)
@@ -139,7 +146,7 @@ liftOver <- function(x,
     } else if (is.character(x)) {
         convertProbeID(x, target_platform, source_platform, ...)
     } else if (is.list(x) && is(x[[1]], "SigDF")) {
-        lapply(x, liftOver, target_platform,
+        bplapply(x, liftOver, BPPARAM = BPPARAM, target_platform,
             source_platform = source_platform, mapping = mapping,
             impute = impute, sd_max = sd_max, celltype = celltype, ...)
     }
