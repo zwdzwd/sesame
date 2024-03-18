@@ -111,9 +111,10 @@
 #' head(mLiftOver(probes_epic2, "EPIC", return_mapping=TRUE))
 #' 
 #' }
+#' @import BiocParallel
 #' @export
 mLiftOver <- function(x,
-    target_platform, source_platform=NULL, BPPARAM=SerialParam(), 
+    target_platform, source_platform=NULL, BPPARAM=SerialParam(),
     mapping=NULL, impute=FALSE, sd_max = 999, celltype="Blood", ...) {
 
     if (is.numeric(x)) {

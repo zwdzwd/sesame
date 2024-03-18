@@ -23,3 +23,33 @@ imputeBetas <- function(betas, platform = NULL,
     betas[idx] <- mn
     betas
 }
+
+#' Impute Missing Values with Mean
+#' This function replaces missing values (NA) in a matrix, default is row
+#' means.
+#' 
+#' @param mx A matrix
+#' @param axis A single integer. Use 1 to impute column means (default),
+#' and 2 to impute row means.
+#' @return A matrix with missing values imputed.
+#' @examples
+#' mx <- cbind(c(1, 2, NA, 4), c(NA, 2, 3, 4))
+#' imputeBetasMatrixByMean(mx, axis = 1)
+#' imputeBetasMatrixByMean(mx, axis = 2)
+#' @export
+imputeBetasMatrixByMean <- function(mx, axis = 1) {
+    stopifnot(is.matrix(mx))
+    if (axis == 1) {
+        t(apply(mx, 1, function(x) {
+            x[is.na(x)] <- mean(x, na.rm = TRUE);
+            x
+        }))
+    } else if (axis == 2) {
+        apply(mx, 2, function(x) {
+            x[is.na(x)] <- mean(x, na.rm = TRUE);
+            x
+        })
+    } else {
+        stop("Invalid axis. Use 1 for columns or 2 for rows.")
+    }
+}

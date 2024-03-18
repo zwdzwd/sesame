@@ -3,7 +3,6 @@
 \docType{package}
 \name{sesame-package}
 \alias{sesame-package}
-\alias{_PACKAGE}
 \alias{sesame}
 \title{Analyze DNA methylation data}
 \value{
