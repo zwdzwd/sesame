@@ -288,8 +288,10 @@ readIDAT1 <- function(grn.name, red.name) {
     ida.red <- suppressWarnings(illuminaio::readIDAT(red.name))
     d <- cbind(
         cy3 = ida.grn$Quants[,"Mean"],
-        cy5 = ida.red$Quants[,"Mean"])
-    colnames(d) <- c('G', 'R')
+        cy5 = ida.red$Quants[,"Mean"],
+        cy3n = ida.grn$Quants[,"NBeads"],
+        cy5n = ida.red$Quants[,"NBeads"])
+    colnames(d) <- c('G', 'R', "GN", "RN")
 
     ## this is not always accurate
     ## TODO should identify unique tango IDs.
@@ -305,6 +307,9 @@ readIDAT1 <- function(grn.name, red.name) {
 #'
 #' @param prefix.path sample prefix without _Grn.idat and _Red.idat
 #' @param manifest optional design manifest file
+#' @param min_beads minimum bead number, probes with R or G smaller than
+#' this threshold will be masked. If NULL, no filtering based on bead
+#' count will be applied.
 #' @param controls optional control probe manifest file
 #' @param verbose be verbose?  (FALSE)
 #' @param platform EPIC, HM450 and HM27 etc.
@@ -316,7 +321,7 @@ readIDAT1 <- function(grn.name, red.name) {
 #'     "extdata", "4207113116_A_Grn.idat", package = "sesameData")))
 #' @export
 readIDATpair <- function(
-    prefix.path, manifest = NULL, platform = '',
+    prefix.path, manifest = NULL, platform = '', min_beads = NULL,
     controls = NULL, verbose = FALSE) {
     
     if (file.exists(paste0(prefix.path, '_Grn.idat'))) {
@@ -357,7 +362,7 @@ readIDATpair <- function(
         controls <- df_address$controls
     }
 
-    sdf <- sdfMsg(chipAddressToSignal(dm, manifest), verbose,
+    sdf <- sdfMsg(chipAddressToSignal(dm, manifest, min_beads), verbose,
         "IDAT platform: %s", attr(dm, "platform"))
     ## Probe IDs might not fully resolve platform
     attr(sdf, "platform") <- attr(dm, "platform")
@@ -449,8 +454,9 @@ searchIDATprefixes <- function(dir.name,
 #'
 #' @param dm data frame in chip address, 2 columns: cy3/Grn and cy5/Red
 #' @param mft a data frame with columns Probe_ID, M, U and col
+#' @param min_beads minimum bead counts, otherwise masked
 #' @return a SigDF, indexed by probe ID address
-chipAddressToSignal <- function(dm, mft) {
+chipAddressToSignal <- function(dm, mft, min_beads = NULL) {
 
     ## Infinium-I
     mft1 <- mft[!is.na(mft$col),]
@@ -464,6 +470,14 @@ chipAddressToSignal <- function(dm, mft) {
         UR=unname(tmpU[,"R"]),
         col=mft1$col, mask=FALSE)
 
+    if (!is.null(min_beads)) {
+        sdf$mask <- (
+            is.na(tmpM[,"GN"]) | is.na(tmpM[,"RN"]) |
+            is.na(tmpU[,"GN"]) | is.na(tmpU[,"RN"]) |
+            tmpM[,"GN"] < min_beads | tmpM[,"RN"] < min_beads |
+            tmpU[,"GN"] < min_beads | tmpU[,"RN"] < min_beads)
+    }
+
     ## Infinium-II
     mft2 <- mft[is.na(mft$col),]
     if (nrow(mft2) > 0) {
@@ -474,7 +488,12 @@ chipAddressToSignal <- function(dm, mft) {
             UG=unname(tmp[,"G"]),
             UR=unname(tmp[,"R"]),
             col="2", mask=FALSE)
-        ## if ("mask" %in% colnames(mft2)) { s2$mask <- mft2$mask; }
+
+        if (!is.null(min_beads)) {
+            s2$mask <- (
+                is.na(tmp[,"GN"]) | is.na(tmp[,"RN"]) |
+                tmp[,"GN"] < min_beads | tmp[,"RN"] < min_beads)
+        }
         sdf <- rbind(sdf, s2)
     }
     sdf$col <- factor(sdf$col, levels=c("G","R","2"))

@@ -4,12 +4,14 @@
 \alias{chipAddressToSignal}
 \title{Lookup address in one sample}
 \usage{
-chipAddressToSignal(dm, mft)
+chipAddressToSignal(dm, mft, min_beads = NULL)
 }
 \arguments{
 \item{dm}{data frame in chip address, 2 columns: cy3/Grn and cy5/Red}
 
 \item{mft}{a data frame with columns Probe_ID, M, U and col}
+
+\item{min_beads}{minimum bead counts, otherwise masked}
 }
 \value{
 a SigDF, indexed by probe ID address

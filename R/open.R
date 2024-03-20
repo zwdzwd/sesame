@@ -101,8 +101,11 @@ wrap_openSesame <- function(x, ret) {
 #' @param manifest optional dynamic manifest
 #' @param func either getBetas or getAFs, if NULL, then return SigDF list
 #' @param platform optional platform string
-#' @param ... parameters to getBetas
 #' @param BPPARAM get parallel with MulticoreParam(n)
+#' @param min_beads minimum bead number, probes with R or G smaller than
+#' this threshold will be masked. If NULL, no filtering based on bead
+#' count will be applied. Default to 1.
+#' @param ... parameters to getBetas
 #' @return a numeric vector for processed beta values
 #' @import BiocParallel
 #' @examples
@@ -116,7 +119,8 @@ wrap_openSesame <- function(x, ret) {
 #' @export
 openSesame <- function(
     x, prep = "QCDPB", prep_args = NULL, manifest = NULL,
-    func = getBetas, BPPARAM=SerialParam(), platform = "", ...) {
+    func = getBetas, BPPARAM=SerialParam(), platform = "",
+    min_beads = 1, ...) {
 
     ## expand if a directory
     if (length(x) == 1 && is(x, 'character') && dir.exists(x)) {
@@ -128,8 +132,8 @@ openSesame <- function(
     } else if (is(x, 'character')) {
         if (length(x) == 1) {
             wrap_openSesame1(func, prepSesame(readIDATpair(
-                x, platform = platform, manifest = manifest),
-                prep, prep_args), ...)
+                x, platform = platform, manifest = manifest,
+                min_beads = min_beads), prep, prep_args), ...)
         } else { # multiple IDAT prefixes / SigDFs
             wrap_openSesame(x, bplapply(x, openSesame,
                 platform = platform, prep = prep, prep_args = prep_args,

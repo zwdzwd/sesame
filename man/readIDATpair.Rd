@@ -8,6 +8,7 @@ readIDATpair(
   prefix.path,
   manifest = NULL,
   platform = "",
+  min_beads = NULL,
   controls = NULL,
   verbose = FALSE
 )
@@ -18,6 +19,10 @@ readIDATpair(
 \item{manifest}{optional design manifest file}
 
 \item{platform}{EPIC, HM450 and HM27 etc.}
+
+\item{min_beads}{minimum bead number, probes with R or G smaller than
+this threshold will be masked. If NULL, no filtering based on bead
+count will be applied.}
 
 \item{controls}{optional control probe manifest file}
 

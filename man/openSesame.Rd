@@ -12,6 +12,7 @@ openSesame(
   func = getBetas,
   BPPARAM = SerialParam(),
   platform = "",
+  min_beads = 1,
   ...
 )
 }
@@ -29,6 +30,10 @@ openSesame(
 \item{BPPARAM}{get parallel with MulticoreParam(n)}
 
 \item{platform}{optional platform string}
+
+\item{min_beads}{minimum bead number, probes with R or G smaller than
+this threshold will be masked. If NULL, no filtering based on bead
+count will be applied. Default to 1.}
 
 \item{...}{parameters to getBetas}
 }
