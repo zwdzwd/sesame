@@ -28,14 +28,14 @@ imputeBetas <- function(betas, platform = NULL, BPPARAM = SerialParam(),
     platform <- sesameData_check_platform(platform, names(betas))
     df <- sesameDataGet(sprintf("%s.imputationDefault", platform))
     d2q <- match(names(betas), df$Probe_ID)
-    celltype <- names(which.max(vapply(df$data, function(x) cor(
+    celltype <- names(which.max(vapply(df, function(x) cor(
         betas, x$median[d2q], use="na.or.complete"), numeric(1))))
     if (is.null(celltype)) {
         celltype <- "Blood"
     }
     idx <- is.na(betas)
-    mn <- df$data[[celltype]]$median[d2q][idx]
-    sd <- df$data[[celltype]]$sd[d2q][idx]
+    mn <- df[[celltype]]$median[d2q][idx]
+    sd <- df[[celltype]]$sd[d2q][idx]
     mn[sd > sd_max] <- NA
     betas[idx] <- mn
     betas
@@ -77,7 +77,7 @@ imputeBetasByGenomicNeighbors <- function(betas, platform = NULL,
     df$dist <- pmax(df$d1, df$d2)
     df <- summarize(slice_min(group_by(df, .data[['cg']]),
         n = max_neighbors, order_by = .data[['dist']]),
-        mbetas = mean(.data[['betas']]))
+        mbets = mean(.data[['betas']]))
     betas[df$cg] <- df$mbetas
     betas
 }
