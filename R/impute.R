@@ -27,7 +27,7 @@ imputeBetas <- function(betas, platform = NULL, BPPARAM = SerialParam(),
     
     platform <- sesameData_check_platform(platform, names(betas))
     df <- sesameDataGet(sprintf("%s.imputationDefault", platform))
-    d2q <- match(names(betas), df$Probe_ID)
+    d2q <- match(names(betas), df$Blood$Probe_ID) #currently Blood is the only dataset in df, this will need to be changed if more datasets become available
     celltype <- names(which.max(vapply(df, function(x) cor(
         betas, x$median[d2q], use="na.or.complete"), numeric(1))))
     if (is.null(celltype)) {
