@@ -29,11 +29,15 @@ off preprocessing using `prep=""`:
 ```{r qc1, eval=FALSE}
 ## calculate metrics on all IDATs in a specific folder
 sesameQCtoDF(openSesame(idat_dir, prep="", func=sesameQC_calcStats))
+## or a list of prefixes, with parallel processing
+sesameQCtoDF(openSesame(sprintf("%s/%s", idat_dir, idat_prefixes), prep="",
+    func=sesameQC_calcStats, BPPARAM=BiocParallel::MulticoreParam(24)))
 ```
 
-SeSAMe divides sample quality metrics into multiple groups. These groups are
-listed below and can be referred to by short keys. For example, "intensity"
-generates signal intensity-related quality metrics.
+The results display `frac_dt_cg`, `RGratio`, `RGdistort` by default. For other
+QC metrics, SeSAMe divides sample quality metrics into multiple groups. These
+groups are listed below and can be referred to by short keys. For example,
+"intensity" generates signal intensity-related quality metrics.
 
 ```{r echo=FALSE}
 library(knitr)
