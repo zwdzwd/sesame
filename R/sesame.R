@@ -380,7 +380,7 @@ readControls <- function(dm, controls) {
         ctl <- as.data.frame(dm[match(controls$Address, rownames(dm)),])
         rownames(ctl) <- make.names(controls$Name, unique=TRUE)
         ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
-        colnames(ctl) <- c('G','R','col','type')
+        colnames(ctl) <- c('G','R','GN','RN','col','type')
         ctl <- ctl[!(is.na(ctl$G)|is.na(ctl$R)),] # no NA in controls
     } else {
         ctl <- as.data.frame(chipAddressToSignal(dm, controls))
