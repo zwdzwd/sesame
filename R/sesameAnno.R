@@ -22,7 +22,7 @@ guess_chrmorder <- function(chrms) {
 #' @importFrom readr cols
 #' @importFrom readr col_integer
 #' @importFrom readr col_character
-#' @importFrom GenomeInfoDb Seqinfo
+#' @importFrom Seqinfo Seqinfo
 #' @return GRanges
 #' @examples
 #' \dontrun{
