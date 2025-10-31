@@ -178,7 +178,10 @@ sesameAnno_buildAddressFile <- function(tsv) {
 }
 
 #' Annotate a data.frame using manifest
-#'
+#' 
+#' Annotation source: https://zwdzwd.github.io/InfiniumAnnotation
+#' e.g., EPICv2.hg38.manifest
+#' 
 #' @param df input data frame with Probe_ID as a column
 #' @param probe_id the Probe_ID column name, default to "Probe_ID" or
 #' rownames
@@ -193,7 +196,14 @@ sesameAnno_buildAddressFile <- function(tsv) {
 #' @export
 sesameAnno_attachManifest <- function(
     df, probe_id="Probe_ID", platform=NULL, genome=NULL) {
-    df <- as.data.frame(df)
+
+    if (is.numeric(df)) {
+        if (is.matrix(df)) {
+            df <- cbind(Probe_ID=rownames(df), as.data.frame(df))
+        } else {
+            df <- data.frame(Probe_ID = names(df), beta = df)
+        }
+    }
     stopifnot(is(df, "data.frame"))
     stopifnot(probe_id %in% colnames(df))
 
