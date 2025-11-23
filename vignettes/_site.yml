@@ -19,7 +19,7 @@ navbar:
       href: inferences.html
     - text: "KnowYourCG"
       icon: fa-binoculars
-      href: KYCG.html
+      href: https://bioconductor.org/packages/release/bioc/html/knowYourCG.html
     - text: "Supplemental"
       icon: fa-book
       href: https://zhou-lab.github.io/sesame/dev/supplemental.html
