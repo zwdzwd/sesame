@@ -11,7 +11,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r message=FALSE, warning=FALSE, results="hide"}
+```{r setup, message=FALSE, warning=FALSE, results="hide"}
 library(sesame)
 sesameDataCache()
 ```
@@ -39,7 +39,7 @@ QC metrics, SeSAMe divides sample quality metrics into multiple groups. These
 groups are listed below and can be referred to by short keys. For example,
 "intensity" generates signal intensity-related quality metrics.
 
-```{r echo=FALSE}
+```{r qc_table, echo=FALSE}
 library(knitr)
 kable(data.frame(
     "Short Key" = c(
@@ -131,13 +131,13 @@ plot for each metric calculated.
   influence of signal background.
 
 - `sesameQC_plotHeatSNPs()` plots SNP probes and can be used to detect sample
-  swaps.
+    swaps.
 
 More about quality control plots can be found in [Supplemental
 Vignette](https://zhou-lab.github.io/sesame/v1.16/supplemental.html#qc).
 
 # Session Info
 
-```{r}
+```{r sessioninfo}
 sessionInfo()
 ```

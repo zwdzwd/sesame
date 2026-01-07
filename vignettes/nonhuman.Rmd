@@ -11,7 +11,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
 library(wheatmap)
 library(dplyr)
 options(rmarkdown.html_vignette.check_title = FALSE)
@@ -194,6 +194,6 @@ elaborated in [The Inference Vignette](inferences.html).
 
 # Session Info
 
-```{r}
+```{r sessioninfo}
 sessionInfo()
 ```

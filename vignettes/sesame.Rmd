@@ -11,17 +11,17 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
+```{r setup, message=FALSE, warning=FALSE, include=FALSE}
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 # Preparation
 
-```{r message=FALSE, warning=FALSE}
+```{r library, message=FALSE, warning=FALSE}
 library(sesame)
 ```
 
-```{r}
+```{r version}
 ## As sesame and sesameData are under active development, this documentation is
 ## specific to the following version of R, sesame, sesameData and ExperimentHub:
 sesame_checkVersion()
@@ -33,14 +33,15 @@ make sure the compatible ExperimentHub is installed.
 
 If you use a previous version, please checkout the vignette that corresponds to
 the right version here
-[https://zhou-lab.github.io/sesame/dev/supplemental.html#Versions](https://zhou-lab.github.io/sesame/dev/supplemental.html#Versions)
+[https://zhou-lab.github.io/sesame/dev/supplemental.html#Versions](
+https://zhou-lab.github.io/sesame/dev/supplemental.html#Versions)
 
 **CRITICAL:** After a new installation, one must cache the associated
 annotation data using the following command. This needs to be done only once
 per SeSAMe installation/update. Caching data to local guarantees proper data
 retrieval and saves internet traffic.
 
-```{r message=FALSE}
+```{r cache, message=FALSE}
 sesameDataCache()
 ```
 
@@ -50,7 +51,7 @@ SeSAMe annotation data is managed by the
 [ExperimentHub](https://tinyurl.com/2p873tez) infrastructure.  You can find the
 location of the cached annotation data on your local computer using:
 
-```{r}
+```{r userdir}
 tools::R_user_dir("ExperimentHub", which="cache")
 ```
 
@@ -220,7 +221,7 @@ these corresponding usages.
 
 ## Project probe IDs
 
-```{r}
+```{r liftover_probes}
 cg_msa = names(sesameData_getManifestGRanges("MSA"))
 ## only mappable probes, return mapping from MSA to HM450
 head(mLiftOver(cg_msa, "HM450"))
@@ -233,7 +234,7 @@ head(mLiftOver(cg_hm450, "EPICv2"))
 
 ## Project beta values
 
-```{r}
+```{r liftover_betas}
 betas = openSesame(sesameDataGet("EPICv2.8.SigDF")[[1]])
 betas_epic = mLiftOver(betas, "EPIC", impute=FALSE)
 length(betas_epic)     # EPIC platform dimension
@@ -253,7 +254,7 @@ dim(mLiftOver(betas_matrix, "EPIC"))
 
 ## Project signal SigDFs
 
-```{r}
+```{r liftover_sigdf}
 sdf = sesameDataGet("EPICv2.8.SigDF")[["GM12878_206909630042_R08C01"]]
 dim(mLiftOver(sdf, "EPICv2")) # EPICv2 platform dimension
 dim(mLiftOver(sdf, "EPIC"))   # EPIC platform dimension
@@ -269,19 +270,21 @@ array generations, this can be done with `getBetas(..., collapseToPfx =
 TRUE)`. The same argument can be passed to `openSesame(..., func=getBetas,
 collapseToPfx=TRUE)`
 
-```{r eval=FALSE}
+```{r collapse_betas, eval=FALSE}
 betas = getBetas(sdf_from_EPICv2, collapseToPfx = TRUE)
 ## or
 betas = openSesame("path_to_idats", collapseToPfx = TRUE)
 ## by default the method for collapsing is to make means
-betas = openSesame("path_to_idats", collapseToPfx = TRUE, collapseMethod = "mean")
+betas = openSesame(
+    "path_to_idats", collapseToPfx = TRUE, collapseMethod = "mean")
 ## one can also switch to min detection p-value
-betas = openSesame("path_to_idats", collapseToPfx = TRUE, collapseMethod = "minPval")
+betas = openSesame(
+    "path_to_idats", collapseToPfx = TRUE, collapseMethod = "minPval")
 ```
 
 One may also use the `betasCollapseToPfx` function to generate the traditional
 cg number readings.
-```{r eval=FALSE}
+```{r collapse_func, eval=FALSE}
 betas = betasCollapseToPfx(betas, BPPARAM=BiocParallel::MulticoreParam(2))
 ```
 
@@ -290,6 +293,6 @@ Please find more info at the Supplemental documentation at the following [link]
 
 # Session Info
 
-```{r}
+```{r sessioninfo}
 sessionInfo()
 ```

@@ -242,6 +242,6 @@ track-view visualization of the data.
 
 # Session Info
 
-```{r}
+```{r sessioninfo}
 sessionInfo()
 ```

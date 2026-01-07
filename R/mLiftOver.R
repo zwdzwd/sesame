@@ -39,7 +39,8 @@
 #' sdfs = sesameDataGet("EPICv2.8.SigDF")[1:2]
 #' sdfs_hm450 = mLiftOver(sdfs, "HM450")
 #' ## parallel processing
-#' sdfs_hm450 = mLiftOver(sdfs, "HM450", BPPARAM=BiocParallel::MulticoreParam(2))
+#' sdfs_hm450 = mLiftOver(
+#'     sdfs, "HM450", BPPARAM=BiocParallel::MulticoreParam(2))
 #'
 #' sdf = sesameDataGet("EPIC.5.SigDF.normal")[[1]]
 #' dim(mLiftOver(sdf, "EPICv2"))
@@ -94,13 +95,16 @@
 #' cg_epic2 = names(sesameData_getManifestGRanges("EPICv2"))
 #' head(mLiftOver(cg_epic2, "HM450"))
 #' 
-#' cg_epic2 = grep("cg", names(sesameData_getManifestGRanges("EPICv2")), value=T)
+#' cg_epic2 = grep(
+#'     "cg", names(sesameData_getManifestGRanges("EPICv2")), value=T)
 #' head(mLiftOver(cg_epic2, "HM450"))
 #'
-#' cg_hm450 = grep("cg", names(sesameData_getManifestGRanges("HM450")), value=T)
+#' cg_hm450 = grep(
+#'     "cg", names(sesameData_getManifestGRanges("HM450")), value=T)
 #' head(mLiftOver(cg_hm450, "EPICv2"))
 #'
-#' rs_epic2 = grep("rs", names(sesameData_getManifestGRanges("EPICv2")), value=T)
+#' rs_epic2 = grep(
+#'     "rs", names(sesameData_getManifestGRanges("EPICv2")), value=T)
 #' head(mLiftOver(rs_epic2, "HM450", source_platform="EPICv2"))
 #'
 #' probes_epic2 = names(sesameData_getManifestGRanges("EPICv2"))
@@ -186,12 +190,13 @@ convertProbeID <- function(
             ID_target = sesameDataGet(sprintf(
                 "%s.address", target_platform))$ordering$Probe_ID)
         if (target_platform %in% c("EPIC", "HM450", "HM27") &&
-            source_platform %in% c("EPICv2", "MSA")) {
+                source_platform %in% c("EPICv2", "MSA")) {
             dfs$prefix <- vapply(
-                strsplit(dfs$ID_source, "_"), function(xx) xx[1], character(1))
+                strsplit(dfs$ID_source, "_"), function(xx) xx[1],
+                character(1))
             dft$prefix <- dft$ID_target
         } else if (target_platform %in% c("EPICv2", "MSA") &&
-                   source_platform %in% c("EPIC", "HM450", "HM27")) {
+                source_platform %in% c("EPIC", "HM450", "HM27")) {
             dfs$prefix <- dfs$ID_source
             dft$prefix <- vapply(
                 strsplit(dft$ID_target, "_"), function(xx) xx[1], character(1))

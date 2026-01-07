@@ -204,7 +204,8 @@ setting adjusted intensities to small value")
 
 ## ## train model using linear model with log transformed response
 ## train.model.lm <- function(input, output) {
-##     fitdata <- data.frame(IB=as.vector(input)+1, LOB=log(as.vector(output)+1))
+##     fitdata <- data.frame(
+##         IB=as.vector(input)+1, LOB=log(as.vector(output)+1))
 ##     m <- lm(LOB~IB, data=fitdata)
 ##     ## m <- MASS::rlm(LOB~IB, data=fitdata)
 ##     function(d) {
@@ -212,8 +213,9 @@ setting adjusted intensities to small value")
 ##         pp <- predict(
 ##             m, newdata=data.frame(IB=as.vector(d)),
 ##             interval='prediction', level=0.8)
-        
-##         list(mu=exp(pp[,'fit']), sigma=(exp(pp[,'upr'])-exp(pp[,'lwr']))/10.13)
+
+##         list(mu=exp(pp[,'fit']),
+##              sigma=(exp(pp[,'upr'])-exp(pp[,'lwr']))/10.13)
 ##         ## use upper bound for mu since true signal
 ##         ## is often much higher than noise
 ##         ## list(mu=exp(pp[,'upr']),

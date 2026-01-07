@@ -210,6 +210,6 @@ betas1.
 
 # Session Info
 
-```{r}
+```{r sessioninfo}
 sessionInfo()
 ```
