@@ -157,8 +157,8 @@ best preprocessing strategy based on our experience.
 ```{r base10, echo=FALSE, result="asis"}
 library(knitr)
 df <- data.frame(rbind(
-    c("EPICv2/EPIC/HM450", "human", "QCDPB"),
-    c("EPICv2/EPIC/HM450", "non-human organism", "SQCDPB"),
+    c("EPICv2/MSA/EPIC/HM450", "human", "QCDPB"),
+    c("EPICv2/MSA/EPIC/HM450", "non-human organism", "SQCDPB"),
     c("MM285", "mouse", "TQCDPB"),
     c("MM285", "non-mouse organism", "SQCDPB"),
     c("Mammal40", "human", "HCDPB"),

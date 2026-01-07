@@ -25,7 +25,8 @@ rownames}
 a new data.frame with manifest attached
 }
 \description{
-Annotate a data.frame using manifest
+Annotation source: https://zwdzwd.github.io/InfiniumAnnotation
+e.g., EPICv2.hg38.manifest
 }
 \examples{
 \dontrun{
