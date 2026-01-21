@@ -161,14 +161,15 @@ listAvailableMasks <- function(platform, verbose = FALSE) {
         summary=TRUE, silent=!verbose, ignore.case = TRUE)$dbname
 }
 
-## list probes masked by probe nonuniqueness
-## used in background subtraction
-nonuniqMask <- function(platform, verbose = FALSE) {
+## these are probes excluded from background subtraction and pOOBAH etc.
+backgroundMask <- function(platform, verbose = FALSE) {
     stopifnot(is.character(platform))
     dbnames <- listAvailableMasks(platform, verbose = verbose)
     if(is.null(dbnames)) { return(NULL) }
     mask_names <- c("M_nonuniq", "nonunique",
-        "sub35_copy", "multi", "design_issue")
+        "sub35_copy", "multi", "design_issue",
+        "M_1baseSwitchSNPcommon_5pt",
+        "M_1baseSwitchSNPcommon_1pt")
     mask_names <- dbnames[dbnames %in% mask_names]
     if (length(mask_names) > 0) {
         do.call(c, KYCG_getDBs(sprintf("%s.Mask", platform),

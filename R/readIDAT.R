@@ -3,7 +3,7 @@ readIDAT <- function(file) {
     stopifnot(is.character(file) || length(file) != 0)
     file <- path.expand(file)
     if(!file.exists(file)) {
-        stop("Unable to find file ", file)
+        stop("File not found: ", file)
     }
 
     if(grepl("\\.gz", file))
@@ -15,7 +15,7 @@ readIDAT <- function(file) {
     ## Assert file format
     magic <- readChar(con, nchars=4)
     if (magic != "IDAT") {
-        stop("Cannot read IDAT file. File format error. Unknown magic: ", magic)
+        stop("Invalid IDAT magic number: ", magic, " (expected 'IDAT')")
     }
 
     ## Read IDAT file format version
@@ -23,7 +23,7 @@ readIDAT <- function(file) {
     if (version == 3) {
         res <- readIDAT_nonenc(file)
     } else {
-        stop("Cannot read IDAT file. Unsupported IDAT file format version: ", version)
+        stop("Unsupported IDAT version: ", version)
     }
     res
 }
@@ -145,7 +145,7 @@ readIDAT_nonenc <- function(file, what = c("all", "IlluminaID", "nSNPsRead")) {
     }
 
     if(! (is.character(file) || try(isOpen(file))))
-        stop("argument 'file' needs to be either a character or an open, seekable connection")
+        stop("'file' must be a character or an open, seekable connection")
     what <- match.arg(what)
 
     if(is.character(file)) {
@@ -166,18 +166,18 @@ readIDAT_nonenc <- function(file, what = c("all", "IlluminaID", "nSNPsRead")) {
     }
 
     if(!isSeekable(con))
-        stop("The file connection needs to be seekable")
+        stop("File connection must be seekable")
 
     ## Assert file format
     magic <- readChar(con, nchars=4)
     if (magic != "IDAT") {
-        stop("Cannot read IDAT file. File format error. Unknown magic: ", magic)
+        stop("Invalid IDAT magic number: ", magic, " (expected 'IDAT')")
     }
 
     ## Read IDAT file format version
     version <- readLong(con, n=1)
     if (version < 3) {
-        stop("Cannot read IDAT file. Unsupported IDAT file format version: ", version)
+        stop("Unsupported IDAT version: ", version)
     }
 
     ## Number of fields

@@ -72,7 +72,8 @@ dim(mLiftOver(sdf, "HM450"))
 sdfs = sesameDataGet("EPICv2.8.SigDF")[1:2]
 sdfs_hm450 = mLiftOver(sdfs, "HM450")
 ## parallel processing
-sdfs_hm450 = mLiftOver(sdfs, "HM450", BPPARAM=BiocParallel::MulticoreParam(2))
+sdfs_hm450 = mLiftOver(
+    sdfs, "HM450", BPPARAM=BiocParallel::MulticoreParam(2))
 
 sdf = sesameDataGet("EPIC.5.SigDF.normal")[[1]]
 dim(mLiftOver(sdf, "EPICv2"))
@@ -127,13 +128,16 @@ head(na.omit(mLiftOver(betas, "HM450", impute=FALSE)))
 cg_epic2 = names(sesameData_getManifestGRanges("EPICv2"))
 head(mLiftOver(cg_epic2, "HM450"))
 
-cg_epic2 = grep("cg", names(sesameData_getManifestGRanges("EPICv2")), value=T)
+cg_epic2 = grep(
+    "cg", names(sesameData_getManifestGRanges("EPICv2")), value=T)
 head(mLiftOver(cg_epic2, "HM450"))
 
-cg_hm450 = grep("cg", names(sesameData_getManifestGRanges("HM450")), value=T)
+cg_hm450 = grep(
+    "cg", names(sesameData_getManifestGRanges("HM450")), value=T)
 head(mLiftOver(cg_hm450, "EPICv2"))
 
-rs_epic2 = grep("rs", names(sesameData_getManifestGRanges("EPICv2")), value=T)
+rs_epic2 = grep(
+    "rs", names(sesameData_getManifestGRanges("EPICv2")), value=T)
 head(mLiftOver(rs_epic2, "HM450", source_platform="EPICv2"))
 
 probes_epic2 = names(sesameData_getManifestGRanges("EPICv2"))

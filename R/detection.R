@@ -142,7 +142,7 @@ pOOBAH <- function(sdf, return.pval = FALSE,
     combine.neg = TRUE, pval.threshold=0.05, verbose = FALSE) {
 
     stopifnot(is(sdf, "SigDF"))
-    nmk <- sdf[!(sdf$Probe_ID %in% nonuniqMask(sdfPlatform(sdf))),]
+    nmk <- sdf[!(sdf$Probe_ID %in% backgroundMask(sdfPlatform(sdf))),]
     bgG <- oobG(nmk)
     bgR <- oobR(nmk)
     if (combine.neg) {

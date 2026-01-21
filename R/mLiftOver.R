@@ -223,8 +223,3 @@ convertProbeID <- function(
     }
 }
 
-#' liftOver, see mLiftOver (renamed)
-#' @param ... see mLiftOver
-#' @return imputed data, vector, matrix, SigDF(s)
-#' @export
-liftOver <- function(...) { mLiftOver(...) }

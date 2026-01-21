@@ -83,7 +83,7 @@ scrubSoft <- function(sdf) {
 noob <- function(sdf, combine.neg = TRUE, offset=15) {
 
     stopifnot(is(sdf, "SigDF"))
-    nmk <- sdf[!(sdf$Probe_ID %in% nonuniqMask(sdfPlatform(sdf))),]
+    nmk <- sdf[!(sdf$Probe_ID %in% backgroundMask(sdfPlatform(sdf))),]
     bgG <- oobG(nmk)
     bgR <- oobR(nmk)
     if (combine.neg) {

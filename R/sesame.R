@@ -183,6 +183,7 @@ betasCollapseToPfx <- function(betas, BPPARAM=SerialParam()) {
 #' remove the suffix
 #' @param collapseMethod mean or minPval
 #' @return a numeric vector, beta values
+#' @import sesameData
 #' @examples
 #' sesameDataCache() # if not done yet
 #' sdf <- sesameDataGet('EPIC.1.SigDF')

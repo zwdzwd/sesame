@@ -16,7 +16,7 @@
 #' sesameDataCache() # if not done yet
 #' compareReference(sesameDataGet("MM285.tissueSignature"))
 #' sesameDataGet_resetEnv()
-#' 
+#'
 #' @importFrom SummarizedExperiment assay
 #' @importFrom SummarizedExperiment colData
 #' @importFrom SummarizedExperiment rowData
@@ -58,27 +58,7 @@ compareReference <- function(
     g + WCustomize(mar.bottom=0.15, mar.right=0.06)
 }
 
-#' Compare mouse array data with mouse tissue references
-#'
-#' @param betas matrix of betas for the target sample
-#' This argument is optional. If not given, only the reference will be shown.
-#' @param ref the reference beta values in SummarizedExperiment.
-#' This argument is optional. If not given, the reference will be downloaded
-#' from the sesameData package.
-#' @param color either blueYellow or fullJet
-#' @param query_width the width of the query beta value matrix
-#' @return grid object that contrast the target sample with
-#' pre-built mouse tissue reference
-#' @export
-#' @examples
-#' cat("Deprecated, see compareReference")
-#' @importFrom SummarizedExperiment assay
-#' @importFrom SummarizedExperiment colData
-#' @importFrom SummarizedExperiment rowData
-compareMouseTissueReference <- function(
-    betas=NULL, ref=NULL, color="blueYellow", query_width=0.3) {
-    .Deprecated("compareReference")
-}
+## compareMouseTissueReference() removed - use compareReference() instead
 
 #' inferTissue infers the tissue of a single sample (as identified through 
 #' the branchIDs in the row data of the reference) by reporting independent 

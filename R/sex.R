@@ -129,7 +129,7 @@ inferSex <- function(betas, platform=NULL) {
 
   platform <- sesameData_check_platform(platform, names(betas))
   if (platform != "MM285") {
-      betas <- liftOver(betas, "HM450")
+      betas <- mLiftOver(betas, "HM450")
   }
   vals <- mean(betas[hyperMALE], na.rm = TRUE) - betas[hypoMALE]
   dd <- density(na.omit(vals))

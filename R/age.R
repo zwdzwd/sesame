@@ -52,55 +52,11 @@ predictAge <- function(betas, model, na_fallback=FALSE, min_nonna = 10) {
     drop(model$response2age(betas %*% model$param$slope + model$intercept))
 }
 
-#' Mouse age predictor
-#'
-#' The function takes a named numeric vector of beta values. The name attribute
-#' contains the probe ID. The function looks for overlapping
-#' probes and estimate age using an aging model built from 321 MM285 probes.
-#' The function outputs a single numeric of age in months. The clock is most
-#' accurate with the sesame preprocessing.
-#'
-#' @param betas a probeID-named vector of beta values
-#' @param na_fallback use the fallback default for NAs.
-#' @return age in month
-#' @examples
-#' cat("Deprecated. See predictAge")
-#' @export
-predictMouseAgeInMonth <- function(betas, na_fallback=TRUE) {
-    .Deprecated("predictAge")
-}
+## predictMouseAgeInMonth() removed - use CytoMethIC::cmi_predict() instead
 
-#' Horvath 353 age predictor
-#'
-#' The function takes a named numeric vector of beta values. The name attribute
-#' contains the probe ID (cg, ch or rs IDs). The function looks for overlapping
-#' probes and estimate age using Horvath aging model (Horvath 2013
-#' Genome Biology). The function outputs a single numeric of age in years.
-#'
-#' @param betas a probeID-named vector of beta values
-#' @return age in years
-#' @examples
-#' cat("Deprecated. See predictAge")
-#' @export
-predictAgeHorvath353 <- function(betas) {
-    .Deprecated("predictAge")
-}
+## predictAgeHorvath353() removed - use CytoMethIC::cmi_predict() instead
 
-#' Horvath Skin and Blood age predictor
-#'
-#' The function takes a named numeric vector of beta values. The name attribute
-#' contains the probe ID (cg, ch or rs IDs). The function looks for overlapping
-#' probes and estimate age using Horvath aging model (Horvath et al. 2018
-#' Aging, 391 probes). The function outputs a single numeric of age in years.
-#'
-#' @param betas a probeID-named vector of beta values
-#' @return age in years
-#' @examples
-#' cat("Deprecated. See predictAge")
-#' @export
-predictAgeSkinBlood <- function(betas) {
-    .Deprecated("predictAge")
-}
+## predictAgeSkinBlood() removed - use CytoMethIC::cmi_predict() instead
 
 
 ## Hv.age2response <- function(x, adult.age=20) {
