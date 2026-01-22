@@ -4,7 +4,10 @@
 \alias{recommendedMaskNames}
 \title{Recommended mask names for each Infinium platform}
 \usage{
-recommendedMaskNames()
+recommendedMaskNames(platform)
+}
+\arguments{
+\item{platform}{string for platform, e.g., EPIC, EPICv2, MSA}
 }
 \value{
 a named list of mask names
@@ -13,7 +16,7 @@ a named list of mask names
 The returned name is the db name used in KYCG.mask
 }
 \examples{
-recommendedMaskNames()[["EPICv2"]]
-recommendedMaskNames()[["EPIC"]]
+recommendedMaskNames("EPICv2")
+recommendedMaskNames("EPIC")
 
 }

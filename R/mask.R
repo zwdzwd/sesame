@@ -182,26 +182,36 @@ backgroundMask <- function(platform, verbose = FALSE) {
 #' Recommended mask names for each Infinium platform
 #'
 #' The returned name is the db name used in KYCG.mask
+#' @param platform string for platform, e.g., EPIC, EPICv2, MSA
 #' @return a named list of mask names
 #' @examples
-#' recommendedMaskNames()[["EPICv2"]]
-#' recommendedMaskNames()[["EPIC"]]
+#' recommendedMaskNames("EPICv2")
+#' recommendedMaskNames("EPIC")
 #' 
 #' @export
-recommendedMaskNames <- function() {
-    list(
-        EPICv2 = c(
-            "M_1baseSwitchSNPcommon_5pt",
-            "M_2extBase_SNPcommon_5pt",
-            "M_mapping", "M_nonuniq", "M_SNPcommon_5pt"),
+recommendedMaskNames <- function(platform) {
+    ma <- list(
         MM285 = c("ref_issue", "nonunique", "design_issue"),
         EPIC = c(
             "mapping", "channel_switch", "snp5_GMAF1p",
             "extension", "sub30_copy"),
+        EPICv2 = c(
+            "M_1baseSwitchSNPcommon_5pt",
+            "M_2extBase_SNPcommon_5pt",
+            "M_mapping", "M_nonuniq", "M_SNPcommon_5pt"),
+        MSA = c(
+            "M_1baseSwitchSNPcommon_5pt",
+            "M_2extBase_SNPcommon_5pt",
+            "M_mapping", "M_nonuniq", "M_SNPcommon_5pt"),
         HM450 = c(
             "mapping", "channel_switch", "snp5_GMAF1p",
             "extension", "sub30_copy"),
         HM27 = c("mask"))
+    if (platform %in% names(ma)) {
+        ma[[platform]]
+    } else {
+        ma[["EPICv2"]]
+    }
 }
 
 #' get probe masking by mask names
@@ -213,7 +223,7 @@ recommendedMaskNames <- function() {
 #' @return a vector of probe ID
 #' @examples
 #'
-#' length(getMask("MSA", "recommended"))
+#' # length(getMask("MSA", "recommended"))
 #' length(getMask("EPICv2", "recommended"))
 #' length(getMask("EPICv2", c("recommended", "M_SNPcommon_1pt")))
 #' length(getMask("EPICv2", "M_mapping"))
@@ -227,7 +237,7 @@ getMask <- function(platform = "EPICv2", mask_names = "recommended") {
     res <- lapply(mask_names, function(mask_name) {
         if (mask_name == "recommended") {
             res <- KYCG_getDBs(sprintf("%s.Mask", platform),
-                recommendedMaskNames()[[platform]],
+                recommendedMaskNames(platform),
                 silent=TRUE, ignore.case=TRUE)
         } else {
             res <- KYCG_getDBs(sprintf("%s.Mask", platform),
