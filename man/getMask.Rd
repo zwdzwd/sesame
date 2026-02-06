@@ -21,7 +21,7 @@ get probe masking by mask names
 }
 \examples{
 
-# length(getMask("MSA", "recommended"))
+length(getMask("MSA", "recommended"))
 length(getMask("EPICv2", "recommended"))
 length(getMask("EPICv2", c("recommended", "M_SNPcommon_1pt")))
 length(getMask("EPICv2", "M_mapping"))
