@@ -138,12 +138,14 @@ openSesame <- function(
         } else { # multiple IDAT prefixes / SigDFs
             wrap_openSesame(x, bplapply(x, openSesame,
                 platform = platform, prep = prep, prep_args = prep_args,
-                func = func, manifest = manifest, BPPARAM=BPPARAM, ...))
+                func = func, manifest = manifest, min_beads = min_beads,
+                BPPARAM=BPPARAM, ...))
         }
     } else if (is(x, "list") && is(x[[1]], "SigDF")) {
         wrap_openSesame(x, bplapply(x, openSesame,
             platform = platform, prep = prep, prep_args = prep_args,
-            fun = func, manifest = manifest, BPPARAM=BPPARAM, ...))
+            func = func, manifest = manifest, min_beads = min_beads,
+            BPPARAM=BPPARAM, ...))
     } else {
         stop("Unsupported input")
     }
