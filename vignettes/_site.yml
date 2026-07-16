@@ -22,4 +22,4 @@ navbar:
       href: https://www.bioconductor.org/packages/release/bioc/html/knowYourCG.html
     - text: "Supplemental"
       icon: fa-book
-      href: https://zhou-lab.github.io/sesame/dev/supplemental.html
+      href: https://zhou-lab.github.io/sesame-docs/dev/supplemental.html
