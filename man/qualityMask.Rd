@@ -4,7 +4,7 @@
 \alias{qualityMask}
 \title{Mask beta values by design quality}
 \usage{
-qualityMask(sdf, mask_names = "recommended", verbose = TRUE)
+qualityMask(sdf, mask_names = "recommended", verbose = FALSE)
 }
 \arguments{
 \item{sdf}{a \code{SigDF} object}

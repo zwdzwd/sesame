@@ -9,7 +9,8 @@
 #' This function is meant to be used after noob.
 #'
 #' @param sdf a \code{SigDF}
-#' @return a new \code{SigDF} with noob background correction
+#' @return a new \code{SigDF} with background subtracted using
+#' the background median
 #' @examples
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.nb <- noob(sdf)
@@ -42,7 +43,8 @@ noobSub <- function(sig, bg) {
 #' This function is meant to be used after noob.
 #'
 #' @param sdf a \code{SigDF}
-#' @return a new \code{SigDF} with noob background correction
+#' @return a new \code{SigDF} with residual background subtracted
+#' (noob-like)
 #' @examples
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
 #' sdf.nb <- noob(sdf)

@@ -37,7 +37,9 @@ predictAge <- function(betas, model, na_fallback=FALSE, min_nonna = 10) {
 
     betas <- betas[model$param$Probe_ID]
     if (sum(!is.na(betas)) < min_nonna) {
-        stop("Fewer than 10 matching probes left. Age prediction abort.")
+        stop(sprintf(
+            "Fewer than %d matching probes left. Age prediction abort.",
+            min_nonna))
     }
     if (sum(is.na(betas)) > 0) {
         if (na_fallback) {

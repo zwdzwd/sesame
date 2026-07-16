@@ -46,7 +46,6 @@ setMask <- function(sdf, probes) {
 #' Reset Masking
 #'
 #' @param sdf a \code{SigDF}
-#' @param verbose print more messages
 #' @return a new \code{SigDF} with mask reset to all FALSE
 #' @examples
 #' sesameDataCache() # if not done yet
@@ -56,7 +55,7 @@ setMask <- function(sdf, probes) {
 #' sum(sdf$mask)
 #' sum(resetMask(sdf)$mask)
 #' @export
-resetMask <- function(sdf, verbose = FALSE) {
+resetMask <- function(sdf) {
     sdf$mask <- FALSE
     sdf
 }
@@ -285,7 +284,7 @@ getMask <- function(platform = "EPICv2", mask_names = "recommended") {
 #'
 #' @export 
 qualityMask <- function(sdf,
-    mask_names="recommended", verbose=TRUE) {
+    mask_names="recommended", verbose=FALSE) {
     
     ## mask by predefined sets
     platform <- sdfPlatform(sdf, verbose=verbose)

@@ -10,7 +10,8 @@ scrubSoft(sdf)
 \item{sdf}{a \code{SigDF}}
 }
 \value{
-a new \code{SigDF} with noob background correction
+a new \code{SigDF} with residual background subtracted
+(noob-like)
 }
 \description{
 This function takes a \code{SigDF} and returns a modified \code{SigDF}

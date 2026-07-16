@@ -10,7 +10,8 @@ scrub(sdf)
 \item{sdf}{a \code{SigDF}}
 }
 \value{
-a new \code{SigDF} with noob background correction
+a new \code{SigDF} with background subtracted using
+the background median
 }
 \description{
 This function takes a \code{SigDF} and returns a modified \code{SigDF}
