@@ -24,7 +24,7 @@ increase this number can sometimes improve accuracy (DEFAULT: 1000)}
 (default: 0.01).}
 
 \item{threshold.neg}{pvalue > threshold.neg are considered negative
-(default: 0.2).}
+(default: 0.1).}
 
 \item{return.auc}{return AUC calculated, override return.species}
 

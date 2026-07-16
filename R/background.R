@@ -109,13 +109,13 @@ noob <- function(sdf, combine.neg = TRUE, offset=15) {
 
     ## grn channel
     fitG <- backgroundCorrectionNoobFit(ibG, bgG)
-    sdf$MG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + 15
-    sdf$UG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + 15
+    sdf$MG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$MG) + offset
+    sdf$UG <- normExpSignal(fitG$mu, fitG$sigma, fitG$alpha, sdf$UG) + offset
 
     ## red channel
     fitR <- backgroundCorrectionNoobFit(ibR, bgR)
-    sdf$MR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + 15
-    sdf$UR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + 15
+    sdf$MR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$MR) + offset
+    sdf$UR <- normExpSignal(fitR$mu, fitR$sigma, fitR$alpha, sdf$UR) + offset
     
     sdf
 }
