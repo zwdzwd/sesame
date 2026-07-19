@@ -1,6 +1,9 @@
 ## very simple genotyper
 genotyper <- function(x, model_background=0.1, model_nbeads=40) {
 
+    ## failed / missing probe (NA VAF) -> missing genotype instead of crashing
+    if (is.na(x)) return(list(GT = "./.", GS = 0L))
+
     GL <- vapply(
         c(model_background, 0.5, 1-model_background),
         function(af) {
@@ -34,8 +37,8 @@ vcf_header <- function(genome) {
 #'
 #' @param sdf SigDF
 #' @param anno SNP variant annotation, available at
-#' https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
-#' EPIC.hg38.snp.tsv.gz
+#' https://github.com/zhou-lab/InfiniumAnnotation/tree/main/EPIC
+#' (e.g. EPIC.hg38.snp.tsv.gz), or via sesameAnno_download("EPIC.hg38.snp.tsv.gz")
 #' @param vcf output VCF file path, if NULL output to console
 #' @param genome genome
 #' @param verbose print more messages

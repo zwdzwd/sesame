@@ -223,18 +223,27 @@ sesameAnno_attachManifest <- function(
 }
 
 expand_url <- function(url,
-    base = "https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/") {
+    base = "https://github.com/zhou-lab/InfiniumAnnotationData/raw/main/") {
     ## input can be :
     ## EPIC.hg38.manifest.tsv.gz
     ## /Test/3999492009_R01C01_Grn.idat
-    ## https://github.com/zhou-lab/InfiniumAnnotationV1/raw/main/Anno/EPIC/EPIC.hg19.manifest.tsv.gz
-    if (!any(endsWith(url, c("rds","tsv.gz")))) {
+    ## https://github.com/zhou-lab/InfiniumAnnotationData/raw/main/Anno/EPIC/EPIC.hg19.manifest.tsv.gz
+    if (!any(endsWith(url, c("rds","tsv.gz","mask.cm")))) {
         url <- sprintf("%s.tsv.gz", url)
     }
     if (!grepl("http", url)) {
         if (!grepl("/", url)) {
-            url <- sprintf("Anno/%s/%s",
-                strsplit(url, "\\.")[[1]][1], url)
+            platform <- strsplit(url, "\\.")[[1]][1]
+            ## Lean, versioned release files (ordering / coord / mask.cm / snp)
+            ## live in zhou-lab/InfiniumAnnotation/<platform>/; the larger
+            ## annotation tables (manifest, gene, ...) in
+            ## InfiniumAnnotationData/Anno/<platform>/.
+            if (grepl("\\.(ordering|coord|snp)\\.|\\.mask\\.cm$", url)) {
+                base <- "https://github.com/zhou-lab/InfiniumAnnotation/raw/main/"
+                url <- sprintf("%s/%s", platform, url)
+            } else {
+                url <- sprintf("Anno/%s/%s", platform, url)
+            }
         }
         url <- sprintf("%s/%s", base, url)
     }
