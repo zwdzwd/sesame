@@ -18,19 +18,22 @@ imputeBetas <- function(betas, platform = NULL, BPPARAM = SerialParam(),
     celltype = NULL, sd_max = 999) {
 
     if (is.matrix(betas)) {
+        cnms <- colnames(betas)
         betas <- do.call(cbind, bplapply(seq_len(ncol(betas)), function(i) {
-            imputeBetas(betas[,i], platform = NULL,
+            imputeBetas(betas[,i], platform = platform,
                 celltype = celltype, sd_max = sd_max)}, BPPARAM=BPPARAM))
-        colnames(betas) <- colnames(betas)
+        colnames(betas) <- cnms
         return(betas)
     }
-    
+
     platform <- sesameData_check_platform(platform, names(betas))
     df <- sesameDataGet(sprintf("%s.imputationDefault", platform))
     d2q <- match(names(betas), df$Probe_ID)
-    celltype <- names(which.max(vapply(df$data, function(x) cor(
-        betas, x$median[d2q], use="na.or.complete"), numeric(1))))
     if (is.null(celltype)) {
+        celltype <- names(which.max(vapply(df$data, function(x) cor(
+            betas, x$median[d2q], use="na.or.complete"), numeric(1))))
+    }
+    if (length(celltype) == 0 || is.null(celltype)) {
         celltype <- "Blood"
     }
     idx <- is.na(betas)

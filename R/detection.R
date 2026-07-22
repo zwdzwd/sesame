@@ -106,10 +106,13 @@ detectionPnegEcdf <- function(sdf, return.pval = FALSE, pval.threshold=0.05) {
     funcR <- ecdf(negctls$R)
 
     ## p-value is the minimium detection p-value of the 2 alleles
+    ## na.rm lets a probe keep the p-value of a present channel when the
+    ## other channel has no signal at all
     pvals <- setNames(pmin(
         1-funcR(pmax(sdf$MR, sdf$UR, na.rm=TRUE)),
-        1-funcG(pmax(sdf$MG, sdf$UG, na.rm=TRUE))), sdf$Probe_ID)
-        
+        1-funcG(pmax(sdf$MG, sdf$UG, na.rm=TRUE)), na.rm=TRUE), sdf$Probe_ID)
+    pvals[is.na(pvals)] <- 1.0 # no signal in either channel: mask (cf. ELBAR)
+
     if (return.pval) { return(pvals) }
 
     addMask(sdf, pvals > pval.threshold)
@@ -159,11 +162,13 @@ pOOBAH <- function(sdf, return.pval = FALSE,
     funcR <- ecdf(bgR)
 
     ## p-value is the minimium detection p-value of the 2 alleles
-    ## the order is preserved
+    ## the order is preserved; na.rm lets a probe keep the p-value of a
+    ## present channel when the other channel has no signal at all
     pvals <- setNames(pmin(
         1-funcR(pmax(sdf$MR, sdf$UR, na.rm=TRUE)),
-        1-funcG(pmax(sdf$MG, sdf$UG, na.rm=TRUE))), sdf$Probe_ID)
-        
+        1-funcG(pmax(sdf$MG, sdf$UG, na.rm=TRUE)), na.rm=TRUE), sdf$Probe_ID)
+    pvals[is.na(pvals)] <- 1.0 # no signal in either channel: mask (cf. ELBAR)
+
     if (return.pval) { return(pvals) }
 
     addMask(sdf, pvals > pval.threshold)

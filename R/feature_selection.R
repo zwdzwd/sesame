@@ -26,7 +26,7 @@ getSignatureUTop <- function(
         mean1 <- rowMeans(betas[,grouping == g], na.rm=TRUE)
         mean0 <- rowMeans(betas[,grouping != g], na.rm=TRUE)
         ps1 <- rowSums(is_na[,grouping == g]) <= max_na_in
-        ps2 <- rowSums(is_na[,grouping != g] <= max_na_out)
+        ps2 <- rowSums(is_na[,grouping != g]) <= max_na_out
         head(names(sort((mean1 - mean0)[ps1 & ps2])), n=n)
     })
     names(sigs) <- groups

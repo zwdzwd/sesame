@@ -4,12 +4,10 @@
 \alias{resetMask}
 \title{Reset Masking}
 \usage{
-resetMask(sdf, verbose = FALSE)
+resetMask(sdf)
 }
 \arguments{
 \item{sdf}{a \code{SigDF}}
-
-\item{verbose}{print more messages}
 }
 \value{
 a new \code{SigDF} with mask reset to all FALSE

@@ -9,8 +9,9 @@ addMask(sdf, probes)
 \arguments{
 \item{sdf}{a \code{SigDF}}
 
-\item{probes}{a vector of probe IDs or a logical vector with TRUE
-representing masked probes}
+\item{probes}{a vector of probe IDs, or a logical vector with TRUE
+representing masked probes. A logical vector is either named by Probe_ID
+or row-aligned to \code{sdf} (same length as \code{nrow(sdf)}).}
 }
 \value{
 a \code{SigDF} with added mask

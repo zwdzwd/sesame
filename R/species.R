@@ -77,7 +77,7 @@ species_ret <- function(
 #' @param threshold.pos pvalue < threshold.pos are considered positive
 #' (default: 0.01).
 #' @param threshold.neg pvalue > threshold.neg are considered negative
-#' (default: 0.2).
+#' (default: 0.1).
 #' @param return.auc return AUC calculated, override return.species
 #' @param return.species return a string to represent species
 #' @param verbose print more messaeges

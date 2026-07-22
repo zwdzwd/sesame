@@ -4,8 +4,9 @@
 #' with new probes to mask
 #'
 #' @param sdf a \code{SigDF}
-#' @param probes a vector of probe IDs or a logical vector with TRUE
-#' representing masked probes
+#' @param probes a vector of probe IDs, or a logical vector with TRUE
+#' representing masked probes. A logical vector is either named by Probe_ID
+#' or row-aligned to \code{sdf} (same length as \code{nrow(sdf)}).
 #' @return a \code{SigDF} with added mask
 #' @examples
 #' sdf <- sesameDataGet('EPIC.1.SigDF')
@@ -14,7 +15,12 @@
 #' @export
 addMask <- function(sdf, probes) {
     if (is.logical(probes)) {
-        sdf$mask[probes[sdf$Probe_ID]] <- TRUE
+        if (!is.null(names(probes))) { # named by Probe_ID
+            probes <- probes[sdf$Probe_ID]
+        }
+        stopifnot(length(probes) == nrow(sdf))
+        probes[is.na(probes)] <- FALSE
+        sdf$mask <- sdf$mask | probes
     } else {
         sdf$mask[match(probes, sdf$Probe_ID)] <- TRUE
     }
@@ -40,7 +46,6 @@ setMask <- function(sdf, probes) {
 #' Reset Masking
 #'
 #' @param sdf a \code{SigDF}
-#' @param verbose print more messages
 #' @return a new \code{SigDF} with mask reset to all FALSE
 #' @examples
 #' sesameDataCache() # if not done yet
@@ -50,7 +55,7 @@ setMask <- function(sdf, probes) {
 #' sum(sdf$mask)
 #' sum(resetMask(sdf)$mask)
 #' @export
-resetMask <- function(sdf, verbose = FALSE) {
+resetMask <- function(sdf) {
     sdf$mask <- FALSE
     sdf
 }
@@ -279,7 +284,7 @@ getMask <- function(platform = "EPICv2", mask_names = "recommended") {
 #'
 #' @export 
 qualityMask <- function(sdf,
-    mask_names="recommended", verbose=TRUE) {
+    mask_names="recommended", verbose=FALSE) {
     
     ## mask by predefined sets
     platform <- sdfPlatform(sdf, verbose=verbose)
