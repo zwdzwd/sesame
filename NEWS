@@ -1,3 +1,14 @@
+CHANGES IN VERSION 1.31.3
+-------------------------
+
+  o Documented sesame-cli, a standalone C implementation of the SeSAMe
+    preprocessing workflow (IDAT to betas, QC, differential methylation, copy
+    number) for large cohorts and pipeline deployment. Its betas agree with
+    this package to within ~1e-3 worst case; the intentional divergences are
+    documented in the sesame-cli NUMERICS.md. This package remains the
+    reference implementation. See the README and
+    https://zwdzwd.github.io/sesame-cli.
+
 CHANGES IN VERSION 1.0.0
 -------------------------
 

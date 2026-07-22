@@ -15,6 +15,19 @@ vignette: >
 options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
+> **Working at cohort scale or in a pipeline?**
+> [sesame-cli](https://zwdzwd.github.io/sesame-cli/) runs this same preprocessing
+> workflow — IDAT → betas → QC → differential methylation → copy number, plus
+> visualization through [cinderplot](https://github.com/zhou-lab/cinderplot) — as a
+> standalone C binary, no R or Bioconductor required
+> (`conda install -c zhou-lab -c conda-forge sesame-cli`). It is an independent
+> reimplementation rather than a port, so the two agree closely but are not
+> bit-exact: betas match to a median of ~6e-6 and ~1e-3 worst case, with every
+> intentional divergence recorded in its
+> [NUMERICS.md](https://github.com/zwdzwd/sesame-cli/blob/main/NUMERICS.md).
+> This vignette covers the interactive R workflow, which remains the reference
+> implementation.
+
 # Preparation
 
 ```{r library, message=FALSE, warning=FALSE}
