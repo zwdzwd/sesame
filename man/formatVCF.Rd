@@ -10,8 +10,8 @@ formatVCF(sdf, anno, vcf = NULL, genome = "hg38", verbose = FALSE)
 \item{sdf}{SigDF}
 
 \item{anno}{SNP variant annotation, available at
-https://github.com/zhou-lab/InfiniumAnnotationV1/tree/main/Anno/EPIC
-EPIC.hg38.snp.tsv.gz}
+https://github.com/zhou-lab/InfiniumAnnotation/tree/main/EPIC
+(e.g. EPIC.hg38.snp.tsv.gz), or via sesameAnno_download("EPIC.hg38.snp.tsv.gz")}
 
 \item{vcf}{output VCF file path, if NULL output to console}
 

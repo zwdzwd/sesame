@@ -1,5 +1,9 @@
-CHANGES IN VERSION 1.31.3
+CHANGES IN VERSION 1.31.4
 -------------------------
+
+  o Removed the Google Analytics tag from the vignette header. Vignette
+    rendering no longer contacts an external host at build time, and installed
+    vignettes no longer load a remote tracking script.
 
   o Documented sesame-cli, a standalone C implementation of the SeSAMe
     preprocessing workflow (IDAT to betas, QC, differential methylation, copy
