@@ -43,7 +43,7 @@ dataFrame2sesameQC <- function(df) {
 #' @export
 sesameQCtoDF <- function(qcs, cols=c("frac_dt_cg","RGdistort", "RGratio")) {
     if (is.list(qcs)) {
-        df <- bind_rows(lapply(qcs, sesameQCtoDF))
+        df <- bind_rows(lapply(qcs, sesameQCtoDF, cols=cols))
     } else if (is(qcs, "sesameQC")) {
         df <- as.data.frame(qcs@stat)
     }
