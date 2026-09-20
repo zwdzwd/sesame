@@ -145,37 +145,408 @@ plotCytoBand <- function(
 #' @param plt.txns transcripts plot objects
 #' @param plt.mapLines map line plot objects
 #' @param plt.cytoband cytoband plot objects
+#' @param platform methylation array platform
+#' @param genome genome assembly
 #' @param heat.height heatmap height (auto inferred based on rows)
 #' @param mapLine.height height of the map lines
 #' @param show.probeNames whether to show probe names
+#' @param show.loci whether to show genomic loci instead of probe names
 #' @param show.samples.n number of samples to show (default: all)
 #' @param show.sampleNames whether to show sample names
 #' @param sample.name.fontsize sample name font size
+#' @param show.cgi whether to show CpG island-context annotations
+#' @param show.regulatory whether to show Ensembl regulatory annotations
+#' @param show.beta.legend whether to show the beta-value legend
+#' @param show.annotation.legend whether to show annotation legends
 #' @param dmin data min
 #' @param dmax data max
 #' @return a grid object
 assemble_plots <- function(
     betas, txns, probes, plt.txns, plt.mapLines, plt.cytoband,
+    platform, genome,
     heat.height = NULL, mapLine.height = 0.2,
-    show.probeNames = TRUE, show.samples.n = NULL,
+    show.probeNames = TRUE, show.loci = FALSE, show.samples.n = NULL,
     show.sampleNames = TRUE, sample.name.fontsize = 10,
+    show.cgi = TRUE, show.regulatory = TRUE,
+    show.beta.legend = TRUE, show.annotation.legend = TRUE,
     dmin = 0, dmax = 1) {
     
     if (is.null(show.samples.n)) { show.samples.n <- ncol(betas); }
+
+
+  ## -----------------------------------------------------------------------
+  ## Heatmap annotations
+  ## -----------------------------------------------------------------------
+  ##
+  ## First attempt normal retrieval through sesameData/ExperimentHub.
+  ## If the resource is unavailable there, temporarily check the global
+  ## environment for a previously built copy. If neither source is available,
+  ## build the annotations and retain the locally built object in the global
+  ## environment for reuse during the current R session.
+  
+  anno <- NULL
+  
+  if (show.cgi || show.regulatory) {
+    
+    title <- paste(
+      platform, genome, "heatmapAnnotations", sep=".")
+    
+    message("Heatmap annotations requested.")
+    message("  Resource: ", title)
+    message("  Checking sesameData/ExperimentHub...")
+    
+    anno <- tryCatch(
+      {
+        x <- sesameDataGet(title)
+        message("  Found annotation resource in sesameData/ExperimentHub.")
+        x
+      },
+      error=function(e) {
+        
+        message("  Annotation resource not found in sesameData/ExperimentHub.")
+        
+        ## TEMPORARY FALLBACK: this block can be removed once all
+        ## heatmap annotation resources are available in ExperimentHub.
+        message("  Checking .GlobalEnv for locally built annotations...")
+        
+        if (exists(title, envir=.GlobalEnv, inherits=FALSE)) {
+          
+          message("  Found locally built annotations in .GlobalEnv.")
+          
+          get(
+            title,
+            envir=.GlobalEnv,
+            inherits=FALSE)
+          
+        } else {
+          
+          message("  No locally built annotations found in .GlobalEnv.")
+          message("  Building heatmap annotations...")
+          
+          x <- sesameAnno_buildHeatmapAnnotations(
+            platform=platform,
+            genome=genome)
+          
+          message("  Saving locally built annotations to .GlobalEnv.")
+          
+          assign(
+            title,
+            x,
+            envir=.GlobalEnv)
+          
+          x
+        }
+        ## END TEMPORARY FALLBACK
+      })
+    
+    ## Restrict the platform-wide annotation table to the probes displayed
+    ## in this region while preserving their plotted order.
+    anno <- anno[
+      match(names(probes), anno$Probe_ID),
+      ,
+      drop=FALSE]
+    
+    message(
+      "  Using annotations for ",
+      nrow(anno),
+      " plotted probe(s).")
+    
+  } else {
+    
+    message("Heatmap annotations not requested.")
+  }
+  
+
     if (is.null(heat.height) && length(txns) > 0) {
         heat.height <- 10 / length(txns); }
     w <- WGrob(plt.txns, name = 'txn')
     w <- w + WGrob(plt.mapLines, Beneath(pad=0, height=mapLine.height))
+    
+    ## Probe names take precedence when both probe names and loci are requested.
+    if (show.loci && !show.probeNames) {
+      rownames(betas) <- paste0(
+        as.character(GenomicRanges::seqnames(probes)),
+        ":",
+        GenomicRanges::start(probes))
+    }
+    
     w <- w + WHeatmap(
         t(betas), Beneath(height = heat.height),
         name = 'betas',
         cmp = CMPar(dmin=dmin, dmax=dmax),
-        xticklabels = show.probeNames,
+        xticklabels = (show.probeNames || show.loci) && is.null(anno),
         xticklabel.rotat = 45,
         yticklabels = show.sampleNames,
         yticklabel.fontsize = sample.name.fontsize,
         yticklabels.n = show.samples.n,
         xticklabels.n = length(probes))
+
+    ## -----------------------------------------------------------------------
+    ## Annotations
+    ## -----------------------------------------------------------------------
+    
+    if (!is.null(anno)) {
+      
+      ## Select which annotation tracks to display.
+      ## CpG context and Ensembl regulatory annotations can be enabled
+      ## independently.
+      cols <- character()
+      
+      if (show.cgi && "CpG_Location_Type" %in% names(anno)) {
+        cols <- c(cols, "CpG_Location_Type")
+      }
+      
+      if (show.regulatory) {
+        cols <- c(
+          cols,
+          grep(
+            "^Regulatory_Feature_[0-9]+$",
+            names(anno),
+            value=TRUE))
+      }
+      
+      ## Fixed CpG-context colors.
+      cpg.colors <- c(
+        "CpG Island"="#009E73",
+        "CpG Shore"="#D55E00",
+        "CpG Shelf"="#E69F00",
+        "Open Sea"="#0072B2")
+      
+      ## Fixed Ensembl regulatory-feature colors.
+      regulatory.colors <- c(
+        "Enhancer"="#8E197D",
+        "Promoter"="#49429A",
+        "CTCF Binding Site"="#E7298A",
+        "Open chromatin"="#66A61E",
+        "EMAR"="#E6AB02")
+      
+      ## Draw each selected annotation as a compact one-row heatmap
+      ## directly beneath the beta-value heatmap.
+      for (i in seq_along(cols)) {
+        
+        x <- anno[[cols[i]]]
+        
+        ## Empty strings indicate that a probe has no regulatory
+        ## annotation in this track. Convert them to NA so they appear
+        ## white rather than becoming a separate annotation category.
+        x[x == ""] <- NA_character_
+        
+        mat <- matrix(x, nrow=1)
+        colnames(mat) <- rownames(betas)
+        rownames(mat) <- gsub("_", " ", cols[i])
+        
+        ## Use the appropriate fixed categorical color mapping.
+        cmap <- if (cols[i] == "CpG_Location_Type")
+          cpg.colors
+        else
+          regulatory.colors
+        
+        w <- w + WHeatmap(
+          mat,
+          Beneath(),
+          name=paste0("anno", i),
+          cmp=CMPar(
+            label2color=cmap,
+            na.color="white"),
+          xticklabels=(show.probeNames || show.loci) &&
+            i == length(cols),
+          xticklabel.rotat=45,
+          xticklabel.pad=0.9,
+          xticklabels.n=length(probes),
+          yticklabels=TRUE,
+          yticklabels.n=1)
+      }
+    }
+    
+    ## -----------------------------------------------------------------------
+    ## Beta-value legend
+    ## -----------------------------------------------------------------------
+    ##
+    ## The beta-value legend is controlled independently from the annotation
+    ## tracks and annotation legends.
+    
+    if (show.beta.legend) {
+      
+      w <- w +
+        WLegendV(
+          x="betas",
+          RightOf(
+            "betas",
+            h.scale="betas",
+            h.scale.proportional=TRUE,
+            pad=.02),
+          n.text=2,
+          name="betalegend",
+          decreasing=TRUE) +
+        
+        WLabel(
+          x="Beta Values",
+          TopOf("betalegend"),
+          name="betaleglab",
+          fontsize=8.5)
+    }
+    
+    ## -----------------------------------------------------------------------
+    ## Annotation legends
+    ## -----------------------------------------------------------------------
+    ##
+    ## Annotation legends are shown only for annotation types that are
+    ## currently enabled. They can also be disabled altogether using
+    ## `show.annotation.legend`.
+    
+    if (!is.null(anno) && show.annotation.legend &&
+        (show.cgi || show.regulatory)) {
+      
+      ## Keep track of the most recently created legend so that the next
+      ## annotation legend can be positioned immediately beneath it.
+      last.legend <- NULL
+      
+      ## -------------------------------------------------------------------
+      ## CpG-context legend
+      ## -------------------------------------------------------------------
+      
+      if (show.cgi && "CpG_Location_Type" %in% cols) {
+        
+        ## Find which displayed annotation heatmap contains CpG context.
+        ## This is usually anno1, but determining it from `cols` keeps
+        ## the code correct if the displayed tracks change.
+        cpg.anno <- paste0(
+          "anno",
+          match("CpG_Location_Type", cols))
+        
+        ## If the beta legend exists, place the CpG legend underneath it.
+        ## Otherwise, begin the annotation-legend column directly to the
+        ## right of the beta heatmap.
+        if (show.beta.legend) {
+          
+          w <- w + WLabel(
+            x="CpG Island Annotations",
+            BottomRightOf(
+              x="betalegend",
+              just=c("center", "top"),
+              v.pad=-.2),
+            name="cpgleglab",
+            fontsize=8.5)
+          
+        } else {
+          
+          w <- w + WLabel(
+            x="CpG Island Annotations",
+            RightOf(
+              "betas",
+              h.scale="betas",
+              h.scale.proportional=TRUE,
+              pad=.02),
+            name="cpgleglab",
+            fontsize=8.5)
+        }
+        
+        w <- w + WLegendV(
+          x=cpg.anno,
+          name="cpgleg",
+          Beneath("cpgleglab",
+                  v.scale=cpg.anno,
+                  v.scale.proportional=TRUE),
+          label.fontsize=8.5)
+        
+        last.legend <- "cpgleg"
+      }
+      
+      ## -------------------------------------------------------------------
+      ## Unified Ensembl Regulatory Build legend
+      ## -------------------------------------------------------------------
+      
+      if (show.regulatory) {
+        
+        ## Identify all regulatory annotation columns in the annotation
+        ## table, independent of which Regulatory_Feature_n track each
+        ## category was assigned to.
+        
+        regulatory.cols <- grep(
+          "^Regulatory_Feature_[0-9]+$",
+          names(anno),
+          value=TRUE)
+        
+        ## Collect every regulatory category represented in this region.
+        regulatory.types <- unique(unlist(
+          anno[regulatory.cols],
+          use.names=FALSE))
+        
+        
+        ## Remove probes without regulatory annotations.
+        regulatory.types <- sort(
+          regulatory.types[
+            !is.na(regulatory.types) &
+              regulatory.types != ""])
+        
+        if (length(regulatory.types)) {
+          
+          ## Create a zero-height heatmap containing every regulatory
+          ## category. It is used only as a common color-mapping source
+          ## for WLegendV and does not add a visible annotation row.
+          reg.legend.mat <- matrix(
+            regulatory.types,
+            nrow=1)
+          
+          w <- w + WHeatmap(
+            reg.legend.mat,
+            Beneath(height=0),
+            name="reglegend.source",
+            cmp=CMPar(
+              label2color=regulatory.colors,
+              na.color="white"),
+            xticklabels=FALSE,
+            yticklabels=FALSE)
+          
+          ## Position the regulatory legend beneath the CpG legend when
+          ## the CpG legend exists. Otherwise, position it beneath the
+          ## beta legend, or directly beside the heatmap when neither
+          ## preceding legend exists.
+          if (!is.null(last.legend)) {
+            
+            w <- w + WLabel(
+              x="Ensembl Regulatory Build Annotations",
+              Beneath(last.legend, pad=.1),
+              name="ensregleg",
+              fontsize=8.5)
+            
+          } else if (show.beta.legend) {
+            
+            w <- w + WLabel(
+              x="Ensembl Regulatory Build Annotations",
+              BottomRightOf(
+                x="betalegend",
+                just=c("center", "top"),
+                v.pad=-.2),
+              name="ensregleg",
+              fontsize=8.5)
+            
+          } else {
+            
+            w <- w + WLabel(
+              x="Ensembl Regulatory Build Annotations",
+              RightOf(
+                "betas",
+                h.scale="betas",
+                h.scale.proportional=TRUE,
+                pad=.02),
+              name="ensregleg",
+              fontsize=8.5)
+          }
+          
+          ## Draw one unified regulatory legend regardless of how many
+          ## Regulatory_Feature_n annotation rows are displayed.
+          w <- w + WLegendV(
+            x="reglegend.source",
+            Beneath("ensregleg", pad=0),
+            name="ensreg",
+            label.fontsize=8.5)
+          
+          last.legend <- "ensreg"
+        }
+      }
+    }
+    
     w <- w + WGrob(plt.cytoband, TopOf('txn', height=0.15))
     w
 }

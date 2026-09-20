@@ -11,12 +11,19 @@ assemble_plots(
   plt.txns,
   plt.mapLines,
   plt.cytoband,
+  platform,
+  genome,
   heat.height = NULL,
   mapLine.height = 0.2,
   show.probeNames = TRUE,
+  show.loci = FALSE,
   show.samples.n = NULL,
   show.sampleNames = TRUE,
   sample.name.fontsize = 10,
+  show.cgi = TRUE,
+  show.regulatory = TRUE,
+  show.beta.legend = TRUE,
+  show.annotation.legend = TRUE,
   dmin = 0,
   dmax = 1
 )
@@ -34,17 +41,31 @@ assemble_plots(
 
 \item{plt.cytoband}{cytoband plot objects}
 
+\item{platform}{methylation array platform}
+
+\item{genome}{genome assembly}
+
 \item{heat.height}{heatmap height (auto inferred based on rows)}
 
 \item{mapLine.height}{height of the map lines}
 
 \item{show.probeNames}{whether to show probe names}
 
+\item{show.loci}{whether to show genomic loci instead of probe names}
+
 \item{show.samples.n}{number of samples to show (default: all)}
 
 \item{show.sampleNames}{whether to show sample names}
 
 \item{sample.name.fontsize}{sample name font size}
+
+\item{show.cgi}{whether to show CpG island-context annotations}
+
+\item{show.regulatory}{whether to show Ensembl regulatory annotations}
+
+\item{show.beta.legend}{whether to show the beta-value legend}
+
+\item{show.annotation.legend}{whether to show annotation legends}
 
 \item{dmin}{data min}
 
