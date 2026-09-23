@@ -29,7 +29,7 @@ upgrade of the other, and the version lines say which is which:
   BiocManager::install("sesame")
   ```
 
-- **[SeSAMe2](https://zwdzwd.github.io/sesame-cli/)** — the **second
+- **[SeSAMe2](https://zhou-lab.github.io/sesame/)** — the **second
   implementation**, on the **2.x** series: a standalone C program (no R, no
   Bioconductor, no network) covering the full workflow — IDAT → betas → QC →
   differential methylation → copy number → SNP genotyping, with visualization
@@ -50,10 +50,10 @@ R is SeSAMe2's permanent oracle, and the agreement is gated on every release.
 Raw betas (`prep=""`) are bit-identical; across the full default pipeline,
 probes with identical raw input agree to a median of ~6e-6 and ~1e-3 worst
 case. Every intentional numerical divergence is recorded in SeSAMe2's
-[NUMERICS.md](https://github.com/zwdzwd/sesame-cli/blob/main/NUMERICS.md), and
+[NUMERICS.md](https://github.com/zhou-lab/sesame/blob/main/NUMERICS.md), and
 the few places where the two answer genuinely different questions — all of them
 annotation-lineage differences, none a tolerance — in
-[DIVERGENCES.md](https://github.com/zwdzwd/sesame-cli/blob/main/DIVERGENCES.md).
+[DIVERGENCES.md](https://github.com/zhou-lab/sesame/blob/main/DIVERGENCES.md).
 
 ## Bugs
     
