@@ -37,6 +37,7 @@ Imports:
     reshape2
 Suggests: scales,
           BiocManager,
+          biomaRt,
           GenomeInfoDb,
           knitr,
           DNAcopy,
