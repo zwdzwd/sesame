@@ -178,66 +178,202 @@ assemble_plots <- function(
   ## Heatmap annotations
   ## -----------------------------------------------------------------------
   ##
-  ## First attempt normal retrieval through sesameData/ExperimentHub.
-  ## If the resource is unavailable there, temporarily check the global
-  ## environment for a previously built copy. If neither source is available,
-  ## build the annotations and retain the locally built object in the global
-  ## environment for reuse during the current R session.
+  ## CpG-context and Ensembl regulatory annotations are cached separately.
+  ## This allows either annotation type to be requested independently and
+  ## avoids requiring biomaRt when only CpG-context annotations are needed.
   
   anno <- NULL
   
   if (show.cgi || show.regulatory) {
     
-    title <- paste(
-      platform, genome, "heatmapAnnotations", sep=".")
-    
     message("Heatmap annotations requested.")
-    message("  Resource: ", title)
-    message("  Checking sesameData/ExperimentHub...")
+    message("  Checking BiocFileCache...")
     
-    anno <- tryCatch(
-      {
-        x <- sesameDataGet(title)
-        message("  Found annotation resource in sesameData/ExperimentHub.")
-        x
-      },
-      error=function(e) {
+    bfc <- BiocFileCache::BiocFileCache(ask=FALSE)
+    
+    cgi.anno <- NULL
+    regulatory.anno <- NULL
+    
+    ## -------------------------------------------------------------------
+    ## CpG-context annotations
+    ## -------------------------------------------------------------------
+    
+    if (show.cgi) {
+      
+      title <- paste(
+        platform, genome,
+        "cgi", "heatmapAnnotations",
+        sep=".")
+      
+      message("  CpG resource: ", title)
+      
+      cached <- BiocFileCache::bfcquery(
+        bfc,
+        title,
+        field="rname",
+        exact=TRUE)
+      
+      if (nrow(cached)) {
         
-        message("  Annotation resource not found in sesameData/ExperimentHub.")
+        message("  Found CpG annotations in BiocFileCache.")
         
-        ## TEMPORARY FALLBACK: this block can be removed once all
-        ## heatmap annotation resources are available in ExperimentHub.
-        message("  Checking .GlobalEnv for locally built annotations...")
+        cache.path <- BiocFileCache::bfcrpath(
+          bfc,
+          rids=cached$rid[1])
         
-        if (exists(title, envir=.GlobalEnv, inherits=FALSE)) {
+        e <- new.env(parent=emptyenv())
+        load(cache.path, envir=e)
+        cgi.anno <- e$heatmapAnnotations
+        
+      } else {
+        
+        message("  CpG annotations not found in BiocFileCache.")
+        message("  Building CpG-context annotations...")
+        
+        cgi.anno <- sesameAnno_buildHeatmapAnnotations(
+          platform=platform,
+          genome=genome,
+          cpg=TRUE,
+          regulatory=FALSE)
+        
+        ## Capture the temporary UCSC source cache record, then remove
+        ## that bookkeeping attribute from the final annotation object.
+        cpg.source.rid <- attr(
+          cgi.anno,
+          "cpg_source_rid")
+        
+        attr(
+          cgi.anno,
+          "cpg_source_rid") <- NULL
+        
+        message("  Saving CpG annotations to BiocFileCache.")
+        
+        cache.path <- BiocFileCache::bfcnew(
+          bfc,
+          rname=title,
+          ext=".rda",
+          fname="exact")
+        
+        heatmapAnnotations <- cgi.anno
+        
+        save(
+          heatmapAnnotations,
+          file=cache.path)
+        
+        rm(heatmapAnnotations)
+        
+        ## The finished CpG RDA is now persistent, so the raw UCSC
+        ## source file is no longer required in BiocFileCache.
+        if (!is.null(cpg.source.rid) &&
+            !is.na(cpg.source.rid)) {
           
-          message("  Found locally built annotations in .GlobalEnv.")
+          message(
+            "  Removing temporary UCSC source from BiocFileCache.")
           
-          get(
-            title,
-            envir=.GlobalEnv,
-            inherits=FALSE)
-          
-        } else {
-          
-          message("  No locally built annotations found in .GlobalEnv.")
-          message("  Building heatmap annotations...")
-          
-          x <- sesameAnno_buildHeatmapAnnotations(
-            platform=platform,
-            genome=genome)
-          
-          message("  Saving locally built annotations to .GlobalEnv.")
-          
-          assign(
-            title,
-            x,
-            envir=.GlobalEnv)
-          
-          x
+          BiocFileCache::bfcremove(
+            bfc,
+            rids=cpg.source.rid)
         }
-        ## END TEMPORARY FALLBACK
-      })
+      }
+    }
+    
+    ## -------------------------------------------------------------------
+    ## Ensembl regulatory annotations
+    ## -------------------------------------------------------------------
+    
+    if (show.regulatory) {
+      
+      title <- paste(
+        platform, genome,
+        "regulatory", "heatmapAnnotations",
+        sep=".")
+      
+      message("  Regulatory resource: ", title)
+      
+      cached <- BiocFileCache::bfcquery(
+        bfc,
+        title,
+        field="rname",
+        exact=TRUE)
+      
+      if (nrow(cached)) {
+        
+        message(
+          "  Found regulatory annotations in BiocFileCache.")
+        
+        cache.path <- BiocFileCache::bfcrpath(
+          bfc,
+          rids=cached$rid[1])
+        
+        e <- new.env(parent=emptyenv())
+        load(cache.path, envir=e)
+        regulatory.anno <- e$heatmapAnnotations
+        
+      } else {
+        
+        message(
+          "  Regulatory annotations not found in BiocFileCache.")
+        message(
+          "  Building Ensembl regulatory annotations...")
+        
+        regulatory.anno <- sesameAnno_buildHeatmapAnnotations(
+          platform=platform,
+          genome=genome,
+          cpg=FALSE,
+          regulatory=TRUE)
+        
+        message(
+          "  Saving regulatory annotations to BiocFileCache.")
+        
+        cache.path <- BiocFileCache::bfcnew(
+          bfc,
+          rname=title,
+          ext=".rda",
+          fname="exact")
+        
+        heatmapAnnotations <- regulatory.anno
+        
+        save(
+          heatmapAnnotations,
+          file=cache.path)
+        
+        rm(heatmapAnnotations)
+      }
+    }
+    
+    ## -------------------------------------------------------------------
+    ## Combine requested annotations in memory for plotting
+    ## -------------------------------------------------------------------
+    
+    if (!is.null(cgi.anno))
+      anno <- cgi.anno
+    
+    if (!is.null(regulatory.anno)) {
+      
+      if (is.null(anno)) {
+        
+        anno <- regulatory.anno
+        
+      } else {
+        
+        ## Align regulatory annotations to the CpG annotation table by
+        ## Probe_ID. The two resources remain independent on disk and
+        ## are combined only for the current plot.
+        i <- match(
+          anno$Probe_ID,
+          regulatory.anno$Probe_ID)
+        
+        regulatory.cols <- setdiff(
+          names(regulatory.anno),
+          "Probe_ID")
+        
+        anno[regulatory.cols] <-
+          regulatory.anno[
+            i,
+            regulatory.cols,
+            drop=FALSE]
+      }
+    }
     
     ## Restrict the platform-wide annotation table to the probes displayed
     ## in this region while preserving their plotted order.
@@ -383,7 +519,7 @@ assemble_plots <- function(
           x="Beta Values",
           TopOf("betalegend"),
           name="betaleglab",
-          fontsize=8.5)
+          fontsize=)
     }
     
     ## -----------------------------------------------------------------------
@@ -420,34 +556,35 @@ assemble_plots <- function(
         if (show.beta.legend) {
           
           w <- w + WLabel(
-            x="CpG Island Annotations",
+            x="CpG Location Type",
             BottomRightOf(
               x="betalegend",
               just=c("center", "top"),
-              v.pad=-.2),
+              v.pad=-.1),
             name="cpgleglab",
-            fontsize=8.5)
+            fontsize=sample.name.fontsize)
           
         } else {
           
           w <- w + WLabel(
-            x="CpG Island Annotations",
+            x="CpG Location Type",
             RightOf(
               "betas",
               h.scale="betas",
               h.scale.proportional=TRUE,
               pad=.02),
             name="cpgleglab",
-            fontsize=8.5)
+            fontsize=sample.name.fontsize)
         }
         
         w <- w + WLegendV(
           x=cpg.anno,
           name="cpgleg",
-          Beneath("cpgleglab",
-                  v.scale=cpg.anno,
-                  v.scale.proportional=TRUE),
-          label.fontsize=8.5)
+          Beneath(
+            "cpgleglab",
+            v.scale=cpg.anno,
+            v.scale.proportional=TRUE),
+          label.fontsize=sample.name.fontsize)
         
         last.legend <- "cpgleg"
       }
@@ -461,17 +598,26 @@ assemble_plots <- function(
         ## Identify all regulatory annotation columns in the annotation
         ## table, independent of which Regulatory_Feature_n track each
         ## category was assigned to.
-        
         regulatory.cols <- grep(
           "^Regulatory_Feature_[0-9]+$",
           names(anno),
           value=TRUE)
         
+        ## Identify the first displayed regulatory annotation heatmap so the
+        ## regulatory legend can use the same vertical scale as an annotation row.
+        regulatory.displayed.cols <- grep(
+          "^Regulatory_Feature_[0-9]+$",
+          cols,
+          value=TRUE)
+        
+        regulatory.anno <- paste0(
+          "anno",
+          match(regulatory.displayed.cols[1], cols))
+        
         ## Collect every regulatory category represented in this region.
         regulatory.types <- unique(unlist(
           anno[regulatory.cols],
           use.names=FALSE))
-        
         
         ## Remove probes without regulatory annotations.
         regulatory.types <- sort(
@@ -504,43 +650,59 @@ assemble_plots <- function(
           ## preceding legend exists.
           if (!is.null(last.legend)) {
             
-            w <- w + WLabel(
-              x="Ensembl Regulatory Build Annotations",
-              Beneath(last.legend, pad=.1),
-              name="ensregleg",
-              fontsize=8.5)
+            w <- w + WGrob(
+              grid::gList(
+                grid::textGrob(
+                  "Ensembl Regulatory\nBuild Feature",
+                  gp=grid::gpar(
+                    fontsize=sample.name.fontsize,
+                    lineheight=.8))),
+              Beneath(last.legend, pad=.03),
+              name="ensregleg")
             
           } else if (show.beta.legend) {
             
-            w <- w + WLabel(
-              x="Ensembl Regulatory Build Annotations",
-              BottomRightOf(
-                x="betalegend",
-                just=c("center", "top"),
-                v.pad=-.2),
-              name="ensregleg",
-              fontsize=8.5)
+            w <- w + WGrob(
+              grid::gList(
+                grid::textGrob(
+                  "Ensembl Regulatory\nBuild Feature",
+                  gp=grid::gpar(
+                    fontsize=sample.name.fontsize,
+                    lineheight=.8))),
+              Beneath(
+                "betalegend",
+                pad=.18,
+                v.scale=regulatory.anno,
+                v.scale.proportional=TRUE),
+              name="ensregleg")
             
           } else {
             
-            w <- w + WLabel(
-              x="Ensembl Regulatory Build Annotations",
+            w <- w + WGrob(
+              grid::gList(
+                grid::textGrob(
+                  "Ensembl Regulatory\nBuild ",
+                  gp=grid::gpar(
+                    fontsize=sample.name.fontsize,
+                    lineheight=.8))),
               RightOf(
                 "betas",
                 h.scale="betas",
                 h.scale.proportional=TRUE,
                 pad=.02),
-              name="ensregleg",
-              fontsize=8.5)
+              name="ensregleg")
           }
           
           ## Draw one unified regulatory legend regardless of how many
           ## Regulatory_Feature_n annotation rows are displayed.
           w <- w + WLegendV(
             x="reglegend.source",
-            Beneath("ensregleg", pad=0),
+            Beneath(
+              "ensregleg",
+              v.scale=regulatory.anno,
+              v.scale.proportional=TRUE),
             name="ensreg",
-            label.fontsize=8.5)
+            label.fontsize=sample.name.fontsize)
           
           last.legend <- "ensreg"
         }

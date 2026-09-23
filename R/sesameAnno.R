@@ -302,12 +302,24 @@ sesameAnno_buildHeatmapAnnotations <- function(
         "%s/database/cpgIslandExt.txt.gz"),
       genome)
     
-    message("Downloading UCSC CpG island annotations...")
+    message("Retrieving UCSC CpG island annotations...")
     
-    ## The UCSC file is needed only while constructing the annotation,
-    ## so it is downloaded to a temporary file.
-    fn <- tempfile(fileext=".txt.gz")
-    download.file(url, fn, mode="wb", quiet=TRUE)
+    ## Route the UCSC source file through BiocFileCache. The source is needed
+    ## only while constructing the CpG annotation object; the caller can remove
+    ## it after the finished annotation RDA has been cached.
+    bfc <- BiocFileCache::BiocFileCache(ask=FALSE)
+    
+    fn <- BiocFileCache::bfcrpath(
+      bfc,
+      rnames=url)
+    
+    ## Retain the cache record identifier temporarily so the source file can be
+    ## removed after the completed CpG annotation object has been saved.
+    cpg.source <- BiocFileCache::bfcquery(
+      bfc,
+      url,
+      field="rname",
+      exact=TRUE)
     
     message("Reading UCSC CpG island annotations...")
     
@@ -447,14 +459,22 @@ sesameAnno_buildHeatmapAnnotations <- function(
         " probe(s) overlap ", type, ".")
     }
     
+    ## Preserve the temporary UCSC BiocFileCache record so the caller can remove
+    ## the raw source after the finished CpG annotation RDA is safely written.
+    if (nrow(cpg.source))
+      attr(anno, "cpg_source_rid") <- cpg.source$rid[1]
+    
     message("CpG-context annotations complete.")
   }
-  
+
   ## =====================================================================
   ## Ensembl Regulatory Build annotations
   ## =====================================================================
   
   if (regulatory) {
+    
+    if (!requireNamespace("biomaRt", quietly=TRUE))
+      stop("install biomaRt to build regulatory annotations")
     
     message("Building Ensembl Regulatory Build annotations...")
     

@@ -16,7 +16,6 @@ License: MIT + file LICENSE
 Imports:
     graphics,
     BiocParallel,
-    biomaRt,
     utils,
     methods,
     stringr,
@@ -38,6 +37,7 @@ Imports:
     reshape2
 Suggests: scales,
           BiocManager,
+          biomaRt,
           GenomeInfoDb,
           knitr,
           DNAcopy,
@@ -92,4 +92,4 @@ Collate:
     'visualizeHelper.R'
     'zzz.R'
     'palgen.R'
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.0.0
