@@ -1,3 +1,21 @@
+CHANGES IN VERSION 1.31.5
+-------------------------
+
+  o Fixed readControls() building the control data.frame by positional
+    assumption. It named the columns with colnames(ctl) <- c('G','R','col',
+    'type') over a frame whose signal matrix has four columns, so
+    Color_Channel and Type were cbind-ed past the end of that name vector and
+    arrived unnamed, while `type` silently took a signal column. Downstream,
+    controls(sdf)$Type was a vector of integers, so negControls()'s
+    grep("negative", ...) matched nothing and detectionPnegEcdf() failed in
+    ecdf() with "'x' must have 1 or more non-missing values" on EPIC and
+    HM450 -- the platforms whose controls arrive through readControls() rather
+    than as SigDF rows. The columns are now named explicitly.
+
+  o qualityMask() gained `platform` and `mask` arguments, so a custom or
+    combined-array mask can be supplied directly instead of being applied as a
+    separate addMask() step after the fact.
+
 CHANGES IN VERSION 1.31.4
 -------------------------
 

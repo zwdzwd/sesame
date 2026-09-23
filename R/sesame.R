@@ -378,10 +378,22 @@ readIDATpair <- function(
 
 readControls <- function(dm, controls) {
     if ("Color_Channel" %in% colnames(controls)) { # legacy control data
-        ctl <- as.data.frame(dm[match(controls$Address, rownames(dm)),])
+        sig <- dm[match(controls$Address, rownames(dm)), , drop=FALSE]
+        ## Name the columns explicitly rather than positionally. The previous
+        ## `colnames(ctl) <- c('G','R','col','type')` assumed the signal matrix
+        ## had exactly two columns; it has four, so Color_Channel and Type were
+        ## cbind-ed past the end of that name vector and arrived UNNAMED, while
+        ## `type` silently took a signal column. Downstream that made
+        ## controls(sdf)$Type a vector of integers, so negControls()'s
+        ## grep("negative", ...) matched nothing and detectionPnegEcdf() died in
+        ## ecdf() on EPIC and HM450 -- platforms whose controls come through
+        ## here rather than as SigDF rows.
+        ctl <- data.frame(
+            G = as.numeric(sig[,1]), R = as.numeric(sig[,2]),
+            col = as.character(controls$Color_Channel),
+            type = as.character(controls$Type),
+            stringsAsFactors = FALSE)
         rownames(ctl) <- make.names(controls$Name, unique=TRUE)
-        ctl <- cbind(ctl, controls[, c("Color_Channel","Type")])
-        colnames(ctl) <- c('G','R','col','type')
         ctl <- ctl[!(is.na(ctl$G)|is.na(ctl$R)),] # no NA in controls
     } else {
         ctl <- as.data.frame(chipAddressToSignal(dm, controls))

@@ -4,7 +4,13 @@
 \alias{qualityMask}
 \title{Mask beta values by design quality}
 \usage{
-qualityMask(sdf, mask_names = "recommended", verbose = FALSE)
+qualityMask(
+  sdf,
+  mask_names = "recommended",
+  platform = NULL,
+  mask = NULL,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{sdf}{a \code{SigDF} object}
@@ -13,6 +19,16 @@ qualityMask(sdf, mask_names = "recommended", verbose = FALSE)
 use "recommended" for recommended masking. One can also combine
 "recommended" with other masking groups by specifying a vector, e.g.,
 c("recommended", "M_mapping")}
+
+\item{platform}{platform name(s) whose masks to use, overriding the
+platform inferred from the SigDF. Several may be given, and their masks
+are unioned -- this is what a custom array assembled from more than one
+manifest needs, since it has no platform of its own and the inferred one
+would cover only part of it.}
+
+\item{mask}{a vector of Probe_IDs (or a logical vector named by Probe_ID)
+to mask directly, bypassing the platform lookup entirely. Use this when no
+published mask describes the array.}
 
 \item{verbose}{be verbose}
 }
@@ -33,5 +49,10 @@ sum(qualityMask(sdf, mask_names = NULL)$mask)
 ## list available masks, the dbname column
 listAvailableMasks(sdfPlatform(sdf))
 listAvailableMasks("EPICv2")
+
+## a custom array combining two manifests: union both parents' masks,
+## which works through openSesame's prep_args as well --
+## openSesame(prefix, manifest = both, prep = "QCDPB",
+##     prep_args = list(Q = list(platform = c("EPICv2", "MSA"))))
 
 }

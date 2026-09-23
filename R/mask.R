@@ -269,6 +269,14 @@ getMask <- function(platform = "EPICv2", mask_names = "recommended") {
 #' use "recommended" for recommended masking. One can also combine
 #' "recommended" with other masking groups by specifying a vector, e.g.,
 #' c("recommended", "M_mapping")
+#' @param platform platform name(s) whose masks to use, overriding the
+#' platform inferred from the SigDF. Several may be given, and their masks
+#' are unioned -- this is what a custom array assembled from more than one
+#' manifest needs, since it has no platform of its own and the inferred one
+#' would cover only part of it.
+#' @param mask a vector of Probe_IDs (or a logical vector named by Probe_ID)
+#' to mask directly, bypassing the platform lookup entirely. Use this when no
+#' published mask describes the array.
 #' @param verbose be verbose
 #' @return a filtered \code{SigDF}
 #' @examples
@@ -282,14 +290,30 @@ getMask <- function(platform = "EPICv2", mask_names = "recommended") {
 #' listAvailableMasks(sdfPlatform(sdf))
 #' listAvailableMasks("EPICv2")
 #'
+#' ## a custom array combining two manifests: union both parents' masks,
+#' ## which works through openSesame's prep_args as well --
+#' ## openSesame(prefix, manifest = both, prep = "QCDPB",
+#' ##     prep_args = list(Q = list(platform = c("EPICv2", "MSA"))))
+#'
 #' @export 
 qualityMask <- function(sdf,
-    mask_names="recommended", verbose=FALSE) {
-    
-    ## mask by predefined sets
-    platform <- sdfPlatform(sdf, verbose=verbose)
-    masks <- getMask(platform, mask_names=mask_names)
+    mask_names="recommended", platform=NULL, mask=NULL, verbose=FALSE) {
+
+    ## an explicit mask wins: the caller knows something we cannot infer
+    if (!is.null(mask)) { return(addMask(sdf, mask)) }
+
+    ## mask by predefined sets. `platform` may name several, whose masks are
+    ## unioned -- a custom array built by combining manifests (EPICv2 + MSA,
+    ## say) has no platform of its own, and sdfPlatform() would infer ONE of
+    ## them from the probe IDs and mask only that half.
+    if (is.null(platform)) { platform <- sdfPlatform(sdf, verbose=verbose) }
+    masks <- unique(do.call(c, lapply(platform, function(p1) {
+        getMask(p1, mask_names=mask_names) })))
     if (is.null(masks)) {
+        if (verbose) { message(sprintf(paste0(
+            "No mask found for platform(s): %s. SigDF returned unchanged; ",
+            "pass mask= or platform= to mask a custom array."),
+            paste(platform, collapse=", "))) }
         return(sdf)
     } else {
         addMask(sdf, masks)
