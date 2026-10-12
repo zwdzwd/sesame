@@ -162,8 +162,21 @@ KYCG_getDBs <- function(group_nms, db_names = NULL, platform = NULL,
 #' @export
 listAvailableMasks <- function(platform, verbose = FALSE) {
     stopifnot(is.character(platform))
-    KYCG_getDBs(sprintf("%s.Mask", platform),
-        summary=TRUE, silent=!verbose, ignore.case = TRUE)$dbname
+    gps <- maskGroups(platform)
+    if (length(gps) == 0) { return(NULL) }
+    KYCG_getDBs(gps[1], summary=TRUE, silent=!verbose)$dbname
+}
+
+## The KYCG.<platform>.Mask.<date> objects sesameData lists, newest first.
+## Several versions can be listed at once and their tracks share names
+## (M_mapping is in every human build), so a lookup across all of them
+## would take whichever happened to be listed first. Masking reads the
+## newest; an older one is reached only for a track name the newest lacks.
+## The dates are YYYYMMDD, so sort order is age order.
+maskGroups <- function(platform) {
+    tt <- sesameDataList()$Title
+    sort(grep(sprintf("^KYCG\\.%s\\.Mask\\.[0-9]+$", platform), tt,
+        value = TRUE, ignore.case = TRUE), decreasing = TRUE)
 }
 
 ## these are probes excluded from background subtraction and pOOBAH etc.
@@ -177,7 +190,7 @@ backgroundMask <- function(platform, verbose = FALSE) {
         "M_1baseSwitchSNPcommon_1pt")
     mask_names <- dbnames[dbnames %in% mask_names]
     if (length(mask_names) > 0) {
-        do.call(c, KYCG_getDBs(sprintf("%s.Mask", platform),
+        do.call(c, KYCG_getDBs(maskGroups(platform)[1],
             mask_names, silent=!verbose))
     } else {
         NULL
@@ -197,9 +210,15 @@ backgroundMask <- function(platform, verbose = FALSE) {
 recommendedMaskNames <- function(platform) {
     ma <- list(
         MM285 = c("ref_issue", "nonunique", "design_issue"),
+        ## HM450/EPIC take the same M_* tracks as EPICv2/MSA, the tracks the
+        ## InfiniumAnnotation v8 masks (and SeSAMe2) carry; the older KYCG
+        ## names (mapping, channel_switch, snp5_GMAF1p, extension,
+        ## sub30_copy) remain selectable through mask_names.
+        ## zhou-lab/sesame#1
         EPIC = c(
-            "mapping", "channel_switch", "snp5_GMAF1p",
-            "extension", "sub30_copy"),
+            "M_1baseSwitchSNPcommon_5pt",
+            "M_2extBase_SNPcommon_5pt",
+            "M_mapping", "M_nonuniq", "M_SNPcommon_5pt"),
         EPICv2 = c(
             "M_1baseSwitchSNPcommon_5pt",
             "M_2extBase_SNPcommon_5pt",
@@ -209,8 +228,9 @@ recommendedMaskNames <- function(platform) {
             "M_2extBase_SNPcommon_5pt",
             "M_mapping", "M_nonuniq", "M_SNPcommon_5pt"),
         HM450 = c(
-            "mapping", "channel_switch", "snp5_GMAF1p",
-            "extension", "sub30_copy"),
+            "M_1baseSwitchSNPcommon_5pt",
+            "M_2extBase_SNPcommon_5pt",
+            "M_mapping", "M_nonuniq", "M_SNPcommon_5pt"),
         HM27 = c("mask"))
     if (platform %in% names(ma)) {
         ma[[platform]]
@@ -239,14 +259,20 @@ recommendedMaskNames <- function(platform) {
 #' @export
 getMask <- function(platform = "EPICv2", mask_names = "recommended") {
     stopifnot(is.character(platform))
+    gps <- maskGroups(platform)
+    if (length(gps) == 0) { return(NULL) }
     res <- lapply(mask_names, function(mask_name) {
         if (mask_name == "recommended") {
-            res <- KYCG_getDBs(sprintf("%s.Mask", platform),
-                recommendedMaskNames(platform),
-                silent=TRUE, ignore.case=TRUE)
-        } else {
-            res <- KYCG_getDBs(sprintf("%s.Mask", platform),
-                mask_name, silent=TRUE, ignore.case=TRUE)
+            res <- KYCG_getDBs(gps[1], recommendedMaskNames(platform),
+                silent=TRUE)
+        } else { # the newest version that has this track
+            res <- NULL
+            for (g in gps) {
+                dbs <- KYCG_getDBs(g, silent=TRUE)
+                if (mask_name %in% names(dbs)) {
+                    res <- dbs[mask_name]; break
+                }
+            }
         }
         if (!is.null(res)) {
             res <- do.call(c, res)

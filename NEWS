@@ -1,3 +1,24 @@
+CHANGES IN VERSION 1.31.6
+-------------------------
+
+  o qualityMask()'s recommended set for HM450 and EPIC is now the five M_*
+    tracks EPICv2 and MSA already use (M_1baseSwitchSNPcommon_5pt,
+    M_2extBase_SNPcommon_5pt, M_mapping, M_nonuniq, M_SNPcommon_5pt), read
+    from KYCG.HM450.Mask.20261008 / KYCG.EPIC.Mask.20261008 in sesameData,
+    which are built from the InfiniumAnnotation v8.2 masks. The older KYCG
+    tracks (mapping, channel_switch, snp5_GMAF1p, extension, sub30_copy)
+    masked about twice as many probes and are still available through
+    mask_names. This brings R and SeSAMe2 to the same quality mask on all
+    four human arrays (zhou-lab/sesame#1). KYCG.EPICv2.Mask.20261008 and
+    KYCG.MSA.Mask.20261008 are rebuilt from the same v8.2 masks.
+
+  o getMask(), listAvailableMasks() and backgroundMask() read the newest
+    KYCG.<platform>.Mask.<date> sesameData lists. They used to search every
+    listed version, whose tracks share names, so which build a track came
+    from depended on listing order. A track name only an older build has
+    is still found there. backgroundMask() for HM450/EPIC therefore now
+    uses M_nonuniq and the M_1baseSwitchSNPcommon tracks, as SeSAMe2 does.
+
 CHANGES IN VERSION 1.31.5
 -------------------------
 
