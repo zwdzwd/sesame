@@ -17,6 +17,10 @@ visualizeRegion(
   nprobes.max = 1000,
   txn.types = "protein_coding",
   txn.font.size = 6,
+  show.cgi = FALSE,
+  show.regulatory = FALSE,
+  show.beta.legend = FALSE,
+  show.annotation.legend = FALSE,
   ...
 )
 }

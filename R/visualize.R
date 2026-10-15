@@ -37,7 +37,8 @@
 visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
     genome = NULL, draw = TRUE, cluster.samples = FALSE,
     na.rm = FALSE, nprobes.max = 1000, txn.types = "protein_coding",
-    txn.font.size = 6, ...) {
+    txn.font.size = 6, show.cgi = FALSE, show.regulatory = FALSE,
+    show.beta.legend = FALSE, show.annotation.legend = FALSE, ...) {
 
     if (is.null(dim(betas))) { betas <- as.matrix(betas) }
     platform <- sesameData_check_platform(platform, rownames(betas))
@@ -72,7 +73,12 @@ visualizeRegion <- function(chrm, beg, end, betas, platform = NULL,
         betas <- column.cluster(betas[names(probes),,drop=FALSE])$mat }
 
     if (draw) { assemble_plots(betas, txns, probes,
-        plt.txns, plt.mapLines, plt.cytoband, ...)
+                               plt.txns, plt.mapLines, plt.cytoband,
+                               platform=platform, genome=genome,
+                               show.cgi=show.cgi,
+                               show.regulatory=show.regulatory,
+                               show.beta.legend=show.beta.legend,
+                               show.annotation.legend=show.annotation.legend, ...)
     } else { return(betas); }
 }
 

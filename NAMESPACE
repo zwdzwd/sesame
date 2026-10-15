@@ -80,6 +80,7 @@ export(sdf_write_table)
 export(searchIDATprefixes)
 export(sesameAnno_attachManifest)
 export(sesameAnno_buildAddressFile)
+export(sesameAnno_buildHeatmapAnnotations)
 export(sesameAnno_buildManifestGRanges)
 export(sesameAnno_download)
 export(sesameAnno_readManifestTSV)
@@ -112,46 +113,64 @@ import(stats)
 import(stringr)
 import(tibble)
 import(wheatmap)
-importFrom(BiocFileCache,BiocFileCache)
-importFrom(BiocFileCache,bfcrpath)
-importFrom(GenomicRanges,GRanges)
-importFrom(GenomicRanges,end)
-importFrom(GenomicRanges,findOverlaps)
-importFrom(GenomicRanges,resize)
-importFrom(GenomicRanges,seqinfo)
-importFrom(GenomicRanges,seqnames)
-importFrom(GenomicRanges,start)
-importFrom(S4Vectors,metadata)
-importFrom(S4Vectors,queryHits)
-importFrom(S4Vectors,subjectHits)
+importFrom(BiocFileCache,
+  BiocFileCache,
+  bfcrpath
+)
+importFrom(GenomicRanges,
+  GRanges,
+  end,
+  findOverlaps,
+  resize,
+  seqinfo,
+  seqnames,
+  start
+)
+importFrom(S4Vectors,
+  metadata,
+  queryHits,
+  subjectHits
+)
 importFrom(Seqinfo,Seqinfo)
-importFrom(SummarizedExperiment,"metadata<-")
-importFrom(SummarizedExperiment,SummarizedExperiment)
-importFrom(SummarizedExperiment,assay)
-importFrom(SummarizedExperiment,colData)
-importFrom(SummarizedExperiment,rowData)
-importFrom(dplyr,bind_cols)
-importFrom(dplyr,bind_rows)
-importFrom(dplyr,distinct)
-importFrom(dplyr,full_join)
-importFrom(dplyr,group_by)
-importFrom(dplyr,slice_min)
-importFrom(dplyr,summarize)
-importFrom(methods,.hasSlot)
-importFrom(methods,is)
-importFrom(methods,new)
+importFrom(SummarizedExperiment,
+  "metadata<-",
+  SummarizedExperiment,
+  assay,
+  colData,
+  rowData
+)
+importFrom(dplyr,
+  bind_cols,
+  bind_rows,
+  distinct,
+  full_join,
+  group_by,
+  slice_min,
+  summarize
+)
+importFrom(methods,
+  .hasSlot,
+  is,
+  new
+)
 importFrom(preprocessCore,normalize.quantiles.use.target)
-importFrom(readr,col_character)
-importFrom(readr,col_integer)
-importFrom(readr,cols)
-importFrom(readr,read_tsv)
+importFrom(readr,
+  col_character,
+  col_integer,
+  cols,
+  read_tsv
+)
 importFrom(reshape2,melt)
-importFrom(stats,approx)
-importFrom(stats,setNames)
-importFrom(utils,download.file)
-importFrom(utils,head)
-importFrom(utils,packageVersion)
-importFrom(utils,read.table)
-importFrom(utils,tail)
-importFrom(utils,write.table)
+importFrom(stats,
+  approx,
+  setNames
+)
+importFrom(utils,
+  download.file,
+  head,
+  packageVersion,
+  read.table,
+  tail,
+  write.table
+)
 importMethodsFrom(IRanges,subsetByOverlaps)
