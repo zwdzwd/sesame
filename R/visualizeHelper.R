@@ -387,9 +387,6 @@ assemble_plots <- function(
       nrow(anno),
       " plotted probe(s).")
     
-  } else {
-    
-    message("Heatmap annotations not requested.")
   }
   
 
@@ -519,7 +516,7 @@ assemble_plots <- function(
           x="Beta Values",
           TopOf("betalegend"),
           name="betaleglab",
-          fontsize=)
+          fontsize=sample.name.fontsize)
     }
     
     ## -----------------------------------------------------------------------
@@ -681,7 +678,7 @@ assemble_plots <- function(
             w <- w + WGrob(
               grid::gList(
                 grid::textGrob(
-                  "Ensembl Regulatory\nBuild ",
+                  "Ensembl Regulatory\nBuild Feature",
                   gp=grid::gpar(
                     fontsize=sample.name.fontsize,
                     lineheight=.8))),

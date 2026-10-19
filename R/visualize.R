@@ -25,6 +25,13 @@
 #' @param nprobes.max maximum number of probes to plot
 #' @param txn.types default to protein_coding, use NULL for all
 #' @param txn.font.size transcript name font size
+#' @param show.cgi whether to show a CpG-context track (island, shore, shelf,
+#' open sea; UCSC cpgIslandExt), built on first use and cached
+#' @param show.regulatory whether to show Ensembl Regulatory Build tracks
+#' (needs biomaRt), built on first use and cached
+#' @param show.beta.legend whether to show the beta-value legend
+#' @param show.annotation.legend whether to show legends for the annotation
+#' tracks
 #' @param ... additional options, see assemble_plots
 #' @return graphics or a matrix containing the captured beta values
 #' @import grid

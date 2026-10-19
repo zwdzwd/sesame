@@ -54,6 +54,17 @@ to this function.}
 
 \item{txn.font.size}{transcript name font size}
 
+\item{show.cgi}{whether to show a CpG-context track (island, shore, shelf,
+open sea; UCSC cpgIslandExt), built on first use and cached}
+
+\item{show.regulatory}{whether to show Ensembl Regulatory Build tracks
+(needs biomaRt), built on first use and cached}
+
+\item{show.beta.legend}{whether to show the beta-value legend}
+
+\item{show.annotation.legend}{whether to show legends for the annotation
+tracks}
+
 \item{...}{additional options, see assemble_plots}
 }
 \value{

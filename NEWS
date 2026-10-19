@@ -1,3 +1,17 @@
+CHANGES IN VERSION 1.31.7
+-------------------------
+
+  o visualizeRegion() (and visualizeGene/visualizeProbes through it) can
+    draw annotation tracks under the heatmap: show.cgi adds CpG context
+    (island, shore, shelf, open sea, from UCSC cpgIslandExt) and
+    show.regulatory adds Ensembl Regulatory Build features (needs biomaRt,
+    in Suggests). Each track is built on first use and cached in
+    BiocFileCache. show.beta.legend and show.annotation.legend add legends;
+    show.loci with show.probeNames = FALSE labels probes by coordinate. All
+    default to off, so existing calls draw as before. New
+    sesameAnno_buildHeatmapAnnotations() builds the tracks. Contributed by
+    Pancreas-Pratik (zwdzwd/sesame#220).
+
 CHANGES IN VERSION 1.31.6
 -------------------------
 

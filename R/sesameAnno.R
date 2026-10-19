@@ -234,6 +234,10 @@ sesameAnno_buildHeatmapAnnotations <- function(
     hg19=paste0("chr", c(1:22, "X", "Y", "M")),
     hg38=paste0("chr", c(1:22, "X", "Y", "M")),
     stop("Unsupported genome: ", genome))
+
+  ## Fail before any download when the regulatory track cannot be built.
+  if (regulatory && !requireNamespace("biomaRt", quietly=TRUE))
+    stop("install biomaRt to build regulatory annotations")
   
   ## Load the requested array manifest.
   message("Loading ", platform, " manifest...")
@@ -472,9 +476,6 @@ sesameAnno_buildHeatmapAnnotations <- function(
   ## =====================================================================
   
   if (regulatory) {
-    
-    if (!requireNamespace("biomaRt", quietly=TRUE))
-      stop("install biomaRt to build regulatory annotations")
     
     message("Building Ensembl Regulatory Build annotations...")
     
