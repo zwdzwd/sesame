@@ -89,7 +89,7 @@ c(
             person(given = c("Nathan", "J"), family = "Spix"),
             person(given = "Bryn", family = "Eagleson"),
             person(given = c("John", "Andrew"), family = "Pospisilik"),
-            person(given = c("Piroska", "E"), family = "Szabó"),
+            person(given = c("Piroska", "E"), family = "Szab\u00f3"),
             person(given = c("Marisa", "S"), family = "Bartolomei"),
             person(given = c("Nicole", "A", "Vander"), family = "Schaaf"),
             person(given = "Liang", family = "Kang"),

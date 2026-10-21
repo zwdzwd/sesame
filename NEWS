@@ -1,3 +1,10 @@
+CHANGES IN VERSION 1.31.8
+-------------------------
+
+  o inst/CITATION writes the one non-ASCII author name (Szab\u00f3) as an
+    escape, so utils::readCitationFile() reads the file without a declared
+    encoding. BiocCheck warned "Unable to read CITATION file".
+
 CHANGES IN VERSION 1.31.7
 -------------------------
 
