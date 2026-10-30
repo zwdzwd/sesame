@@ -28,6 +28,9 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 > This vignette covers the interactive R workflow, which remains the reference
 > implementation.
 
+For enrichment of CpG sets, see the
+[knowYourCG](https://bioconductor.org/packages/knowYourCG/) package.
+
 # Preparation
 
 ```{r library, message=FALSE, warning=FALSE}

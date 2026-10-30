@@ -13,6 +13,8 @@ See the package [Home Page on Bioconductor](https://bioconductor.org/packages/re
 
 It also has a depended [data package](https://github.com/zwdzwd/sesameData) for annotation and example data.
 
+For enrichment of CpG sets, see the [knowYourCG](https://bioconductor.org/packages/knowYourCG/) package.
+
 ## Two implementations, one method
 
 SeSAMe comes as two implementations that share the same methods and are

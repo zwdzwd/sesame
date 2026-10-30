@@ -1,3 +1,10 @@
+CHANGES IN VERSION 1.31.11
+-------------------------
+
+  o The startup message no longer carries the knowYourCG pointer added in
+    1.31.10; the README and the Basic Usage vignette point to knowYourCG
+    for enrichment of CpG sets instead.
+
 CHANGES IN VERSION 1.31.10
 -------------------------
 
