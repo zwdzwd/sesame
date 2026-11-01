@@ -1,3 +1,12 @@
+CHANGES IN VERSION 1.31.12
+-------------------------
+
+  o The Basic Usage vignette's note on the C implementation names it
+    SeSAMe2 and links its current home (zhou-lab.github.io/sesame), gives
+    the working conda line (sesame and yame from zhou-lab), and states the
+    agreement with this package as measured on the shared annotation
+    (QCDPB betas to about 1e-15 with sesameData >= 1.31.1).
+
 CHANGES IN VERSION 1.31.11
 -------------------------
 
